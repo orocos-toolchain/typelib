@@ -69,7 +69,6 @@ void TypeSolver::buildClassObject(bool define_type)
             object -> addField( it -> first, it -> second.getType() );
         m_fields.clear();
     }
-    cout << object -> toString() << endl;
     m_registry -> add(object);
 
     m_fieldtype.clear();
@@ -134,8 +133,6 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
         
         Type* type = new Type(name, builder.getType());
         m_registry -> add(type);
-        cout << type -> toString() << std::endl;
-        
     }
     CPPParser::declaratorID(name, qi);
 }

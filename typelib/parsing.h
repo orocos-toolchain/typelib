@@ -6,9 +6,8 @@
 
 namespace Parsing
 {
-    struct ParsingError
+    class ParsingError
     {
-    private: 
         std::string m_file;
         int m_line, m_column;
 
@@ -34,32 +33,55 @@ namespace Parsing
         }
     };
 
-    struct MalformedXML : public ParsingError
+    class MalformedXML : public ParsingError
     {
     public:
         MalformedXML(const std::string& file) 
             : ParsingError(file) {}
+
         virtual std::string toString() const
         { return "XML error in " + getFile(); }
     };
 
-    struct UnexpectedElement : public ParsingError
+    class UnexpectedElement : public ParsingError
     {
         std::string m_found, m_expected;
     public:
         UnexpectedElement(const std::string& file, const std::string& found, const std::string expected)
             : ParsingError(file), m_found(found), m_expected(expected) {}
 
+        std::string getFound() const { return m_found; }
+        std::string getExpected() const { return m_expected; }
+
         virtual std::string toString() const
         { 
-            if (m_expected.empty())
-                return "Unexpected element " + m_found + " in " + getFile();
-            else
-                return "Unexpected element " + m_found + " instead of " + m_expected + " in " + getFile();
+            std::ostringstream out("Unexpected element ");
+            out << m_found;
+            if (!m_expected.empty()) out << " instead of " << m_expected;
+            out << " in " + getFile();
+
+            return out.str();
         }
     };
 
-    struct MissingAttribute : public ParsingError
+    class BadRootElement : public UnexpectedElement
+    {
+    public:
+        BadRootElement(const std::string& file, const std::string& found, const std::string expected)
+            : UnexpectedElement(file, found, expected) {}
+
+        virtual std::string toString() const
+        { 
+            std::ostringstream out("Bad root element ");
+            out << getFound();
+            if (!getExpected().empty()) out << " instead of " << getExpected();
+            out << " in " + getFile();
+
+            return out.str();
+        }
+    };
+
+    class MissingAttribute : public ParsingError
     {
         std::string m_attribute;
     public:

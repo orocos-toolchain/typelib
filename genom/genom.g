@@ -56,7 +56,7 @@ public:
 
 translation_unit
 :
-    { std::cout << "Beginning C++ parsing" << std::endl; }
+//    { std::cout << "Beginning C++ parsing" << std::endl; }
     {
         m_selector -> push("cpp");
         TypeSolver solver(getInputState(), m_registry);
@@ -64,10 +64,10 @@ translation_unit
         solver.fragment();
         m_selector -> pop();
     }
-    { std::cout << "End of C++ parsing, beginning GenoM section" << std::endl; }
+//    { std::cout << "End of C++ parsing, beginning GenoM section" << std::endl; }
     (genom_definition)*
     EOF
-    { std::cout << "End of parsing" << std::endl; }
+//    { std::cout << "End of parsing" << std::endl; }
 ;
 
 genom_definition

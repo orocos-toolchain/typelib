@@ -1,7 +1,6 @@
 #include "registry.h"
 
 #include "typebuilder.h"
-#include <libxml/xmlmemory.h>
 #include <memory>
 #include <iostream>
 #include <fstream>
@@ -10,14 +9,58 @@ using namespace std;
 #include "parsing.h"
 using namespace Parsing;
 
-Registry::Registry() 
+#include <libxml/xmlmemory.h>
+#include <sys/types.h>
+#include <dirent.h>
+
+Registry::Registry()  { loadDefaultLibraries(); }
+Registry::~Registry() { clear(); }
+
+void Registry::loadDefaultLibraries()
 {
+    string home_dir = getenv("HOME") + string("/.genom/typelib/");
+    loadLibraryDir(home_dir);
 }
 
-Registry::~Registry()
+void Registry::loadLibraryDir(const std::string& path)
 {
-    clear();
-}
+    DIR* dir = opendir(path.c_str());
+    if (!dir)
+    {
+        if (errno != ENOENT)
+            cerr << "Error opening " << path << ": " << strerror(errno) << endl;
+        return;
+    }
+
+    clog << "Loading libraries in " << path << endl;
+    dirent* dir_entry;
+    while( (dir_entry = readdir(dir)) )
+    {
+        if (dir_entry -> d_type != DT_REG)
+            continue;
+
+        string file = path + dir_entry -> d_name;
+        ifstream stream;
+        stream.open(file.c_str()); 
+        if (!stream) 
+            continue;
+        
+        clog << "\t" << file << " ";
+
+        int old_count = m_persistent.size();
+
+        try 
+        { 
+            load(file); 
+            int new_count = m_persistent.size();
+            clog << "loaded, " << new_count - old_count << " types found" << endl;
+        }
+        catch(MalformedXML) { clog << "is not a valid XML file" << endl; }
+        catch(BadRootElement) { clog << "is not a type library" << endl; }
+        catch(ParsingError& error)
+        { clog << "error, " << error.toString() << endl; }
+    }
+} 
 
 void Registry::addStandardTypes()
 {
@@ -37,6 +80,17 @@ void Registry::addStandardTypes()
 
     add(new Type("float", sizeof(float), Type::Float));
     add(new Type("double", sizeof(double), Type::Float));
+}
+
+int Registry::getCount() const { return m_persistent.size(); }
+
+Registry::StringList Registry::getTypeNames() const
+{
+    StringList ret;
+    for (PersistentList::const_iterator it = m_persistent.begin(); it != m_persistent.end(); ++it)
+        ret.push_back(it -> second -> getName());
+
+    return ret;
 }
 
 bool Registry::has(const std::string& name, bool build) const
@@ -65,7 +119,7 @@ const Type* Registry::get(const std::string& name) const
     return 0;
 }
 
-void Registry::add(Type* new_type)
+void Registry::add(Type* new_type, const std::string& file)
 {
     std::string name(new_type -> getName());
     const Type* old_type = get(name);
@@ -76,7 +130,7 @@ void Registry::add(Type* new_type)
 
     const Type::Category cat(new_type -> getCategory());
     if (cat != Type::Array && cat != Type::Pointer)
-        m_persistent.push_back( make_pair("", new_type) );
+        m_persistent.push_back( make_pair(file, new_type) );
 
     m_typemap.insert(std::make_pair(name, new_type));
 }
@@ -114,10 +168,11 @@ namespace
         { 0, Type::Array /* Don't mind */}
     };
     
+    template<typename Exception>
     void checkNodeName(xmlNodePtr node, const char* expected)
     {
         if (xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>(expected)))
-            throw UnexpectedElement("", reinterpret_cast<const char*>(node->name), expected);
+            throw Exception("", reinterpret_cast<const char*>(node->name), expected);
     }
 
     std::string getStringFromCategory(Type::Category cat)
@@ -168,7 +223,7 @@ void Registry::getFields(xmlNodePtr node, Type* type)
         if (!xmlStrcmp(field->name, reinterpret_cast<const xmlChar*>("text")))
             continue;
 
-        checkNodeName(field, "field");
+        checkNodeName<UnexpectedElement>(field, "field");
         std::string name = getStringAttribute(field, "name");
         std::string tname = getStringAttribute(field, "type");
         int offset = getIntAttribute(field, "offset");
@@ -196,6 +251,15 @@ std::string Registry::getDefinitionFile(const Type* type) const
 
 void Registry::load(const std::string& path)
 {
+    string full_path;
+    if (path[0] != '/')
+    {
+        char cwd[PATH_MAX];
+        getcwd(cwd, PATH_MAX);
+
+        full_path = string(cwd) + "/" + path;
+    } else full_path = path;
+
     xmlDocPtr doc = xmlParseFile(path.c_str());
     if (!doc) 
         throw MalformedXML(path);
@@ -204,7 +268,7 @@ void Registry::load(const std::string& path)
     {
         xmlNodePtr root_node = xmlDocGetRootElement(doc);
         if (!root_node) return;
-        checkNodeName(root_node, "typelib");
+        checkNodeName<BadRootElement>(root_node, "typelib");
 
         for(xmlNodePtr type = root_node -> xmlChildrenNode; type; type=type->next)
         {
@@ -225,10 +289,10 @@ void Registry::load(const std::string& path)
             {
                 std::string old_file = getDefinitionFile(old_type);
                 std::cerr << "Type " << name << " has already been defined in " << old_file << endl;
-                std::cerr << "\tI won't overwrite with the definition found in " << path << endl;
+                std::cerr << "\tThe definition found in " << path << " will be ignored" << endl;
             }
             else
-                add(new_type.release());
+                add(new_type.release(), full_path);
         }
     }
     catch(ParsingError& error)
@@ -282,18 +346,32 @@ bool Registry::save(const std::string& path, bool save_all) const
     return true;
 }
 
-void Registry::dump(bool verbose) const
+void Registry::dump(ostream& stream, int mode, const std::string& file) const
 {
-    cerr << "Persistent types" << endl;
-    if (verbose)
+    stream << "Types in registry";
+    if (file == "")
+        stream << " not defined in any type library";
+    else if (file != "*")
+        stream << " defined in " << file;
+    stream << endl;
+
+    for (PersistentList::const_iterator it = m_persistent.begin(); it != m_persistent.end(); ++it)
     {
-        for (PersistentList::const_iterator it = m_persistent.begin(); it != m_persistent.end(); ++it)
-            cerr << it->second -> toString("\t") << endl;
-    }
-    else
-    {
-        for (PersistentList::const_iterator it = m_persistent.begin(); it != m_persistent.end(); ++it)
-            cerr << "\t" << it->second->getName() << endl;
+        if (file != "*" && file != it -> first)
+            continue;
+
+        if (mode & WithFile)
+        {
+            string it_file = it->first;
+            if (it_file.empty()) stream << "\t\t";
+            else stream << it -> first << "\t";
+        }
+
+        const Type* type = it -> second;
+        if (mode & AllType)
+            stream << type -> toString("\t", mode & Registry::RecursiveTypeDump) << endl;
+        else
+            stream << "\t" << type -> getName() << endl;
     }
 }
-    
+

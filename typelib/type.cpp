@@ -15,8 +15,8 @@ Type::Type(const std::string& name, int size, Category category)
         setName(name);
 }
 Type::Type(const std::string& name, const Type* from)
-    : m_size(from->m_size), m_category(from->m_category),
-    m_next_type(0), m_fields(from->m_fields)
+    : m_size(from->m_size), m_category(from->m_category), 
+    m_next_type(from->m_next_type), m_fields(from->m_fields)
 {
     if (!name.empty())
         setName(name);
@@ -100,9 +100,11 @@ void Type::setNextType(const Type* type) { m_next_type = type; }
 
 
 
-std::string Type::toString(const std::string& prefix) const
+std::string Type::toString(const std::string& prefix, bool recursive) const
 {
-    std::ostringstream output;
+    using namespace std;
+
+    ostringstream output;
     output << prefix << getName();
 
     if (isSimple()) 
@@ -112,8 +114,13 @@ std::string Type::toString(const std::string& prefix) const
         if (isIndirect())
         {
             output << getSize() << " bytes "
-                << ((cat == Array) ? " array of " : " pointer on ") << std::endl
-                << getNextType() -> toString(prefix + "\t");
+                << ((cat == Array) ? " array of " : " pointer on ") << endl;
+            
+            const Type* next_type = getNextType();
+            if (recursive || next_type -> isIndirect())
+                output << next_type -> toString(prefix + "\t", recursive);
+            else
+                output << prefix << "\t" << next_type -> getName();
         }
         else
         {
@@ -141,8 +148,12 @@ std::string Type::toString(const std::string& prefix) const
             output 
                 << prefix << "\t"
                 << "(+" << it -> getOffset() << ") "
-                << it -> getName() << " " << it -> getType() -> toString(prefix + "\t") << " "
-                << std::endl;
+                << it -> getName() << " ";
+            if (recursive)
+                output << it -> getType() -> toString(prefix + "\t");
+            else
+                output << it -> getType() -> getName();
+            output << " " << std::endl;
         }
         output << prefix << "}";
     }
@@ -187,6 +198,7 @@ Struct::Struct(const std::string& name, bool deftype)
 }
 void Struct::fieldsChanged()
 {
+    
     FieldList::iterator it = m_fields.begin();
 
     int offset = 0;

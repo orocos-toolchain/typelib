@@ -28,8 +28,7 @@ int main(int argc, char** argv)
         cerr << "Undefined type " << error.getTypename() << endl;
     }
 
-    registry.dump(true);
-
+    registry.dump(cout, Registry::AllType | Registry::WithFile);
     registry.save("/home/doudou/test-save.tlb");
 }
 

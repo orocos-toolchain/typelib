@@ -9,7 +9,7 @@ gnmgrammar    = env.Antlr('genom.g', ANTLRSUPER=File('cparser.g'))
 gnm_sources = [ x for x in gnmgrammar if x.path.rfind(".cpp") != -1 ]
 
 supportlib    = env.Library('genomsupport', 
-                    ['typesolver.cpp', 'genommodule.cpp', gnm_sources])
+                    ['typesolver.cpp', 'genommodule.cpp', 'preprocess.cpp', gnm_sources])
 
 reader        = env.Program('genom-reader', 
                     source = 'genom-reader.cpp',

@@ -20,6 +20,8 @@ private:
     TypeMap::const_iterator find(const std::string& name) const;
     
     void addStandardTypes();
+    void loadDefaultLibraries();
+    void loadLibraryDir(const std::string& path);
 
 public:
     Registry();
@@ -72,10 +74,14 @@ public:
      * @return true on success, false if the type was already
      * defined in the registry
      */
-    void        add(Type* type);
+    void        add(Type* type, const std::string& file = "");
 
 
     void        clear();
+
+    int         getCount() const;
+
+    StringList  getTypeNames() const;
 
 private:
     void getFields(xmlNodePtr xml, Type* type);
@@ -96,7 +102,15 @@ public:
 
     std::string getDefinitionFile(const Type* type) const;
 
-    void dump(bool verbose = false) const;
+
+    enum DumpMode
+    {
+        NameOnly = 0, 
+        AllType  = 1, 
+        WithFile = 2,
+        RecursiveTypeDump = 4
+    };
+    void dump(std::ostream& stream, int dumpmode = AllType, const std::string& file = "*") const;
 };
 
 #endif

@@ -94,11 +94,18 @@ private:
     ExecTaskMap m_tasks;
 
 public:
-    void read(const std::string& path);
+    bool read(const std::string& path);
 
-    const Type* getSDI() const;
+    const Type*     getSDI() const;
+    const Registry* getRegistry() const;
 
-    void dump(std::ostream& to);
+
+    enum DumpMode
+    {
+        Default     = 0,
+        DumpSDIType = 1
+    };
+    void dump(std::ostream& to, int mode = 0);
 };
 
 #endif

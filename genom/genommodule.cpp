@@ -33,7 +33,7 @@ namespace
     };
 }
 
-void GenomModule::read(const std::string& file)
+bool GenomModule::read(const std::string& file)
 {
     try {
         ifstream s(file.c_str());
@@ -60,9 +60,17 @@ void GenomModule::read(const std::string& file)
         reader.translation_unit();
     }
     catch (ANTLRException& e) 
-    { cerr << "parser exception: " << e.toString() << endl; }
+    { 
+        cerr << "parser exception: " << e.toString() << endl; 
+        return false;
+    }
     catch (TypeBuilder::NotFound& e)
-    { cerr << "Type solver exception: " << e.toString() << endl; }
+    { 
+        cerr << "Type solver exception: " << e.toString() << endl; 
+        return false;
+    }
+
+    return true;
 }
 
 void GenomModule::genomModule(const Module& module)
@@ -78,15 +86,18 @@ void GenomModule::genomPoster(const Poster& poster)
 void GenomModule::genomExecTask(const ExecTask& task)
 { m_tasks[task.name] = task; }
 
-const Type* GenomModule::getSDI() const
-{ return m_registry.get(data); }
+const Type* GenomModule::getSDI() const { return m_registry.get(data); }
+const Registry* GenomModule::getRegistry() const { return &m_registry; }
 
-void GenomModule::dump(std::ostream& to)
+void GenomModule::dump(std::ostream& to, int mode)
 {
     to << "Module " << name << " (" << id << "), sdi: " << data << endl;
-    to << "SDI";
-    to << getSDI() -> toString("\t") << endl;
-        
+
+    if (mode & DumpSDIType)
+    {
+        const Type* sdi_type = getSDI();
+        to << sdi_type -> toString("\t", true) << endl;
+    }
 
     to << "Requests" << endl;
     for (RequestMap::const_iterator it = m_requests.begin(); it != m_requests.end(); ++it)

@@ -1,25 +1,54 @@
 #include <iostream>
 #include <fstream>
+#include "unistd.h"
 
 #include "genommodule.h"
+#include "preprocess.h"
 
 using namespace std;
 
-int main(int argc,char* argv[])
+static void usage()
 {
-    if (argc < 2 || argc > 3)
-    {
-        cerr << "Usage:\n" << argv[0] << " filename.i (/a or /A)" << "\n";
-        exit(1);
-    }
-
-    const char* file = argv[1];
-    GenomModule reader;
-    reader.read(file);
-    reader.dump(std::cout);
-    return 0;
+    cerr << "Usage: genom-reader <file.gen>" << endl;
+    exit(1);
 }
 
-void process_line_directive(const char *includedFile, const char *includedLineNo) {}
+int main(int argc,char* argv[])
+{
+    if (argc < 2) usage();
 
+    string file(argv[1]);
+
+    std::list<std::string> args;
+    // get -I arguments
+    for (int i = 2; i < argc; ++i)
+    {
+        const char* arg = argv[i];
+        if (arg[0] == '-' && arg[1] == 'I')
+            args.push_back(arg);
+    }
+
+    string i_file = preprocess(file, args);
+    if (i_file.empty())
+    {
+        cerr << "Could not preprocess " << argv[1] << ", aborting" << endl;
+        return 1;
+    }
+    
+    GenomModule reader;
+    const Registry* registry = reader.getRegistry();
+    int old_count = registry -> getCount();
+
+    if (reader.read(i_file))
+    {
+        // Dump type list
+        cout << "Found " << registry -> getCount() - old_count << " types in " << file << ":" << endl;
+        registry -> dump(std::cout, Registry::NameOnly | Registry::WithFile, "*");
+
+        reader.dump(cout);
+    }
+
+    unlink(i_file.data());
+    return 0;
+}
 

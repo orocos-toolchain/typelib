@@ -74,7 +74,7 @@ public:
     bool          isIndirect() const;
     const Type*   getNextType() const;
 
-    virtual std::string toString(const std::string& prefix = "") const;
+    virtual std::string toString(const std::string& prefix = "", bool recursive = false) const;
 
     bool operator == (const Type& type) const;
     bool operator != (const Type& type) const;
