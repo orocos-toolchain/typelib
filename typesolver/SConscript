@@ -1,0 +1,12 @@
+import glob
+
+typesolver = Program('typesolver', 
+        source = Split('Main.cpp typebuilder.cpp type.cpp typesolver.cpp'), 
+        LIBS=['grammar', 'antlr'], 
+        LIBPATH='../grammar', 
+        LINKFLAGS="-Wl,-rpath -Wl,.",
+        CPPPATH=['.', '../grammar'])
+
+Install("../target", typesolver)
+
+SConscript('test/SConscript')
