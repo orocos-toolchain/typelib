@@ -8,42 +8,42 @@
 #include <cassert>
 using namespace std;
 
-bool          Type::s_init = false;
-Type::TypeMap Type::s_typemap;
-
-// WARNING: not mt safe for now
-const Type* Type::fromName(const std::string& name)
-{
-    if (! s_init)
-    {
-        new Type("char", sizeof(char), SInt);
-        new Type("signed char", sizeof(char), SInt);
-        new Type("unsigned char", sizeof(unsigned char), UInt);
-        new Type("short", sizeof(short), SInt);
-        new Type("signed short", sizeof(short), SInt);
-        new Type("unsigned short", sizeof(unsigned short), UInt);
-        new Type("int", sizeof(int), SInt);
-        new Type("signed", sizeof(signed), SInt);
-        new Type("signed int", sizeof(int), SInt);
-        new Type("unsigned", sizeof(unsigned), UInt);
-        new Type("unsigned int", sizeof(unsigned int), UInt);
-        new Type("long", sizeof(long), SInt);
-        new Type("unsigned long", sizeof(unsigned long), UInt);
-
-        new Type("float", sizeof(float), Float);
-        new Type("double", sizeof(double), Float);
-        s_init = true;
-    }
-
-    TypeMap::iterator it = s_typemap.find(name);
-    if (it == s_typemap.end()) return 0;
-
-    return it -> second;
-
-    // the type is not known
-    // we try to build a Type object from the known types
-    
-}
+//bool          Type::s_init = false;
+//Type::TypeMap Type::s_typemap;
+//
+//// WARNING: not mt safe for now
+//const Type* Type::fromName(const std::string& name)
+//{
+//    if (! s_init)
+//    {
+//        new Type("char", sizeof(char), SInt);
+//        new Type("signed char", sizeof(char), SInt);
+//        new Type("unsigned char", sizeof(unsigned char), UInt);
+//        new Type("short", sizeof(short), SInt);
+//        new Type("signed short", sizeof(short), SInt);
+//        new Type("unsigned short", sizeof(unsigned short), UInt);
+//        new Type("int", sizeof(int), SInt);
+//        new Type("signed", sizeof(signed), SInt);
+//        new Type("signed int", sizeof(int), SInt);
+//        new Type("unsigned", sizeof(unsigned), UInt);
+//        new Type("unsigned int", sizeof(unsigned int), UInt);
+//        new Type("long", sizeof(long), SInt);
+//        new Type("unsigned long", sizeof(unsigned long), UInt);
+//
+//        new Type("float", sizeof(float), Float);
+//        new Type("double", sizeof(double), Float);
+//        s_init = true;
+//    }
+//
+//    TypeMap::iterator it = s_typemap.find(name);
+//    if (it == s_typemap.end()) return 0;
+//
+//    return it -> second;
+//
+//    // the type is not known
+//    // we try to build a Type object from the known types
+//    
+//}
 
 
 Type::Type(const std::string& name, int size, Category category)
@@ -62,16 +62,7 @@ Type::Type(const std::string& name, const Type* from)
 Type::~Type() {}
 
 std::string Type::getName() const { return m_name; }
-void Type::setName(const std::string& name) 
-{ 
-    if (name == m_name) return;
-    if (! m_name.empty())
-        s_typemap.erase(m_name);
-        
-    m_name = name;
-    s_typemap[name] = this; 
-}
-
+void Type::setName(const std::string& name) { m_name = name; }
 Type::Category Type::getCategory() const { return m_category; }
 
 bool Type::isSimple() const

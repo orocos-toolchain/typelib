@@ -41,10 +41,6 @@ private:
     size_t m_size;
     Category m_category;
     
-    typedef std::map<std::string, Type*> TypeMap;
-    static bool    s_init;
-    static TypeMap s_typemap;
-
     const Type* m_next_type;
 
 protected:
@@ -56,22 +52,23 @@ protected:
     void setNextType(const Type* type);
     virtual void fieldsChanged();
 
-    // Creates a basic type from \c name, \c size and \c category
-    Type(const std::string& name, int size, Category category);
 
 public:
+    // Creates a basic type from \c name, \c size and \c category
+    Type(const std::string& name, int size, Category category);
     // Creates a type which is the same as \c from, but whose name differs
     Type(const std::string& name, const Type* from);
+
     virtual ~Type();
     
-    std::string  getName() const;
-    bool         isSimple() const;
-    int          getSize() const;
-    Category     getCategory() const;
+    std::string   getName() const;
+    bool          isSimple() const;
+    int           getSize() const;
+    Category      getCategory() const;
     
-    FieldList  getFields();
-    void       addField(const Field& field);
-    void       addField(const std::string& name, const Type* type);
+    FieldList     getFields();
+    void          addField(const Field& field);
+    void          addField(const std::string& name, const Type* type);
 
     bool          isIndirect() const;
     const Type*   getNextType() const;
@@ -80,13 +77,6 @@ public:
 
     bool operator == (const Type& type) const;
     bool operator != (const Type& type) const;
-    
-    /** Returns a Type object that describes the given name
-     * If the type is not known yet, it tries to build one 
-     * using known types
-     * WARNING: not mt safe for now
-     */
-    static const Type* fromName(const std::string& name);
 };
 
 class Struct : public Type

@@ -88,15 +88,18 @@ union tunion
 
 typedef struct 
 {
-    int     tableau[10];
+    int     tableau[5];
     double  tableau_null[];
     struct  tstruct structure;
     union   tunion bla;
     char*   pointeur_simple;
     char**  pointeur_double;
     char*   tableau_ptr_simple[2];
-    int**   tableau_ptr_double[5];
+    int**   tableau_ptr_double[2];
+
 
     double  tableau_multi_dim[4][5][6];
 } TestT;
+
+
 

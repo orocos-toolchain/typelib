@@ -1,10 +1,12 @@
 #include "CPPParser.hpp"
 #include "CPPLexer.hpp"
 #include "typesolver.h"
+#include "registry.h"
 
 #include <iostream>
 #include <numeric>
 #include <sstream>
+#include <cassert>
 
 using namespace std;
 
@@ -65,6 +67,7 @@ void TypeSolver::buildClassObject(bool define_type)
         m_fields.clear();
     }
     cout << object -> toString() << endl;
+    Registry::self() -> add(object);
 
     m_fieldtype.clear();
     m_fieldtype.push_back(object->getName());
@@ -112,15 +115,22 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
     {
         m_fields.push_back( make_pair(name, TypeBuilder(m_fieldtype)) );
         if (pointer_level)
+        {
             m_fields.back().second.addPointer(pointer_level);
+            assert(m_fields.back().second.getType());
+        }
     }
     else if (qi == qiType)
     {
         TypeBuilder builder(m_fieldtype);
         if (pointer_level)
+        {
             builder.addPointer(pointer_level);
+            assert(m_fields.back().second.getType());
+        }
         
         Type* type = new Type(name, builder.getType());
+        Registry::self() -> add(type);
         cout << type -> toString() << std::endl;
         
     }
@@ -130,7 +140,10 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
 void TypeSolver::declaratorArray(int size)
 {
     if (m_class && !m_fields.empty())
+    {
         m_fields.back().second.addArray(size);
+        assert(m_fields.back().second.getType());
+    }
         
     CPPParser::declaratorArray(size);
 }
