@@ -1,0 +1,14 @@
+## Extension configuration for the C part of the Value testsuite
+require 'mkmf'
+
+$CPPFLAGS += " -I@top_srcdir@ @UTILMM_CFLAGS@"
+$LDFLAGS  += "@top_builddir@/typelib/libtypeLib.la -ldl"
+#CONFIG['CC'] = "@top_builddir@/libtool --mode=compile #{CONFIG['CC']}"
+COMPILE_C   = "@top_builddir@/libtool --mode=compile #{COMPILE_C}"
+COMPILE_CXX = "@top_builddir@/libtool --mode=compile #{COMPILE_CXX}"
+$OBJEXT = 'lo'
+CONFIG['LDSHARED'] = "@top_builddir@/libtool --mode=link --tag=CXX #{CONFIG['CC']} -module -rpath @libdir@/typelib -avoid-version"
+CONFIG['DLEXT'] = 'la'
+
+create_makefile('test_rb_value', "@srcdir@")
+

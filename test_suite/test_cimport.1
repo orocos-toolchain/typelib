@@ -1,0 +1,46 @@
+
+struct A
+{
+    long  a;
+    long  b;
+    char  c;
+    short d;
+};
+
+typedef struct A ADef;
+
+typedef struct B
+{
+    ADef  a;
+    float c[100];
+    float d[(1)];
+    float e[(2-1)];
+    float f[(2+1)];
+} B;
+
+typedef enum E {
+    FIRST,
+    SECOND,
+    THIRD = -1,
+    FOURTH = (-2),
+    LAST
+} E;
+
+typedef struct EContainer
+{
+    E value;
+} EContainer;
+
+typedef enum INPUT_OUTPUT_MODE {
+    OUTPUT, BOTH
+} INPUT_OUTPUT_MODE;
+
+typedef void* OpaqueType;
+
+void ignore_functions();
+
+typedef struct {
+    int field;
+    float value;
+} DEFINE_STR, *DEFINE_ID;
+
