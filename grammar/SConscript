@@ -1,24 +1,8 @@
-import os.path
-import string
-Import('target')
+Import(['target', 'env'])
 
-def antlr_generator(target, source, env, for_signature):
-    output_path = os.path.dirname(str(target[0]))
-    return "cantlr -o %s %s " % (output_path, string.join([str(x) for x in source]))
+cpp_parser   = env.Antlr('CPP_parser.g')
+grammar      = env.Library('grammar', ['Dictionary.cpp', 'Support.cpp', cpp_parser], CPPPATH='.')
 
-def antlr_emitter(target, source, env):
-    target=Split('CPPParser.cpp CPPLexer.cpp CPPParser.hpp CPPLexer.hpp STDCTokenTypes.hpp STDCTokenTypes.txt')
-    return target, source
-
-antlr_builder = Builder(generator = antlr_generator,
-              src_suffix = '.g',
-              emitter = antlr_emitter)
-
-
-env = Environment();
-env.Append(BUILDERS = {'Antlr' : antlr_builder});
-
-env.Antlr('CPP_parser.g')
-grammar = env.SharedLibrary('grammar', Split('Dictionary.cpp LineObject.cpp Support.cpp CPPParser.cpp CPPLexer.cpp'), CPPPATH='.')
 env.Install(target, grammar)
+env.Default(grammar)
 
