@@ -1,7 +1,0 @@
-$LOAD_PATH.unshift "@top_builddir@/bindings/ruby/ext/.libs"
-$LOAD_PATH.unshift "@top_builddir@/bindings/ruby/lib"
-$LOAD_PATH.unshift "@top_srcdir@/bindings/ruby/ext"
-$LOAD_PATH.unshift "@top_srcdir@/bindings/ruby/lib"
-
-SRCDIR   = "@abs_top_srcdir@/test_suite"
-BUILDDIR = "@abs_top_builddir@/test_suite"
