@@ -100,7 +100,7 @@ translation_unit
         m_selector -> pop();
     }
     { std::cout << "End of C++ parsing, beginning GenoM section" << std::endl; }
-    (genom_definition)+ 
+    (genom_definition)*
     EOF
     { std::cout << "End of parsing" << std::endl; }
 ;
