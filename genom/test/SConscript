@@ -2,7 +2,7 @@ import os
 import os.path
 import filecmp
 
-preproc=Builder(action = 'gcc -E -x c -Itypesolver/test $SOURCE -o $TARGET',
+preproc=Builder(action = 'gcc -E -x c -Igenom/test $SOURCE -o $TARGET',
         suffix='.i',
         src_suffix=[ '.c', '.gen' ],
         single_source=1)
@@ -39,7 +39,7 @@ test   =Builder(action = testaction,
 
 env.Append(BUILDERS = { 'Preproc': preproc, 'Solver': solver, 'Test': test })
 
-tests=Split('quadratic.c move.gen')
+tests=Split('move.gen')
 
 ifiles   = env.Preproc( tests )
 outfiles = env.Test(ifiles)

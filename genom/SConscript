@@ -1,6 +1,6 @@
 Import(['env', 'target'])
 
-env.Append(CPPPATH=['.', '../grammar'])
+env.Append(CPPPATH=['.', '../typelib'])
 env.Append(CCFLAGS="-g -O0")
 
 cgrammar   = env.Antlr('cparser.g')

@@ -46,6 +46,6 @@ env.BuildDir('build', '.', duplicate=1)
 target = env.Dir('build/target')
 Export('target', 'env')
 
-SConscript(Split('build/typesolver/SConscript build/typelib/SConscript'))
-Alias('test', 'typesolver/test')
+SConscript(Split('build/genom/SConscript build/typelib/SConscript'))
+Alias('test', 'build/genom/test')
 
