@@ -66,7 +66,8 @@ public:
     int           getSize() const;
     Category      getCategory() const;
     
-    FieldList     getFields();
+    const FieldList&  getFields() const;
+    const Field*      getField(const std::string& name) const;
     void          addField(const Field& field);
     void          addField(const std::string& name, const Type* type);
 

@@ -6,6 +6,8 @@ header
     #include "typesolver.h"
     #include <antlr/TokenStreamSelector.hpp>
 
+    #include "genomreader.h"
+
     #include <iostream>
 
     class Registry;
@@ -32,57 +34,20 @@ protected:
     antlr::TokenStreamSelector* m_selector;
 
 public:
-    typedef std::pair<std::string, std::string> StringPair;
-    typedef std::list<std::string>              StringList;
-    typedef std::map<std::string, std::string>  StringMap;
+    typedef Genom::StringList StringList;
+    typedef Genom::StringMap  StringMap;
 
-    typedef StringPair                          SDIRef;
-    typedef std::list<SDIRef>                   SDIRefList;
+    typedef Genom::SDIRef     SDIRef;
+    typedef Genom::SDIRefList SDIRefList;
 
-    // Genom-specific functions
-    struct GenomModule
-    {
-        std::string name;
-        int id;
-        std::string data;
-    };
+    typedef Genom::Module     GenomModule;
+    typedef Genom::Request     GenomRequest;
+    typedef Genom::Poster     GenomPoster;
+    typedef Genom::ExecTask     GenomExecTask;
+
     virtual void genomModule(const GenomModule& module) {}
-
-    struct GenomRequest
-    {
-        std::string name, doc, type, task;
-        SDIRef input, output;
-        StringList posters;
-        StringMap  functions;
-        StringList fail_msg, incompat;
-    };
     virtual void genomRequest(const GenomRequest& request) {}
-
-    struct GenomPoster
-    {
-        std::string name;
-
-        enum UpdateType { Auto, User }; 
-        UpdateType update;
-        SDIRefList data;
-        std::string exec_task;
-        
-        StringList typelist;
-        std::string create_func;
-    };
     virtual void genomPoster(const GenomPoster& poster) {}
-
-    struct GenomExecTask
-    {
-        std::string name;
-
-        int period, delay, priority, stack_size;
-
-        std::string c_init_func, c_func, c_end_func;
-        StringList cs_client_from;
-        SDIRefList poster_client_from;
-        StringList fail_msg;
-    };
     virtual void genomExecTask(const GenomExecTask& task) {}
 
     void setSelector(antlr::TokenStreamSelector* selector) { m_selector = selector; }

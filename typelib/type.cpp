@@ -108,7 +108,16 @@ bool Type::isIndirect() const
 void Type::setSize(int size) { m_size = size; }
 int Type::getSize() const { return m_size; }
 
-Type::FieldList Type::getFields() { return m_fields; }
+const Type::FieldList&  Type::getFields() const { return m_fields; }
+const Field*            Type::getField(const std::string& name) const 
+{
+    for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
+    {
+        if (it -> getName() == name)
+            return &(*it);
+    }
+    return 0;
+}
 void Type::fieldsChanged() {}
 
 void Type::addField(const std::string& name, const Type* type) 

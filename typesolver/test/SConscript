@@ -8,12 +8,12 @@ preproc=Builder(action = 'gcc -E -x c -Itypesolver/test $SOURCE -o $TARGET',
         single_source=1)
 
 # Depends on typeshow
-Import(['typeshow', 'env'])
+Import(['reader', 'env'])
 
 def typeshow_dep(node, env, path):
-    return typeshow
+    return reader
 
-solver =Builder(action = str(typeshow[0]) + " $SOURCE > $TARGET",
+solver =Builder(action = str(reader[0]) + " $SOURCE > $TARGET",
         suffix='.out-tmp',
         src_suffix='.i',
         target_scanner=Scanner(function=typeshow_dep),
@@ -28,7 +28,7 @@ def check_diff(target, source, env):
 
     return 0
 
-testaction = Action([ str(typeshow[0]) +  ' $SOURCE > ${TARGET}.tmp',
+testaction = Action([ str(reader[0]) +  ' $SOURCE > ${TARGET}.tmp',
                          check_diff,
                          Move('$TARGET', '${TARGET}.tmp') ])
 

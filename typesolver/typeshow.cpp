@@ -14,8 +14,9 @@ int main(int argc,char* argv[])
     }
 
     const char* file = argv[1];
-    GenomReader reader;
+    GenomModule reader;
     reader.read(file);
+    reader.dump(std::cout);
     return 0;
 }
 

@@ -14,17 +14,17 @@ using namespace antlr;
 
 namespace
 {
-    class GenomReaderPrivate : public GenomParser
+    class GenomModulePrivate : public GenomParser
     {
-        GenomReader* m_reader;
+        ::GenomModule* m_reader;
 
     public:
-        GenomReaderPrivate(GenomReader* reader, antlr::TokenStream& lexer)
+        GenomModulePrivate(::GenomModule* reader, antlr::TokenStream& lexer)
             : GenomParser(lexer), m_reader(reader) {}
 
-        void genomModule(const GenomReader::GenomModule& module)
+        void genomModule(const GenomModule& module)
         { m_reader -> genomModule(module); }
-        void genomRequest(const GenomReader::GenomRequest& request)
+        void genomRequest(const GenomRequest& request)
         { m_reader -> genomRequest(request); }
         void genomPoster(const GenomPoster& poster)
         { m_reader -> genomPoster(poster); }
@@ -33,7 +33,7 @@ namespace
     };
 }
 
-void GenomReader::read(const std::string& file)
+void GenomModule::read(const std::string& file)
 {
     try {
         ifstream s(file.c_str());
@@ -54,7 +54,7 @@ void GenomReader::read(const std::string& file)
         selector.addInputStream(&cpp_lexer, "cpp");
         selector.select("genom");
         
-        GenomReaderPrivate reader(this, selector);
+        GenomModulePrivate reader(this, selector);
         reader.setRegistry(&m_registry);
         reader.setSelector(&selector);
         reader.translation_unit();
@@ -65,29 +65,39 @@ void GenomReader::read(const std::string& file)
     { cerr << "Type solver exception: " << e.toString() << endl; }
 }
 
-void GenomReader::genomModule(const GenomModule& module)
+void GenomModule::genomModule(const Module& module)
 {
-    cout << "New module " << module.name << endl
-        << "\tid: " << module.id << endl
-        << "\tdata: " << module.data << endl;
+    this->name  = module.name;
+    this->id    = module.id;
+    this->data  = module.data;
 }
-void GenomReader::genomRequest(const GenomRequest& request)
-{
-    cout << "New request " << request.name << endl
-        << "\tdoc: " << request.doc << endl
-        << "\ttype: " << request.type << endl;
-}
+void GenomModule::genomRequest(const Request& request)
+{ m_requests[request.name] = request; }
+void GenomModule::genomPoster(const Poster& poster)
+{ m_posters[poster.name] = poster; }
+void GenomModule::genomExecTask(const ExecTask& task)
+{ m_tasks[task.name] = task; }
 
-void GenomReader::genomPoster(const GenomPoster& poster)
-{
-    cout << "New poster " << poster.name << endl
-        << "\tupdate: " << (poster.update == GenomPoster::Auto ? "auto" : "user") << endl
-        << "\texec_task: " << poster.exec_task << endl;
-}
+const Type* GenomModule::getSDI() const
+{ return m_registry.get(data); }
 
-void GenomReader::genomExecTask(const GenomExecTask& task)
+void GenomModule::dump(std::ostream& to)
 {
-    cout << "New task " << task.name << endl
-        << "\tperiod: " << task.period << endl;
-}
+    to << "Module " << name << " (" << id << "), sdi: " << data << endl;
+    to << "SDI";
+    to << getSDI() -> toString("\t") << endl;
+        
 
+    to << "Requests" << endl;
+    for (RequestMap::const_iterator it = m_requests.begin(); it != m_requests.end(); ++it)
+        to << "\t" << it -> first << endl;
+
+    to << "Posters" << endl;
+    for (PosterMap::const_iterator it = m_posters.begin(); it != m_posters.end(); ++it)
+        to << "\t" << it -> first << endl;
+
+    to << "Exec tasks" << endl;
+    for (ExecTaskMap::const_iterator it = m_tasks.begin(); it != m_tasks.end(); ++it)
+        to << "\t" << it -> first << endl;
+}
+    

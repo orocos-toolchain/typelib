@@ -8,17 +8,17 @@ cgrammarlib = env.Library('cgrammar', [cgrammar, 'Support.cpp', 'Dictionary.cpp'
 
 gnmgrammar    = env.Antlr('genom.g', ANTLRSUPER=File('cparser.g'))
 gnm_sources = [ x for x in gnmgrammar if x.path.rfind(".cpp") != -1 ]
-supportlib = env.Library('support', 
-        ['typebuilder.cpp', 'type.cpp', 'typesolver.cpp', 'registry.cpp', 'genomreader.cpp', gnm_sources])
+supportlib = env.Library('genomsupport', 
+        ['typesolver.cpp', 'genomreader.cpp', gnm_sources])
 
-typeshow = env.Program('typeshow', 
+reader = env.Program('genom-reader', 
         source = Split('typeshow.cpp'),
-        LIBS=['support', 'cgrammar', 'antlr'], 
-        LIBPATH = ['.', '../grammar'],
+        LIBS=['genomsupport', 'cgrammar', 'antlr', 'typelib'], 
+        LIBPATH = ['.', '../typelib'],
         RPATH = [target.abspath])
 
-env.Default( typeshow )
-env.Export('typeshow')
-env.Install(target, typeshow)
+env.Default( reader )
+env.Export('reader')
+env.Install(target, reader)
 env.SConscript('test/SConscript')
 

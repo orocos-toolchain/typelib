@@ -1,0 +1,9 @@
+Import(['env', 'target'])
+
+env.Append(CCFLAGS="-g -O0")
+
+typelib = env.Library('typelib', ['type.cpp', 'typebuilder.cpp', 'registry.cpp'])
+
+env.Default( typelib )
+env.Install(target, typelib)
+
