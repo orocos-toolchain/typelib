@@ -14,7 +14,7 @@ typeshow = env.Program('typeshow',
         LIBPATH = ['.', '../grammar'],
         RPATH = [target.abspath])
 
-env.Default(typeshow)
+env.Default( typeshow )
 env.Export('typeshow')
 env.Install(target, typeshow)
 env.SConscript('test/SConscript')

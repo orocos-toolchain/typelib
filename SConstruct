@@ -6,3 +6,5 @@ Export('target')
 SConscriptChdir(1)
 SConscript(Split('build/grammar/SConscript build/typesolver/SConscript'))
 
+Alias('test', 'typesolver/test')
+
