@@ -1,0 +1,105 @@
+#ifndef PCH_STDCXX_H
+#define PCH_STDCXX_H
+
+#include <algorithm>
+#include <functional>
+
+#include <bitset>
+#include <deque>
+#include <iterator>
+#include <list>
+#include <map>
+#include <stack>
+#include <set>
+#include <string>
+#include <vector>
+#include <queue>
+
+#include <cassert>
+#include <cctype>
+#include <cerrno>
+#include <cfloat>
+#include <ciso646>
+#include <climits>
+#include <clocale>
+#include <cmath>
+#include <complex>
+#include <csetjmp>
+#include <csignal>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <cwchar>
+#include <cwctype>
+
+#include <exception>
+#include <limits>
+#include <locale>
+#include <memory>
+#include <new>
+#include <numeric>
+#include <stdexcept>
+#include <typeinfo>
+#include <utility>
+
+#include <iomanip>
+#include <fstream>
+#include <istream>
+#include <ostream>
+#include <iostream>
+#include <sstream>
+#include <streambuf>
+
+#include <antlr/ANTLRException.hpp>
+#include <antlr/ANTLRUtil.hpp>
+#include <antlr/ASTArray.hpp>
+#include <antlr/ASTFactory.hpp>
+#include <antlr/AST.hpp>
+#include <antlr/ASTNULLType.hpp>
+#include <antlr/ASTPair.hpp>
+#include <antlr/ASTRefCount.hpp>
+#include <antlr/BaseAST.hpp>
+#include <antlr/BitSet.hpp>
+#include <antlr/CharBuffer.hpp>
+#include <antlr/CharInputBuffer.hpp>
+#include <antlr/CharScanner.hpp>
+#include <antlr/CharStreamException.hpp>
+#include <antlr/CharStreamIOException.hpp>
+#include <antlr/CircularQueue.hpp>
+#include <antlr/CommonAST.hpp>
+#include <antlr/CommonASTWithHiddenTokens.hpp>
+#include <antlr/CommonHiddenStreamToken.hpp>
+#include <antlr/CommonToken.hpp>
+#include <antlr/config.hpp>
+#include <antlr/InputBuffer.hpp>
+#include <antlr/IOException.hpp>
+#include <antlr/LexerSharedInputState.hpp>
+#include <antlr/LLkParser.hpp>
+#include <antlr/MismatchedCharException.hpp>
+#include <antlr/MismatchedTokenException.hpp>
+#include <antlr/NoViableAltException.hpp>
+#include <antlr/NoViableAltForCharException.hpp>
+#include <antlr/Parser.hpp>
+#include <antlr/ParserSharedInputState.hpp>
+#include <antlr/RecognitionException.hpp>
+#include <antlr/RefCount.hpp>
+#include <antlr/SemanticException.hpp>
+#include <antlr/String.hpp>
+#include <antlr/TokenBuffer.hpp>
+#include <antlr/Token.hpp>
+#include <antlr/TokenStreamBasicFilter.hpp>
+#include <antlr/TokenStreamException.hpp>
+#include <antlr/TokenStreamHiddenTokenFilter.hpp>
+#include <antlr/TokenStream.hpp>
+#include <antlr/TokenStreamIOException.hpp>
+#include <antlr/TokenStreamRecognitionException.hpp>
+#include <antlr/TokenStreamRetryException.hpp>
+#include <antlr/TokenStreamSelector.hpp>
+#include <antlr/TreeParser.hpp>
+#include <antlr/TreeParserSharedInputState.hpp>
+
+#endif
+
