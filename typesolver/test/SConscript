@@ -1,0 +1,48 @@
+import os
+import os.path
+import filecmp
+
+preproc=Builder(action = 'gcc -E $SOURCE -o $TARGET',
+        suffix='.i',
+        src_suffix='.c',
+        single_source=1)
+
+env = Environment();
+
+# Depends on typeshow
+Import('typeshow')
+
+def typeshow_dep(node, env, path):
+    return typeshow
+
+solver =Builder(action = str(typeshow[0]) + " $SOURCE > $TARGET",
+        suffix='.out-tmp',
+        src_suffix='.i',
+        target_scanner=Scanner(function=typeshow_dep),
+        single_source=1)
+
+def check_diff(target, source, env):
+    old = str(target[0])
+    new = old + '.tmp'
+    if os.access(old, os.R_OK):
+        if filecmp.cmp(old, new):
+            return 1 
+
+    return 0
+
+testaction = Action([ str(typeshow[0]) +  ' $SOURCE > ${TARGET}.tmp',
+                         check_diff,
+                         Move('$TARGET', '${TARGET}.tmp') ])
+
+test   =Builder(action = testaction,
+        suffix='.out',
+        src_suffix='.i',
+        single_source=1)
+
+env.Append(BUILDERS = { 'Preproc': preproc, 'Solver': solver, 'Test': test })
+
+tests=Split('quadratic')
+
+ifiles   = env.Preproc([x + '.c' for x in tests])
+env.Test(ifiles)
+

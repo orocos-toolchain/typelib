@@ -1,6 +1,6 @@
-
 import os.path
 import string
+Import('target')
 
 def antlr_generator(target, source, env, for_signature):
     output_path = os.path.dirname(str(target[0]))
@@ -20,5 +20,5 @@ env.Append(BUILDERS = {'Antlr' : antlr_builder});
 
 env.Antlr('CPP_parser.g')
 grammar = env.SharedLibrary('grammar', Split('Dictionary.cpp LineObject.cpp Support.cpp CPPParser.cpp CPPLexer.cpp'), CPPPATH='.')
-env.Install('../target', grammar)
+env.Install(target, grammar)
 

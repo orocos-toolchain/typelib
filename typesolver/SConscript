@@ -1,12 +1,21 @@
-import glob
+Import('target')
 
-typesolver = Program('typesolver', 
-        source = Split('Main.cpp typebuilder.cpp type.cpp typesolver.cpp'), 
-        LIBS=['grammar', 'antlr'], 
-        LIBPATH='../grammar', 
-        LINKFLAGS="-Wl,-rpath -Wl,.",
-        CPPPATH=['.', '../grammar'])
 
-Install("../target", typesolver)
+env = Environment()
+env.Append(CPPPATH=['.', '../grammar'])
+env.Append(CCFLAGS="-g -O0")
 
-SConscript('test/SConscript')
+supportlib = env.Library('support', 
+        source = Split('typebuilder.cpp type.cpp typesolver.cpp registry.cpp'))
+
+typeshow = env.Program('typeshow', 
+        source = Split('typeshow.cpp'),
+        LIBS=['grammar', 'antlr', 'support'], 
+        LIBPATH = ['.', '../grammar'],
+        RPATH = [target.abspath])
+
+env.Default(typeshow)
+env.Export('typeshow')
+env.Install(target, typeshow)
+env.SConscript('test/SConscript')
+
