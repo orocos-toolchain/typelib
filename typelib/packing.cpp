@@ -48,7 +48,7 @@ namespace
         typedef typename fold
             < SecondList
             , list<>
-            , push_front< _1, packingof<First, _2> >
+            , push_front< _1, packingof< discover<First, _2> > >
             >::type type;
     };
 
@@ -97,7 +97,7 @@ namespace
     // Check that struct { A struct { } } is NOT aligned 
     //
     struct empty_struct {};
-    BOOST_STATIC_ASSERT(( packingof<char, empty_struct>::packing == 1 ));
+    BOOST_STATIC_ASSERT(( packingof< discover<char, empty_struct> >::packing == 1 ));
 
     //
     // Check that struct { A struct { B } } is packed as struct { A B } is
@@ -113,8 +113,10 @@ namespace
         BOOST_STATIC_ASSERT(( 
             Packing::packing == 
             packingof
-                < typename Packing::First
-                , typename Packing::Second::inner_type
+                < discover
+                    < typename Packing::First
+                    , typename Packing::Second::inner_type
+                    >
                 >::packing
             ));
     };
@@ -133,26 +135,49 @@ namespace
     };
 
 
+    // Builds the typelist of simple_structure<pod> for each pod in podlist
+    // typedef fold< podlist, list<>, push_front<_1, _2[10]> >::type podarrays;
+    
     //
     // Check that struct { A B[1] } is packed as struct { A B } is
-    // We use here that struct { A struct { B } } is packed as struct { A B }
-    // even if we didn't checked that for arrays (TODO: do it)
     //
     
-    template<typename T> struct simple_array { typedef T inner_type; T array[1]; };
-
-    // Builds the typelist of simple_structure<pod> for each pod in podlist
-    typedef fold< podlist, list<>, push_front<_1, simple_array<_2> > >::type podarrays;
-    // Applies check_struct_packing for <first, struct > for each struct in podstructs
-    // It is equivalent as applying it to <first, simple_struct<pod> > for each pod in podlist
-    struct do_check_array_packing
+    // takes a type and a typelist, and builds
+    // the typelist of packingof<type, it[10]> for each
+    // type in SecondList
+    template<class First, class SecondList>
+    struct iterate_arrays
     {
-        typedef fold
-            < iterate_second<char, podarrays>::type
+        typedef typename fold
+            < SecondList
             , list<>
-            , push_front< _1, check_struct_packing<_2> >
+            , push_front< _1, packingof< discover_arrays<First, _2> > >
             >::type type;
     };
+
+    template<class Packing>
+    struct check_equality
+    {
+        BOOST_STATIC_ASSERT(( 
+            Packing::packing == 
+            packingof
+                < discover
+                    < typename Packing::First
+                    , typename Packing::Second
+                    >
+                >::packing
+            ));
+    };
+ 
+    struct do_check_equality
+    {
+        typedef fold
+            < iterate_arrays<char, podstructs>::type
+            , list<>
+            , push_front< _1, check_equality<_2> >
+            >::type type;
+    };
+
 
 
 

@@ -6,17 +6,33 @@
 
 namespace Typelib
 {
-    template<class A, class B>
+    template<class Discover>
     struct packingof
     {
-        typedef A    First;
-        typedef B    Second;
-        
-        struct discover
-        { A field0;
-          B field1; };
+        typedef typename Discover::First    First;
+        typedef typename Discover::Second   Second;
 
-        static const int packing = offsetof(discover, field1);
+        static const int packing = offsetof(Discover, second);
+    };
+
+    template<typename A, typename B>
+    struct discover
+    {
+        typedef A First;
+        typedef B Second;
+
+        A first;
+        B second;
+    };
+
+    template<typename A, typename B>
+    struct discover_arrays
+    {
+        typedef A  First;
+        typedef B  Second;
+
+        A first;
+        B second[10];
     };
 
     struct Packing
