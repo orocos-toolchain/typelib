@@ -66,19 +66,17 @@ cparser: cparser.g
 
 clean: 
 	$(LIBTOOL) --mode=clean rm -f \
-						$(LIB_OBJS) $(LIB) $(ANTLR_GENOM_OUTPUT) $(ANTLR_STDC_OUTPUT) \
-						$(READER_OBJS) $(READER)
+						$(LIB_OBJS) $(LIB) $(ANTLR_GENOM_OUTPUT) $(ANTLR_STDC_OUTPUT)
 
 distclean: clean 
 	rm -f DEPENDANCES Makefile
 
 install:: $(LIB) 
 	$(MKINSTALLDIRS) $(LIBDIR) $(BINDIR)
-	$(LIBTOOL) --mode=install $(INSTALL) $(READER) $(BINDIR)
 	$(LIBTOOL) --mode=install $(INSTALL) $(LIB) $(LIBDIR)
 
 ifeq ($(findstring clean,$(MAKECMDGOALS)),)
-depend DEPENDANCES:: cparser genomparser $(LIB_SRCS) $(READER_SRCS)
+depend DEPENDANCES:: cparser genomparser $(LIB_SRCS)
 	$(MKDEP) -c$(CXX) -oDEPENDANCES -t.lo $(CPPFLAGS) $?
 
 include DEPENDANCES

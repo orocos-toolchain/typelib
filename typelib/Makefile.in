@@ -47,18 +47,17 @@ $(LIB): $(LIB_OBJS)
 	$(LTCXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
 
 clean: 
-	$(LIBTOOL) --mode=clean rm -f $(LIB_OBJS) $(INSPECT_OBJS) $(LIB) $(INSPECT)
+	$(LIBTOOL) --mode=clean rm -f $(LIB_OBJS) 
 
 distclean: clean 
 	rm -f DEPENDANCES Makefile
 
-install:: $(LIB)  $(INSPECT)
+install:: $(LIB)
 	$(MKINSTALLDIRS) $(LIBDIR) $(BINDIR)
 	$(LIBTOOL) --mode=install $(INSTALL) $(LIB) $(LIBDIR)
-	$(LIBTOOL) --mode=install $(INSTALL) $(INSPECT) $(BINDIR)
 
 ifeq ($(findstring clean,$(MAKECMDGOALS)),)
-depend DEPENDANCES:: $(LIB_SRCS) $(INSPECT_SRCS)
+depend DEPENDANCES:: $(LIB_SRCS)
 	$(MKDEP) -c$(CXX) -oDEPENDANCES -t.lo $(CPPFLAGS) $?
 
 include DEPENDANCES

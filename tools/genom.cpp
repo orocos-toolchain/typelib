@@ -59,14 +59,8 @@ bool GenomPlugin::apply(const OptionList& remaining, const ConfigSet& options, R
         GenomModule reader(registry);
         int old_count = registry -> getCount();
 
-        if (reader.read(i_file))
-        {
-            // Dump type list
-            cout << "Found " << registry -> getCount() - old_count << " types in " << file << ":" << endl;
-            //registry -> dump(std::cout, Registry::AllType, "*");
-
-            //reader.dump(cout);
-        }
+        reader.read(i_file);
+        cout << "Found " << registry -> getCount() - old_count << " types in " << file << endl;
         return true;
     }
     catch(Typelib::RegistryException& e)

@@ -12,7 +12,10 @@ Inspect::Inspect()
 bool Inspect::apply(int argc, char* const argv[])
 {
     if (argc < 2)
+    {
+        help(cerr);
         return false;
+    }
 
     std::string repository = argv[1];
     Registry registry;

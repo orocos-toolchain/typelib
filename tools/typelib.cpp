@@ -14,7 +14,7 @@ namespace
     {
         cout << 
             "Usage: typelib [mode] [mode-args]\n"
-            "\twhere mode is one of: inspect, register\n"
+            "\twhere mode is one of: inspect, import\n"
             "\tcall typelib [mode] help for information on a particular mode" << endl;
         exit(1);
     }

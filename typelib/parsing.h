@@ -50,7 +50,7 @@ namespace Parsing
         UnexpectedElement(const std::string& file, const std::string& found, const std::string expected)
             : ParsingError(file), m_found(found), m_expected(expected) {}
 
-        std::string getFound() const { return m_found; }
+        std::string getFound() const    { return m_found; }
         std::string getExpected() const { return m_expected; }
 
         virtual std::string toString() const
