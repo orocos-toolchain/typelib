@@ -15,12 +15,12 @@ using namespace boost;
 using Typelib::Registry;
 
 GenomPlugin::GenomPlugin()
-    : Plugin("genom", Register) {}
+    : Plugin("genom", "import") {}
 
 list<string> GenomPlugin::getOptions() const
 {
     static const char* arguments[] = 
-    { "*:I:include=string|include search path" };
+    { ":include,I=string|include search path" };
     return list<string>(arguments, arguments + 1);
 }
 
@@ -63,9 +63,9 @@ bool GenomPlugin::apply(const OptionList& remaining, const ConfigSet& options, R
         {
             // Dump type list
             cout << "Found " << registry -> getCount() - old_count << " types in " << file << ":" << endl;
-            registry -> dump(std::cout, Registry::AllType, "*");
+            //registry -> dump(std::cout, Registry::AllType, "*");
 
-            reader.dump(cout);
+            //reader.dump(cout);
         }
         return true;
     }

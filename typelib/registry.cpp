@@ -33,24 +33,26 @@ namespace
         NameTokenizer::const_iterator it1 = tok1.begin();
         NameTokenizer::const_iterator it2 = tok2.begin();
 
-        std::string 
-            ns1(*it1), 
-            ns2(*it2);
-        // sort /A/B/C/class2 after /A/B/class1
-        for (++it1, ++it2; it1 != tok1.end() && it2 != tok2.end(); ++it1, ++it2)
+        std::string ns1, ns2;
+        // we sort /A/B/C/ before /A/B/C/class
+        // and /A/B/C/class2 after /A/B/class1
+        for (; it1 != tok1.end() && it2 != tok2.end(); ++it1, ++it2)
         {
-            int value = ns1.compare(ns2);
-            if (value) return value < 0;
-
             ns1 = *it1;
             ns2 = *it2;
+
+            int value = ns1.compare(ns2);
+            if (value) return value < 0;
+            //cout << ns1 << " " << ns2 << endl;
         }
 
-        if (it1 != tok1.end()) return true;  // there is namespace names left in name1, and not in name1
-        if (it2 != tok2.end()) return false; // there is namespace names left in name2, and not in name2
-
+        if (it1 == tok1.end()) 
+            return true;  // there is namespace names left in name1, and not in name2
+        if (it2 == tok2.end()) 
+            return false; // there is namespace names left in name2, and not in name1
         int value = ns1.compare(ns2);
-        if (value) return value < 0;
+        if (value) 
+            return value < 0;
 
         return false;
     }
@@ -59,36 +61,43 @@ namespace
 namespace Typelib
 {
     Registry::Registry()
-        : m_global(sort_names), m_current(sort_names),
-        m_namespace("/")
+        : m_global(sort_names)
     { 
         addStandardTypes();
-        loadDefaultLibraries(); 
+
+        setDefaultNamespace("/");
     }
     Registry::~Registry() { clear(); }
 
     std::string Registry::getDefaultNamespace() const { return m_namespace; }
     bool Registry::setDefaultNamespace(const string& space)
     {
-        if (isValidNamespace(space, true))
+        if (! isValidNamespace(space, true))
             return false;
 
         m_namespace = getNormalizedNamespace(space);
+        //cout << "Setting default namespace to " << m_namespace << endl;
 
-        m_current = m_global;
-        NameTokenizer tokens(space);
+        m_current = NameMap(m_global.begin(), m_global.end());
+
+        NameTokenizer tokens( m_namespace );
         NameTokenizer::const_iterator ns_it = tokens.begin();
 
-        std::string cur_space;
+        //cout << "Importing " << NamespaceMarkString << endl;
+        importNamespace(NamespaceMarkString);
 
-        for (++ns_it; ns_it != tokens.end(); ++ns_it)
+        std::string cur_space = NamespaceMarkString;
+        for (; ns_it != tokens.end(); ++ns_it)
         {
-            cur_space += *ns_it + '/';
-            importNamespace(cur_space + '/');
+            cur_space += *ns_it + NamespaceMarkString;
+
+            //cout << "Importing " << cur_space << endl;
+            importNamespace(cur_space);
         }
 
-        for (TypeMap::const_iterator it = m_current.begin(); it != m_current.end(); ++it)
-            std::cout << it->first << std::endl;
+        //cout << "Types available: " << endl;
+        //for (NameMap::const_iterator it = m_current.begin(); it != m_current.end(); ++it)
+        //    std::cout << it->first << std::endl;
         
         return true;
     }
@@ -98,11 +107,9 @@ namespace Typelib
         const std::string norm_name(getNormalizedNamespace(name));
         const int         norm_length(norm_name.length());
             
-        TypeMap::const_iterator it = m_global.find(norm_name);
-        if (it == m_global.end())
-            return;
+        TypeMap::const_iterator it = m_global.lower_bound(norm_name);
 
-        while ( isInNamespace(it->first, norm_name, false) )
+        while ( it != m_global.end() && isInNamespace(it->first, norm_name, false) )
         {
             const std::string rel_name(it->first, norm_length, string::npos);
             m_current.insert( make_pair(rel_name, it->second) );
@@ -120,22 +127,22 @@ namespace Typelib
     void Registry::addStandardTypes()
     {
         BOOST_STATIC_ASSERT((NamespaceMark == '/'));
-        add(new Type("/char", sizeof(char), Type::SInt));
-        add(new Type("/signed char", sizeof(char), Type::SInt));
-        add(new Type("/unsigned char", sizeof(unsigned char), Type::UInt));
-        add(new Type("/short", sizeof(short), Type::SInt));
-        add(new Type("/signed short", sizeof(short), Type::SInt));
-        add(new Type("/unsigned short", sizeof(unsigned short), Type::UInt));
-        add(new Type("/int", sizeof(int), Type::SInt));
-        add(new Type("/signed", sizeof(signed), Type::SInt));
-        add(new Type("/signed int", sizeof(int), Type::SInt));
-        add(new Type("/unsigned", sizeof(unsigned), Type::UInt));
-        add(new Type("/unsigned int", sizeof(unsigned int), Type::UInt));
-        add(new Type("/long", sizeof(long), Type::SInt));
-        add(new Type("/unsigned long", sizeof(unsigned long), Type::UInt));
+        add(new Type("/char", sizeof(char), Type::SInt), "__stdtypes__");
+        add(new Type("/signed char", sizeof(char), Type::SInt), "__stdtypes__");
+        add(new Type("/unsigned char", sizeof(unsigned char), Type::UInt), "__stdtypes__");
+        add(new Type("/short", sizeof(short), Type::SInt), "__stdtypes__");
+        add(new Type("/signed short", sizeof(short), Type::SInt), "__stdtypes__");
+        add(new Type("/unsigned short", sizeof(unsigned short), Type::UInt), "__stdtypes__");
+        add(new Type("/int", sizeof(int), Type::SInt), "__stdtypes__");
+        add(new Type("/signed", sizeof(signed), Type::SInt), "__stdtypes__");
+        add(new Type("/signed int", sizeof(int), Type::SInt), "__stdtypes__");
+        add(new Type("/unsigned", sizeof(unsigned), Type::UInt), "__stdtypes__");
+        add(new Type("/unsigned int", sizeof(unsigned int), Type::UInt), "__stdtypes__");
+        add(new Type("/long", sizeof(long), Type::SInt), "__stdtypes__");
+        add(new Type("/unsigned long", sizeof(unsigned long), Type::UInt), "__stdtypes__");
 
-        add(new Type("/float", sizeof(float), Type::Float));
-        add(new Type("/double", sizeof(double), Type::Float));
+        add(new Type("/float", sizeof(float), Type::Float), "__stdtypes__");
+        add(new Type("/double", sizeof(double), Type::Float), "__stdtypes__");
     }
 
     int Registry::getCount() const { return m_persistent.size(); }
@@ -145,7 +152,8 @@ namespace Typelib
         if (m_current.find(name) != m_current.end())
             return true;
 
-        if (! build) return false;
+        if (! build)
+            return false;
 
         const Type* base_type = TypeBuilder::getBaseType(this, getFullName(name));
         return base_type;
@@ -162,7 +170,7 @@ namespace Typelib
 
     const Type* Registry::get(const std::string& name) const
     {
-        TypeMap::const_iterator it = m_current.find(name);
+        NameMap::const_iterator it = m_current.find(name);
         if (it != m_current.end()) 
             return it->second;
         return 0;
@@ -191,13 +199,13 @@ namespace Typelib
             throw AlreadyDefined(old_type, new_type);
 
         const Type::Category cat(new_type -> getCategory());
-        if (cat != Type::Array && cat != Type::Pointer)
+        if (cat != Type::Array && cat != Type::Pointer && source_id != "__stdtypes__")
             m_persistent.push_back( make_pair(source_id, new_type) );
 
         m_global.insert(make_pair(name, new_type));
         m_current.insert(make_pair(name, new_type));
         m_current.insert(make_pair(getTypename(name), new_type));
-        cout << "New type: " << name << " " << getTypename(name) << endl;
+        //cout << "New type: " << name << " " << getTypename(name) << endl;
     }
 
     void Registry::clear()
@@ -220,11 +228,11 @@ namespace Typelib
      *  Serialization support
      */
 
-    void Registry::loadDefaultLibraries()
-    {
-        string home_dir = getenv("HOME") + string("/.genom/typelib/");
-        loadLibraryDir(home_dir);
-    }
+    //void Registry::loadDefaultLibraries()
+    //{
+    //    string home_dir = getenv("HOME") + string("/.genom/typelib/");
+    //    loadLibraryDir(home_dir);
+    //}
 
     void Registry::loadLibraryDir(const std::string& path)
     {
@@ -343,7 +351,8 @@ namespace Typelib
             checkNodeName<UnexpectedElement>      (field, "field");
             std::string name  = getStringAttribute(field, "name");
             std::string tname = getStringAttribute(field, "type");
-            int offset        = getIntAttribute   (field, "offset");
+            // int offset        = getIntAttribute   (field, "offset");
+            // TODO: check alignment 
 
             // TODO allow recursive types    
             const Type* type_object = build(tname);
@@ -436,6 +445,9 @@ namespace Typelib
 
         for (PersistentList::const_iterator it = m_persistent.begin(); it != m_persistent.end(); ++it)
         {
+            if (! it->first.empty() && ! save_all)
+                continue;
+
             const Type* type(it->second);
 
             std::string cat_string = getStringFromCategory(type->getCategory());

@@ -16,31 +16,26 @@ namespace Typelib
 class Plugin
 {
 public:
-    enum Type
-    {
-        Register
-    };
     typedef std::list<std::string> OptionList;
 
 public:
-    Plugin(const std::string& name, Type type);
+    Plugin(const std::string& name, const std::string& type);
     virtual ~Plugin(); 
 
     std::string getName() const;
-    Type        getType() const;
+    std::string getType() const;
 
     // Command-line options
     virtual OptionList getOptions() const;
-    virtual bool       apply(
+    virtual bool apply(
               const OptionList& remaining
             , const Utils::ConfigSet& options
             , Typelib::Registry* registry) = 0;
 
 private:
     std::string m_name;
-    Type        m_type;
+    std::string m_type;
 };
 
 #endif
-
 

@@ -83,15 +83,17 @@ namespace Typelib
             , Type *
             , bool (*) (const std::string&, const std::string&)
             >     TypeMap;
+
+        typedef std::map<const std::string, Type *>  NameMap;
     
 
-        TypeMap     m_global;
-        TypeMap     m_current;
-        std::string            m_namespace;
-        std::list<std::string> m_nspace_list;
+        TypeMap                 m_global;
+        NameMap                 m_current;
+        std::string             m_namespace;
+        std::list<std::string>  m_nspace_list;
 
         void addStandardTypes();
-        void loadDefaultLibraries();
+        //void loadDefaultLibraries();
         void loadLibraryDir(const std::string& path);
 
     public:
@@ -146,7 +148,7 @@ namespace Typelib
          */
         void load(const std::string& path);
 
-        /** Saves the registry in as XML in \c path
+        /** Saves the registry in a XML file in \c path
          * @path the path of the destination file
          * @save_all if true, all the registry will be saved. Otherwise, we save only types
          * not defined in other registries (as seen by load)

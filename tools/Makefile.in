@@ -26,7 +26,10 @@ INSTALL=	@INSTALL@
 
 CPPFLAGS += $(TYPELIB_CFLAGS) $(GENOTYPE_CFLAGS) $(CXXUTILS_CFLAGS) -I$(builddir)
 
-SRCS = plugin.cpp genom.cpp inspect.cpp typelib.cpp preprocess.cpp
+SRCS = typelib.cpp preprocess.cpp \
+			 mode.cpp inspect.cpp import.cpp \
+			 plugin.cpp genom.cpp
+			 
 OBJS = $(SRCS:%.cpp=%.lo)
 
 BIN = typelib

@@ -1,3 +1,4 @@
+#include "inspect.h"
 #include "registry.h"
 #include "parsing.h"
 
@@ -5,13 +6,17 @@
 using namespace std;
 using namespace Typelib;
 
-bool inspect(const std::string& repository)
+Inspect::Inspect()
+    : Mode("inspect") { }
+    
+bool Inspect::apply(int argc, char* const argv[])
 {
+    if (argc < 2)
+        return false;
+
+    std::string repository = argv[1];
     Registry registry;
-    try
-    {
-        registry.load(repository);
-    }
+    try { registry.load(repository); }
     catch(Parsing::ParsingError& error)
     {
         cerr << error.toString() << endl;
@@ -26,4 +31,9 @@ bool inspect(const std::string& repository)
     registry.dump(cout, Registry::AllType | Registry::WithSourceId);
     return true;
 }
+void Inspect::help(std::ostream& out) const
+{
+    out << "Usage: typelib inspect registry-file" << endl;
+}
+
 

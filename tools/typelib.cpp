@@ -2,6 +2,9 @@
 #include <stdlib.h>
 
 #include "inspect.h"
+#include "import.h"
+
+#include "genom.h"
 
 using namespace std;
 
@@ -15,22 +18,34 @@ namespace
             "\tcall typelib [mode] help for information on a particular mode" << endl;
         exit(1);
     }
+
+    typedef map<string, Mode*> ModeMap;
+    ModeMap modes;
+    void registerMode(Mode* mode)
+    {
+        ModeMap::iterator it = modes.find(mode->getName());
+        if (it != modes.end())
+            delete it->second;
+        modes[mode->getName()] = mode;
+    }
 }
-    
+
 int main(int argc, char** argv)
 {
-    if (argc < 3) 
+    registerMode(new Inspect);
+    Mode* regmode = new Import;
+    registerMode(regmode);
+    regmode -> addPlugin( new GenomPlugin );
+
+    if (argc < 2) 
         usage();
 
-    string mode = argv[1];
+    string mode_name = argv[1];
+    ModeMap::iterator it = modes.find(mode_name);
+    if (it == modes.end())
+        usage();
 
-    if (mode == "inspect")
-        return (inspect(argv[2]) ? 0 : 1);
-    else if (mode == "register")
-    {
-        cerr << "Not implemented" << endl;
-        return 1;
-    }
-    return 0;
+    return 
+        ((it->second) -> main(argc - 1, argv + 1) ? 1 : 0);
 };
 

@@ -13,7 +13,7 @@ namespace Typelib
     struct NameSeparator : public boost::char_separator<NamespaceMarkType>
     {
         NameSeparator()
-            : boost::char_separator<NamespaceMarkType>(NamespaceMarkString, "", boost::keep_empty_tokens) {}
+            : boost::char_separator<NamespaceMarkType>(NamespaceMarkString, "") {}
     };
     typedef boost::tokenizer<NameSeparator> NameTokenizer;
 

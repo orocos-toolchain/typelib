@@ -54,16 +54,13 @@ namespace Typelib
 
     bool isValidNamespace(const string& name, bool absolute)
     {
-        if (name.empty()) return true;
+        if (name.empty()) return false;
         if (absolute && name[0] != NamespaceMark) return false;
 
         NameTokenizer tokenizer(name);
 
         NameTokenizer::const_iterator it = tokenizer.begin();
-        if (it -> empty()) // remove the empty token we get because
-            ++it;          // of a leading '/'
-
-        for(; it != tokenizer.end(); ++it)
+        for (; it != tokenizer.end(); ++it)
         {
             if (!isValidIdentifier(*it))
                 return false;
@@ -86,13 +83,13 @@ namespace Typelib
     std::string getNormalizedNamespace(const std::string& name)
     {
         if (name.empty()) return NamespaceMarkString;
-        if (*name.rend() != NamespaceMark) return name + NamespaceMark;
+        if (name[name.size() - 1] != NamespaceMark) return name + NamespaceMark;
         return name;
     }
 
     std::string getTypename(const std::string& name)
     {
-        int position = name.rfind(NamespaceMark);
+        size_t position = name.rfind(NamespaceMark);
         if (position == string::npos)
             return name;
 
@@ -101,7 +98,7 @@ namespace Typelib
 
     std::string getNamespace(const std::string& name)
     {
-        int position = name.rfind(NamespaceMark);
+        size_t position = name.rfind(NamespaceMark);
         if (position == string::npos)
             return name;
 
