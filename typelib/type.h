@@ -34,6 +34,7 @@ class Type
 public:
     enum Category
     { Array, Pointer, SInt, UInt, Float, Struct, Union };
+    typedef std::list<Field> FieldList;
 
 private:
     std::string m_name;
@@ -44,7 +45,6 @@ private:
     const Type* m_next_type;
 
 protected:
-    typedef std::list<Field> FieldList;
     FieldList m_fields;
 
     void setName(const std::string& name);

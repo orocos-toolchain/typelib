@@ -1,5 +1,5 @@
-#ifndef __GENOM_READER_H
-#define __GENOM_READER_H
+#ifndef __GENOM_MODULE_H
+#define __GENOM_MODULE_H
 
 #include "registry.h"
 #include <list>

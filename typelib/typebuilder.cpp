@@ -116,11 +116,9 @@ const Type* TypeBuilder::build(Registry* registry, const TypeSpec& spec)
 TypeBuilder::TypeSpec TypeBuilder::parse(const Registry* registry, const std::string& full_name)
 {
     static const char* first_chars = "*[";
-    static const int npos = std::string::npos;
 
     TypeSpec spec;
 
-    int begin = 0;
     int end = full_name.find_first_of(first_chars);
     std::string base_name = full_name.substr(0, end);
     spec.first = registry -> get(base_name);

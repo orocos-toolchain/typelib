@@ -1,9 +1,12 @@
 Import(['env', 'target'])
 
-env.Append(CCFLAGS="-g -O0")
+env.Append(CPPPATH="/usr/include/libxml2")
+env.Append(LIBPATH=['.'])
 
 typelib = env.Library('typelib', ['type.cpp', 'typebuilder.cpp', 'registry.cpp'])
 
-env.Default( typelib )
-env.Install(target, typelib)
+inspect = env.Program('typelib-inspect', ['inspect.cpp'], LIBS=['libxml2','typelib'])
+
+env.Default( inspect )
+env.Install(target, inspect)
 

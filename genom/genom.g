@@ -6,7 +6,7 @@ header
     #include "typesolver.h"
     #include <antlr/TokenStreamSelector.hpp>
 
-    #include "genomreader.h"
+    #include "genommodule.h"
 
     #include <iostream>
 

@@ -40,10 +40,12 @@ antlr_builder = Builder(generator = antlr_generator,
 env = Environment();
 env['ANTLRSUPER'] = ""
 env.Append(BUILDERS = {'Antlr' : antlr_builder});
+env.Append(CCFLAGS = '-Wall -g -O0 -pipe')
 
 
 env.BuildDir('build', '.', duplicate=1)
 target = env.Dir('build/target')
+
 Export('target', 'env')
 
 SConscript(Split('build/genom/SConscript build/typelib/SConscript'))

@@ -1,4 +1,4 @@
-#include "genomreader.h"
+#include "genommodule.h"
 
 #include "CPPLexer.hpp"
 #include "GenomLexer.hpp"

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "genomreader.h"
+#include "genommodule.h"
 
 using namespace std;
 
