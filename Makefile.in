@@ -24,7 +24,7 @@ mkinstalldirs = $(SHELL) @srcdir@/mkinstalldirs
 
 DISTNAME= @PACKAGE@-@VERSION@
 
-SUBDIRS = typelib genotype
+SUBDIRS = typelib genotype tools 
 
 all: pch
 	@for d in $(SUBDIRS) ; do \

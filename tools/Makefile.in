@@ -24,44 +24,37 @@ include $(top_builddir)/Init.make
 
 INSTALL=	@INSTALL@
 
-CPPFLAGS += $(LIBXML_CFLAGS)
+CPPFLAGS += $(TYPELIB_CFLAGS) $(GENOTYPE_CFLAGS) $(CXXUTILS_CFLAGS) -I$(builddir)
 
-LIB_SRCS = registry.cpp typebuilder.cpp type.cpp packing.cpp typename.cpp
-LIB_OBJS=		$(LIB_SRCS:%.cpp=%.lo)
+SRCS = plugin.cpp genom.cpp inspect.cpp typelib.cpp preprocess.cpp
+OBJS = $(SRCS:%.cpp=%.lo)
 
-SHLIB_CURRENT=	0
-SHLIB_REVISION=	0
-SHLIB_AGE=			0
+BIN = typelib
 
-LIB=		    libtypeLib.la
+all: $(PCH_DEP) $(BIN)
 
-all: $(PCH_DEP) $(LIB)
-
-# libtool library
-$(LIB): $(LIB_OBJS) 
-	$(LTLDCXX) -o $@ $(LIB_OBJS) -rpath $(LIBDIR) -R$(LIBDIR)	\
-		-version-info $(SHLIB_CURRENT):$(SHLIB_REVISION):$(SHLIB_AGE) \
-		$(LIBXML_LIBS)
+$(BIN): $(OBJS)
+	$(LTLDCXX) -o $@ $(OBJS) -rpath $(LIBDIR) -R$(LIBDIR) \
+		$(TYPELIB_LIBS) $(GENOTYPE_LIBS) $(CXXUTILS_LIBS)
 
 %.lo: %.cpp 
 	$(LTCXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
 
 clean: 
-	$(LIBTOOL) --mode=clean rm -f $(LIB_OBJS) $(INSPECT_OBJS) $(LIB) $(INSPECT)
+	$(LIBTOOL) --mode=clean rm -f \
+						$(BIN) $(OBJS)
 
 distclean: clean 
 	rm -f DEPENDANCES Makefile
 
-install:: $(LIB)  $(INSPECT)
-	$(MKINSTALLDIRS) $(LIBDIR) $(BINDIR)
-	$(LIBTOOL) --mode=install $(INSTALL) $(LIB) $(LIBDIR)
-	$(LIBTOOL) --mode=install $(INSTALL) $(INSPECT) $(BINDIR)
+install:: $(LIB) 
+	$(MKINSTALLDIRS) $(BINDIR)
+	$(LIBTOOL) --mode=install $(INSTALL) $(BIN) $(BINDIR)
 
 ifeq ($(findstring clean,$(MAKECMDGOALS)),)
-depend DEPENDANCES:: $(LIB_SRCS) $(INSPECT_SRCS)
+depend DEPENDANCES:: $(SRCS)
 	$(MKDEP) -c$(CXX) -oDEPENDANCES -t.lo $(CPPFLAGS) $?
 
 include DEPENDANCES
 endif
-
 

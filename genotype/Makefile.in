@@ -27,7 +27,7 @@ INSTALL=	@INSTALL@
 CPPFLAGS += $(TYPELIB_CFLAGS) -I$(builddir)
 
 LIB_SRCS = \
-			 Dictionary.cpp Support.cpp preprocess.cpp genommodule.cpp \
+			 Dictionary.cpp Support.cpp genommodule.cpp \
 			 typesolver.cpp GenomParser.cpp GenomLexer.cpp CPPParser.cpp CPPLexer.cpp
 
 ANTLR_GENOM_OUTPUT = genomparser \
@@ -40,22 +40,13 @@ ANTLR_STDC_OUTPUT = cparser \
 
 LIB_OBJS=		$(LIB_SRCS:%.cpp=%.lo)
 
-
-READER_SRCS = genom-reader.cpp
-READER_OBJS = $(READER_SRCS:%.cpp=%.lo)
-
 SHLIB_CURRENT=	0
 SHLIB_REVISION=	0
 SHLIB_AGE=			0
 
 LIB=		libgenoType.la
-READER= genom-reader
 
-all: $(PCH_DEP) $(LIB) $(READER)
-
-$(READER): $(READER_OBJS) $(LIB)
-	$(LTLDCXX) -o $@ $(READER_OBJS) -rpath $(LIBDIR) -R$(LIBDIR) \
-		$(GENOTYPE_LIBS) $(TYPELIB_LIBS)
+all: $(PCH_DEP) $(LIB)
 
 $(LIB): cparser genomparser $(LIB_OBJS) 
 	$(LTLDCXX) -o $@ $(LIB_OBJS) -rpath $(LIBDIR) -R$(LIBDIR)	\

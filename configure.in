@@ -120,6 +120,7 @@ dnl Make makefiles
 AC_CONFIG_FILES(
     Init.make
 	  Makefile
+    tools/Makefile
     typelib/Makefile
     genotype/Makefile
 )

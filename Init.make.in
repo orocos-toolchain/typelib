@@ -72,6 +72,9 @@ TYPELIB_LIBS   = -L$(top_builddir)/typelib -ltypeLib
 GENOTYPE_CFLAGS = -I$(top_srcdir)/genotype
 GENOTYPE_LIBS   = -L$(top_builddir)/genotype -lgenoType
 
+CXXUTILS_CFLAGS = -I/home/doudou/laas/dev/build/utils/include
+CXXUTILS_LIBS   = -L/home/doudou/laas/dev/build/utils/lib -lcxxutils
+
 ##################################################################
 # Programs
 

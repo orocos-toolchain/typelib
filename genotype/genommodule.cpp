@@ -34,6 +34,9 @@ namespace
     };
 }
 
+GenomModule::GenomModule(Registry* registry)
+    : m_registry(registry) {}
+
 bool GenomModule::read(const std::string& file)
 {
     try {
@@ -56,7 +59,7 @@ bool GenomModule::read(const std::string& file)
         selector.select("genom");
         
         GenomModulePrivate reader(this, selector);
-        reader.setRegistry(&m_registry);
+        reader.setRegistry(m_registry);
         reader.setSelector(&selector);
         reader.translation_unit();
     }
@@ -87,8 +90,8 @@ void GenomModule::genomPoster(const Poster& poster)
 void GenomModule::genomExecTask(const ExecTask& task)
 { m_tasks[task.name] = task; }
 
-const Type* GenomModule::getSDI() const { return m_registry.get(data); }
-const Registry* GenomModule::getRegistry() const { return &m_registry; }
+const Type* GenomModule::getSDI() const { return m_registry->get(data); }
+const Registry* GenomModule::getRegistry() const { return m_registry; }
 
 void GenomModule::dump(std::ostream& to, int mode)
 {

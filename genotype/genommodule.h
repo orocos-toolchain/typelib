@@ -64,7 +64,7 @@ class GenomModule : public Genom::Module
     friend class GenomModulePrivate;
 
     // Contains type definitions
-    Typelib::Registry m_registry;
+    Typelib::Registry* m_registry;
 
 public:
     typedef std::pair<std::string, std::string> StringPair;
@@ -94,6 +94,7 @@ private:
     ExecTaskMap m_tasks;
 
 public:
+    GenomModule(Typelib::Registry* registry);
     bool read(const std::string& path);
 
     const Typelib::Type*     getSDI() const;

@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "registry.h"
 #include "parsing.h"
 
@@ -6,30 +5,25 @@
 using namespace std;
 using namespace Typelib;
 
-int main(int argc, char** argv)
+bool inspect(const std::string& repository)
 {
-    if (argc < 2 || argc > 2)
-    {
-        cerr << "Usage: typelib-inspect <repository>" << endl;
-        exit(1);
-    }
-        
-    std::string file = argv[1];
     Registry registry;
     try
     {
-        registry.load(file);
+        registry.load(repository);
     }
     catch(Parsing::ParsingError& error)
     {
         cerr << error.toString() << endl;
+        return false;
     }
     catch(Undefined error)
     {
         cerr << "Undefined type " << error.getName() << endl;
+        return false;
     }
 
     registry.dump(cout, Registry::AllType | Registry::WithSourceId);
-    registry.save("/home/doudou/test-save.tlb");
+    return true;
 }
 
