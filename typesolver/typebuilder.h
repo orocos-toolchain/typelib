@@ -6,6 +6,8 @@
 
 #include "type.h"
 
+class Registry;
+
 class TypeBuilder
 {
     std::string m_basename;
@@ -19,8 +21,10 @@ class TypeBuilder
     typedef std::list<Modifier> ModifierList;
     typedef std::pair<const Type*, ModifierList> TypeSpec;
 
-    static TypeSpec parse(const std::string& full_name);
-    static const Type* build(const TypeSpec& spec);
+    static TypeSpec parse(const Registry* registry, const std::string& full_name);
+    static const Type* build(Registry* registry, const TypeSpec& spec);
+
+    Registry* m_registry;
 
 public:
     class NotFound
@@ -31,16 +35,16 @@ public:
         std::string toString() const { return "Type " + m_name + " not found"; }
     };
 
-    TypeBuilder(const std::list<std::string>& base);
-    TypeBuilder(const Type* base_type);
+    TypeBuilder(Registry* registry, const std::list<std::string>& base);
+    TypeBuilder(Registry* registry, const Type* base_type);
 
     void addPointer(int level);
     void addArray(int size);
 
     const Type* getType() const;
 
-    static const Type* build(const std::string& full_name);
-    static const Type* getBaseType(const std::string& full_name);
+    static const Type* build(Registry* registry, const std::string& full_name);
+    static const Type* getBaseType(const Registry* registry, const std::string& full_name);
 };
 
 #endif

@@ -7,6 +7,8 @@
 #include "typebuilder.h"
 #include <list>
 #include <sstream>
+
+class Registry;
    
 class TypeSolver : public CPPParser
 {
@@ -20,6 +22,8 @@ class TypeSolver : public CPPParser
     FieldList m_fields;
 
     void buildClassObject(bool define_type);
+
+    Registry* m_registry;
 
 public:
     class UnsupportedClassType
@@ -35,7 +39,9 @@ public:
         }
     };
     
-    TypeSolver(antlr::TokenStream& lexer);
+    TypeSolver(antlr::TokenStream& lexer, Registry* registry);
+    TypeSolver(const antlr::ParserSharedInputState& state, Registry* registry);
+    
     virtual void beginClassDefinition(TypeSpecifier class_type, const std::string& name);
     virtual void endClassDefinition();
     virtual void beginEnumDefinition(const std::string& name);

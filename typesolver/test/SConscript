@@ -2,15 +2,13 @@ import os
 import os.path
 import filecmp
 
-preproc=Builder(action = 'gcc -E $SOURCE -o $TARGET',
+preproc=Builder(action = 'gcc -E -x c -Itypesolver/test $SOURCE -o $TARGET',
         suffix='.i',
-        src_suffix='.c',
+        src_suffix=[ '.c', '.gen' ],
         single_source=1)
 
-env = Environment();
-
 # Depends on typeshow
-Import('typeshow')
+Import(['typeshow', 'env'])
 
 def typeshow_dep(node, env, path):
     return typeshow
@@ -41,8 +39,9 @@ test   =Builder(action = testaction,
 
 env.Append(BUILDERS = { 'Preproc': preproc, 'Solver': solver, 'Test': test })
 
-tests=Split('quadratic')
+tests=Split('quadratic.c move.gen')
 
-ifiles   = env.Preproc([x + '.c' for x in tests])
-env.Test(ifiles)
+ifiles   = env.Preproc( tests )
+outfiles = env.Test(ifiles)
+env.AlwaysBuild(outfiles);
 

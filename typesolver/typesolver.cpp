@@ -10,8 +10,11 @@
 
 using namespace std;
 
-TypeSolver::TypeSolver(antlr::TokenStream& lexer)
-    : CPPParser(lexer), m_class(0) {}
+TypeSolver::TypeSolver(const antlr::ParserSharedInputState& state, Registry* registry)
+    : CPPParser(state), m_class(0), m_registry(registry) {}
+
+TypeSolver::TypeSolver(antlr::TokenStream& lexer, Registry* registry)
+    : CPPParser(lexer), m_class(0), m_registry(registry) {}
 
 void TypeSolver::beginClassDefinition(TypeSpecifier class_type, const std::string& name)
 {
@@ -67,7 +70,7 @@ void TypeSolver::buildClassObject(bool define_type)
         m_fields.clear();
     }
     cout << object -> toString() << endl;
-    Registry::self() -> add(object);
+    m_registry -> add(object);
 
     m_fieldtype.clear();
     m_fieldtype.push_back(object->getName());
@@ -113,7 +116,7 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
     }
     else if (m_class)
     {
-        m_fields.push_back( make_pair(name, TypeBuilder(m_fieldtype)) );
+        m_fields.push_back( make_pair(name, TypeBuilder(m_registry, m_fieldtype)) );
         if (pointer_level)
         {
             m_fields.back().second.addPointer(pointer_level);
@@ -122,7 +125,7 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
     }
     else if (qi == qiType)
     {
-        TypeBuilder builder(m_fieldtype);
+        TypeBuilder builder(m_registry, m_fieldtype);
         if (pointer_level)
         {
             builder.addPointer(pointer_level);
@@ -130,7 +133,7 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
         }
         
         Type* type = new Type(name, builder.getType());
-        Registry::self() -> add(type);
+        m_registry -> add(type);
         cout << type -> toString() << std::endl;
         
     }

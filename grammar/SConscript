@@ -1,8 +1,0 @@
-Import(['target', 'env'])
-
-cpp_parser   = env.Antlr('CPP_parser.g')
-grammar      = env.Library('grammar', ['Dictionary.cpp', 'Support.cpp', cpp_parser], CPPPATH='.')
-
-env.Install(target, grammar)
-env.Default(grammar)
-

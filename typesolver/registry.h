@@ -5,18 +5,20 @@
 
 class Registry
 {
-    typedef std::list<std::string>  StringList;
+public:
+    typedef std::list<std::string>                  StringList;
 
-    typedef std::map<const std::string, Type *>      TypeMap;
+private:
+    typedef std::map<const std::string, Type *>     TypeMap;
 
     TypeMap m_persistent, m_temporary;
     TypeMap::const_iterator findEnd() const;
     TypeMap::const_iterator find(const std::string& name) const;
     
-    static Registry* s_self;
-    Registry(const StringList& registry_path);
-    
 public:
+    Registry();
+    //void load(const StringList& type_registry)
+    
     struct AlreadyDefined
     {
         const Type* m_old;
@@ -32,8 +34,6 @@ public:
         std::string toString() const { return "Type " + m_old->getName() + " was already defined"; }
     };
     
-    static Registry* self();
-
     /** Checks for the availability of a particular type
      *
      * If \c name is a modified version (pointer or array) of a known
@@ -44,13 +44,14 @@ public:
      */
     bool        has(const std::string& name, bool build = true) const;
 
+    
+    const Type* build(const std::string& name);
+    
     /** Gets a Type object
      * @arg name the type name
-     * @arg if we shall build a new type if \c name is derived from 
-     * a known type (pointer or array)
-     * @return the type object if it exists or can be built, 0 if not
+     * @return the type object if it exists, 0 if not
      */
-    const Type* get(const std::string& name, bool build = true);  
+    const Type* get(const std::string& name) const;  
 
     /** Adds a new type
      * @return true on success, false if the type was already

@@ -11,29 +11,30 @@ static std::string join(const std::string& acc, const std::string& add)
     return acc + ' ' + add;
 }
 
-TypeBuilder::TypeBuilder(const std::list<std::string>& name)
+TypeBuilder::TypeBuilder(Registry* registry, const std::list<std::string>& name)
+    : m_registry(registry) 
 {
     std::string basename = accumulate(name.begin(), name.end(), std::string(), join);
-    m_type = Registry::self() -> get(basename);
+    m_type = m_registry -> build(basename);
     if (!m_type) throw NotFound(basename);
 }
-TypeBuilder::TypeBuilder(const Type* base)
-    : m_type(base) {}
+TypeBuilder::TypeBuilder(Registry* registry, const Type* base)
+    : m_type(base), m_registry(registry) { }
+
+    
 
 const Type* TypeBuilder::getType() const { return m_type; }
 
 void TypeBuilder::addPointer(int level) 
 {
-    Registry* registry(Registry::self());
-
     while (level)
     {
         // Try to get the type object in the registry
-        const Type* base_type = registry -> get(m_type -> getName() + "*", false);
+        const Type* base_type = m_registry -> get(m_type -> getName() + "*");
         if (! base_type)
         {
             Type* new_type = new Pointer(m_type);
-            registry -> add(new_type);
+            m_registry -> add(new_type);
             m_type = new_type;
         }
         else
@@ -45,8 +46,6 @@ void TypeBuilder::addPointer(int level)
 
 void TypeBuilder::addArray(int new_dim)
 {
-    Registry* registry(Registry::self());
-
     // May seem weird, but we have to handle
     // int test[4][5] as a 4 item array of a 5 item array of int
     typedef std::list<const Array *> ArrayList;
@@ -66,7 +65,7 @@ void TypeBuilder::addArray(int new_dim)
         stream << base_type -> getName() << "[" << new_dim << "]";
         basename = stream.str();
 
-        const Type* new_base = registry -> get(basename, false);
+        const Type* new_base = m_registry -> get(basename);
         if (new_base)
             base_type = new_base;
         else base_type = new Array(base_type, new_dim); 
@@ -77,7 +76,7 @@ void TypeBuilder::addArray(int new_dim)
     for (cur_dim = array_chain.begin(); cur_dim != array_chain.end(); ++cur_dim)
     {
         const Array* array = *cur_dim;
-        const Type* new_type = registry -> get(basename + array -> getDimString(), false);
+        const Type* new_type = m_registry -> get(basename + array -> getDimString());
         if (! new_type) break;
     }
 
@@ -87,19 +86,19 @@ void TypeBuilder::addArray(int new_dim)
         const Array* array = *cur_dim;
 
         Type* new_type = new Array(base_type, array -> getDimension());
-        registry -> add(new_type);
+        m_registry -> add(new_type);
         base_type = new_type;
     }
     
     m_type = base_type;
 }
 
-const Type* TypeBuilder::build(const TypeSpec& spec)
+const Type* TypeBuilder::build(Registry* registry, const TypeSpec& spec)
 {
     const Type* base = spec.first;
     const ModifierList& stack(spec.second);
 
-    TypeBuilder builder(base);
+    TypeBuilder builder(registry, base);
     for (ModifierList::const_iterator it = stack.begin(); it != stack.end(); ++it)
     {
         Type::Category category = it -> category;
@@ -114,19 +113,17 @@ const Type* TypeBuilder::build(const TypeSpec& spec)
     return builder.getType();
 }
 
-TypeBuilder::TypeSpec TypeBuilder::parse(const std::string& full_name)
+TypeBuilder::TypeSpec TypeBuilder::parse(const Registry* registry, const std::string& full_name)
 {
     static const char* first_chars = "*[";
     static const int npos = std::string::npos;
 
-    Registry* registry(Registry::self());
-    
     TypeSpec spec;
 
     int begin = 0;
     int end = full_name.find_first_of(first_chars);
     std::string base_name = full_name.substr(0, end);
-    spec.first = registry -> get(base_name, false);
+    spec.first = registry -> get(base_name);
     if (! spec.first) throw NotFound(base_name);
 
     int full_length(full_name.length());
@@ -152,19 +149,19 @@ TypeBuilder::TypeSpec TypeBuilder::parse(const std::string& full_name)
     return spec;
 }
 
-const Type* TypeBuilder::build(const std::string& full_name)
+const Type* TypeBuilder::build(Registry* registry, const std::string& full_name)
 {
     TypeSpec spec;
-    try { spec = parse(full_name); }
+    try { spec = parse(registry, full_name); }
     catch(NotFound) { return 0; }
 
-    return build(spec);
+    return build(registry, spec);
 }
 
-const Type* TypeBuilder::getBaseType(const std::string& full_name)
+const Type* TypeBuilder::getBaseType(const Registry* registry, const std::string& full_name)
 {
     TypeSpec spec;
-    try { spec = parse(full_name); }
+    try { spec = parse(registry, full_name); }
     catch(...) { return 0; }
     return spec.first;
 }

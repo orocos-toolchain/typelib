@@ -1,0 +1,57 @@
+/*------------------------------------------------------------------------
+ * 
+ *  Description: demo simulation
+ *      Calcule la position du mobile en fonction d'une vitesse et d'une position
+ * 
+ *------------------------------------------------------------------------*/
+
+#include <moveModel.h>
+
+typedef struct MOVE_STR
+{
+    move_model model;
+} MOVE_STR;
+
+module move {
+    number:		    19000;
+    internal_data:     MOVE_STR;
+}; 
+
+/*------------------------------------------------------------------------
+ *	                       Requetes
+ *------------------------------------------------------------------------*/
+
+
+request Move {
+    doc:		            "Watches the counter in Counter";
+    type:		            exec;
+    exec_task:		      Periodique; 
+
+    c_exec_func:	      doMove;
+    
+    incompatible_with:  Move;
+};
+
+/*------------------------------------------------------------------------
+ *	                        Posters
+ *------------------------------------------------------------------------*/
+
+poster PositionModel {
+    update:		        auto;
+    data:		          model::model;
+    exec_task:		    Periodique;
+};
+
+/*------------------------------------------------------------------------
+ *	                   Taches d'Execution
+ *------------------------------------------------------------------------*/
+
+exec_task Periodique {
+    period:		      5;
+    delay:		      0;
+    priority:		    100;
+    stack_size:		  2000;
+
+    c_init_func:    initPosition;
+};
+
