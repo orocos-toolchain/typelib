@@ -11,6 +11,7 @@
 
 using namespace std;
 using namespace antlr;
+using namespace Typelib;
 
 namespace
 {
@@ -64,9 +65,9 @@ bool GenomModule::read(const std::string& file)
         cerr << "parser exception: " << e.toString() << endl; 
         return false;
     }
-    catch (TypeBuilder::NotFound& e)
+    catch (Typelib::Undefined& e)
     { 
-        cerr << "Type solver exception: " << e.toString() << endl; 
+        cerr << "Undefined type found " << e.getName() << endl; 
         return false;
     }
 

@@ -64,7 +64,7 @@ class GenomModule : public Genom::Module
     friend class GenomModulePrivate;
 
     // Contains type definitions
-    Registry m_registry;
+    Typelib::Registry m_registry;
 
 public:
     typedef std::pair<std::string, std::string> StringPair;
@@ -96,8 +96,8 @@ private:
 public:
     bool read(const std::string& path);
 
-    const Type*     getSDI() const;
-    const Registry* getRegistry() const;
+    const Typelib::Type*     getSDI() const;
+    const Typelib::Registry* getRegistry() const;
 
 
     enum DumpMode

@@ -6,45 +6,40 @@
 
 #include "type.h"
 
-class Registry;
-
-class TypeBuilder
+namespace Typelib
 {
-    std::string m_basename;
-    const Type* m_type;
-    
-    struct Modifier
+    class Registry;
+
+    class TypeBuilder
     {
-        Type::Category category;
-        int size; // Size of an array, deference count on multi-dim pointers
-    };
-    typedef std::list<Modifier> ModifierList;
-    typedef std::pair<const Type*, ModifierList> TypeSpec;
+        std::string m_basename;
+        const Type* m_type;
 
-    static TypeSpec parse(const Registry* registry, const std::string& full_name);
-    static const Type* build(Registry* registry, const TypeSpec& spec);
+        struct Modifier
+        {
+            Type::Category category;
+            int size; // Size of an array, deference count on multi-dim pointers
+        };
+        typedef std::list<Modifier> ModifierList;
+        typedef std::pair<const Type*, ModifierList> TypeSpec;
 
-    Registry* m_registry;
+        static TypeSpec parse(const Registry* registry, const std::string& full_name);
+        static const Type* build(Registry* registry, const TypeSpec& spec);
 
-public:
-    class NotFound
-    {
-        std::string m_name;
+        Registry* m_registry;
+
     public:
-        NotFound(const std::string& name) : m_name(name) {}
-        std::string toString() const { return "Type " + m_name + " not found"; }
+        TypeBuilder(Registry* registry, const std::list<std::string>& base);
+        TypeBuilder(Registry* registry, const Type* base_type);
+
+        void addPointer(int level);
+        void addArray(int size);
+
+        const Type* getType() const;
+
+        static const Type* build(Registry* registry, const std::string& full_name);
+        static const Type* getBaseType(const Registry* registry, const std::string& full_name);
     };
-
-    TypeBuilder(Registry* registry, const std::list<std::string>& base);
-    TypeBuilder(Registry* registry, const Type* base_type);
-
-    void addPointer(int level);
-    void addArray(int size);
-
-    const Type* getType() const;
-
-    static const Type* build(Registry* registry, const std::string& full_name);
-    static const Type* getBaseType(const Registry* registry, const std::string& full_name);
 };
 
 #endif

@@ -8,7 +8,7 @@
 #include <list>
 #include <sstream>
 
-class Registry;
+namespace Typelib { class Registry; }
    
 class TypeSolver : public CPPParser
 {
@@ -17,13 +17,13 @@ class TypeSolver : public CPPParser
     TypeSpecifier m_class_type;
     std::list<std::string> m_fieldtype;
 
-    typedef std::pair<std::string, TypeBuilder> FieldBuilder;
+    typedef std::pair<std::string, Typelib::TypeBuilder> FieldBuilder;
     typedef std::list< FieldBuilder > FieldList;
     FieldList m_fields;
 
     void buildClassObject(bool define_type);
 
-    Registry* m_registry;
+    Typelib::Registry* m_registry;
 
 public:
     class UnsupportedClassType
@@ -39,8 +39,8 @@ public:
         }
     };
     
-    TypeSolver(antlr::TokenStream& lexer, Registry* registry);
-    TypeSolver(const antlr::ParserSharedInputState& state, Registry* registry);
+    TypeSolver(antlr::TokenStream& lexer, Typelib::Registry* registry);
+    TypeSolver(const antlr::ParserSharedInputState& state, Typelib::Registry* registry);
     
     virtual void beginClassDefinition(TypeSpecifier class_type, const std::string& name);
     virtual void endClassDefinition();

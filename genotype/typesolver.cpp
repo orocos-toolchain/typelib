@@ -9,6 +9,7 @@
 #include <cassert>
 
 using namespace std;
+using namespace Typelib;
 
 TypeSolver::TypeSolver(const antlr::ParserSharedInputState& state, Registry* registry)
     : CPPParser(state), m_class(0), m_registry(registry) {}
@@ -56,11 +57,11 @@ void TypeSolver::buildClassObject(bool define_type)
 {
     Type* object;
     if (m_class_type == tsSTRUCT)
-        object = new Struct(m_class_name, define_type);
+        object = new Struct(m_registry->getFullName(m_class_name), define_type);
     else if (m_class_type == tsUNION)
-        object = new Union(m_class_name, define_type);
+        object = new Union(m_registry->getFullName(m_class_name), define_type);
     else if (m_class_type == tsENUM)
-        object = new Enum(m_class_name);
+        object = new Enum(m_registry->getFullName(m_class_name));
     else throw UnsupportedClassType(m_class_type);
 
     if (m_class_type != tsENUM)
@@ -131,7 +132,7 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
             assert(m_fields.back().second.getType());
         }
         
-        Type* type = new Type(name, builder.getType());
+        Type* type = new Type(m_registry->getFullName(name), builder.getType());
         m_registry -> add(type);
     }
     CPPParser::declaratorID(name, qi);

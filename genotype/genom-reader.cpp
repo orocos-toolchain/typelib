@@ -6,6 +6,7 @@
 #include "preprocess.h"
 
 using namespace std;
+using Typelib::Registry;
 
 static void usage()
 {
@@ -35,17 +36,29 @@ int main(int argc,char* argv[])
         return 1;
     }
     
-    GenomModule reader;
-    const Registry* registry = reader.getRegistry();
-    int old_count = registry -> getCount();
-
-    if (reader.read(i_file))
+    try
     {
-        // Dump type list
-        cout << "Found " << registry -> getCount() - old_count << " types in " << file << ":" << endl;
-        registry -> dump(std::cout, Registry::NameOnly | Registry::WithFile, "*");
+        GenomModule reader;
+        const Registry* registry = reader.getRegistry();
+        int old_count = registry -> getCount();
 
-        reader.dump(cout);
+        if (reader.read(i_file))
+        {
+            // Dump type list
+            cout << "Found " << registry -> getCount() - old_count << " types in " << file << ":" << endl;
+            registry -> dump(std::cout, Registry::AllType, "*");
+
+            reader.dump(cout);
+        }
+    }
+    catch(Typelib::RegistryException& e)
+    {
+        cerr << "Error in type management: " << e.toString() << endl;
+    }
+    catch(std::exception& e)
+    {
+        cerr << "Error parsing file " << file << ":\n\t"
+            << typeid(e).name() << endl;
     }
 
     unlink(i_file.data());

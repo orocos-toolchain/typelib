@@ -26,7 +26,7 @@ INSTALL=	@INSTALL@
 
 CPPFLAGS += $(LIBXML_CFLAGS)
 
-LIB_SRCS = registry.cpp typebuilder.cpp type.cpp
+LIB_SRCS = registry.cpp typebuilder.cpp type.cpp packing.cpp typename.cpp
 INSPECT_SRCS = inspect.cpp
 
 LIB_OBJS=		$(LIB_SRCS:%.cpp=%.lo)

@@ -16,10 +16,10 @@ typedef unsigned long model_usec_t;
     
 typedef struct model_time
 {
-    long type;
+    char type;
     model_sec_t tv_sec;
     model_usec_t tv_usec;
-    long padding; // to have model_time aligned on 8 bytes
+//    long padding; // to have model_time aligned on 8 bytes
 } model_time;
 
 /** The module_model structure is defined using the same layout
@@ -39,7 +39,6 @@ typedef struct model_time
     { \
         model_time begin; \
         long count; \
-        long padding; \
         module##_model_sample samples[sample_count]; \
     } module##_model;
     

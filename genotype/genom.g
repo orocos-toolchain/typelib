@@ -10,7 +10,7 @@ header
 
     #include <iostream>
 
-    class Registry;
+    namespace Typelib { class Registry; }
 }
 
 options
@@ -30,7 +30,7 @@ options
 
 {
 protected:
-    Registry* m_registry;
+    Typelib::Registry* m_registry;
     antlr::TokenStreamSelector* m_selector;
 
 public:
@@ -51,7 +51,7 @@ public:
     virtual void genomExecTask(const GenomExecTask& task) {}
 
     void setSelector(antlr::TokenStreamSelector* selector) { m_selector = selector; }
-    void setRegistry(Registry* registry) { m_registry = registry; }
+    void setRegistry(Typelib::Registry* registry) { m_registry = registry; }
 }
 
 translation_unit

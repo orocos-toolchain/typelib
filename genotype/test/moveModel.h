@@ -1,7 +1,7 @@
 #ifndef MOVE_POSTER_STR_H
 #define MOVE_POSTER_STR_H
 
-#include <models_types.h>
+#include "models_types.h"
 
 MODEL(move, 10, p6d)
 

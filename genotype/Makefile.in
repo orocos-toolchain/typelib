@@ -26,8 +26,8 @@ INSTALL=	@INSTALL@
 
 CPPFLAGS += $(TYPELIB_CFLAGS) -I$(builddir)
 
-SRCS = \
-			 Dictionary.cpp Support.cpp preprocess.cpp genommodule.cpp genom-reader.cpp \
+LIB_SRCS = \
+			 Dictionary.cpp Support.cpp preprocess.cpp genommodule.cpp \
 			 typesolver.cpp GenomParser.cpp GenomLexer.cpp CPPParser.cpp CPPLexer.cpp
 
 ANTLR_GENOM_OUTPUT = genomparser \
@@ -38,22 +38,29 @@ ANTLR_STDC_OUTPUT = cparser \
 				CPPParser.cpp CPPLexer.cpp CPPParser.hpp CPPLexer.hpp \
 				CPPLexerTokenTypes.hpp CPPLexerTokenTypes.txt STDCTokenTypes.hpp STDCTokenTypes.txt
 
-OBJS=		$(SRCS:%.cpp=%.lo)
+LIB_OBJS=		$(LIB_SRCS:%.cpp=%.lo)
+
+
+READER_SRCS = genom-reader.cpp
+READER_OBJS = $(READER_SRCS:%.cpp=%.lo)
 
 SHLIB_CURRENT=	0
 SHLIB_REVISION=	0
 SHLIB_AGE=			0
 
-BASENAME=	genoType
-LIB=		lib$(BASENAME).la
+LIB=		libgenoType.la
+READER= genom-reader
 
-all: $(PCH_DEP) $(LIB) 
+all: $(PCH_DEP) $(LIB) $(READER)
 
-# libtool library
-$(LIB): cparser genomparser $(OBJS) 
-	$(LTLDCXX) -o $@ $(OBJS) -rpath $(LIBDIR) -R$(LIBDIR)	\
+$(READER): $(READER_OBJS) $(LIB)
+	$(LTLDCXX) -o $@ $(READER_OBJS) -rpath $(LIBDIR) -R$(LIBDIR) \
+		$(GENOTYPE_LIBS) $(TYPELIB_LIBS)
+
+$(LIB): cparser genomparser $(LIB_OBJS) 
+	$(LTLDCXX) -o $@ $(LIB_OBJS) -rpath $(LIBDIR) -R$(LIBDIR)	\
 		-version-info $(SHLIB_CURRENT):$(SHLIB_REVISION):$(SHLIB_AGE) \
-		$(TYPELIB_LIBS)
+		$(TYPELIB_LIBS) $(ANTLR_LIBS)
 
 %.lo: %.cpp 
 	$(LTCXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
@@ -67,20 +74,22 @@ cparser: cparser.g
 	touch cparser
 
 clean: 
-	$(LIBTOOL) --mode=clean rm -f $(OBJS) $(LIB) $(ANTLR_GENOM_OUTPUT) $(ANTLR_STDC_OUTPUT)
+	$(LIBTOOL) --mode=clean rm -f \
+						$(LIB_OBJS) $(LIB) $(ANTLR_GENOM_OUTPUT) $(ANTLR_STDC_OUTPUT) \
+						$(READER_OBJS) $(READER)
 
 distclean: clean 
 	rm -f DEPENDANCES Makefile
 
 install:: $(LIB) 
-	$(MKINSTALLDIRS) $(LIBDIR)
+	$(MKINSTALLDIRS) $(LIBDIR) $(BINDIR)
+	$(LIBTOOL) --mode=install $(INSTALL) $(READER) $(BINDIR)
 	$(LIBTOOL) --mode=install $(INSTALL) $(LIB) $(LIBDIR)
 
 ifeq ($(findstring clean,$(MAKECMDGOALS)),)
-depend DEPENDANCES:: $(SRCS) | cparser genomparser 
+depend DEPENDANCES:: cparser genomparser $(LIB_SRCS) $(READER_SRCS)
 	$(MKDEP) -c$(CXX) -oDEPENDANCES -t.lo $(CPPFLAGS) $?
 
 include DEPENDANCES
 endif
-
 

@@ -4,6 +4,7 @@
 
 #include <iostream>
 using namespace std;
+using namespace Typelib;
 
 int main(int argc, char** argv)
 {
@@ -23,12 +24,12 @@ int main(int argc, char** argv)
     {
         cerr << error.toString() << endl;
     }
-    catch(Registry::Undefined error)
+    catch(Undefined error)
     {
-        cerr << "Undefined type " << error.getTypename() << endl;
+        cerr << "Undefined type " << error.getName() << endl;
     }
 
-    registry.dump(cout, Registry::AllType | Registry::WithFile);
+    registry.dump(cout, Registry::AllType | Registry::WithSourceId);
     registry.save("/home/doudou/test-save.tlb");
 }
 
