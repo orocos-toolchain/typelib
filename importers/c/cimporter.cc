@@ -1,10 +1,6 @@
-#include "genommodule.h"
-
-#include "CPPLexer.hpp"
-#include "GenomLexer.hpp"
+#include "CPPLexer.hh"
+#include "CPPParser.hh"
 #include <antlr/TokenStreamSelector.hpp>
-
-#include "GenomParser.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -15,29 +11,12 @@ using namespace Typelib;
 
 namespace
 {
-    class GenomModulePrivate : public GenomParser
-    {
-        ::GenomModule* m_reader;
-
-    public:
-        GenomModulePrivate(::GenomModule* reader, antlr::TokenStream& lexer)
-            : GenomParser(lexer), m_reader(reader) {}
-
-        void genomModule(const GenomModule& module)
-        { m_reader -> genomModule(module); }
-        void genomRequest(const GenomRequest& request)
-        { m_reader -> genomRequest(request); }
-        void genomPoster(const GenomPoster& poster)
-        { m_reader -> genomPoster(poster); }
-        void genomExecTask(const GenomExecTask& task)
-        { m_reader -> genomExecTask(task); }
-    };
 }
 
-GenomModule::GenomModule(Registry* registry)
+CImporter::CImporter(Registry* registry)
     : m_registry(registry) {}
 
-bool GenomModule::read(const std::string& file)
+bool CImporter::read(const std::string& file)
 {
     try {
         ifstream s(file.c_str());
@@ -50,17 +29,9 @@ bool GenomModule::read(const std::string& file)
         CPPLexer cpp_lexer(s);
         cpp_lexer.setFilename(file);
 
-        GenomLexer gnm_lexer(cpp_lexer.getInputState());
-        gnm_lexer.setFilename(file);
-
-        TokenStreamSelector selector;
-        selector.addInputStream(&gnm_lexer, "genom");
-        selector.addInputStream(&cpp_lexer, "cpp");
-        selector.select("genom");
-        
-        GenomModulePrivate reader(this, selector);
-        reader.setRegistry(m_registry);
-        reader.setSelector(&selector);
+        TypeSolver reader(&cpp_lexer, m_registry);
+      // reader.setRegistry(m_registry);
+      // reader.setSelector(&selector);
         reader.translation_unit();
     }
     catch (ANTLRException& e) 
@@ -77,42 +48,10 @@ bool GenomModule::read(const std::string& file)
     return true;
 }
 
-void GenomModule::genomModule(const Module& module)
+const Type* CImporter::getSDI() const { return m_registry->get(data); }
+const Registry* CImporter::getRegistry() const { return m_registry; }
+
+void CImporter::dump(std::ostream& to, int mode)
 {
-    this->name  = module.name;
-    this->id    = module.id;
-    this->data  = module.data;
-}
-void GenomModule::genomRequest(const Request& request)
-{ m_requests[request.name] = request; }
-void GenomModule::genomPoster(const Poster& poster)
-{ m_posters[poster.name] = poster; }
-void GenomModule::genomExecTask(const ExecTask& task)
-{ m_tasks[task.name] = task; }
-
-const Type* GenomModule::getSDI() const { return m_registry->get(data); }
-const Registry* GenomModule::getRegistry() const { return m_registry; }
-
-void GenomModule::dump(std::ostream& to, int mode)
-{
-    to << "Module " << name << " (" << id << "), sdi: " << data << endl;
-
-    if (mode & DumpSDIType)
-    {
-        const Type* sdi_type = getSDI();
-        to << sdi_type -> toString("\t", true) << endl;
-    }
-
-    to << "Requests" << endl;
-    for (RequestMap::const_iterator it = m_requests.begin(); it != m_requests.end(); ++it)
-        to << "\t" << it -> first << endl;
-
-    to << "Posters" << endl;
-    for (PosterMap::const_iterator it = m_posters.begin(); it != m_posters.end(); ++it)
-        to << "\t" << it -> first << endl;
-
-    to << "Exec tasks" << endl;
-    for (ExecTaskMap::const_iterator it = m_tasks.begin(); it != m_tasks.end(); ++it)
-        to << "\t" << it -> first << endl;
 }
     

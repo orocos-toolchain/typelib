@@ -52,7 +52,7 @@
 #ifndef CPPSymbol_hpp
 #define CPPSymbol_hpp
 
-#include "DictEntry.hpp"
+#include "DictEntry.hh"
 
 class CPPSymbol : public DictEntry 
 	{

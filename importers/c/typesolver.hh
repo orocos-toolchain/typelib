@@ -1,10 +1,10 @@
 #ifndef __TYPESOLVER_H__
 #define __TYPESOLVER_H__
 
-#include "CPPParser.hpp"
+#include "CPPParser.hh"
 
-#include "type.h"
-#include "typebuilder.h"
+#include "type.hh"
+#include "typebuilder.hh"
 #include <list>
 #include <sstream>
 

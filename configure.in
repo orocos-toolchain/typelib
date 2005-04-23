@@ -41,6 +41,7 @@ AC_CONFIG_FILES(
     Makefile
     tools/Makefile
     typelib/Makefile
+    importers/c/Makefile
 )
 
 ############ Doxygen

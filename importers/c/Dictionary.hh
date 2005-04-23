@@ -60,7 +60,7 @@
 #define Dictionary_hpp
 
 #include <iostream>
-#include "DictEntry.hpp"
+#include "DictEntry.hh"
 
 class Dictionary 
 {

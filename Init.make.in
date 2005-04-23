@@ -15,4 +15,8 @@ LIBXML_LIBS    = @LIBXML_LIBS@
 TYPELIB_CXXFLAGS = -I$(top_srcdir)/typelib $(LIBXML_CFLAGS)
 TYPELIB_LIBS   = $(top_builddir)/typelib/libtypeLib.la
 
+ANTLR= cantlr
+ANTLR_CFLAGS=
+ANTLR_LDFLAGS= -lantlr
+
 

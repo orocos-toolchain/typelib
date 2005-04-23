@@ -62,7 +62,7 @@
 
 #include <string>
 #include <stdlib.h>
-#include "Dictionary.hpp"
+#include "Dictionary.hh"
 
 /* Hashing function described in                   */
 /* "Fast Hashing of Variable-Length Text Strings," */

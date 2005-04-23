@@ -52,8 +52,8 @@
 #ifndef CPPDictionary_hpp
 #define CPPDictionary_hpp
 
-#include "Dictionary.hpp"
-#include "CPPSymbol.hpp"
+#include "Dictionary.hh"
+#include "CPPSymbol.hh"
 
 class CPPDictionary : public Dictionary 
 {

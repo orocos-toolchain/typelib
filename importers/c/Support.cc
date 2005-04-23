@@ -61,8 +61,8 @@
  */
 
 #include <iostream>
-#include "CPPParser.hpp"
-#include "CPPSymbol.hpp"
+#include "CPPParser.hh"
+#include "CPPSymbol.hh"
 
 using namespace std;
 
