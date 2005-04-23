@@ -1,7 +1,7 @@
 #ifndef TYPELIB_GENOM_H
 #define TYPELIB_GENOM_H
 
-#include "plugin.h"
+#include "plugin.hh"
 
 class GenomPlugin : public Plugin
 {

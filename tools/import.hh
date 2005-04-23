@@ -1,7 +1,7 @@
 #ifndef IMPORT_H
 #define IMPORT_H
 
-#include "mode.h"
+#include "mode.hh"
 
 class Import : public Mode
 {

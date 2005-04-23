@@ -1,6 +1,6 @@
-#include "typebuilder.h"
-#include "registry.h"
-#include "type.h"
+#include "typebuilder.hh"
+#include "registry.hh"
+#include "type.hh"
 
 #include <numeric>
 #include <sstream>

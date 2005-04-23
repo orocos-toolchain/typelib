@@ -1,4 +1,4 @@
-#include "packing.h"
+#include "packing.hh"
 
 #include <boost/mpl/fold.hpp>
 #include <boost/mpl/push_front.hpp>

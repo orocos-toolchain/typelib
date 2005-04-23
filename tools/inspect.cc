@@ -1,6 +1,6 @@
-#include "inspect.h"
-#include "registry.h"
-#include "parsing.h"
+#include "inspect.hh"
+#include "registry.hh"
+#include "parsing.hh"
 
 #include <iostream>
 using namespace std;

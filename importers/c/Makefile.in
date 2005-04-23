@@ -1,0 +1,84 @@
+#
+# Copyright (c) 2003-2004 CNRS/LAAS
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+
+top_builddir=	@top_builddir@
+top_srcdir=	@top_srcdir@
+srcdir=		@srcdir@
+builddir=	@builddir@
+
+include $(top_builddir)/Init.make
+# -include $(srcdir)/os/$(OSAPI)/Makefile.inc
+
+INSTALL=	@INSTALL@
+
+CPPFLAGS += $(TYPELIB_CFLAGS) -I$(builddir)
+
+LIB_SRCS = \
+			 Dictionary.cpp Support.cpp genommodule.cpp \
+			 typesolver.cpp GenomParser.cpp GenomLexer.cpp CPPParser.cpp CPPLexer.cpp
+
+ANTLR_GENOM_OUTPUT = genomparser \
+				GenomLexerTokenTypes.hpp GenomLexerTokenTypes.txt \
+				GenomParser.cpp GenomParser.hpp GenomLexer.cpp GenomLexer.hpp
+
+ANTLR_STDC_OUTPUT = cparser \
+				CPPParser.cpp CPPLexer.cpp CPPParser.hpp CPPLexer.hpp \
+				CPPLexerTokenTypes.hpp CPPLexerTokenTypes.txt STDCTokenTypes.hpp STDCTokenTypes.txt
+
+LIB_OBJS=		$(LIB_SRCS:%.cpp=%.lo)
+
+SHLIB_CURRENT=	0
+SHLIB_REVISION=	0
+SHLIB_AGE=			0
+
+LIB=		libgenoType.la
+
+all: $(PCH_DEP) $(LIB)
+
+$(LIB): cparser genomparser $(LIB_OBJS) 
+	$(LTLDCXX) -o $@ $(LIB_OBJS) -rpath $(LIBDIR) -R$(LIBDIR)	\
+		-version-info $(SHLIB_CURRENT):$(SHLIB_REVISION):$(SHLIB_AGE) \
+		$(TYPELIB_LIBS) $(ANTLR_LIBS)
+
+%.lo: %.cpp 
+	$(LTCXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+
+genomparser: genom.g STDCTokenTypes.txt
+	cantlr -o $(builddir) $(srcdir)/genom.g
+	touch genomparser
+
+cparser: cparser.g
+	cantlr -o $(builddir) $(srcdir)/cparser.g
+	touch cparser
+
+clean: 
+	$(LIBTOOL) --mode=clean rm -f \
+						$(LIB_OBJS) $(LIB) $(ANTLR_GENOM_OUTPUT) $(ANTLR_STDC_OUTPUT)
+
+distclean: clean 
+	rm -f DEPENDANCES Makefile
+
+install:: $(LIB) 
+	$(MKINSTALLDIRS) $(LIBDIR) $(BINDIR)
+	$(LIBTOOL) --mode=install $(INSTALL) $(LIB) $(LIBDIR)
+
+ifeq ($(findstring clean,$(MAKECMDGOALS)),)
+depend DEPENDANCES:: cparser genomparser $(LIB_SRCS)
+	$(MKDEP) -c$(CXX) -oDEPENDANCES -t.lo $(CPPFLAGS) $?
+
+include DEPENDANCES
+endif
+

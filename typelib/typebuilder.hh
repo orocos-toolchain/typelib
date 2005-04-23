@@ -4,7 +4,7 @@
 #include <string>
 #include <list>
 
-#include "type.h"
+#include "type.hh"
 
 namespace Typelib
 {

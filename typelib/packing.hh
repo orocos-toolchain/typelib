@@ -1,7 +1,7 @@
 #ifndef __TYPELIB_PACKING_H__
 #define __TYPELIB_PACKING_H__
 
-#include "type.h"
+#include "type.hh"
 #include <list>
 
 namespace Typelib

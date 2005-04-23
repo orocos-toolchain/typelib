@@ -254,8 +254,6 @@ external_declaration
         declaration
 | 	
         SEMICOLON {end_of_stmt();}
-|
-        ("module")=>
 )
 ;	// end of external_declaration
 

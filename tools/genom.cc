@@ -1,11 +1,11 @@
-#include "genom.h"
+#include "genom.hh"
 
 #include <iostream>
 
-#include "genommodule.h"
-#include "preprocess.h"
+#include "genommodule.hh"
+#include "preprocess.hh"
 
-#include "configset.h"
+#include "configset.hh"
 
 #include <boost/tokenizer.hpp>
 

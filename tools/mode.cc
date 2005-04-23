@@ -1,5 +1,5 @@
-#include "mode.h"
-#include "plugin.h"
+#include "mode.hh"
+#include "plugin.hh"
 #include <iostream>
 
 using namespace std;

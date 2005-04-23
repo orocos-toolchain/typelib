@@ -1,63 +1,22 @@
-#
-# Copyright (c) 2003-2004 CNRS/LAAS
-#
-# Permission to use, copy, modify, and distribute this software for any
-# purpose with or without fee is hereby granted, provided that the above
-# copyright notice and this permission notice appear in all copies.
-#
-# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-#
+# -*- Makefile -*-
+# $Id: Makefile,v 1.1.1.1 2005/01/09 14:35:40 fpy Exp $
 
-top_builddir=	@top_builddir@
-top_srcdir=	@top_srcdir@
-srcdir=		@srcdir@
-builddir=	@builddir@
+top_srcdir=@top_srcdir@
+top_builddir=@top_builddir@
+srcdir=@srcdir@
+builddir=@builddir@
 
 include $(top_builddir)/Init.make
-# -include $(srcdir)/os/$(OSAPI)/Makefile.inc
 
-INSTALL=	@INSTALL@
+APP_NAME=typelib
+APP_SRC= import.cc inspect.cc mode.cc plugin.cc preprocess.cc typelib.cc
+APP_CPPFLAGS=$(TYPELIB_CXXFLAGS) $(UTILMM_CXXFLAGS)
+# APP_CXXFLAGS=
+APP_LDFLAGS=$(TYPELIB_LIBS) $(UTILMM_LIBS)
+		
 
-CPPFLAGS += $(TYPELIB_CFLAGS) $(GENOTYPE_CFLAGS) $(CXXUTILS_CFLAGS) -I$(builddir)
+include $(top_srcdir)/mk/app.mk
+include $(top_srcdir)/mk/autotools.mk
+include $(top_srcdir)/mk/depend.mk
 
-SRCS = typelib.cpp preprocess.cpp \
-			 mode.cpp inspect.cpp import.cpp \
-			 plugin.cpp genom.cpp
-			 
-OBJS = $(SRCS:%.cpp=%.lo)
-
-BIN = typelib
-
-all: $(PCH_DEP) $(BIN)
-
-$(BIN): $(OBJS)
-	$(LTLDCXX) -o $@ $(OBJS) -rpath $(LIBDIR) -R$(LIBDIR) \
-		$(TYPELIB_LIBS) $(GENOTYPE_LIBS) $(CXXUTILS_LIBS)
-
-%.lo: %.cpp 
-	$(LTCXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
-
-clean: 
-	$(LIBTOOL) --mode=clean rm -f \
-						$(BIN) $(OBJS)
-
-distclean: clean 
-	rm -f DEPENDANCES Makefile
-
-install:: $(LIB) 
-	$(MKINSTALLDIRS) $(BINDIR)
-	$(LIBTOOL) --mode=install $(INSTALL) $(BIN) $(BINDIR)
-
-ifeq ($(findstring clean,$(MAKECMDGOALS)),)
-depend DEPENDANCES:: $(SRCS)
-	$(MKDEP) -c$(CXX) -oDEPENDANCES -t.lo $(CPPFLAGS) $?
-
-include DEPENDANCES
-endif
 

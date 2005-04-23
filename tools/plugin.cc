@@ -1,4 +1,4 @@
-#include "plugin.h"
+#include "plugin.hh"
 
 using namespace std;
 

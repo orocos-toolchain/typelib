@@ -1,10 +1,10 @@
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
 
-#include "inspect.h"
-#include "import.h"
+#include "inspect.hh"
+#include "import.hh"
 
-#include "genom.h"
+#include "genom.hh"
 
 using namespace std;
 

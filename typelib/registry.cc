@@ -1,12 +1,12 @@
-#include "registry.h"
+#include "registry.hh"
 
-#include "typebuilder.h"
+#include "typebuilder.hh"
 #include <memory>
 #include <iostream>
 #include <fstream>
 using namespace std;
 
-#include "parsing.h"
+#include "parsing.hh"
 using namespace Parsing;
 
 #include <libxml/xmlmemory.h>

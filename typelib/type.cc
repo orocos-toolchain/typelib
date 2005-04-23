@@ -1,4 +1,4 @@
-#include "type.h"
+#include "type.hh"
 
 #include <iostream>
 #include <sstream>
@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include "packing.h"
+#include "packing.hh"
 using namespace std;
 
 #include <iostream>

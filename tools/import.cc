@@ -1,16 +1,18 @@
-#include "import.h"
+#include "import.hh"
 
-#include "plugin.h"
+#include "plugin.hh"
 
-#include "registry.h"
-#include "commandline.h"
-#include "configset.h"
+#include "registry.hh"
+#include "commandline.hh"
+using utilmm::command_line;
+#include "configset.hh"
+using utilmm::config_set;
 
 #include <algorithm>
 #include <iterator>
 #include <iostream>
 
-#include "genom.h"
+#include "genom.hh"
 
 using namespace std;
 using namespace Utils;
@@ -39,24 +41,24 @@ bool Import::apply(int argc, char* const argv[])
     }
 
     Registry  registry;
-    ConfigSet config;
+    config_set config;
 
     std::list<string> options = plugin->getOptions();
     options.push_back(":nspace=string|Namespace to import types into");
     options.push_back("dry:dry-run|Do not save the registry, just display the imported types");
-    Commandline commandline(options);
+    command_line commandline(options);
     if (!commandline.parse(argc - 1, argv + 1, &config))
         return false;
 
-    std::string nspace = config.getString("nspace", "/");
+    std::string nspace = config.get_string("nspace", "/");
     if (!registry.setDefaultNamespace( nspace ))
     {
         cerr << "Invalid namespace option " << nspace << endl;
         return false;
     }
 
-    std::string output = config.getString("output", "");
-    bool dry = config.getBool("dry", false);
+    std::string output = config.get_string("output", "");
+    bool dry = config.get_bool("dry", false);
 
     list<string> remaining = commandline.remaining();
     if (remaining.size() > 2)

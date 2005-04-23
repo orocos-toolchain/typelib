@@ -5,7 +5,7 @@
 #include <list>
 #include <map>
 
-#include "typename.h"
+#include "typename.hh"
   
 namespace Typelib
 {

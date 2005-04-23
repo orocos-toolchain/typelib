@@ -1,7 +1,7 @@
 #ifndef REGISTRY_H
 #define REGISTRY_H
 
-#include "type.h"
+#include "type.hh"
 #include <libxml/parser.h>
 
 namespace Typelib

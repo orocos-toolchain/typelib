@@ -1,4 +1,4 @@
-#include "typename.h"
+#include "typename.hh"
 #include <boost/static_assert.hpp>
 
 using namespace std;

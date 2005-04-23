@@ -1,4 +1,4 @@
-#include "preprocess.h"
+#include "preprocess.hh"
 
 #include <sys/types.h>
 #include <sys/stat.h>
