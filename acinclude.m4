@@ -1,0 +1,10 @@
+builtin(include,aclocal/general.m4)
+builtin(include,aclocal/debug.m4)
+builtin(include,aclocal/boost.m4)
+builtin(include,aclocal/doxygen.m4)
+dnl builtin(include,aclocal/gdal.m4)
+dnl builtin(include,aclocal/gdhe.m4)
+dnl builtin(include,aclocal/boost.m4)
+dnl builtin(include,aclocal/apr_threads.m4)
+dnl builtin(include,aclocal/pocolibs.m4)
+
