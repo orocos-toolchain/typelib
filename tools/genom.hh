@@ -10,7 +10,7 @@ public:
 
     virtual OptionList getOptions() const;
     virtual bool apply(const OptionList& remaining
-            , const Utils::ConfigSet& options
+            , const utilmm::config_set& options
             , Typelib::Registry* registry);
 };
 

@@ -18,7 +18,7 @@ HAVE_DOX="no"
 if test -f Doxygen.in; then
     HAVE_DOX="yes" 
     CLBS_INIT_DOXYGEN( , , [
-      AC_MSG_WARN([Cannot find doxygen])
+      AC_MSG_NOTICE([Cannot find doxygen])
       HAVE_DOX="no"
     ])
 fi

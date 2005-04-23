@@ -10,7 +10,6 @@
 #include <boost/tokenizer.hpp>
 
 using namespace std;
-using namespace Utils;
 using namespace boost;
 using Typelib::Registry;
 

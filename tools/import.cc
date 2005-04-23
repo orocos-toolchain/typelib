@@ -3,25 +3,21 @@
 #include "plugin.hh"
 
 #include "registry.hh"
-#include "commandline.hh"
+#include "utilmm/configfile/commandline.hh"
 using utilmm::command_line;
-#include "configset.hh"
+#include "utilmm/configfile/configset.hh"
 using utilmm::config_set;
 
 #include <algorithm>
 #include <iterator>
 #include <iostream>
 
-#include "genom.hh"
-
 using namespace std;
-using namespace Utils;
 using Typelib::Registry;
 
 Import::Import()
     : Mode("import") 
 { 
-    addPlugin(new GenomPlugin);
 }
 
 bool Import::apply(int argc, char* const argv[])

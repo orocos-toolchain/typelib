@@ -35,7 +35,6 @@ int main(int argc, char** argv)
     registerMode(new Inspect);
     Mode* regmode = new Import;
     registerMode(regmode);
-    regmode -> addPlugin( new GenomPlugin );
 
     if (argc < 2) 
         usage();
