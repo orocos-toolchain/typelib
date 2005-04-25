@@ -13,11 +13,7 @@ build: $(APP_NAME)
 $(APP_NAME): $(APP_OBJS) $(APP_EXTRAS)
 	$(LTLD) $(LDFLAGS) $(APP_LDFLAGS) -o $@ $(APP_OBJS) $(APP_EXTRAS) $(LIBS) $(APP_LIBS)
 
-%.o: %.c
-	$(CC)  $(CFLAGS) $(APP_CFLAGS) -c $(CPPFLAGS) $(APP_CPPFLAGS) $< -o $@ 
-
-%.o: %.cc
-	$(CXX) $(CXXFLAGS) $(APP_CXXFLAGS) -c $(CPPFLAGS) $(APP_CPPFLAGS) $< -o $@ 
+include $(top_srcdir)/mk/compile.mk
 
 ############### Clean
 clean: app-clean

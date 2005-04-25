@@ -35,7 +35,13 @@ CXXFLAGS = @CXXFLAGS@ $(GNU_CXX_EXTRA_FLAGS)
 USE_PCH  = @USE_PCH@
 PCH_HEADER = @PCH_HEADER@
 
-LIBTOOL = @LIBTOOL@
+VERBOSE  ?= 0
+ifneq ($(VERBOSE),1)
+COMMAND_PREFIX=@echo $(DESCRIPTION) &&
+LIBTOOL_OPTIONS=--silent
+endif
+
+LIBTOOL = @LIBTOOL@ $(LIBTOOL_OPTIONS)
 LTCC    = $(LIBTOOL) --mode=compile $(CC)
 LTCXX   = $(LIBTOOL) --mode=compile $(CXX)
 LTLD    = $(LIBTOOL) --mode=link    $(CXX)

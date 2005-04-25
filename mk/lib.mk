@@ -10,15 +10,13 @@ $(MODULE)-build-lib: $(builddir)/$(build_lib)
 
 $(MODULE)_OBJS=	$(patsubst %.cc,%.lo,$($(MODULE)_SRC:%.c=%.lo))
 
+$(build_lib): DESCRIPTION='Linking $@ (libtool)'
 $(build_lib): $($(MODULE)_OBJS)
-	$(LTLD) -o $@ -rpath $(libdir) -version-info $($(MODULE)_VERSION):$($(MODULE)_REVISION):$($(MODULE)_AGE) \
+	$(COMMAND_PREFIX)$(LTLD) -o $@ -rpath $(libdir) -version-info $($(MODULE)_VERSION):$($(MODULE)_REVISION):$($(MODULE)_AGE) \
 								$(LDFLAGS) $($(MODULE)_LDFLAGS) $(LIBS) $($(MODULE)_LIBS) $^
 
-%.lo: %.c
-	$(LTCXX) $(CFLAGS) $($(MODULE)_CXXFLAGS) -c $(CPPFLAGS) $($(MODULE)_CPPFLAGS) -o $@ $<
 
-%.lo: %.cc
-	$(LTCXX) $(CXXFLAGS) $($(MODULE)_CXXFLAGS) -c $(CPPFLAGS) $($(MODULE)_CPPFLAGS) -o $@ $<
+include $(top_srcdir)/mk/compile.mk
 
 ################ Install
 install: $(libdir)/$(build_lib)
