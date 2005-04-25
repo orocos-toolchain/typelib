@@ -30,7 +30,7 @@ public:
     virtual bool apply(
               const OptionList& remaining
             , const utilmm::config_set& options
-            , Typelib::Registry* registry) = 0;
+            , Typelib::Registry& registry) = 0;
 
 private:
     std::string m_name;

@@ -9,7 +9,7 @@ builddir=@builddir@
 
 include $(top_builddir)/Init.make
 
-SUBDIRS = typelib tools
+SUBDIRS = typelib importers tools 
 
 .PHONY: build doc
 

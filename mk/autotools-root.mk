@@ -1,5 +1,5 @@
 distclean:
-	rm -f config.status libtool $(CONFIG_FILES) config.log
+	rm -f config.status libtool config.log $(CONFIG_OUTPUT_FILES) 
 
 include $(top_srcdir)/mk/autotools.mk
 

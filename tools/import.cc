@@ -8,6 +8,8 @@ using utilmm::command_line;
 #include "utilmm/configfile/configset.hh"
 using utilmm::config_set;
 
+#include "cimportplugin.hh"
+
 #include <algorithm>
 #include <iterator>
 #include <iostream>
@@ -18,6 +20,7 @@ using Typelib::Registry;
 Import::Import()
     : Mode("import") 
 { 
+    addPlugin( new CImportPlugin );
 }
 
 bool Import::apply(int argc, char* const argv[])
@@ -70,7 +73,7 @@ bool Import::apply(int argc, char* const argv[])
         return false;
     }
 
-    if (! plugin->apply(remaining, config, &registry))
+    if (! plugin->apply(remaining, config, registry))
         return false;
 
     if (dry)

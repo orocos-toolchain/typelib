@@ -14,7 +14,9 @@ MODULE = cimport
 # If LIB_NAME is not set, lib.mk uses $(PACKAGE)_$(MODULE)
 # LIB_NAME = cimport
 
-cimport-build-lib: cparser
+ifeq ($(findstring clean,$(MAKECMDGOALS)),)
+Makefile: cparser
+endif
 
 # Grammar build
 cimport_ANTLR = cparser \
@@ -38,7 +40,7 @@ clean: antlr-clean
 antlr-clean:
 	rm -f $(cimport_ANTLR)
 
-cimport_SRC = Dictionary.cc Support.cc \
+cimport_SRC = cimporter.cc Dictionary.cc Support.cc \
 			typesolver.cc CPPParser.cc CPPLexer.cc \
 			CPPParser.cc CPPLexer.cc
 
@@ -47,8 +49,9 @@ cimport_VERSION = 0
 cimport_AGE = 0
 cimport_REVISION = 1
 
-cimport_CPPFLAGS = $(TYPELIB_CXXFLAGS) $(ANTLR_CFLAGS)
-cimport_LDFLAGS = $(ANTLR_LDFLAGS) 
+cimport_CPPFLAGS = $(TYPELIB_CXXFLAGS) $(ANTLR_CFLAGS) $(UTILMM_CXXFLAGS)
+cimport_LDFLAGS = $(ANTLR_LDFLAGS) $(UTILMM_LDFLAGS) -lutilmm_configfile -lutilmm_system \
+		  $(BOOST_FILESYSTEM_LDFLAGS)
 cimport_LIBS= $(TYPELIB_LIBS)
 
 ############ end: cimport

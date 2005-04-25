@@ -1,5 +1,5 @@
-#ifndef REGISTRY_H
-#define REGISTRY_H
+#ifndef TYPELIB_REGISTRY_H
+#define TYPELIB_REGISTRY_H
 
 #include "type.hh"
 #include <libxml/parser.h>

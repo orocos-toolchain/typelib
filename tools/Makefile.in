@@ -9,11 +9,11 @@ builddir=@builddir@
 include $(top_builddir)/Init.make
 
 APP_NAME=typelib
-APP_SRC= import.cc inspect.cc mode.cc plugin.cc preprocess.cc typelib.cc 
-APP_CPPFLAGS=$(TYPELIB_CXXFLAGS) $(UTILMM_CXXFLAGS)
+APP_SRC= import.cc inspect.cc mode.cc plugin.cc preprocess.cc typelib.cc cimportplugin.cc
+APP_CPPFLAGS=$(TYPELIB_CXXFLAGS) $(UTILMM_CXXFLAGS) -I$(top_srcdir)/importers
 # APP_CXXFLAGS=
-APP_LDFLAGS=$(TYPELIB_LIBS) $(UTILMM_LDFLAGS)
-APP_LIBS=-lutilmm_configfile
+APP_LDFLAGS=$(TYPELIB_LIBS) $(UTILMM_LDFLAGS) -lutilmm_configfile
+APP_LIBS=$(top_builddir)/importers/c/libtypeLib_cimport.la
 		
 
 include $(top_srcdir)/mk/app.mk
