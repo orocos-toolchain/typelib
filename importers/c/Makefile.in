@@ -14,16 +14,12 @@ MODULE = cimport
 # If LIB_NAME is not set, lib.mk uses $(PACKAGE)_$(MODULE)
 # LIB_NAME = cimport
 
-ifeq ($(findstring clean,$(MAKECMDGOALS)),)
-Makefile: cparser
-endif
-
 # Grammar build
-cimport_ANTLR = cparser \
-			CPPParser.cc CPPLexer.cc CPPParser.hh CPPLexer.hh \
-			CPPLexerTokenTypes.hh CPPLexerTokenTypes.txt STDCTokenTypes.hh STDCTokenTypes.txt
+cimport_ANTLR = \
+		CPPParser.cc CPPLexer.cc CPPParser.hh CPPLexer.hh \
+		CPPLexerTokenTypes.hh CPPLexerTokenTypes.txt STDCTokenTypes.hh STDCTokenTypes.txt
 
-cparser: cparser.g
+CPPParser.cc CPPLexer.cc: cparser.g
 	$(ANTLR) -o $(builddir) $(srcdir)/cparser.g
 	for i in $(filter %.cc,$(cimport_ANTLR)); do \
 		mv $${i/.cc/.cpp} $$i; \
@@ -34,22 +30,24 @@ cparser: cparser.g
 		mv $${i/.hh/.hpp} $$i; \
 		sed -i 's/\.hpp"/.hh"/' $$i; \
 	done
-	touch cparser
 
 clean: antlr-clean
 antlr-clean:
 	rm -f $(cimport_ANTLR)
 
+VPATH+=:$(builddir)
+
+
+
 cimport_SRC = cimporter.cc Dictionary.cc Support.cc \
-			typesolver.cc CPPParser.cc CPPLexer.cc \
-			CPPParser.cc CPPLexer.cc
+			typesolver.cc CPPParser.cc CPPLexer.cc
 
 # read info libtool about these variables
 cimport_VERSION = 0
 cimport_AGE = 0
 cimport_REVISION = 1
 
-cimport_CPPFLAGS = $(TYPELIB_CXXFLAGS) $(ANTLR_CFLAGS) $(UTILMM_CXXFLAGS)
+cimport_CPPFLAGS = $(TYPELIB_CXXFLAGS) $(ANTLR_CFLAGS) $(UTILMM_CXXFLAGS) -I$(builddir) -I$(srcdir)
 cimport_LDFLAGS = $(ANTLR_LDFLAGS) $(UTILMM_LDFLAGS) -lutilmm_configfile -lutilmm_system \
 		  $(BOOST_FILESYSTEM_LDFLAGS)
 cimport_LIBS= $(TYPELIB_LIBS)
