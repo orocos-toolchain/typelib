@@ -78,7 +78,8 @@ namespace Typelib
         m_namespace = getNormalizedNamespace(space);
         //cout << "Setting default namespace to " << m_namespace << endl;
 
-        m_current = NameMap(m_global.begin(), m_global.end());
+        for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
+            m_current.insert( make_pair(it->first, it->second.get()) );
 
         NameTokenizer tokens( m_namespace );
         NameTokenizer::const_iterator ns_it = tokens.begin();
@@ -112,7 +113,7 @@ namespace Typelib
         while ( it != m_global.end() && isInNamespace(it->first, norm_name, false) )
         {
             const std::string rel_name(it->first, norm_length, string::npos);
-            m_current.insert( make_pair(rel_name, it->second) );
+            m_current.insert( make_pair(rel_name, it->second.get()) );
             ++it;
         }
     }
@@ -127,22 +128,22 @@ namespace Typelib
     void Registry::addStandardTypes()
     {
         BOOST_STATIC_ASSERT((NamespaceMark == '/'));
-        add(new Type("/char", sizeof(char), Type::SInt), "__stdtypes__");
-        add(new Type("/signed char", sizeof(char), Type::SInt), "__stdtypes__");
-        add(new Type("/unsigned char", sizeof(unsigned char), Type::UInt), "__stdtypes__");
-        add(new Type("/short", sizeof(short), Type::SInt), "__stdtypes__");
-        add(new Type("/signed short", sizeof(short), Type::SInt), "__stdtypes__");
-        add(new Type("/unsigned short", sizeof(unsigned short), Type::UInt), "__stdtypes__");
-        add(new Type("/int", sizeof(int), Type::SInt), "__stdtypes__");
-        add(new Type("/signed", sizeof(signed), Type::SInt), "__stdtypes__");
-        add(new Type("/signed int", sizeof(int), Type::SInt), "__stdtypes__");
-        add(new Type("/unsigned", sizeof(unsigned), Type::UInt), "__stdtypes__");
-        add(new Type("/unsigned int", sizeof(unsigned int), Type::UInt), "__stdtypes__");
-        add(new Type("/long", sizeof(long), Type::SInt), "__stdtypes__");
-        add(new Type("/unsigned long", sizeof(unsigned long), Type::UInt), "__stdtypes__");
+        add(new Numeric("/char", sizeof(char), Type::SInt), "__stdtypes__");
+        add(new Numeric("/signed char", sizeof(char), Type::SInt), "__stdtypes__");
+        add(new Numeric("/unsigned char", sizeof(unsigned char), Type::UInt), "__stdtypes__");
+        add(new Numeric("/short", sizeof(short), Type::SInt), "__stdtypes__");
+        add(new Numeric("/signed short", sizeof(short), Type::SInt), "__stdtypes__");
+        add(new Numeric("/unsigned short", sizeof(unsigned short), Type::UInt), "__stdtypes__");
+        add(new Numeric("/int", sizeof(int), Type::SInt), "__stdtypes__");
+        add(new Numeric("/signed", sizeof(signed), Type::SInt), "__stdtypes__");
+        add(new Numeric("/signed int", sizeof(int), Type::SInt), "__stdtypes__");
+        add(new Numeric("/unsigned", sizeof(unsigned), Type::UInt), "__stdtypes__");
+        add(new Numeric("/unsigned int", sizeof(unsigned int), Type::UInt), "__stdtypes__");
+        add(new Numeric("/long", sizeof(long), Type::SInt), "__stdtypes__");
+        add(new Numeric("/unsigned long", sizeof(unsigned long), Type::UInt), "__stdtypes__");
 
-        add(new Type("/float", sizeof(float), Type::Float), "__stdtypes__");
-        add(new Type("/double", sizeof(double), Type::Float), "__stdtypes__");
+        add(new Numeric("/float", sizeof(float), Type::Float), "__stdtypes__");
+        add(new Numeric("/double", sizeof(double), Type::Float), "__stdtypes__");
     }
 
     int Registry::getCount() const { return m_persistent.size(); }
@@ -155,7 +156,7 @@ namespace Typelib
         if (! build)
             return false;
 
-        const Type* base_type = TypeBuilder::getBaseType(this, getFullName(name));
+        const Type* base_type = TypeBuilder::getBaseType(*this, getFullName(name));
         return base_type;
     }
 
@@ -165,7 +166,15 @@ namespace Typelib
         if (type)
             return type;
 
-        return TypeBuilder::build(this, getFullName(name));
+        return TypeBuilder::build(*this, getFullName(name));
+    }
+
+    Type* Registry::get_(const std::string& name)
+    {
+        NameMap::const_iterator it = m_current.find(name);
+        if (it != m_current.end()) 
+            return it->second;
+        return 0;
     }
 
     const Type* Registry::get(const std::string& name) const
@@ -185,27 +194,42 @@ namespace Typelib
         return ret;
     }
 
+    void Registry::add(std::string const& name, Type* new_type, std::string const& source_id)
+    {
+        const Type* old_type = get(name);
+        if (old_type == new_type) 
+            return; 
+        else if (old_type)
+            throw AlreadyDefined(name);
+
+        const Type::Category cat(new_type -> getCategory());
+        if (cat != Type::Array && cat != Type::Pointer && source_id != "__stdtypes__")
+            m_persistent.push_back( make_pair(source_id, new_type) );
+
+        m_global.insert (make_pair(name, new_type));
+        m_current.insert(make_pair(name, new_type));
+        m_current.insert(make_pair(getTypename(name), new_type));
+    }
+
     void Registry::add(Type* new_type, const std::string& source_id)
     {
         std::string name(new_type -> getName());
         if (! isValidTypename(name, true))
             throw BadName(name);
             
-        const Type* old_type = get(name);
-        if (old_type == new_type) 
-            return;
+        add(name, new_type, source_id);
+    }
 
-        if (old_type)
-            throw AlreadyDefined(old_type, new_type);
+    void Registry::alias(std::string const& base, std::string const& alias, std::string const& source_id)
+    {
+        if (! isValidTypename(alias, true))
+            throw BadName(alias);
 
-        const Type::Category cat(new_type -> getCategory());
-        if (cat != Type::Array && cat != Type::Pointer && source_id != "__stdtypes__")
-            m_persistent.push_back( make_pair(source_id, new_type) );
+        Type* base_type = get_(base);
+        if (! base_type) 
+            throw Undefined(base);
 
-        m_global.insert(make_pair(name, new_type));
-        m_current.insert(make_pair(name, new_type));
-        m_current.insert(make_pair(getTypename(name), new_type));
-        //cout << "New type: " << name << " " << getTypename(name) << endl;
+        add(alias, base_type, source_id);
     }
 
     void Registry::clear()
@@ -223,7 +247,7 @@ namespace Typelib
 
 
 
-
+#if 0
     /******************************************************************************************
      *  Serialization support
      */
@@ -505,6 +529,7 @@ namespace Typelib
                 stream << "\t" << type -> getName() << endl;
         }
     }
+#endif
 
 }; // namespace Typelib
 

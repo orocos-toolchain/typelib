@@ -1,65 +1,25 @@
 #ifndef __TYPELIB_PACKING_H__
 #define __TYPELIB_PACKING_H__
 
-#include "type.hh"
-#include <list>
-
 namespace Typelib
 {
-    template<class Discover>
-    struct packingof
+    class Compound;
+    class Field;
+
+    namespace Packing
     {
-        typedef typename Discover::First    First;
-        typedef typename Discover::Second   Second;
+        struct PackingUnknown {};
 
-        static const int packing = offsetof(Discover, second);
-    };
+        /** For now, you can't ask for the offset of an empy 
+         * structure (struct {};) in a structure */
+        struct FoundNullStructure : public PackingUnknown {};
+        /** For now, you can't ask for the offset of an union 
+         * in a structure */
+        struct FoundUnion : public PackingUnknown {};
 
-    template<typename A, typename B>
-    struct discover
-    {
-        typedef A First;
-        typedef B Second;
-
-        A first;
-        B second;
-    };
-
-    template<typename A, typename B>
-    struct discover_arrays
-    {
-        typedef A  First;
-        typedef B  Second;
-
-        A first;
-        B second[10];
-    };
-
-    struct Packing
-    {
-        Type::Category category;
-        size_t         size;
-
-        int            packing;
-    };
-
-    struct PackingInfo
-    {
-        static std::list< Packing > packing;
-        static void dump();
-
-        static int  getOffsetOf(const Field& cur_field, const Field& append_field);
-    };
-
-
-    class PackingUnknown : public std::exception
-    {
-        const Type::Category m_category;
-        const size_t         m_size;
-    public:
-        PackingUnknown(Type::Category cat, size_t size)
-            : m_category(cat), m_size(size) {}
-    };
+        int getOffsetOf(Compound const& compound, Field const& append);
+        int getOffsetOf(Field const& last_field, Field const& append);
+    }
 };
 
 #endif

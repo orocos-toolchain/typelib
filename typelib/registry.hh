@@ -1,8 +1,10 @@
 #ifndef TYPELIB_REGISTRY_H
 #define TYPELIB_REGISTRY_H
 
-#include "type.hh"
+#include "typemodel.hh"
 #include <libxml/parser.h>
+
+#include <boost/shared_ptr.hpp>
 
 namespace Typelib
 {
@@ -29,19 +31,15 @@ namespace Typelib
 
     class AlreadyDefined : public RegistryException
     {
-        const Type* m_old;
-        Type*       m_new;
-
+        std::string m_name;
     public:
-        AlreadyDefined(const Type* old_type, Type* new_type)
-            : m_old(old_type), m_new(new_type) {}
+        AlreadyDefined(std::string const& name)
+            : m_name(name) {}
         ~AlreadyDefined() throw() { }
 
-        const Type* getOld() const { return m_old; }
-        Type*       getNew() const { return m_new; }
-
+        std::string getName() const { return m_name; }
         std::string toString() const throw() 
-        { return "Type " + m_old->getName() + " already defined in registry"; }
+        { return "Type " + m_name + " already defined in registry"; }
     };
 
     class AlreadyDefinedName : public RegistryException
@@ -80,7 +78,7 @@ namespace Typelib
 
         typedef std::map
             <const std::string
-            , Type *
+            , boost::shared_ptr<Type>
             , bool (*) (const std::string&, const std::string&)
             >     TypeMap;
 
@@ -94,7 +92,10 @@ namespace Typelib
 
         void addStandardTypes();
         //void loadDefaultLibraries();
-        void loadLibraryDir(const std::string& path);
+        //void loadLibraryDir(const std::string& path);
+
+        void add(std::string const& name, Type* new_type, std::string const& source_id);
+        Type* get_(const std::string& name);
 
     public:
         Registry();
@@ -131,6 +132,11 @@ namespace Typelib
          */
         void        add(Type* type, const std::string& file = "");
 
+        /** Creates an alias
+         * @arg the base type
+         * @arg the alias name
+         */
+        void        alias(std::string const& base, std::string const& alias, std::string const& source_id = "");
 
         void        clear();
         int         getCount() const;
@@ -146,18 +152,19 @@ namespace Typelib
          * Note that any type not defined in this registry shall already been defined
          * in the registry. In particular, there is no support for forward declarations
          */
-        void load(const std::string& path);
+        //void load(const std::string& path);
 
         /** Saves the registry in a XML file in \c path
          * @path the path of the destination file
          * @save_all if true, all the registry will be saved. Otherwise, we save only types
          * not defined in other registries (as seen by load)
          */
-        bool save(const std::string& path, bool save_all = false) const;
+        //bool save(const std::string& path, bool save_all = false) const;
 
-        std::string getDefinitionFile(const Type* type) const;
+        //std::string getDefinitionFile(const Type* type) const;
 
 
+        /*
         enum DumpMode
         {
             NameOnly = 0, 
@@ -166,6 +173,7 @@ namespace Typelib
             RecursiveTypeDump = 4
         };
         void dump(std::ostream& stream, int dumpmode = AllType, const std::string& file = "*") const;
+        */
     };
 
 

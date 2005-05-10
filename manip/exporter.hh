@@ -1,0 +1,5 @@
+#ifndef TYPELIB_MANIP_EXPORTER
+#define TYPELIB_MANIP_EXPORTER
+
+#endif
+

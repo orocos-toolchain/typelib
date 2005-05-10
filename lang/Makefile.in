@@ -9,7 +9,7 @@ builddir=@builddir@
 
 include $(top_builddir)/Init.make
 
-SUBDIRS = c
+SUBDIRS = cimport
 
 build: recurse-build
 install: recurse-install

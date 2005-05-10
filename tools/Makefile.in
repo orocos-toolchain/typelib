@@ -10,10 +10,10 @@ include $(top_builddir)/Init.make
 
 APP_NAME=typelib
 APP_SRC= import.cc inspect.cc mode.cc plugin.cc preprocess.cc typelib.cc cimportplugin.cc
-APP_CPPFLAGS=$(TYPELIB_CXXFLAGS) $(UTILMM_CXXFLAGS) -I$(top_srcdir)/importers
+APP_CPPFLAGS=$(TYPELIB_CXXFLAGS) $(UTILMM_CXXFLAGS) -I$(top_srcdir)
 # APP_CXXFLAGS=
 APP_LDFLAGS=$(TYPELIB_LIBS) $(UTILMM_LDFLAGS) -lutilmm_configfile
-APP_LIBS=$(top_builddir)/importers/c/libtypeLib_cimport.la
+APP_LIBS=$(top_builddir)/lang/cimport/libtypeLib_cimport.la $(ANTLR_LDFLAGS)
 		
 
 include $(top_srcdir)/mk/app.mk

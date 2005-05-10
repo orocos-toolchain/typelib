@@ -1,5 +1,5 @@
 #include "cimportplugin.hh"
-#include "c/cimporter.hh"
+#include "lang/cimport/cimporter.hh"
 
 #include <iostream>
 
@@ -35,7 +35,7 @@ bool CImportPlugin::apply(const OptionList& remaining, const config_set& options
     {
         CImporter importer;
         size_t old_count(registry.getCount());
-        importer.import(file, options, registry);
+        importer.load(file, options, registry);
 
         cout << "Found " << registry.getCount() - old_count << " types in " << file << endl;
         return true;

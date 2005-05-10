@@ -76,10 +76,12 @@ bool Import::apply(int argc, char* const argv[])
     if (! plugin->apply(remaining, config, registry))
         return false;
 
+    /*
     if (dry)
         registry.dump(std::cout, Registry::AllType, "*");
     else if (! registry.save(remaining.back(), false))
         cerr << "Error saving registry " << output << endl;
+        */
     
     return true;    
 }

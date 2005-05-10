@@ -12,7 +12,7 @@ include $(top_builddir)/Init.make
 MODULE = typeLib
 LIB_NAME = typeLib
 
-typeLib_SRC = packing.cc registry.cc typebuilder.cc type.cc typename.cc
+typeLib_SRC = packing.cc registry.cc typebuilder.cc typemodel.cc typename.cc
 
 # read info libtool about these variables
 typeLib_VERSION = 0

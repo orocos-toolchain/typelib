@@ -26,6 +26,7 @@ dep-gen: $(DEP_FILES)
 endif
 
 clean: dep-clean
+dep-clean: DESCRIPTION='Cleaning $(CURDIR) (dependencies)'
 dep-clean:
-	-rm -f $(DEP_FILES)
+	-$(COMMAND_PREFIX)rm -f $(DEP_FILES)
 

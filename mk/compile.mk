@@ -7,6 +7,7 @@
 %.lo: %.cc
 	$(COMMAND_PREFIX)$(LTCXX) $(CXXFLAGS) $($(MODULE)_CXXFLAGS) -c $(CPPFLAGS) $($(MODULE)_CPPFLAGS) -o $@ $<
 
+%.o: DESCRIPTION="Compiling $(notdir $@)"
 %.o: %.c
 	$(COMMAND_PREFIX)$(CC)  $(CFLAGS) $(APP_CFLAGS) -c $(CPPFLAGS) $(APP_CPPFLAGS) $< -o $@ 
 

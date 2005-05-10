@@ -1,20 +1,19 @@
 #ifndef TYPELIB_IMPORTER_HH
 #define TYPELIB_IMPORTER_HH
 
-#include <string>
-
+namespace std    { class string; }
 namespace utilmm { class config_set; }
 
 namespace Typelib
 {
     class Registry;
-    class Importer
+    class Exporter
     {
         public:
-            virtual bool load
+            virtual bool save
                 (std::string const& path
                 , utilmm::config_set const& config
-                , Registry& registry) = 0;
+                , Registry const& registry) = 0;
     };
 }
 

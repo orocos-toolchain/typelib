@@ -17,6 +17,7 @@ bool Inspect::apply(int argc, char* const argv[])
         return false;
     }
 
+    /*
     std::string repository = argv[1];
     Registry registry;
     try { registry.load(repository); }
@@ -32,6 +33,7 @@ bool Inspect::apply(int argc, char* const argv[])
     }
 
     registry.dump(cout, Registry::AllType | Registry::WithSourceId);
+    */
     return true;
 }
 void Inspect::help(std::ostream& out) const

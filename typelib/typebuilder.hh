@@ -4,7 +4,7 @@
 #include <string>
 #include <list>
 
-#include "type.hh"
+#include "typemodel.hh"
 
 namespace Typelib
 {
@@ -13,7 +13,7 @@ namespace Typelib
     class TypeBuilder
     {
         std::string m_basename;
-        const Type* m_type;
+        Type const* m_type;
 
         struct Modifier
         {
@@ -23,23 +23,39 @@ namespace Typelib
         typedef std::list<Modifier> ModifierList;
         typedef std::pair<const Type*, ModifierList> TypeSpec;
 
-        static TypeSpec parse(const Registry* registry, const std::string& full_name);
-        static const Type* build(Registry* registry, const TypeSpec& spec);
+        static TypeSpec parse(const Registry& registry, const std::string& full_name);
+        static const Type& build(Registry& registry, const TypeSpec& spec);
 
-        Registry* m_registry;
+        Registry& m_registry;
 
     public:
-        TypeBuilder(Registry* registry, const std::list<std::string>& base);
-        TypeBuilder(Registry* registry, const Type* base_type);
+        /** Initializes the type builder
+         * This constructor builds the canonical name based on @c base
+         * an gets its initial type from @c registry. It throws 
+         * Undefined(typename) if @c base is not defined
+         *
+         * @arg registry the registry to act on
+         * @arg base the base type
+         */
+        TypeBuilder(Registry& registry, const std::list<std::string>& base);
 
+        /** Initializes the type builder
+         * @arg registry the registry to act on
+         * @arg base_type the base type
+         */
+        TypeBuilder(Registry& registry, const Type* base_type);
+
+        /** Builds a level-deferenced pointer of the current type */
         void addPointer(int level);
+        /** Builds an array of @c size element of the current type */
         void addArray(int size);
 
-        const Type* getType() const;
+        /** Get the current type */
+        const Type& getType() const;
 
-        static const Type* build(Registry* registry, const std::string& full_name);
-        static const Type* getBaseType(const Registry* registry, const std::string& full_name);
-    };
+        static const Type* build(Registry& registry, const std::string& full_name);
+        static const Type* getBaseType(const Registry& registry, const std::string& full_name);
+};
 };
 
 #endif

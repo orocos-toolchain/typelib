@@ -20,14 +20,16 @@ include $(top_srcdir)/mk/compile.mk
 
 ################ Install
 install: $(libdir)/$(build_lib)
+$(libdir)/$(build_lib): DESCRIPTION='Installing $(notdir $(build_lib)) (libtool)'
 $(libdir)/$(build_lib): $(build_lib)
 	$(INSTALL_DIR) $(libdir)
-	$(INSTALL_LIB) $(build_lib) $(libdir)
+	$(COMMAND_PREFIX)$(INSTALL_LIB) $(build_lib) $(libdir)
 
 ################ Cleanup
 clean: $(MODULE)-lib-clean
+$(MODULE)-lib-clean: DESCRIPTION='Cleaning $(CURDIR) (libtool)'
 $(MODULE)-lib-clean:
-	-$(LTRM) $(build_lib) $($(MODULE)_OBJS)
+	-$(COMMAND_PREFIX)$(LTRM) $(build_lib) $($(MODULE)_OBJS)
 
 ################ Dependencies
 DEP_SRC += $($(MODULE)_SRC)

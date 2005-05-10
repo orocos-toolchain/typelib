@@ -1,286 +1,98 @@
 #include "packing.hh"
+#include "typemodel.hh"
+#include "visitor.hh"
 
-#include <boost/mpl/fold.hpp>
-#include <boost/mpl/push_front.hpp>
-#include <boost/mpl/list.hpp>
-#include <boost/static_assert.hpp>
+////////////////////////////////////////////////////////////////////////////////
+//
+// Check some assumptions we make in the packing code
+//
+
 #include <boost/mpl/size.hpp>
-#include <boost/mpl/deref.hpp>
+#include "packing/tools.tcc"
+#include "packing/check_arrays.tcc"
+#include "packing/check_struct_in_struct.tcc"
+#include "packing/check_size_criteria.tcc"
 
-#include <iostream>
-
-namespace Typelib
-{
-    std::list< Packing > PackingInfo::packing;
-};
-
-using namespace Typelib;
-using namespace boost::mpl;
 namespace
 {
-    struct instantiate_list_base { };
-    template<class Previous, class Item, template<typename> class F>
-    struct instantiate_list : public Previous
-    { F<Item> instance; };
-
-
-    using std::make_pair;
-
-    typedef std::pair<Type::Category, size_t> typelib_typeinfo;
-
-    template<typename POD> typelib_typeinfo get_typeinfo() {};
-    template<> typelib_typeinfo get_typeinfo<char>()   { return make_pair(Type::SInt, sizeof(char)); };
-    template<> typelib_typeinfo get_typeinfo<short>()  { return make_pair(Type::SInt, sizeof(short)); };
-    template<> typelib_typeinfo get_typeinfo<int>()    { return make_pair(Type::SInt, sizeof(int)); };
-    template<> typelib_typeinfo get_typeinfo<long>()   { return make_pair(Type::SInt, sizeof(long)); };
-    template<> typelib_typeinfo get_typeinfo<float>()  { return make_pair(Type::Float, sizeof(float)); };
-    template<> typelib_typeinfo get_typeinfo<double>() { return make_pair(Type::Float, sizeof(double)); };
-    template<> typelib_typeinfo get_typeinfo<char*>()  { return make_pair(Type::Pointer, sizeof(char*)); };
-
-    typedef list<char, short, int, long, float, double, char*> podlist;
-
-    // takes a type and a typelist, and builds
-    // the typelist of packingof<type, it> for each
-    // type in SecondList
-    template<class First, class SecondList>
-    struct iterate_second
+    struct PackingInfo
     {
-        typedef typename fold
-            < SecondList
-            , list<>
-            , push_front< _1, packingof< discover<First, _2> > >
-            >::type type;
+        size_t size;
+        size_t packing;
+        PackingInfo()
+            : size(0), packing(0) {}
     };
 
-    // gets the packing info contained in the packingof object
-    // Packing, and saves it in the PackingInfo::info (object) list
-    template<class Packing>
-    struct register_packing
-    {
-        typedef Packing     item_type;
+    int const packing_info_size = ::boost::mpl::size<podlist>::type::value;
+    PackingInfo packing_info[packing_info_size];
+}
+#include "packing/build_packing_info.tcc"
 
-        register_packing()
-        {
-            typelib_typeinfo second_info = get_typeinfo<typename Packing::Second>();
+// build_packing_info builds a 
+//      PackingInfo[] packing_info 
+//  
+// where the first element is the size to 
+// consider and the second its packing
 
-            Typelib::Packing packing = 
-            {
-                second_info.first,
-                second_info.second,
-                Packing::packing 
-            };
-            PackingInfo::packing.push_back( packing );
-        }
-    };
-
-    template<class Previous, class Item>
-    struct instantiate_register : public instantiate_list<Previous, Item, register_packing> {};
-
-
-    // registers packing info for all <char, pod_type> pairs
-    typedef iterate_second<char, podlist>::type charlist;
-    fold
-        < charlist
-        , instantiate_list_base
-        , instantiate_register<_1, _2>
-        >::type do_char_packing;
-
-
-
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //
-    // Now, check some assumptions we make in the packing code
-    //
-    
-    //
-    // Check that struct { A struct { } } is NOT aligned 
-    //
-    struct empty_struct {};
-    BOOST_STATIC_ASSERT(( packingof< discover<char, empty_struct> >::packing == 1 ));
-
-    //
-    // Check that struct { A struct { B } } is packed as struct { A B } is
-    //
-    
-    template<typename T> struct simple_structure { typedef T inner_type; T value; };
-
-    // Checks that the <first, simple_struct<second>> is packed as <first, second> is
-    // packingof<first, simple_struct<second> > is in Packing
-    template<class Packing>
-    struct check_struct_packing
-    {
-        BOOST_STATIC_ASSERT(( 
-            Packing::packing == 
-            packingof
-                < discover
-                    < typename Packing::First
-                    , typename Packing::Second::inner_type
-                    >
-                >::packing
-            ));
-    };
-    
-    // Builds the typelist of simple_structure<pod> for each pod in podlist
-    typedef fold< podlist, list<>, push_front<_1, simple_structure<_2> > >::type podstructs;
-    // Applies check_struct_packing for <first, struct > for each struct in podstructs
-    // It is equivalent as applying it to <first, simple_struct<pod> > for each pod in podlist
-    struct do_check_struct_packing
-    {
-        typedef fold
-            < iterate_second<char, podstructs>::type
-            , list<>
-            , push_front< _1, check_struct_packing<_2> >
-            >::type type;
-    };
-
-
-    // Builds the typelist of simple_structure<pod> for each pod in podlist
-    // typedef fold< podlist, list<>, push_front<_1, _2[10]> >::type podarrays;
-    
-    //
-    // Check that struct { A B[1] } is packed as struct { A B } is
-    //
-    
-    // takes a type and a typelist, and builds
-    // the typelist of packingof<type, it[10]> for each
-    // type in SecondList
-    template<class First, class SecondList>
-    struct iterate_arrays
-    {
-        typedef typename fold
-            < SecondList
-            , list<>
-            , push_front< _1, packingof< discover_arrays<First, _2> > >
-            >::type type;
-    };
-
-    template<class Packing>
-    struct check_equality
-    {
-        BOOST_STATIC_ASSERT(( 
-            Packing::packing == 
-            packingof
-                < discover
-                    < typename Packing::First
-                    , typename Packing::Second
-                    >
-                >::packing
-            ));
-    };
- 
-    struct do_check_equality
-    {
-        typedef fold
-            < iterate_arrays<char, podstructs>::type
-            , list<>
-            , push_front< _1, check_equality<_2> >
-            >::type type;
-    };
-
-
-
-
-
-
+   
+namespace {
     //////////////////////////////////////////////////////////////////////////
     //
     // Helpers for client code
     //
  
-    std::string category_name(Type::Category cat)
+    using namespace Typelib;
+
+    struct GetPackingSize : public Visitor
     {
-        switch(cat)
+        size_t size;
+
+        bool visit_(Numeric const& value) 
+        { return false; }
+        bool visit_(Enum const& value)
+        { return false; }
+        bool visit_(Pointer const& value)
+        { return false; }
+        bool visit_(Array const& value)
+        { 
+            size = value.getIndirection().getSize();
+            return false;
+        }
+        bool visit_(Union const& value)
+        { throw Packing::FoundUnion(); }
+        bool visit_(Struct const& value)
         {
-            case Type::SInt:  return "signed integer";
-            case Type::UInt:  return "unsigned integer";
-            case Type::Float: return "floating point number";
-            case Type::Pointer: return "pointer";
-            default:          return "unhandled type";
-        };
-    }
+            Compound::FieldList const& fields(value.getFields());
+            if (fields.empty())
+                throw Packing::FoundNullStructure();
 
-
-    int   get_base_offset(const Type* type)
-    {
-        if (type -> getCategory() != Type::Struct)
-            return type->getSize();
-
-        if (type->getFields().empty())
-            return 0;
-
-        const Field& field = type->getFields().back();
-        const Type* field_type   = field.getType();
-
-        return field.getOffset() + get_base_offset(field_type);
+            size = fields.front().getType().getSize();
+            return false;
+        }
     };
-
-    void  get_packed_type(const Type* append_type, Type::Category* type_cat, size_t* type_size)
-    {
-        if (append_type -> isSimple())
-        {
-            Type::Category cat  = append_type->getCategory();
-            size_t         size = append_type->getSize();
-            if (cat == Type::UInt)
-                cat = Type::SInt;
-            else if (cat == Type::Array)
-                get_packed_type(append_type -> getNextType(), &cat, &size);
-
-            *type_cat  = cat;
-            *type_size = size;
-            return;
-        }
-
-        if (append_type -> getFields().empty())
-        {
-            *type_cat = Type::NullType;
-            *type_size = 0;
-            return;
-        }
-
-        const Field& field = append_type->getFields().front();
-        get_packed_type( field.getType(), type_cat, type_size );
-    }
-
 };
 
-namespace Typelib
+int Typelib::Packing::getOffsetOf(const Field& last_field, const Field& append_field)
 {
-    int  PackingInfo::getOffsetOf(const Field& cur_field, const Field& append_field)
+    int base_offset = last_field.getOffset() + last_field.getType().getSize();
+
+    GetPackingSize visitor;
+    visitor.visit(append_field.getType());
+
+    for (int i = 0; i < packing_info_size; ++i)
     {
-        int base_offset = cur_field.getOffset() + cur_field.getType() -> getSize();
-
-        Type::Category append_cat;
-        size_t         append_size;
-        get_packed_type(append_field.getType(), &append_cat, &append_size);
-
-        for (std::list<Packing>::const_iterator it = packing.begin(); it != packing.end(); ++it)
-            if (it->category == append_cat && it->size == append_size)
-            {
-                int packing = it->packing;
-                if (! packing) return base_offset;
-                
-                return (base_offset + (packing - 1)) / packing * packing;
-            }
-
-        throw PackingUnknown(append_cat, append_size);
+        if (packing_info[i].size == visitor.size)
+            return base_offset + base_offset % packing_info[i].packing;
     }
-    
-    void PackingInfo::dump()
-    {
-        typedef std::list<Packing> PackList;
-        for (PackList::iterator it = PackingInfo::packing.begin(); it != PackingInfo::packing.end(); ++it)
-        {
-            Type::Category cat = it->category;
-            size_t size = it->size;
 
-            std::cout 
-                << "{ char " 
-                << ", " 
-                << category_name(cat) << " [" << size << "]" 
-                << "}: " << it->packing
-                << std::endl;
-        }
-    }
+    throw PackingUnknown();
+}
+int Typelib::Packing::getOffsetOf(const Compound& current, const Field& append_field)
+{
+    Compound::FieldList const& fields(current.getFields());
+    if (fields.empty())
+        return 0;
+
+    return getOffsetof(fields.front(), append_field);
 }
 
