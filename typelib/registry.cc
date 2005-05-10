@@ -128,22 +128,22 @@ namespace Typelib
     void Registry::addStandardTypes()
     {
         BOOST_STATIC_ASSERT((NamespaceMark == '/'));
-        add(new Numeric("/char", sizeof(char), Type::SInt), "__stdtypes__");
-        add(new Numeric("/signed char", sizeof(char), Type::SInt), "__stdtypes__");
-        add(new Numeric("/unsigned char", sizeof(unsigned char), Type::UInt), "__stdtypes__");
-        add(new Numeric("/short", sizeof(short), Type::SInt), "__stdtypes__");
-        add(new Numeric("/signed short", sizeof(short), Type::SInt), "__stdtypes__");
-        add(new Numeric("/unsigned short", sizeof(unsigned short), Type::UInt), "__stdtypes__");
-        add(new Numeric("/int", sizeof(int), Type::SInt), "__stdtypes__");
-        add(new Numeric("/signed", sizeof(signed), Type::SInt), "__stdtypes__");
-        add(new Numeric("/signed int", sizeof(int), Type::SInt), "__stdtypes__");
-        add(new Numeric("/unsigned", sizeof(unsigned), Type::UInt), "__stdtypes__");
-        add(new Numeric("/unsigned int", sizeof(unsigned int), Type::UInt), "__stdtypes__");
-        add(new Numeric("/long", sizeof(long), Type::SInt), "__stdtypes__");
-        add(new Numeric("/unsigned long", sizeof(unsigned long), Type::UInt), "__stdtypes__");
+        add(new Numeric("/char", sizeof(char), Numeric::SInt), "__stdtypes__");
+        add(new Numeric("/signed char", sizeof(char), Numeric::SInt), "__stdtypes__");
+        add(new Numeric("/unsigned char", sizeof(unsigned char), Numeric::UInt), "__stdtypes__");
+        add(new Numeric("/short", sizeof(short), Numeric::SInt), "__stdtypes__");
+        add(new Numeric("/signed short", sizeof(short), Numeric::SInt), "__stdtypes__");
+        add(new Numeric("/unsigned short", sizeof(unsigned short), Numeric::UInt), "__stdtypes__");
+        add(new Numeric("/int", sizeof(int), Numeric::SInt), "__stdtypes__");
+        add(new Numeric("/signed", sizeof(signed), Numeric::SInt), "__stdtypes__");
+        add(new Numeric("/signed int", sizeof(int), Numeric::SInt), "__stdtypes__");
+        add(new Numeric("/unsigned", sizeof(unsigned), Numeric::UInt), "__stdtypes__");
+        add(new Numeric("/unsigned int", sizeof(unsigned int), Numeric::UInt), "__stdtypes__");
+        add(new Numeric("/long", sizeof(long), Numeric::SInt), "__stdtypes__");
+        add(new Numeric("/unsigned long", sizeof(unsigned long), Numeric::UInt), "__stdtypes__");
 
-        add(new Numeric("/float", sizeof(float), Type::Float), "__stdtypes__");
-        add(new Numeric("/double", sizeof(double), Type::Float), "__stdtypes__");
+        add(new Numeric("/float", sizeof(float), Numeric::Float), "__stdtypes__");
+        add(new Numeric("/double", sizeof(double), Numeric::Float), "__stdtypes__");
     }
 
     int Registry::getCount() const { return m_persistent.size(); }

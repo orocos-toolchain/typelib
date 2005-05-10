@@ -93,6 +93,6 @@ int Typelib::Packing::getOffsetOf(const Compound& current, const Field& append_f
     if (fields.empty())
         return 0;
 
-    return getOffsetof(fields.front(), append_field);
+    return getOffsetOf(fields.front(), append_field);
 }
 
