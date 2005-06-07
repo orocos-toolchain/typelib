@@ -7,8 +7,8 @@ DEP_FILES += $(patsubst %.c,%.dep,$(DEP_SRC:.cc=.dep))
 ### Include dependencies only if we aren't cleaning
 ifeq ($(findstring clean,$(MAKECMDGOALS)),)
 
-Makefile: dep-gen
-dep-gen: $(DEP_FILES)
+Makefile: dep
+dep: $(DEP_FILES)
 
 %.dep: %.cc
 	@echo "Making dependencies of $(notdir $<)"

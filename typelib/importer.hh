@@ -8,6 +8,9 @@ namespace utilmm { class config_set; }
 namespace Typelib
 {
     class Registry;
+
+    class ReadError : public std::exception {};
+    
     class Importer
     {
         public:

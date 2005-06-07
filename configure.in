@@ -48,6 +48,7 @@ AC_CONFIG_FILES(
 
     lang/Makefile
     lang/cimport/Makefile
+    lang/tlb/Makefile
 )
 
 ############ Doxygen

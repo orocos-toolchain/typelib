@@ -47,9 +47,23 @@ namespace Typelib
 
     bool isValidTypename(const std::string& name, bool absolute)
     { 
-        if (!isValidNamespace(name, absolute))
+        if (name.empty())
             return false;
-        return (*name.rend()) != NamespaceMark;
+
+        size_t const npos = string::npos;
+        size_t last_mark = name.rfind(NamespaceMark);
+        if (last_mark == npos)
+            last_mark = 0;
+
+        if (! isValidNamespace( string(name, 0, last_mark + 1), absolute) )
+            return false;
+
+        std::string type_part = string(name, last_mark + 1);
+        // a valid type is a valid identifier followed by modifiers
+        size_t modifiers = type_part.find_first_of("*[");
+        if (modifiers != npos)
+            type_part = string(type_part, 0, modifiers);
+        return isValidIdentifier(type_part);
     }
 
     bool isValidNamespace(const string& name, bool absolute)

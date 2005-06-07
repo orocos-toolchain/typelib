@@ -1,20 +1,19 @@
-#include "visitor.hh"
+#include "typevisitor.hh"
 
 namespace Typelib
 {
-    bool Visitor::visit_  (Numeric const& type)
+    bool TypeVisitor::visit_  (Numeric const& type)
     { return true; }
-    bool Visitor::visit_  (Enum const& type)
+    bool TypeVisitor::visit_  (Enum const& type)
     { return true; }
 
-    bool Visitor::visit_  (Pointer const& type)
+    bool TypeVisitor::visit_  (Pointer const& type)
     { return dispatch(type.getIndirection()); }
-    bool Visitor::visit_  (Array const& type)
+    bool TypeVisitor::visit_  (Array const& type)
     { return dispatch(type.getIndirection()); }
 
-    template<typename C>
-    bool Visitor::dispatch_compound( C const& type )
-    {
+    bool TypeVisitor::visit_  (Compound const& type)                 
+    {  
         typedef Compound::FieldList Fields;
         Fields const& fields(type.getFields());
         Fields::const_iterator const end = fields.end();
@@ -26,16 +25,10 @@ namespace Typelib
         }
         return true;
     }
-    bool Visitor::visit_  (Struct const& type)                 
-    { return dispatch_compound(type); }
-    bool Visitor::visit_  (Union const& type)                  
-    { return dispatch_compound(type); }
-    bool Visitor::visit_  (Struct const& type, Field const& field)   
-    { return dispatch(field.getType()); }
-    bool Visitor::visit_  (Union const& type,  Field const& field)
+    bool TypeVisitor::visit_  (Compound const& type, Field const& field)   
     { return dispatch(field.getType()); }
 
-    bool Visitor::dispatch(Type const& type)
+    bool TypeVisitor::dispatch(Type const& type)
     {
         switch(type.getCategory())
         {
@@ -49,16 +42,14 @@ namespace Typelib
                 return visit_( dynamic_cast<Array const&>(type) );
             case Type::Pointer:
                 return visit_( dynamic_cast<Pointer const&>(type) );
-            case Type::Struct:
-                return visit_( dynamic_cast<Struct const&>(type) );
-            case Type::Union:
-                return visit_( dynamic_cast<Union const&>(type) );
+            case Type::Compound:
+                return visit_( dynamic_cast<Compound const&>(type) );
         }
         // Never reached
         assert(false);
     }
 
-    void Visitor::visit(Type const& type)
+    void TypeVisitor::apply(Type const& type)
     { dispatch(type); }
 }
 

@@ -20,10 +20,9 @@ namespace Typelib
             Pointer, 
             Numeric, 
             Enum   ,
-            Struct , 
-            Union  
+            Compound 
         };
-        static const int ValidCategories = Union + 1;
+        static const int ValidCategories = Compound + 1;
         
     private:
         std::string m_name;
@@ -74,8 +73,7 @@ namespace Typelib
     /** A field in a Compound type */
     class Field
     {
-        friend class Struct;
-        friend class Union;
+        friend class Compound;
 
         std::string m_name;
         const Type& m_type;
@@ -96,42 +94,20 @@ namespace Typelib
     class Compound : public Type
     {
     public:
-        static const int CompoundIDs = Type::Struct | Type::Union;
         typedef std::list<Field> FieldList;
 
-    protected:
-        virtual void fieldsChanged();
-        FieldList&  getFields();
-
     public:
-        Compound(std::string const& name, size_t size, Category category);
+        Compound(std::string const& name);
 
         FieldList const&  getFields() const;
         Field const*      getField(const std::string& name) const;
-        void              addField(const Field& field);
-        void              addField(const std::string& name, const Type& type);
+        void              addField(const Field& field, size_t offset);
+        void              addField(const std::string& name, const Type& type, size_t offset);
 
     private:
         FieldList m_fields;
     };
 
-    class Struct : public Compound
-    {
-    protected:
-        void fieldsChanged();
-
-    public:
-        Struct(const std::string& name, bool deftype = false);
-    };
-
-    class Union : public Compound
-    {
-    protected:
-        void fieldsChanged();
-
-    public:
-        Union(const std::string& name, bool deftype = false);
-    };
 
 
     /** Type with indirection (pointer, array) */

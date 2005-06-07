@@ -10,49 +10,51 @@ builddir ?= .
 include $(top_builddir)/Init.make
 
 ############ Build module modname
-MODULE = cimport
+MODULE = lang_c
+LIB_NAME = typeLang_c
 # If LIB_NAME is not set, lib.mk uses $(PACKAGE)_$(MODULE)
-# LIB_NAME = cimport
+# LIB_NAME = lang_c
 
 # Grammar build
-cimport_ANTLR = \
+lang_c_ANTLR = \
 		CPPParser.cc CPPLexer.cc CPPParser.hh CPPLexer.hh \
 		CPPLexerTokenTypes.hh CPPLexerTokenTypes.txt STDCTokenTypes.hh STDCTokenTypes.txt
 
 CPPParser.cc CPPLexer.cc: cparser.g
 	$(ANTLR) -o $(builddir) $(srcdir)/cparser.g
-	for i in $(filter %.cc,$(cimport_ANTLR)); do \
+	for i in $(filter %.cc,$(lang_c_ANTLR)); do \
 		mv $${i/.cc/.cpp} $$i; \
 		sed -i 's/\.hpp"/.hh"/' $$i; \
 	done
 
-	for i in $(filter %.hh,$(cimport_ANTLR)); do \
+	for i in $(filter %.hh,$(lang_c_ANTLR)); do \
 		mv $${i/.hh/.hpp} $$i; \
 		sed -i 's/\.hpp"/.hh"/' $$i; \
 	done
 
 clean: antlr-clean
 antlr-clean:
-	rm -f $(cimport_ANTLR)
+	rm -f $(lang_c_ANTLR)
 
 VPATH+=:$(builddir)
 
 
 
-cimport_SRC = cimporter.cc Dictionary.cc Support.cc \
-			typesolver.cc CPPParser.cc CPPLexer.cc
+lang_c_SRC = import.cc Dictionary.cc Support.cc \
+	    typesolver.cc CPPParser.cc CPPLexer.cc packing.cc
 
 # read info libtool about these variables
-cimport_VERSION = 0
-cimport_AGE = 0
-cimport_REVISION = 1
+lang_c_VERSION = 0
+lang_c_AGE = 0
+lang_c_REVISION = 1
 
-cimport_CPPFLAGS = $(TYPELIB_CXXFLAGS) $(ANTLR_CFLAGS) $(UTILMM_CXXFLAGS) -I$(builddir) -I$(srcdir)
-cimport_LDFLAGS = $(ANTLR_LDFLAGS) $(UTILMM_LDFLAGS) -lutilmm_configfile -lutilmm_system \
+lang_c_CPPFLAGS = $(TYPELIB_CXXFLAGS) $(ANTLR_CFLAGS) $(UTILMM_CXXFLAGS) -I$(builddir) -I$(srcdir)
+# do not link against libantlr. The guys doing the Debian package know nothing about PIC :(
+lang_c_LDFLAGS = $(UTILMM_LDFLAGS) -lutilmm_configfile -lutilmm_system \
 		  $(BOOST_FILESYSTEM_LDFLAGS)
-cimport_LIBS= $(TYPELIB_LIBS)
+lang_c_LIBS= $(TYPELIB_LIBS)
 
-############ end: cimport
+############ end: lang_c
 
 ## Build the library
 include $(top_srcdir)/mk/lib.mk

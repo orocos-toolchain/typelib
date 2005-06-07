@@ -54,6 +54,7 @@ namespace Typelib
         const Type& getType() const;
 
         static const Type* build(Registry& registry, const std::string& full_name);
+        static std::string getBaseTypename(const std::string& full_name);
         static const Type* getBaseType(const Registry& registry, const std::string& full_name);
 };
 };

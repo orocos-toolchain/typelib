@@ -1,6 +1,6 @@
 #include "packing.hh"
 #include "typemodel.hh"
-#include "visitor.hh"
+#include "typevisitor.hh"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -43,9 +43,13 @@ namespace {
  
     using namespace Typelib;
 
-    struct GetPackingSize : public Visitor
+    struct GetPackingSize : public TypeVisitor
     {
         size_t size;
+
+        GetPackingSize(Type const& base_type)
+            : size(base_type.getSize())
+        { apply(base_type); }
 
         bool visit_(Numeric const& value) 
         { return false; }
@@ -56,43 +60,62 @@ namespace {
         bool visit_(Array const& value)
         { 
             size = value.getIndirection().getSize();
-            return false;
+            return TypeVisitor::visit_(value);
         }
-        bool visit_(Union const& value)
-        { throw Packing::FoundUnion(); }
-        bool visit_(Struct const& value)
-        {
-            Compound::FieldList const& fields(value.getFields());
+        bool visit_(Compound const& value)
+        { 
+            typedef Compound::FieldList Fields;
+            Fields const& fields(value.getFields());
             if (fields.empty())
                 throw Packing::FoundNullStructure();
 
-            size = fields.front().getType().getSize();
-            return false;
+            // TODO: add a static check for this
+            // we assume that unions are packed as their biggest field
+            
+            size_t max_size = 0;
+            for (Fields::const_iterator it = fields.begin(); it != fields.end(); ++it)
+            {
+                if (it->getOffset() != 0)
+                    continue;
+
+                size = it->getType().getSize();
+                TypeVisitor::visit_(value);
+                max_size = std::max(max_size, size);
+            }
+            size = max_size;
+            return true;
         }
     };
 };
 
-int Typelib::Packing::getOffsetOf(const Field& last_field, const Field& append_field)
+#include <iostream>
+using std::cout;
+using std::endl;
+
+int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_field)
 {
     int base_offset = last_field.getOffset() + last_field.getType().getSize();
 
-    GetPackingSize visitor;
-    visitor.visit(append_field.getType());
+    GetPackingSize visitor(append_field);
+    size_t const size(visitor.size);
 
     for (int i = 0; i < packing_info_size; ++i)
     {
-        if (packing_info[i].size == visitor.size)
-            return base_offset + base_offset % packing_info[i].packing;
+        if (packing_info[i].size == size)
+        {
+            size_t const packing(packing_info[i].packing);
+            return (base_offset + (packing - 1)) / packing * packing;
+        }
     }
 
     throw PackingUnknown();
 }
-int Typelib::Packing::getOffsetOf(const Compound& current, const Field& append_field)
+int Typelib::Packing::getOffsetOf(const Compound& current, const Type& append_field)
 {
     Compound::FieldList const& fields(current.getFields());
     if (fields.empty())
         return 0;
 
-    return getOffsetOf(fields.front(), append_field);
+    return getOffsetOf(fields.back(), append_field);
 }
 

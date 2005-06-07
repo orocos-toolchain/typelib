@@ -1,4 +1,4 @@
-#include "cimporter.hh"
+#include "import.hh"
 #include "registry.hh"
 
 #include "CPPLexer.hh"
@@ -36,7 +36,8 @@ namespace
         if (handle == -1)
             return path();
 
-        cpp.set_redirection(process::Stdout, tempfile.native_file_string(), handle, true);
+        cpp.push("cpp");
+        cpp.push(file.native_file_string());
 
         // Build the command line for cpp
         typedef list<string> strlist;
@@ -48,37 +49,49 @@ namespace
         for (strlist::const_iterator it = includes.begin(); it != includes.end(); ++it)
             cpp.push(" -I" + *it);
 
-        cpp.start();
-        cpp.wait();
-        if (cpp.exit_normal())
+        cpp.set_redirection(process::Stdout, tempfile.native_file_string(), handle, true);
+
+        if (!cpp.start())
+            cerr << "Error starting the preprocessor" << endl;
+        if (!cpp.wait())
+            cerr << "Error waiting for the preprocessor" << endl;
+        if (cpp.exit_normal() && !cpp.exit_status())
             return tempfile;
         return path();
     }
 
     bool parse(path const& file, Typelib::Registry& registry)
     {
-        try {
-            ifstream s(file.native_file_string().c_str());
-            if (!s)
-            {
-                cerr << "Input stream could not be opened for " << file.native_file_string() << "\n";
-                exit(1);
-            }
-
-            CPPLexer cpp_lexer(s);
-            cpp_lexer.setFilename(file.native_file_string());
-
-            TypeSolver reader(cpp_lexer, registry);
-            reader.translation_unit();
-        }
-        catch (ANTLRException& e) 
-        { 
-            cerr << "parser exception: " << e.toString() << endl; 
+        // Check that the input file can be opened
+        ifstream s(file.native_file_string().c_str());
+        if (!s)
+        {
+            cerr << file.native_file_string() << ": error: cannot open for reading\n";
             return false;
         }
-        catch (Typelib::Undefined& e)
+
+        try {
+            CPPLexer cpp_lexer(s);
+
+            TypeSolver reader(cpp_lexer, registry);
+            reader.init();
+            reader.translation_unit();
+        }
+        catch (ANTLRException const& e) 
         { 
-            cerr << "Undefined type found " << e.getName() << endl; 
+            cerr << file.native_file_string() << ": error: " << e.toString() << endl; 
+            return false;
+        }
+        catch (Typelib::Undefined const& e)
+        { 
+            cerr << file.native_file_string() << ": error: " << e.getName() << " undefined" << endl; 
+            return false;
+        }
+        catch(std::exception const& e)
+        { 
+            cerr << file.native_file_string() << ": error: internal error of type " 
+                << typeid(e).name() << endl
+                << file.native_file_string() << ": " << e.what() << endl;
             return false;
         }
 
@@ -86,18 +99,31 @@ namespace
     }
 }
 
-bool CImporter::load
+bool CImport::load
     ( std::string const& file
     , utilmm::config_set const& config
     , Registry& registry)
 {
-    path temp = runcpp(file, config);
-    if (temp.empty())
-        return false;
+    path temp;
+    try
+    {
+        temp = runcpp(file, config);
+        if (temp.empty())
+        {
+            cerr << "Error while running the preprocessor" << endl;
+            return false;
+        }
 
-    bool retval = parse(temp, registry);
-    remove(temp);
-    return retval;
+        bool retval = parse(temp, registry);
+        remove(temp);
+        return retval;
+    }
+    catch(...) 
+    { 
+        if (! temp.empty())
+            remove(temp); 
+        throw;
+    }
 }
 
 

@@ -3,7 +3,7 @@
 
 #include "importer.hh"
 
-class CImporter : public Typelib::Importer
+class CImport : public Typelib::Importer
 {
 public:
     virtual bool load

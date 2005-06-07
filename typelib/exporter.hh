@@ -1,19 +1,37 @@
-#ifndef TYPELIB_IMPORTER_HH
-#define TYPELIB_IMPORTER_HH
+#ifndef TYPELIB_EXPORTER_HH
+#define TYPELIB_EXPORTER_HH
 
-namespace std    { class string; }
-namespace utilmm { class config_set; }
+#include <iosfwd>
+#include "registryiterator.hh"
 
 namespace Typelib
 {
+    class Type;
     class Registry;
     class Exporter
     {
-        public:
-            virtual bool save
-                (std::string const& path
-                , utilmm::config_set const& config
-                , Registry const& registry) = 0;
+    protected:
+        /** Called by save to add a prelude before saving all registry types */
+        virtual bool begin(std::ostream& stream, Registry const& registry);
+        /** Called by save to add data after saving all registry types */
+        virtual bool end  (std::ostream& stream, Registry const& registry);
+
+    public:
+        /** Serialize a whole registry
+         * It first calls begin, then save for all types in \c registry, and
+         * finally end
+         * 
+         * @arg stream   the stream to write to
+         * @arg registry the registry to be saved
+         */
+        virtual bool save
+            ( std::ostream& stream
+            , Registry const& registry );
+
+        /** Serialize one type in \c stream */
+        virtual bool save
+            ( std::ostream& stream
+            , RegistryIterator const& type) = 0;
     };
 }
 

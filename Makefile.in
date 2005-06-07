@@ -17,6 +17,7 @@ build: recurse-build
 install: recurse-install
 clean: recurse-clean 
 distclean: recurse-distclean
+dep: recurse-dep
 
 ifeq ($(HAVE_DOX), yes)
 doc: Doxyfile

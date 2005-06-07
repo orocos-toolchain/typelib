@@ -2,6 +2,7 @@
 #include "CPPLexer.hh"
 #include "typesolver.hh"
 #include "registry.hh"
+#include "packing.hh"
 
 #include <iostream>
 #include <numeric>
@@ -56,25 +57,47 @@ void TypeSolver::endEnumDefinition()
 void TypeSolver::buildClassObject(bool define_type)
 {
     Type* object;
+
     if (m_class_type == tsENUM)
+    {
         object = new Enum(m_registry.getFullName(m_class_name));
+        assert(!define_type);
+    }
     else
     {
-        Compound* compound;
+        std::string compound_name;
         if (m_class_type == tsUNION)
-            compound = new Union(m_registry.getFullName(m_class_name), define_type);
-        if (m_class_type == tsSTRUCT)
-            compound = new Struct(m_registry.getFullName(m_class_name), define_type);
+            compound_name = "union";
+        else if (m_class_type == tsSTRUCT)
+            compound_name = "struct";
+
+        Compound* compound = new Compound(m_registry.getFullName(compound_name + " " + m_class_name));
+        if (m_class_type == tsUNION)
+        {
+            for (FieldList::iterator it = m_fields.begin(); it != m_fields.end(); ++it)
+                compound->addField(it->first, it->second.getType(), 0);
+        }
+        else if (m_class_type == tsSTRUCT)
+        {
+            for (FieldList::iterator it = m_fields.begin(); it != m_fields.end(); ++it)
+            {
+                size_t offset = Packing::getOffsetOf( *compound, it->second.getType() );
+                compound -> addField( it -> first, it -> second.getType(), offset );
+            }
+        }
         else 
             throw UnsupportedClassType(m_class_type);
 
-        for (FieldList::iterator it = m_fields.begin(); it != m_fields.end(); ++it)
-            compound -> addField( it -> first, it -> second.getType() );
         m_fields.clear();
         object = compound;
     }
 
     m_registry.add(object);
+
+
+    if (define_type)
+        m_registry.alias(object->getName(), m_registry.getFullName(m_class_name), "");
+    
 
     m_fieldtype.clear();
     m_fieldtype.push_back(object->getName());
@@ -115,7 +138,7 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
         if (name != "anonymous")
         {
             m_class_name = name;
-            buildClassObject(true);
+            buildClassObject(m_class_type != tsENUM);
         }
     }
     else if (m_class)

@@ -9,12 +9,13 @@ builddir=@builddir@
 
 include $(top_builddir)/Init.make
 
-SUBDIRS = cimport
+SUBDIRS = cimport tlb
 
 build: recurse-build
 install: recurse-install
 clean: recurse-clean 
 distclean: recurse-distclean
+dep: recurse-dep
 
 include $(top_srcdir)/mk/recurse.mk
 include $(top_srcdir)/mk/autotools-root.mk

@@ -1,26 +1,18 @@
 #include "registry.hh"
 
 #include "typebuilder.hh"
+#include "typedisplay.hh"
 #include <memory>
 #include <iostream>
-#include <fstream>
+#include <set>
 using namespace std;
-
-#include "parsing.hh"
-using namespace Parsing;
-
-#include <libxml/xmlmemory.h>
-#include <sys/types.h>
-#include <dirent.h>
 
 #include <ctype.h>
 
 #include <boost/static_assert.hpp>
 
-
-
 #include <iostream>
-
+#include "registryiterator.hh"
 
 using namespace Typelib;
 
@@ -60,11 +52,12 @@ namespace
 
 namespace Typelib
 {
+    char const* const Registry::s_stdsource = "__stdtypes__";
+    
     Registry::Registry()
         : m_global(sort_names)
     { 
         addStandardTypes();
-
         setDefaultNamespace("/");
     }
     Registry::~Registry() { clear(); }
@@ -79,7 +72,7 @@ namespace Typelib
         //cout << "Setting default namespace to " << m_namespace << endl;
 
         for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
-            m_current.insert( make_pair(it->first, it->second.get()) );
+            m_current.insert( make_pair(it->first, it->second) );
 
         NameTokenizer tokens( m_namespace );
         NameTokenizer::const_iterator ns_it = tokens.begin();
@@ -113,7 +106,7 @@ namespace Typelib
         while ( it != m_global.end() && isInNamespace(it->first, norm_name, false) )
         {
             const std::string rel_name(it->first, norm_length, string::npos);
-            m_current.insert( make_pair(rel_name, it->second.get()) );
+            m_current.insert( make_pair(rel_name, it->second) );
             ++it;
         }
     }
@@ -128,25 +121,23 @@ namespace Typelib
     void Registry::addStandardTypes()
     {
         BOOST_STATIC_ASSERT((NamespaceMark == '/'));
-        add(new Numeric("/char", sizeof(char), Numeric::SInt), "__stdtypes__");
-        add(new Numeric("/signed char", sizeof(char), Numeric::SInt), "__stdtypes__");
-        add(new Numeric("/unsigned char", sizeof(unsigned char), Numeric::UInt), "__stdtypes__");
-        add(new Numeric("/short", sizeof(short), Numeric::SInt), "__stdtypes__");
-        add(new Numeric("/signed short", sizeof(short), Numeric::SInt), "__stdtypes__");
-        add(new Numeric("/unsigned short", sizeof(unsigned short), Numeric::UInt), "__stdtypes__");
-        add(new Numeric("/int", sizeof(int), Numeric::SInt), "__stdtypes__");
-        add(new Numeric("/signed", sizeof(signed), Numeric::SInt), "__stdtypes__");
-        add(new Numeric("/signed int", sizeof(int), Numeric::SInt), "__stdtypes__");
-        add(new Numeric("/unsigned", sizeof(unsigned), Numeric::UInt), "__stdtypes__");
-        add(new Numeric("/unsigned int", sizeof(unsigned int), Numeric::UInt), "__stdtypes__");
-        add(new Numeric("/long", sizeof(long), Numeric::SInt), "__stdtypes__");
-        add(new Numeric("/unsigned long", sizeof(unsigned long), Numeric::UInt), "__stdtypes__");
+        add(new Numeric("/char",            sizeof(char),           Numeric::SInt), s_stdsource);
+        add(new Numeric("/signed char",     sizeof(char),           Numeric::SInt), s_stdsource);
+        add(new Numeric("/unsigned char",   sizeof(unsigned char),  Numeric::UInt), s_stdsource);
+        add(new Numeric("/short",           sizeof(short),          Numeric::SInt), s_stdsource);
+        add(new Numeric("/signed short",    sizeof(short),          Numeric::SInt), s_stdsource);
+        add(new Numeric("/unsigned short",  sizeof(unsigned short), Numeric::UInt), s_stdsource);
+        add(new Numeric("/int",             sizeof(int),            Numeric::SInt), s_stdsource);
+        add(new Numeric("/signed",          sizeof(signed),         Numeric::SInt), s_stdsource);
+        add(new Numeric("/signed int",      sizeof(int),            Numeric::SInt), s_stdsource);
+        add(new Numeric("/unsigned",        sizeof(unsigned),       Numeric::UInt), s_stdsource);
+        add(new Numeric("/unsigned int",    sizeof(unsigned int),   Numeric::UInt), s_stdsource);
+        add(new Numeric("/long",            sizeof(long),           Numeric::SInt), s_stdsource);
+        add(new Numeric("/unsigned long",   sizeof(unsigned long),  Numeric::UInt), s_stdsource);
 
-        add(new Numeric("/float", sizeof(float), Numeric::Float), "__stdtypes__");
-        add(new Numeric("/double", sizeof(double), Numeric::Float), "__stdtypes__");
+        add(new Numeric("/float",           sizeof(float),          Numeric::Float), s_stdsource);
+        add(new Numeric("/double",          sizeof(double),         Numeric::Float), s_stdsource);
     }
-
-    int Registry::getCount() const { return m_persistent.size(); }
 
     bool Registry::has(const std::string& name, bool build) const
     {
@@ -173,7 +164,7 @@ namespace Typelib
     {
         NameMap::const_iterator it = m_current.find(name);
         if (it != m_current.end()) 
-            return it->second;
+            return it->second.type;
         return 0;
     }
 
@@ -181,17 +172,25 @@ namespace Typelib
     {
         NameMap::const_iterator it = m_current.find(name);
         if (it != m_current.end()) 
-            return it->second;
+            return it->second.type;
         return 0;
     }
 
-    list<string> Registry::getTypeNames() const
+    bool Registry::isPersistent(std::string const& name, Type const& type, std::string const& source_id)
     {
-        list<string> ret;
-        for (PersistentList::const_iterator it = m_persistent.begin(); it != m_persistent.end(); ++it)
-            ret.push_back(it -> second -> getName());
+        if (source_id == s_stdsource)
+            return false;
+        if (type.getName() != name)
+            return true;
 
-        return ret;
+        switch(type.getCategory())
+        {
+            case Type::Pointer:
+            case Type::Array:
+                return false;
+            default:
+                return true;
+        };
     }
 
     void Registry::add(std::string const& name, Type* new_type, std::string const& source_id)
@@ -202,13 +201,16 @@ namespace Typelib
         else if (old_type)
             throw AlreadyDefined(name);
 
-        const Type::Category cat(new_type -> getCategory());
-        if (cat != Type::Array && cat != Type::Pointer && source_id != "__stdtypes__")
-            m_persistent.push_back( make_pair(source_id, new_type) );
-
-        m_global.insert (make_pair(name, new_type));
-        m_current.insert(make_pair(name, new_type));
-        m_current.insert(make_pair(getTypename(name), new_type));
+        RegistryType regtype = 
+            { new_type
+            , isPersistent(name, *new_type, source_id)
+            , source_id };
+            
+        m_global.insert (make_pair(name, regtype));
+        m_current.insert(make_pair(name, regtype));
+        std::string current_name = getTypename(name);
+        if (current_name != name)
+            m_current.insert(make_pair(current_name, regtype));
     }
 
     void Registry::add(Type* new_type, const std::string& source_id)
@@ -235,16 +237,74 @@ namespace Typelib
     void Registry::clear()
     {
         for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
-            delete it->second;
+        {
+            Type* type = it->second.type;
+            if (type->getName() != it->first)
+            {
+                // This is an alias
+                continue;
+            }
+            delete type;
+        }
+            
+        m_global.clear();
         m_current.clear();
-        m_persistent.clear();
+    }
+
+    namespace
+    {
+        bool filter_source(std::string const& filter, std::string const& source)
+        {
+            if (filter == "*")
+                return true;
+            return filter == source;
+        }
+    }
+
+    void Registry::dump(ostream& stream, int mode, const std::string& source_filter) const
+    {
+        stream << "Types in registry";
+        if (source_filter == "")
+            stream << " not defined in any type library";
+        else if (source_filter != "*")
+            stream << " defined in " << source_filter;
+        stream << endl;
+
+        TypeDisplayVisitor display(cout, "");
+        for (TypeMap::const_iterator it = m_global.begin(); it != m_global.end(); ++it)
+        {
+            RegistryType regtype(it->second);
+            if (! regtype.persistent)
+                continue;
+            if (filter_source(source_filter, regtype.source_id))
+                continue;
+
+            if (mode & WithSourceId)
+            {
+                string it_source_id = regtype.source_id;
+                if (it_source_id.empty()) stream << "\t\t";
+                else stream << it_source_id << "\t";
+            }
+
+            Type const* type = regtype.type;
+            if (mode & AllType)
+            {
+                if (type->getName() == it->first)
+                {
+                    display.apply(*type);
+                    stream << "\n";
+                }
+                else
+                    stream << it->first << " is an alias for " << type->getName() << "\n";
+            }
+            else
+                stream << "\t" << type->getName() << endl;
+        }
     }
 
 
-
-
-
-
+    RegistryIterator Registry::begin() const { return RegistryIterator(m_global.begin()); }
+    RegistryIterator Registry::end() const { return RegistryIterator(m_global.end()); }
 
 
 #if 0
@@ -364,6 +424,7 @@ namespace Typelib
         }
     }
 
+    /*
     void Registry::getFields(xmlNodePtr node, Type* type)
     {
         // <field> elements are allowed since it is a complex type
@@ -386,6 +447,7 @@ namespace Typelib
             type -> addField(name, type_object);
         }
     }
+    */
 
     std::string Registry::getDefinitionFile(const Type* type) const
     {

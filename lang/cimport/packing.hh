@@ -5,6 +5,7 @@ namespace Typelib
 {
     class Compound;
     class Field;
+    class Type;
 
     namespace Packing
     {
@@ -17,8 +18,8 @@ namespace Typelib
          * in a structure */
         struct FoundUnion : public PackingUnknown {};
 
-        int getOffsetOf(Compound const& compound, Field const& append);
-        int getOffsetOf(Field const& last_field, Field const& append);
+        int getOffsetOf(Compound const& compound, Type const& append);
+        int getOffsetOf(Field const& last_field, Type const& append);
     }
 };
 

@@ -40,30 +40,28 @@ namespace Typelib
         {
             // Try to get the type object in the registry
             const Type* base_type = m_registry.get(Pointer::getPointerName(m_type->getName()));
-            if (! base_type)
+            if (base_type)
+                m_type = base_type;
+            else
             {
                 Type* new_type = new Pointer(*m_type);
                 m_registry.add(new_type);
                 m_type = new_type;
             }
-            else
-                m_type = base_type;
         }
     }
 
     void TypeBuilder::addArray(int new_dim)
     {
-        
         const Type* base_type = m_registry.get(Array::getArrayName(m_type->getName(), new_dim));
         if (base_type)
-        {
             m_type = base_type;
-            return;
+        else
+        {
+            Type* new_type = new Array(*m_type, new_dim);
+            m_registry.add(new_type);
+            m_type = new_type;
         }
-
-        Type* new_type = new Array(*m_type, new_dim);
-        m_registry.add(new_type);
-        m_type = base_type;
     }
 
     const Type& TypeBuilder::build(Registry& registry, const TypeSpec& spec)
@@ -92,12 +90,12 @@ namespace Typelib
 
         TypeSpec spec;
 
-        int end = full_name.find_first_of(first_chars);
+        size_t end = full_name.find_first_of(first_chars);
         string base_name = full_name.substr(0, end);
         spec.first = registry.get(base_name);
         if (! spec.first) throw Undefined(base_name);
 
-        int full_length(full_name.length());
+        size_t full_length(full_name.length());
         ModifierList& modlist(spec.second);
         while (end < full_length)
         {
@@ -135,6 +133,14 @@ namespace Typelib
         try { spec = parse(registry, full_name); }
         catch(...) { return 0; }
         return spec.first;
+    }
+
+    std::string TypeBuilder::getBaseTypename(const std::string& full_name)
+    {
+        static const char* first_chars = "*[";
+
+        size_t end = full_name.find_first_of(first_chars);
+        return string(full_name, 0, end);
     }
 };
 

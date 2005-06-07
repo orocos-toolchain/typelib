@@ -302,10 +302,10 @@ void CPPParser::exitExternalScope()
     symbols->dumpScope(stdout);
     symbols->removeScope();		// This just removes the symbols stored in the current scope
     symbols->restoreScope();	// This just reduces the current scope by 1
-    if (symbols->getCurrentScopeIndex()==0)
-        printf("\nSupport exitExternalScope, scope now %d\n",symbols->getCurrentScopeIndex());
-    else
-        printf("\nSupport exitExternalScope, scope now %d, should be 0\n",symbols->getCurrentScopeIndex());
+    //if (symbols->getCurrentScopeIndex()==0)
+    //    printf("\nSupport exitExternalScope, scope now %d\n",symbols->getCurrentScopeIndex());
+    //else
+    //    printf("\nSupport exitExternalScope, scope now %d, should be 0\n",symbols->getCurrentScopeIndex());
 }
 
 void CPPParser::classForwardDeclaration(TypeSpecifier ts, DeclSpecifier ds, const std::string& tag)

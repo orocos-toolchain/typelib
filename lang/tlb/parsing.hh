@@ -89,7 +89,7 @@ namespace Parsing
             : ParsingError(file), m_attribute(attribute) {}
 
         virtual std::string toString() const
-        { return "Missing attribute " + m_attribute + " in " + getFile(); }
+        { return "Missing attribute '" + m_attribute + "' in " + getFile(); }
     };
 };
 

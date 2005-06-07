@@ -1,5 +1,5 @@
-#include "cimportplugin.hh"
-#include "lang/cimport/import.hh"
+#include "tlbimportplugin.hh"
+#include "lang/tlb/import.hh"
 
 #include <iostream>
 
@@ -11,18 +11,10 @@ using namespace boost;
 using utilmm::config_set;
 using Typelib::Registry;
 
-CImportPlugin::CImportPlugin()
-    : Plugin("C", "import") {}
+TlbImportPlugin::TlbImportPlugin()
+    : Plugin("tlb", "import") {}
 
-list<string> CImportPlugin::getOptions() const
-{
-    static const char* arguments[] = 
-    { ":include,I=string|include search path",
-      ":define,D=string|Define this symbol" };
-    return list<string>(arguments, arguments + 2);
-}
-
-bool CImportPlugin::apply(const OptionList& remaining, const config_set& options, Registry& registry)
+bool TlbImportPlugin::apply(const OptionList& remaining, const config_set& options, Registry& registry)
 {
     if (remaining.empty())
     {
@@ -33,9 +25,8 @@ bool CImportPlugin::apply(const OptionList& remaining, const config_set& options
 
     try
     {
-        CImport importer;
-        if (! importer.load(file, options, registry))
-            return false;
+        TlbImport importer;
+        importer.load(file, options, registry);
 
         return true;
     }

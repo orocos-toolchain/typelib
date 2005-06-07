@@ -6,8 +6,6 @@
 #include <numeric>
 #include <algorithm>
 #include <cassert>
-
-#include "packing.hh"
 using namespace std;
 
 #include <iostream>
@@ -41,10 +39,9 @@ namespace Typelib
     Type const& Indirect::getIndirection() const { return m_indirection; }
 
 
-    Compound::Compound(std::string const& name, size_t size, Category category)
-        : Type(name, size, category) {}
+    Compound::Compound(std::string const& name)
+        : Type(name, 0, Type::Compound) {}
 
-    Compound::FieldList&  Compound::getFields() { return m_fields; }
     Compound::FieldList const&  Compound::getFields() const { return m_fields; }
     Field const* Compound::getField(const string& name) const 
     {
@@ -55,16 +52,15 @@ namespace Typelib
         }
         return 0;
     }
-    void Compound::fieldsChanged() {}
 
-    void Compound::addField(const string& name, Type const& type) 
-    { addField( Field(name, type) ); }
-    void Compound::addField(Field const& field)
+    void Compound::addField(const string& name, Type const& type, size_t offset) 
+    { addField( Field(name, type), offset ); }
+    void Compound::addField(Field const& field, size_t offset)
     {
         m_fields.push_back(field);
-        fieldsChanged();
+        m_fields.back().setOffset(offset);
+        setSize( offset + field.getType().getSize() );
     }
-
 
     /*
     bool Type::operator != (const Type& with) const { return ! ((*this) == with); }
@@ -94,6 +90,7 @@ namespace Typelib
 
 
 
+    /*
     Struct::Struct(const string& name, bool deftype)
         : Compound("", 0, Type::Struct) 
     { 
@@ -141,6 +138,7 @@ namespace Typelib
         }
         setSize(size);
     }
+    */
 
 
 
