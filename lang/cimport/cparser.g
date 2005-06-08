@@ -75,7 +75,7 @@ header
 {
     // The statements in this block appear in both CPPLexer.hpp and CPPParser.hpp
     #include <antlr/CharScanner.hpp>
-    #include "CPPDictionary.hpp"
+    #include "CPPDictionary.hh"
     #include <list>
 }
 
