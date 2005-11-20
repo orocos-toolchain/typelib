@@ -1,14 +1,14 @@
-# -*- Makefile -*-
-# $Id: depend.mk,v 1.2 2005/01/12 12:16:48 fpy Exp $
-#
+# $Revision: 1055 $
+# $Id: depend.mk 1055 2005-10-13 08:39:54Z sjoyeux $
 
 DEP_FILES += $(patsubst %.c,%.dep,$(DEP_SRC:.cc=.dep))
 
 ### Include dependencies only if we aren't cleaning
 ifeq ($(findstring clean,$(MAKECMDGOALS)),)
+ifneq ($(DEP_FILES),)
 
-Makefile: dep
-dep: $(DEP_FILES)
+Makefile: dep-gen
+dep-gen: $(DEP_FILES)
 
 %.dep: %.cc
 	@echo "Making dependencies of $(notdir $<)"
@@ -24,9 +24,9 @@ dep: $(DEP_FILES)
 
 -include $(DEP_FILES)
 endif
+endif
 
 clean: dep-clean
-dep-clean: DESCRIPTION='Cleaning $(CURDIR) (dependencies)'
 dep-clean:
-	-$(COMMAND_PREFIX)rm -f $(DEP_FILES)
+	-rm -f $(DEP_FILES)
 

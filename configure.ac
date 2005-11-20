@@ -32,14 +32,14 @@ AC_SUBST(LIBTOOL_DEPS)
 AC_PROG_INSTALL
 
 ############ Dependencies
-CLBS_LIB_BOOST([], AC_MSG_ERROR([Unable to find the Boost library]))
-CLBS_BOOST_SUBLIB(filesystem, [boost/filesystem/path.hpp], [boost::filesystem::path], 
-                  [], AC_MSG_ERROR([Unable to find the Boost/Filesystem library]))
+CLBS_CHECK_BOOST([], AC_MSG_ERROR([Unable to find the Boost library]))
+CLBS_BOOST_FILESYSTEM([], AC_MSG_ERROR([Unable to find the Boost/Filesystem library]))
 PKG_CHECK_MODULES(LIBXML, libxml-2.0,, [AC_MSG_ERROR([libxml2 is needed])])
 PKG_CHECK_MODULES(UTILMM, utilmm,, [AC_MSG_ERROR([UtilMM is needed])])
 
 ############ Output files
 AC_CONFIG_FILES(
+    typelib.pc
     Init.make
     mk/init.mk
     Makefile

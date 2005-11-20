@@ -17,6 +17,8 @@ namespace Typelib
         virtual bool end  (std::ostream& stream, Registry const& registry);
 
     public:
+        virtual ~Exporter() {}
+
         /** Serialize a whole registry
          * It first calls begin, then save for all types in \c registry, and
          * finally end

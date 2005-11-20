@@ -2,8 +2,12 @@
 
 #include "plugin.hh"
 
-#include "registry.hh"
-#include "registryiterator.hh"
+#include "typelib/registry.hh"
+#include "typelib/registryiterator.hh"
+#include "typelib/pluginmanager.hh"
+#include "typelib/exporter.hh"
+#include "typelib/importer.hh"
+
 #include "utilmm/configfile/commandline.hh"
 using utilmm::command_line;
 #include "utilmm/configfile/configset.hh"
@@ -11,8 +15,6 @@ using utilmm::config_set;
 
 #include "cimportplugin.hh"
 #include "tlbimportplugin.hh"
-#include "lang/tlb/export.hh"
-#include "lang/tlb/import.hh"
 
 #include <algorithm>
 #include <iterator>
@@ -23,8 +25,7 @@ using utilmm::config_set;
 #include <boost/filesystem/operations.hpp>
 
 using namespace std;
-using Typelib::Registry;
-using Typelib::RegistryIterator;
+using namespace Typelib;
 
 Import::Import()
     : Mode("import") 
@@ -85,8 +86,8 @@ bool Import::apply(int argc, char* const argv[])
     // Load the base_tlb if it exists
     if (! base_tlb.empty() && boost::filesystem::exists(base_tlb))
     {
-        TlbImport read_db;
-        if (! read_db.load(base_tlb, config, registry))
+        auto_ptr<Importer> read_db(PluginManager::self()->importer("tlb"));
+        if (! read_db->load(base_tlb, config, registry))
         { 
             cerr << "Error loading registry " << base_tlb << endl; 
             return false;
@@ -115,8 +116,8 @@ bool Import::apply(int argc, char* const argv[])
 
     try
     {
-        TlbExport exporter;
-        static_cast<Typelib::Exporter&>(exporter).save(*outstream, registry);
+        auto_ptr<Exporter> exporter(PluginManager::self()->exporter("tlb"));
+        exporter->save(*outstream, registry);
     }
     catch(...)
     {

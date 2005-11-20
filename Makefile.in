@@ -7,17 +7,20 @@ top_builddir=@builddir@
 srcdir=@srcdir@
 builddir=@builddir@
 
-include $(top_builddir)/Init.make
+include $(top_builddir)/mk/init.mk
 
 SUBDIRS = typelib lang tools 
 
 .PHONY: build doc
 
 build: recurse-build
-install: recurse-install
+install: recurse-install pkgconfig-install
 clean: recurse-clean 
 distclean: recurse-distclean
 dep: recurse-dep
+
+pkgconfig-install:
+	$(INSTALL_DATA) typelib.pc $(libdir)/pkgconfig
 
 ifeq ($(HAVE_DOX), yes)
 doc: Doxyfile

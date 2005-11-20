@@ -1,5 +1,6 @@
 #include "cimportplugin.hh"
-#include "lang/cimport/import.hh"
+#include "typelib/pluginmanager.hh"
+#include "typelib/importer.hh"
 
 #include <iostream>
 
@@ -10,6 +11,7 @@ using namespace std;
 using namespace boost;
 using utilmm::config_set;
 using Typelib::Registry;
+using Typelib::PluginManager;
 
 CImportPlugin::CImportPlugin()
     : Plugin("C", "import") {}
@@ -33,8 +35,14 @@ bool CImportPlugin::apply(const OptionList& remaining, const config_set& options
 
     try
     {
-        CImport importer;
-        if (! importer.load(file, options, registry))
+        auto_ptr<Typelib::Importer> importer(PluginManager::self()->importer("c"));
+        if (! importer.get())
+        {
+            cerr << "Cannot find the import I/O plugin for C" << std::endl;
+            return false;
+        }
+                
+        if (! importer->load(file, options, registry))
             return false;
 
         return true;

@@ -3,6 +3,7 @@
 
 #include "inspect.hh"
 #include "import.hh"
+#include "typelib/pluginmanager.hh"
 
 #include "genom.hh"
 
@@ -32,6 +33,9 @@ namespace
 
 int main(int argc, char** argv)
 {
+    // Instanciate the plugin manager, since everybody would want to use it
+    Typelib::PluginManager::self the_manager;
+    
     registerMode(new Inspect);
     Mode* regmode = new Import;
     registerMode(regmode);

@@ -10,6 +10,7 @@
 #include <utilmm/configfile/configset.hh>
 #include <utilmm/system/tempfile.hh>
 #include <utilmm/system/process.hh>
+#include <utilmm/system/system.hh>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -30,34 +31,32 @@ namespace
     {
         utilmm::process cpp;
 
-        // Get the temp file
-        path tempfile;
-        int handle = utilmm::tempfile("typelib_cimport", tempfile);
-        if (handle == -1)
+        try { 
+            utilmm::tempfile tempfile("typelib_cimport");
+
+            cpp.push("cpp");
+            cpp.push(file.native_file_string());
+
+            // Build the command line for cpp
+            typedef list<string> strlist;
+            list<string> defines = config.get_list_string("defines");
+            list<string> includes = config.get_list_string("includes");
+
+            for (strlist::const_iterator it = defines.begin(); it != defines.end(); ++it)
+                cpp.push(" -D" + *it);
+            for (strlist::const_iterator it = includes.begin(); it != includes.end(); ++it)
+                cpp.push(" -I" + *it);
+
+            cpp.redirect_to(process::Stdout, tempfile.path().native_file_string(), tempfile.fd(), true);
+
+            cpp.start();
+            cpp.wait();
+            if (cpp.exit_normal() && !cpp.exit_status())
+                return tempfile.detach();
+            
             return path();
-
-        cpp.push("cpp");
-        cpp.push(file.native_file_string());
-
-        // Build the command line for cpp
-        typedef list<string> strlist;
-        list<string> defines = config.get_list_string("defines");
-        list<string> includes = config.get_list_string("includes");
-
-        for (strlist::const_iterator it = defines.begin(); it != defines.end(); ++it)
-            cpp.push(" -D" + *it);
-        for (strlist::const_iterator it = includes.begin(); it != includes.end(); ++it)
-            cpp.push(" -I" + *it);
-
-        cpp.set_redirection(process::Stdout, tempfile.native_file_string(), handle, true);
-
-        if (!cpp.start())
-            cerr << "Error starting the preprocessor" << endl;
-        if (!cpp.wait())
-            cerr << "Error waiting for the preprocessor" << endl;
-        if (cpp.exit_normal() && !cpp.exit_status())
-            return tempfile;
-        return path();
+        }
+        catch(utilmm::unix_error) { return path(); }
     }
 
     bool parse(path const& file, Typelib::Registry& registry)

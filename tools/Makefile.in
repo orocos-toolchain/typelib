@@ -6,7 +6,7 @@ top_builddir=@top_builddir@
 srcdir=@srcdir@
 builddir=@builddir@
 
-include $(top_builddir)/Init.make
+include $(top_builddir)/mk/init.mk
 
 APP_NAME=typelib
 APP_SRC= import.cc inspect.cc mode.cc plugin.cc preprocess.cc typelib.cc cimportplugin.cc tlbimportplugin.cc

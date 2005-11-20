@@ -1,5 +1,5 @@
-# -*- Makefile -*-
-# $Id: include.mk,v 1.1 2005/01/09 14:46:28 fpy Exp $
+# $Revision: 1022 $
+# $Id: include.mk 1022 2005-10-11 12:06:01Z sjoyeux $
 
 build:
 clean:

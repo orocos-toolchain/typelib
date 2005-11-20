@@ -1,5 +1,8 @@
+dnl $Rev: 1039 $
+dnl $Id: doxygen.m4 1039 2005-10-12 09:17:32Z sjoyeux $
+
 dnl -*- autoconf -*-
-dnl $Id: doxygen.m4,v 1.1 2005/02/11 14:51:00 fpy Exp $
+dnl $Id: doxygen.m4 1039 2005-10-12 09:17:32Z sjoyeux $
 
 AC_DEFUN([CLBS_INIT_DOXYGEN], 
   [

@@ -14,6 +14,7 @@ namespace Typelib
     class Importer
     {
         public:
+            virtual ~Importer() {}
             virtual bool load
                 (std::string const& path
                 , utilmm::config_set const& config

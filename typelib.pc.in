@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: typelib
+Description: Type model and manipulation library
+Version: @VERSION@
+Libs: -L${libdir}
+Cflags: -I${includedir}

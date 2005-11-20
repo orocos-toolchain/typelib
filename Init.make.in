@@ -1,8 +1,3 @@
-abs_top_builddir=@abs_top_builddir@
-CONFIG_OUTPUT_FILES=Init.make mk/init.mk typelib-config.h
-
-include $(top_builddir)/mk/init.mk
-
 BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
 BOOST_LDFLAGS  = @BOOST_LDFLAGS@
 

@@ -1,4 +1,48 @@
-ANTLR=cantlr
+# $Revision: 1022 $
+# $Id: antlr.mk 1022 2005-10-11 12:06:01Z sjoyeux $
+
+#################################################################
+#       ANTLR grammar generator support for clbs
+#     Copyright (c) 2005 LAAS/CNRS
+#
+#  Sylvain Joyeux <sylvain.joyeux@laas.fr>
+#
+# This generates files from ANTLR grammar files. It does not support (yet)
+# more than one grammar in the same makefile.
+#
+# Building the grammar files
+# --------------------------
+# define the grammar name by 
+#   GRAMMAR = name
+# define the grammar source (.g file) with
+#   name_SRC = grammar.g
+# add optional options to antlr with
+#   name_FLAGS = <options>
+#  
+# then include this file
+#   include $(top_srcdir)/mk/antlr.mk
+#
+#
+#
+#
+# Using generated files in other targets
+# --------------------------------------
+# Use the generated files in a regular target (app, lib). 
+# For each grammar, the following variables are defined:
+#   name_CC      list of generated .cc files 
+#   name_HH      list of generated .hh files 
+#   name_TXT     list of generated .txt files 
+#
+#
+#
+#
+# Additional variables
+# --------------------
+#   name_PARSER  the parser name (if any)
+#   name_LEXER   the lexer name (if any)
+#   name_VOCAB   any exported vocabolary (by exportVocab)
+#   name_OUTPUT  all output files
+#       
 
 $(GRAMMAR)_PARSER := $(shell grep 'class .*extends Parser' $(srcdir)/$($(GRAMMAR)_SRC) | awk '{ print $$2 }' | sed 's/;//')
 $(GRAMMAR)_LEXER  := $(shell grep 'class .*extends Lexer' $(srcdir)/$($(GRAMMAR)_SRC) | awk '{ print $$2 }' | sed 's/;//')

@@ -1,15 +1,18 @@
 #include "tlbimportplugin.hh"
-#include "lang/tlb/import.hh"
 
-#include <iostream>
+#include "typelib/importer.hh"
+#include "typelib/registry.hh"
+#include "typelib/pluginmanager.hh"
 
 #include "utilmm/configfile/configset.hh"
-#include "registry.hh"
+#include <iostream>
 
 using namespace std;
 using namespace boost;
 using utilmm::config_set;
 using Typelib::Registry;
+using Typelib::PluginManager;
+using Typelib::Importer;
 
 TlbImportPlugin::TlbImportPlugin()
     : Plugin("tlb", "import") {}
@@ -25,9 +28,14 @@ bool TlbImportPlugin::apply(const OptionList& remaining, const config_set& optio
 
     try
     {
-        TlbImport importer;
-        importer.load(file, options, registry);
+        auto_ptr<Importer> importer(PluginManager::self()->importer("tlb"));
+        if (! importer.get())
+        {
+            cerr << "Cannot find an I/O plugin for tlb" << endl;
+            return false;
+        }
 
+        importer->load(file, options, registry);
         return true;
     }
     catch(Typelib::RegistryException& e)
