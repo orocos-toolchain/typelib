@@ -60,7 +60,7 @@ bool Import::apply(int argc, char* const argv[])
     if (!commandline.parse(argc - 1, argv + 1, &config))
         return false;
 
-    std::string nspace = config.get_string("nspace", "/");
+    std::string nspace = config.get<string>("nspace", "/");
     if (!registry.setDefaultNamespace( nspace ))
     {
         cerr << "Invalid namespace option " << nspace << endl;
@@ -79,7 +79,7 @@ bool Import::apply(int argc, char* const argv[])
     if (remaining.size() == 2)
         base_tlb = remaining.back();
 
-    string output_tlb = config.get_string("output", base_tlb);
+    string output_tlb = config.get<string>("output", base_tlb);
     if (output_tlb.empty())
         output_tlb = "-";
 
