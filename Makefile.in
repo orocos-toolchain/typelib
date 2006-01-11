@@ -19,7 +19,9 @@ clean: recurse-clean
 distclean: recurse-distclean
 dep: recurse-dep
 
+install: pkgconfig-install
 pkgconfig-install:
+	$(INSTALL_DIR)  $(libdir)/pkgconfig
 	$(INSTALL_DATA) typelib.pc $(libdir)/pkgconfig
 
 ifeq ($(HAVE_DOX), yes)
