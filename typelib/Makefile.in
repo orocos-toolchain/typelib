@@ -13,7 +13,7 @@ MODULE = typeLib
 LIB_NAME = typeLib
 
 typeLib_SRC = registry.cc typebuilder.cc typemodel.cc typename.cc typevisitor.cc typedisplay.cc exporter.cc \
-	      pluginmanager.cc ioplugins.cc
+	      pluginmanager.cc ioplugins.cc value.cc
 
 # read info libtool about these variables
 typeLib_VERSION = 0
@@ -22,6 +22,12 @@ typeLib_REVISION = 1
 
 typeLib_CPPFLAGS = $(LIBXML_CFLAGS) $(BOOST_CXXFLAGS) $(UTILMM_CXXFLAGS) -I$(top_srcdir) -I$(srcdir)
 typeLib_LDFLAGS = $(LIBXML_LIBS) $(BOOST_LDFLAGS) $(UTILMM_LDFLAGS)
+
+install: header-install
+header-install:
+	$(INSTALL_DIR) $(includedir)/typelib
+	$(INSTALL_DATA) $(addprefix $(srcdir)/,registry.hh typemodel.hh typename.hh typevisitor.hh typedisplay.hh) $(includedir)/typelib
+
 ############ end: typeLib
 
 include $(top_srcdir)/mk/lib.mk

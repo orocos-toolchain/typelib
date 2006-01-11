@@ -5,6 +5,14 @@
 
 namespace Typelib
 {
+    class UnsupportedType : public TypeException  
+    {
+    public:
+        Type const& type;
+        UnsupportedType(Type const& type) 
+            : type(type) {}
+    };
+    
     class TypeVisitor
     {
         bool dispatch(Type const& type);
