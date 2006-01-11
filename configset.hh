@@ -70,7 +70,8 @@ namespace utilmm
         T get(std::string const& name, T const& defval = T(),
                 typename boost::disable_if< details::is_list<T> >::type *enabler = 0) const;
 
-
+        /** Set the value for this key */
+        void set(std::string const& name, std::string const& value);
         /** Insert a value in this config_set */
         void insert(std::string const& name, std::string const& value);
         /** Add a child to this config_set */
