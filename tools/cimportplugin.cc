@@ -20,7 +20,7 @@ list<string> CImportPlugin::getOptions() const
 {
     static const char* arguments[] = 
     { ":include,I=string|include search path",
-      ":define,D=string|Define this symbol" };
+      "*:define,D=string|Define this symbol" };
     return list<string>(arguments, arguments + 2);
 }
 
