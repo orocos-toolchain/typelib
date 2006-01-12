@@ -51,7 +51,8 @@ AC_CONFIG_FILES(
     lang/cimport/Makefile
     lang/tlb/Makefile
 
-    test_suite/testsuite.sh
+    test_suite/Makefile
+    test_suite/testsuite.hh
 )
 
 ############ Doxygen

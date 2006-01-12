@@ -1,8 +1,0 @@
-#! /bin/sh
-
-builddir=@builddir@
-top_builddir=@top_builddir@
-srcdir=@srcdir@
-
-$top_builddir/tools/typelib import C $srcdir/test_cimport.1 --output test_suite/test_cimport.1.tlb
-
