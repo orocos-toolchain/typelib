@@ -13,6 +13,7 @@ AC_CANONICAL_HOST
 dnl AC_PROG_CC
 AC_PROG_CXX
 CLBS_DEBUG_OPTIONS
+CLBS_TEST_SUPPORT
 
 ############ Check for doxygen availability if Doxygen.in is present
 HAVE_DOX="no"
@@ -49,6 +50,8 @@ AC_CONFIG_FILES(
     lang/Makefile
     lang/cimport/Makefile
     lang/tlb/Makefile
+
+    test_suite/testsuite.sh
 )
 
 ############ Doxygen
