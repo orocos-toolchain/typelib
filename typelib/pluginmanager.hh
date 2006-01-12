@@ -69,6 +69,8 @@ namespace Typelib
     private:
         friend class utilmm::singleton::wrapper<PluginManager>;
     };
+
+    class not_found : public std::exception {};
 }
 
 #endif
