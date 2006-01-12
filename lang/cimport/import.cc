@@ -46,7 +46,7 @@ namespace
             for (strlist::const_iterator it = includes.begin(); it != includes.end(); ++it)
                 cpp.push(" -I" + *it);
 
-            cpp.redirect_to(process::Stdout, tmpfile.handle(), true);
+            cpp.redirect_to(process::Stdout, tmpfile.handle(), false);
 
             cpp.start();
             cpp.wait();
@@ -124,7 +124,7 @@ bool CImport::load
     { 
         if (! temp.empty())
             remove(temp); 
-        throw;
+        return false;
     }
 }
 
