@@ -37,8 +37,7 @@ int main(int argc, char** argv)
     Typelib::PluginManager::self the_manager;
     
     registerMode(new Inspect);
-    Mode* regmode = new Import;
-    registerMode(regmode);
+    registerMode(new Import);
 
     if (argc < 2) 
         usage();
@@ -49,6 +48,6 @@ int main(int argc, char** argv)
         usage();
 
     return 
-        ((it->second) -> main(argc - 1, argv + 1) ? 1 : 0);
+        ((it->second) -> main(argc - 2, argv + 2) ? 1 : 0);
 };
 

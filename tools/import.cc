@@ -41,7 +41,7 @@ bool Import::apply(int argc, char* const argv[])
         help(cerr);
         return false;
     }
-    string type = argv[1];
+    string type = argv[0];
     
     Plugin* plugin = getPlugin(type);
     if (! plugin)
@@ -57,7 +57,7 @@ bool Import::apply(int argc, char* const argv[])
     options.push_back(":nspace=string|Namespace to import types into");
     options.push_back(":output=string|Output file");
     command_line commandline(options);
-    if (!commandline.parse(argc - 1, argv + 1, &config))
+    if (!commandline.parse(argc - 1, argv + 1, config))
         return false;
 
     std::string nspace = config.get<string>("nspace", "/");

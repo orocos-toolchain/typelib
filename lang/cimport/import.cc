@@ -38,7 +38,7 @@ namespace
 
             // Build the command line for cpp
             typedef list<string> strlist;
-            list<string> defines = config.get< list<string> >("defines");
+            list<string> defines  = config.get< list<string> >("defines");
             list<string> includes = config.get< list<string> >("includes");
 
             for (strlist::const_iterator it = defines.begin(); it != defines.end(); ++it)
