@@ -1,6 +1,6 @@
 #! /bin/sh 
 echo "* Running aclocal"
-aclocal
+aclocal -I aclocal
 echo "* Running autoconf"
 autoconf
 
