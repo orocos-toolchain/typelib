@@ -17,10 +17,10 @@ namespace Typelib
         {
             switch(t.getSize())
             {
-                case 8:  return m_visitor.visit_(*reinterpret_cast<T8*>(value));
-                case 16: return m_visitor.visit_(*reinterpret_cast<T16*>(value));
-                case 32: return m_visitor.visit_(*reinterpret_cast<T32*>(value));
-                case 64: return m_visitor.visit_(*reinterpret_cast<T64*>(value));
+                case 1:  return m_visitor.visit_(*reinterpret_cast<T8*>(value));
+                case 2: return m_visitor.visit_(*reinterpret_cast<T16*>(value));
+                case 4: return m_visitor.visit_(*reinterpret_cast<T32*>(value));
+                case 8: return m_visitor.visit_(*reinterpret_cast<T64*>(value));
                 default:
                          throw UnsupportedType(t);
             };
@@ -46,6 +46,7 @@ namespace Typelib
                     }
             }
             // Never reached
+            assert(false);
             return true;
         }
         virtual bool visit_ (Enum const& type)
@@ -79,7 +80,9 @@ namespace Typelib
         virtual bool visit_ (Compound const& type, Field const& field)
         {
             m_stack.push_back( m_stack.back() + field.getOffset() );
-            bool ret = TypeVisitor::visit_(type);
+            bool ret = m_visitor.visit_field(field, Value(m_stack.back(), field.getType()));
+            if (ret)
+                ret = TypeVisitor::visit_(field.getType());
             m_stack.pop_back();
             return ret;
         }
@@ -88,7 +91,7 @@ namespace Typelib
         TypeDispatch(ValueVisitor& visitor)
             : m_visitor(visitor) { }
 
-        void apply(Value const& value)
+        void apply(Value value)
         {
             m_stack.clear();
             m_stack.push_back( reinterpret_cast<uint8_t*>(value.getData()));
@@ -100,7 +103,7 @@ namespace Typelib
 
 namespace Typelib
 {
-    void ValueVisitor::apply(Value& v)
+    void ValueVisitor::apply(Value v)
     {
         TypeDispatch dispatcher(*this);
         dispatcher.apply(v);

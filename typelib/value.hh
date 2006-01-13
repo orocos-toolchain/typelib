@@ -2,15 +2,25 @@
 #define TYPELIB_VALUE_HH
 
 #include "typemodel.hh"
+#include "typevisitor.hh"
+#include "registry.hh"
+#include <boost/ref.hpp>
+#include <boost/mpl/if.hpp>
+#include <boost/mpl/bool.hpp>
+#include <limits>
+#include "normalized_numerics.hh"
 
 namespace Typelib
 {
     class Value
     {
         void*       m_data;
-        Type const& m_type;
+        boost::reference_wrapper<Type const> m_type;
         
     public:
+        Value()
+            : m_data(0), m_type(Registry::null()) {}
+
         Value(void* data, Type const& type)
             : m_data(data), m_type(type) {}
 
@@ -22,67 +32,130 @@ namespace Typelib
     {
         class TypeDispatch;
         friend class TypeDispatch;
+        bool m_recursive;
 
     protected:
-        virtual bool visit_ (int8_t  & v) { return true; }
-        virtual bool visit_ (uint8_t & v) { return true; }
-        virtual bool visit_ (int16_t & v) { return true; }
-        virtual bool visit_ (uint16_t& v) { return true; }
-        virtual bool visit_ (int32_t & v) { return true; }
-        virtual bool visit_ (uint32_t& v) { return true; }
-        virtual bool visit_ (int64_t & v) { return true; }
-        virtual bool visit_ (uint64_t& v) { return true; }
-        virtual bool visit_ (float   & v) { return true; }
-        virtual bool visit_ (double  & v) { return true; }
+        virtual bool visit_ (int8_t  &) { return true; }
+        virtual bool visit_ (uint8_t &) { return true; }
+        virtual bool visit_ (int16_t &) { return true; }
+        virtual bool visit_ (uint16_t&) { return true; }
+        virtual bool visit_ (int32_t &) { return true; }
+        virtual bool visit_ (uint32_t&) { return true; }
+        virtual bool visit_ (int64_t &) { return true; }
+        virtual bool visit_ (uint64_t&) { return true; }
+        virtual bool visit_ (float   &) { return true; }
+        virtual bool visit_ (double  &) { return true; }
 
-        virtual bool visit_pointer  (Value const& v) { return true; }
-        virtual bool visit_array    (Value const& v) { return true; }
-        virtual bool visit_compound (Value const& v) { return true; }
-        virtual bool visit_enum     (Value const& v) { return true; }
+        virtual bool visit_pointer  (Value const&) { return m_recursive; }
+        virtual bool visit_array    (Value const&) { return m_recursive; }
+        virtual bool visit_compound (Value const&) { return m_recursive; }
+        virtual bool visit_field    (Field const&, Value const&) { return true; }
+        virtual bool visit_enum     (Value const&) { return m_recursive; }
 
     public:
+        ValueVisitor(bool recursive = false) 
+            : m_recursive(recursive) {}
         virtual ~ValueVisitor() {}
-        void apply(Value& v);
+        void apply(Value v);
     };
 
     class BadValueCast : public std::exception {};
 
     /** This visitor checks that a given Value object
      * is of the C type T. It either returns a reference to the
-     * typed value or throws bad_cast
+     * typed value or throws BadValueCast
      */
     template<typename T>
     class CastingVisitor : public ValueVisitor
     {
-        T* m_value;
+        bool m_found;
+        T    m_value;
 
-        bool check_type(T& v)
+        bool visit_( typename normalized_numeric_type<T>::type& v)
         {
-            m_value = &v;
+            m_value = v;
+            m_found = true;
             return false;
         }
-        template<typename RealType>
-        bool check_type(RealType& v) { throw BadValueCast(); }
          
-        /* Do not allow the visitor to go on complex structures (T is supposed to be simple) */
-        virtual bool visit_pointer  (Value const& v)
-        { throw BadValueCast(); }
-        virtual bool visit_array    (Value const& v)
-        { throw BadValueCast(); }
-        virtual bool visit_compound (Value const& v)
-        { throw BadValueCast(); }
-        virtual bool visit_enum     (Value const& v)
-        { throw BadValueCast(); }
-
     public:
         CastingVisitor()
-            : m_value(0) {};
-        T& apply(Value& v)
+            : ValueVisitor(false), m_found(false), m_value() {};
+        T& apply(Value v)
         {
+            m_found = false;
             ValueVisitor::apply(v);
-            return *m_value;
+            if (!m_found)
+                throw BadValueCast();
+
+            return m_value;
         }
     };
+
+    /** casts a Value object to a given simple type T */
+    template<typename T>
+    T& value_cast(Value v)
+    {
+        CastingVisitor<T> caster;
+        return caster.apply(v);
+    }
+
+    /** casts a pointer to a given simple type T using \c type as the type for \c *ptr */
+    template<typename T>
+    T& value_cast(void* ptr, Type const& type)
+    { return value_cast<T>(Value(ptr, type)); }
+
+    class FieldNotFound : public BadValueCast 
+    {
+    public:
+        ~FieldNotFound() throw() {}
+        std::string const name;
+        FieldNotFound(std::string const& name)
+            : name(name) {}
+    };
+
+    /** Gets the object describing a given field */
+    class FieldGetter : public ValueVisitor
+    {
+        std::string m_name;
+        Value m_field;
+
+        bool visit_field(Field const& field, Value const& value)
+        {
+            if (field.getName() == m_name)
+            {
+                m_field = value;
+                return false;
+            }
+            return true;
+        }
+        
+    public:
+        FieldGetter()
+            : ValueVisitor(false) {}
+        Value apply(Value v, std::string const& name)
+        {
+            m_name = name;
+            m_field = Value();
+            ValueVisitor::apply(v);
+            if (! m_field.getData())
+                throw FieldNotFound(name);
+            return m_field;
+        }
+        
+    };
+
+    Value value_get_field(Value v, std::string const& name)
+    {
+        FieldGetter getter;
+        return getter.apply(v, name);
+    }
+
+    Value value_get_field(void* ptr, Type const& type, std::string const& name)
+    {
+        Value v(ptr, type);
+        return value_get_field(v, name);
+    }
 }
 
 #endif

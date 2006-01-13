@@ -10,6 +10,7 @@ init_unit_test_suite( int argc, char * argv[] ) {
     // Check core library behaviour
     test_suite* ts_core = BOOST_TEST_SUITE( "Testing core" );
     test_plugins(ts_core);
+    test_value(ts_core);
     ts->add(ts_core);
 
     // Check system first, it is used by configfile

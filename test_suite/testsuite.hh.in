@@ -22,6 +22,7 @@ inline void set_log_threshold_level(log_level lev)
 
 void test_lang_c( test_suite*);
 void test_plugins( test_suite* );
+void test_value( test_suite* );
 
 #define TEST_DATA_PATH(x) "@abs_top_srcdir@/test_suite/" x
 
