@@ -53,7 +53,9 @@ AC_CONFIG_FILES(
 
     test_suite/Makefile
     test_suite/testsuite.hh
+
 )
+AC_CONFIG_FILES([bindings/ruby/ext/extconf.rb], [ruby -Cbindings/ruby/ext extconf.rb])
 
 ############ Doxygen
 dnl is present if Doxyfile.in exists AND doxygen is available

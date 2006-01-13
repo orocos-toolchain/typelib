@@ -1,0 +1,5 @@
+require 'mkmf'
+
+$CPPFLAGS += " -I@top_srcdir@ @UTILMM_CFLAGS@"
+create_makefile('typelib_api', "@srcdir@")
+
