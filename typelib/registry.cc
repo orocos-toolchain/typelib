@@ -10,6 +10,8 @@ using namespace std;
 #include <ctype.h>
 
 #include <boost/static_assert.hpp>
+#include <boost/lexical_cast.hpp>
+using boost::lexical_cast;
 
 #include <iostream>
 #include "registryiterator.hh"
@@ -53,6 +55,8 @@ namespace
 namespace Typelib
 {
     char const* const Registry::s_stdsource = "__stdtypes__";
+    NullType const Registry::null_type;
+    Type const& Registry::null() { return null_type; }
     
     Registry::Registry()
         : m_global(sort_names)
@@ -118,25 +122,48 @@ namespace Typelib
         return m_namespace + name;
     }
 
+    namespace {
+        template<typename T>
+        Numeric* make_std_numeric(char const* name)
+        {
+            typedef numeric_limits<T>   limits;
+            Numeric::NumericCategory category = limits::is_signed ? Numeric::SInt : Numeric::UInt;
+            unsigned int size = (limits::digits + 1) / 8;
+            return new Numeric(name, size, category);
+        }
+    }
+
     void Registry::addStandardTypes()
     {
         BOOST_STATIC_ASSERT((NamespaceMark == '/'));
-        add(new Numeric("/char",            sizeof(char),           Numeric::SInt), s_stdsource);
-        add(new Numeric("/signed char",     sizeof(char),           Numeric::SInt), s_stdsource);
-        add(new Numeric("/unsigned char",   sizeof(unsigned char),  Numeric::UInt), s_stdsource);
-        add(new Numeric("/short",           sizeof(short),          Numeric::SInt), s_stdsource);
-        add(new Numeric("/signed short",    sizeof(short),          Numeric::SInt), s_stdsource);
-        add(new Numeric("/unsigned short",  sizeof(unsigned short), Numeric::UInt), s_stdsource);
-        add(new Numeric("/int",             sizeof(int),            Numeric::SInt), s_stdsource);
-        add(new Numeric("/signed",          sizeof(signed),         Numeric::SInt), s_stdsource);
-        add(new Numeric("/signed int",      sizeof(int),            Numeric::SInt), s_stdsource);
-        add(new Numeric("/unsigned",        sizeof(unsigned),       Numeric::UInt), s_stdsource);
-        add(new Numeric("/unsigned int",    sizeof(unsigned int),   Numeric::UInt), s_stdsource);
-        add(new Numeric("/long",            sizeof(long),           Numeric::SInt), s_stdsource);
-        add(new Numeric("/unsigned long",   sizeof(unsigned long),  Numeric::UInt), s_stdsource);
+        
+        add(make_std_numeric<char>("/char"),                     s_stdsource);
+        add(make_std_numeric<signed char>("/signed char"),       s_stdsource);
+        add(make_std_numeric<unsigned char>("/unsigned char"),   s_stdsource);
+        add(make_std_numeric<short>("/short"),                   s_stdsource);
+        add(make_std_numeric<short>("/signed short"),            s_stdsource);
+        add(make_std_numeric<unsigned short>("/unsigned short"), s_stdsource);
+        add(make_std_numeric<int>("/int"),                       s_stdsource);
+        add(make_std_numeric<signed>("/signed"),                 s_stdsource);
+        add(make_std_numeric<int>("/signed int"),                s_stdsource);
+        add(make_std_numeric<unsigned>("/unsigned"),             s_stdsource);
+        add(make_std_numeric<unsigned int>("/unsigned int"),     s_stdsource);
+        add(make_std_numeric<long>("/long"),                     s_stdsource);
+        add(make_std_numeric<unsigned long>("/unsigned long"),   s_stdsource);
 
-        add(new Numeric("/float",           sizeof(float),          Numeric::Float), s_stdsource);
-        add(new Numeric("/double",          sizeof(double),         Numeric::Float), s_stdsource);
+        BOOST_STATIC_ASSERT(( sizeof(float) == sizeof(int32_t) ));
+        BOOST_STATIC_ASSERT(( sizeof(double) == sizeof(int64_t) ));
+        add(new Numeric("/float",  4, Numeric::Float), s_stdsource);
+        add(new Numeric("/double", 8, Numeric::Float), s_stdsource);
+
+        // Add standard sized integers
+        static const int sizes[] = { 1, 2, 4, 8 };
+        for (int i = 0; i < 4; ++i)
+        {
+            string suffix = "int" + lexical_cast<string>(sizes[i] * 8) + "_t";
+            add(new Numeric("/"  + suffix, sizes[i], Numeric::SInt));
+            add(new Numeric("/u" + suffix, sizes[i], Numeric::UInt));
+        }
     }
 
     bool Registry::has(const std::string& name, bool build) const

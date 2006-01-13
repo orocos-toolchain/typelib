@@ -133,7 +133,7 @@ namespace Typelib
 
         /** Gets a Type object
          * @arg name the type name
-         * @return the type object if it exists, 0 if not
+         * @return the type object if it exists, 0 otherwise
          */
         Type const* get(const std::string& name) const;  
 
@@ -163,7 +163,13 @@ namespace Typelib
 
         RegistryIterator begin() const;
         RegistryIterator end() const;
-
+        
+    private:
+        static NullType const null_type;
+    public:
+        /** Returns a null type */
+        static Type const& null();
+        
     public:
         enum DumpMode
         {
