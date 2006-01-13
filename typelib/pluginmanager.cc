@@ -18,7 +18,7 @@ namespace
     {
         typename std::map<string, Object*>::const_iterator it = map.find(name);
         if (it == map.end())
-            throw not_found();
+            throw PluginNotFound();
         return it->second;
     }
 

@@ -37,6 +37,8 @@ namespace Typelib
         virtual Importer* create() = 0;
     };
     
+    class PluginNotFound : public std::exception {};
+
     /** The plugin manager 
      * 
      * It is a singleton, using utilmm::singleton
@@ -69,8 +71,6 @@ namespace Typelib
     private:
         friend class utilmm::singleton::wrapper<PluginManager>;
     };
-
-    class not_found : public std::exception {};
 }
 
 #endif
