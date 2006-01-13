@@ -47,6 +47,12 @@ namespace Typelib
         Category      getCategory() const;
     };
 
+    class NullType : public Type
+    {
+    public:
+        NullType() : Type("nil", 0, Type::NullType ) {}
+    };
+
     class Numeric : public Type
     {
     public:
