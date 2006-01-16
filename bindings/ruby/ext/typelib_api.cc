@@ -9,6 +9,8 @@ extern "C" {
 #include <typelib/importer.hh>
 #include <utilmm/configfile/configset.hh>
 
+#include "visitors.hh"
+
 using namespace Typelib;
 using utilmm::config_set;
 
@@ -17,31 +19,21 @@ static VALUE cValue     = Qnil;
 static VALUE cRegistry  = Qnil;
 static VALUE cType      = Qnil;
 
-// Never destroy a type. The Type objects are destroyed with
-// the registry they belong
+// NOP deleter, for Type objects and some Ptr objects
 static void do_not_delete(void*) {}
 
-static
-Value* rb_value2cxx(VALUE self)
+static Value* rb_value2cxx(VALUE self)
 {
     Value* value = 0;
     Data_Get_Struct(self, Value, value);
     return value;
 }
-static
-Registry* rb_registry2cxx(VALUE self)
+static Registry* rb_registry2cxx(VALUE self)
 {
     Registry* registry = 0;
     Data_Get_Struct(self, Registry, registry);
     return registry;
 }
-
-static
-void value_delete(void* self) { delete reinterpret_cast<Value*>(self); }
-
-static
-VALUE value_alloc(VALUE klass)
-{ return Data_Wrap_Struct(klass, 0, value_delete, new Value); }
 
 static
 VALUE typelib_wrap_type(Type const& type, VALUE registry)
@@ -52,96 +44,22 @@ VALUE typelib_wrap_type(Type const& type, VALUE registry)
     return rtype;
 }
 
-/** This visitor takes a Value class and a field name,
- *  and returns the VALUE object which corresponds to
- *  the field, or returns nil
+/***********************************************************************************
+ *
+ * Wrapping of the Value class
+ *
  */
-class RubyGetter : public ValueVisitor
-{
-    VALUE m_value;
-    VALUE m_self;
 
-    virtual bool visit_ (int8_t  & value) { m_value = CHR2FIX(value); return false; }
-    virtual bool visit_ (uint8_t & value) { m_value = CHR2FIX(value); return false; }
-    virtual bool visit_ (int16_t & value) { m_value = INT2NUM(value); return false; }
-    virtual bool visit_ (uint16_t& value) { m_value = INT2NUM(value); return false; }
-    virtual bool visit_ (int32_t & value) { m_value = INT2NUM(value); return false; }
-    virtual bool visit_ (uint32_t& value) { m_value = INT2NUM(value); return false; }
-    virtual bool visit_ (int64_t & value) { m_value = LL2NUM(value);  return false; }
-    virtual bool visit_ (uint64_t& value) { m_value = ULL2NUM(value); return false; }
-    virtual bool visit_ (float   & value) { m_value = rb_float_new(value); return false; }
-    virtual bool visit_ (double  & value) { m_value = rb_float_new(value); return false; }
+static
+void value_delete(void* self) { delete reinterpret_cast<Value*>(self); }
 
-    virtual bool visit_array    (Value const& v, Array const& a) { throw UnsupportedType(v.getType()); }
-    virtual bool visit_compound (Value const& v, Compound const& c)
-    { 
-        VALUE ptr       = rb_dlptr_new(v.getData(), v.getType().getSize(), do_not_delete);
-        VALUE self_type = rb_iv_get(m_self, "@type");
-        VALUE new_type  = typelib_wrap_type(v.getType(), rb_iv_get(self_type, "@registry"));
-        VALUE args[2] = { ptr, new_type };
-        m_value = rb_class_new_instance(2, args, cValue);
-        return false; 
-    }
-    virtual bool visit_enum     (Value const& v, Enum const& e)   { throw UnsupportedType(v.getType()); }
-    
-public:
-    RubyGetter()
-        : ValueVisitor(false) {}
+static
+VALUE value_alloc(VALUE klass)
+{ return Data_Wrap_Struct(klass, 0, value_delete, new Value); }
 
-    VALUE apply(VALUE self, VALUE name)
-    {
-        m_self = self;
-        Value& value = *rb_value2cxx(self);
-
-        m_value    = Qnil;
-        try { 
-            Value field_value = value_get_field(value, StringValuePtr(name));
-            ValueVisitor::apply(field_value);
-            return m_value;
-        } 
-        catch(FieldNotFound)    { return Qnil; }
-        catch(UnsupportedType)  { return Qnil; }
-    }
-};
-
-class RubySetter : public ValueVisitor
-{
-    VALUE m_value;
-
-    virtual bool visit_ (int8_t  & value) { value = NUM2CHR(m_value); return false; }
-    virtual bool visit_ (uint8_t & value) { value = NUM2CHR(m_value); return false; }
-    virtual bool visit_ (int16_t & value) { value = NUM2LONG(m_value); return false; }
-    virtual bool visit_ (uint16_t& value) { value = NUM2ULONG(m_value); return false; }
-    virtual bool visit_ (int32_t & value) { value = NUM2LONG(m_value); return false; }
-    virtual bool visit_ (uint32_t& value) { value = NUM2ULONG(m_value); return false; }
-    virtual bool visit_ (int64_t & value) { value = NUM2LL(m_value);  return false; }
-    virtual bool visit_ (uint64_t& value) { value = NUM2LL(m_value); return false; }
-    virtual bool visit_ (float   & value) { value = NUM2DBL(m_value); return false; }
-    virtual bool visit_ (double  & value) { value = NUM2DBL(m_value); return false; }
-
-    virtual bool visit_array    (Value const& v, Array const&) { throw UnsupportedType(v.getType()); }
-    virtual bool visit_compound (Value const& v, Compound const&) { throw UnsupportedType(v.getType()); }
-    virtual bool visit_enum     (Value const& v, Enum const&) { throw UnsupportedType(v.getType()); }
-    
-public:
-    RubySetter()
-        : ValueVisitor(false) {}
-
-    bool apply(VALUE self, VALUE name, VALUE new_value)
-    {
-        Value& v = *rb_value2cxx(self);
-
-        m_value = new_value;
-        try { 
-            Value field_value = value_get_field(v, StringValuePtr(name));
-            ValueVisitor::apply(field_value);
-            return true;
-        } 
-        catch(FieldNotFound) { return false; } 
-        catch(UnsupportedType) { return false; }
-    }
-};
-
+/** Initializes a Typelib::Value object using a Ruby::DL PtrData
+ * object and a Typelib::Type object
+ */
 static
 VALUE value_initialize(VALUE self, VALUE ptr, VALUE type)
 {
@@ -163,20 +81,13 @@ VALUE value_initialize(VALUE self, VALUE ptr, VALUE type)
     return self;
 }
 
-static VALUE type_is_assignable(Type const& type)
-{
-    switch(type.getCategory())
-    {
-    case Type::Numeric:
-        return INT2FIX(1);
-    case Type::Pointer:
-        return type_is_assignable( dynamic_cast<Pointer const&>(type).getIndirection());
-    default:
-        return INT2FIX(0);
-    }
-    // never reached
-}
-
+/* Check if a given attribute exists and if it is writable
+ *
+ * Returns +nil+ if the attribute does not exist, 0 if it is readonly
+ * and 1 if it is writable
+ *
+ * This method is not to be used by client code. It is called by respond_to?
+ */
 static
 VALUE value_field_attributes(VALUE self, VALUE id)
 {
@@ -190,9 +101,8 @@ VALUE value_field_attributes(VALUE self, VALUE id)
     }
 }
 
-
-/** value_get_field and value_set_field are called
- * from the method_missing method defined in Ruby
+/* Gets the current value of a field. Returns nil
+ * if the value does not exist
  */
 static
 VALUE rbvalue_get_field(VALUE self, VALUE name)
@@ -200,6 +110,9 @@ VALUE rbvalue_get_field(VALUE self, VALUE name)
     RubyGetter getter;
     return getter.apply(self, name);
 }
+/* Sets the value of a given field. Returns nil if the value
+ * does not exist
+ */
 static
 VALUE rbvalue_set_field(VALUE self, VALUE name, VALUE newval)
 {
@@ -208,6 +121,13 @@ VALUE rbvalue_set_field(VALUE self, VALUE name, VALUE newval)
         return Qnil;
     return newval;
 }
+
+/***********************************************************************************
+ *
+ * Wrapping of the Registry class
+ *
+ */
+
 
 static 
 void registry_free(void* ptr) { delete reinterpret_cast<Registry*>(ptr); }
