@@ -29,13 +29,6 @@ namespace Typelib
         }
 
     protected:
-        bool do_visit (Enum const& type) { return TypeVisitor::visit_(type); }
-        bool do_visit (Pointer const& type) { return TypeVisitor::visit_(type); }
-        bool do_visit (Array const& type) { return TypeVisitor::visit_(type); }
-        bool do_visit (Compound const& type) { return TypeVisitor::visit_(type); }
-        bool do_visit (Compound const& type, Field const& field) { return TypeVisitor::visit_(type); }
-
-
         virtual bool visit_ (Numeric const& type)
         { 
             uint8_t* value(m_stack.back());
@@ -75,8 +68,8 @@ namespace Typelib
         }
         virtual bool visit_ (Array const& type)
         {
-            throw UnsupportedType(type);
-            return true;
+            Value v(m_stack.back(), type);
+            return m_visitor.visit_array(v, type);
         }
 
         virtual bool visit_ (Compound const& type)
