@@ -164,9 +164,6 @@ namespace Typelib
         RegistryIterator begin() const;
         RegistryIterator end() const;
         
-    private:
-        static NullType const null_type;
-    public:
         /** Returns a null type */
         static Type const& null();
         

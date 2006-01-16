@@ -55,8 +55,10 @@ namespace
 namespace Typelib
 {
     char const* const Registry::s_stdsource = "__stdtypes__";
-    NullType const Registry::null_type;
-    Type const& Registry::null() { return null_type; }
+    Type const& Registry::null() { 
+        static NullType const null_type;
+        return null_type; 
+    }
     
     Registry::Registry()
         : m_global(sort_names)
@@ -166,12 +168,12 @@ namespace Typelib
         }
     }
 
-    bool Registry::has(const std::string& name, bool build) const
+    bool Registry::has(const std::string& name, bool build_if_missing) const
     {
         if (m_current.find(name) != m_current.end())
             return true;
 
-        if (! build)
+        if (! build_if_missing)
             return false;
 
         const Type* base_type = TypeBuilder::getBaseType(*this, getFullName(name));
@@ -249,16 +251,16 @@ namespace Typelib
         add(name, new_type, source_id);
     }
 
-    void Registry::alias(std::string const& base, std::string const& alias, std::string const& source_id)
+    void Registry::alias(std::string const& base, std::string const& newname, std::string const& source_id)
     {
-        if (! isValidTypename(alias, true))
-            throw BadName(alias);
+        if (! isValidTypename(newname, true))
+            throw BadName(newname);
 
         Type* base_type = get_(base);
         if (! base_type) 
             throw Undefined(base);
 
-        add(alias, base_type, source_id);
+        add(newname, base_type, source_id);
     }
 
     void Registry::clear()

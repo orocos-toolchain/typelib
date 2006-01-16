@@ -9,8 +9,8 @@ namespace Typelib
     {
     public:
         Type const& type;
-        UnsupportedType(Type const& type) 
-            : type(type) {}
+        UnsupportedType(Type const& type_) 
+            : type(type_) {}
     };
     
     class TypeVisitor
