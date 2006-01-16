@@ -15,6 +15,9 @@ TYPELIB_LIBS   = $(top_builddir)/typelib/libtypeLib.la
 
 ANTLR= cantlr
 ANTLR_CFLAGS=
-ANTLR_LDFLAGS= -lantlr
+ANTLR_LDFLAGS= -lantlr-pic
+
+RUBY=   ruby1.8
+TESTRB= testrb1.8
 
 

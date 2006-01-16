@@ -32,8 +32,7 @@ lang_c_SRC = import.cc Dictionary.cc Support.cc \
 # lang_c_REVISION = 1
 
 lang_c_CPPFLAGS = $(TYPELIB_CXXFLAGS) $(ANTLR_CFLAGS) $(UTILMM_CXXFLAGS) -I$(builddir) -I$(srcdir)
-# do not link against libantlr. The guys doing the Debian package know nothing about PIC :(
-lang_c_LDFLAGS = $(UTILMM_LDFLAGS) $(BOOST_FILESYSTEM_LDFLAGS)
+lang_c_LDFLAGS = $(UTILMM_LDFLAGS) $(BOOST_FILESYSTEM_LDFLAGS) $(ANTLR_LDFLAGS)
 
 ############ end: lang_c
 
