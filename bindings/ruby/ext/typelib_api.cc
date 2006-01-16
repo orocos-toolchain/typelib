@@ -9,8 +9,6 @@ extern "C" {
 #include <typelib/importer.hh>
 #include <utilmm/configfile/configset.hh>
 
-#include "visitors.hh"
-
 using namespace Typelib;
 using utilmm::config_set;
 
@@ -22,12 +20,6 @@ static VALUE cType      = Qnil;
 // NOP deleter, for Type objects and some Ptr objects
 static void do_not_delete(void*) {}
 
-static Value* rb_value2cxx(VALUE self)
-{
-    Value* value = 0;
-    Data_Get_Struct(self, Value, value);
-    return value;
-}
 static Registry* rb_registry2cxx(VALUE self)
 {
     Registry* registry = 0;
@@ -43,6 +35,16 @@ VALUE typelib_wrap_type(Type const& type, VALUE registry)
     rb_iv_set(rtype, "@registry", registry);
     return rtype;
 }
+
+
+static Value* rb_value2cxx(VALUE self)
+{
+    Value* value = 0;
+    Data_Get_Struct(self, Value, value);
+    return value;
+}
+
+#include "visitors.hh"
 
 /***********************************************************************************
  *
@@ -101,26 +103,10 @@ VALUE value_field_attributes(VALUE self, VALUE id)
     }
 }
 
-/* Gets the current value of a field. Returns nil
- * if the value does not exist
- */
-static
-VALUE rbvalue_get_field(VALUE self, VALUE name)
-{
-    RubyGetter getter;
-    return getter.apply(self, name);
-}
-/* Sets the value of a given field. Returns nil if the value
- * does not exist
- */
-static
-VALUE rbvalue_set_field(VALUE self, VALUE name, VALUE newval)
-{
-    RubySetter setter;
-    if (!setter.apply(self, name, newval))
-        return Qnil;
-    return newval;
-}
+static VALUE rbvalue_get_field(VALUE self, VALUE name)
+{ return typelib_to_ruby(self, name); }
+static VALUE rbvalue_set_field(VALUE self, VALUE name, VALUE newval)
+{ return typelib_from_ruby(self, name, newval); }
 
 /***********************************************************************************
  *
