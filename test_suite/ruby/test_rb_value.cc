@@ -58,7 +58,7 @@ static VALUE set_B_c_value(VALUE self, VALUE rb)
 
 extern "C" void Init_test_rb_value()
 {
-    rb_define_method(rb_mKernel, "get_B_c_value", RUBY_METHOD_FUNC(check_B_c_value), 1);
+    rb_define_method(rb_mKernel, "check_B_c_value", RUBY_METHOD_FUNC(check_B_c_value), 1);
     rb_define_method(rb_mKernel, "set_B_c_value", RUBY_METHOD_FUNC(set_B_c_value), 1);
     rb_define_method(rb_mKernel, "check_struct_A_value", RUBY_METHOD_FUNC(check_struct_A_value), 1);
     rb_define_method(rb_mKernel, "set_struct_A_value", RUBY_METHOD_FUNC(set_struct_A_value), 1);

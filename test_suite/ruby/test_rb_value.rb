@@ -85,12 +85,27 @@ class TC_Value < Test::Unit::TestCase
         assert(b.c.is_a?(Typelib::Array))
         assert_equal(100, b.c.size)
     end
-    #def test_array_get
-    #    b = Value.new(nil, make_registry.get("/struct B"))
-    #    set_B_c_value(b)
-    #    [0..(b.c.size - 1)].each do |i|
-    #        assert( ( b.c[i] - Float(i)/10.0 ).abs < 0.01 )
-    #    end
-    #end
+    def test_array_set
+        b = Value.new(nil, make_registry.get("/struct B"))
+        (0..(b.c.size - 1)).each do |i|
+            b.c[i] = Float(i)/10.0
+        end
+        check_B_c_value(b)
+    end
+    def test_array_get
+        b = Value.new(nil, make_registry.get("/struct B"))
+        set_B_c_value(b)
+        (0..(b.c.size - 1)).each do |i|
+            assert( ( b.c[i] - Float(i)/10.0 ).abs < 0.01 )
+        end
+    end
+    def test_array_each
+        b = Value.new(nil, make_registry.get("/struct B"))
+        set_B_c_value(b)
+        b.c.each_with_index do |v, i|
+            assert( ( v - Float(i)/10.0 ).abs < 0.01 )
+        end
+    end
+
 end
 

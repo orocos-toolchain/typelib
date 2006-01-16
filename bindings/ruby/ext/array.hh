@@ -9,7 +9,7 @@ static Value typelib_array_element(VALUE rbarray, VALUE rbindex)
 {
     Value& value(rb_value2cxx(rbarray));
     Array const& array(Typelib_Get_Array(value));
-    size_t index = FIX2INT(rbindex);
+    size_t index = NUM2INT(rbindex);
     
     if (array.getDimension() < index)
     {
@@ -19,7 +19,7 @@ static Value typelib_array_element(VALUE rbarray, VALUE rbindex)
 
     Type const& array_type(array.getIndirection());
 
-    int8_t* data = *reinterpret_cast<int8_t**>(value.getData());
+    int8_t* data = reinterpret_cast<int8_t*>(value.getData());
     data += array_type.getSize() * index;
     return Value(data, array_type);
 }
@@ -45,7 +45,7 @@ static VALUE typelib_array_each(VALUE rbarray)
     Type  const& array_type(array.getIndirection());
     VALUE registry(typelib_value_get_registry(rbarray));
 
-    int8_t* data = *reinterpret_cast<int8_t**>(value.getData());
+    int8_t* data = reinterpret_cast<int8_t*>(value.getData());
 
     VALUE last_value = Qnil;
     for (size_t i = 0; i < array.getDimension(); ++i, data += array_type.getSize())

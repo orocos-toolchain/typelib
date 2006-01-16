@@ -74,6 +74,8 @@ module Typelib
 
             super
         end
+
+        include Enumerable
     end
 end
 
