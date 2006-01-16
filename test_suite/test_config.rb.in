@@ -4,3 +4,5 @@ $LOAD_PATH <<
     "@top_srcdir@/bindings/ruby/ext" <<
     "@top_srcdir@/bindings/ruby/lib"
 
+SRCDIR   = "@abs_top_srcdir@/test_suite"
+BUILDDIR = "@abs_top_builddir@/test_suite"

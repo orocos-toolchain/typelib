@@ -15,8 +15,32 @@ static VALUE cValue     = Qnil;
 static VALUE cRegistry  = Qnil;
 static VALUE cType      = Qnil;
 
-static void destroy_value_object(void* obj)
-{ delete reinterpret_cast<Value*>(obj); }
+// Never destroy a type. The Type objects are destroyed with
+// the registry they belong
+static void do_not_delete(void*) {}
+
+static
+Value* rb_value2cxx(VALUE self)
+{
+    Value* value = 0;
+    Data_Get_Struct(self, Value, value);
+    return value;
+}
+static
+Registry* rb_registry2cxx(VALUE self)
+{
+    Registry* registry = 0;
+    Data_Get_Struct(self, Registry, registry);
+    return registry;
+}
+
+static
+void value_delete(void* self) { delete reinterpret_cast<Value*>(self); }
+
+static
+VALUE value_alloc(VALUE klass)
+{ return Data_Wrap_Struct(klass, 0, value_delete, new Value); }
+
 
 /** This visitor takes a Value class and a field name,
  *  and returns the VALUE object which corresponds to
@@ -41,7 +65,7 @@ class RubyGetter : public ValueVisitor
     virtual bool visit_array    (Value const& v) { throw UnsupportedType(v.getType()); }
     virtual bool visit_compound (Value const& v)
     { 
-        m_value = Data_Wrap_Struct(cValue, 0, destroy_value_object, new Value(v));
+        m_value = Data_Wrap_Struct(cValue, 0, value_delete, new Value(v));
         return false; 
     }
     // Shouldn't get in visit_field since visit_compound returns false
@@ -84,7 +108,7 @@ class RubySetter : public ValueVisitor
     virtual bool visit_array    (Value const& v) { throw UnsupportedType(v.getType()); }
     virtual bool visit_compound (Value const& v)
     { 
-        m_value = Data_Wrap_Struct(cValue, 0, destroy_value_object, new Value(v));
+        m_value = Data_Wrap_Struct(cValue, 0, value_delete, new Value(v));
         return false; 
     }
     // Shouldn't get in visit_field since visit_compound returns false
@@ -109,25 +133,23 @@ public:
 };
 
 static
-void value_delete(void* self) { delete reinterpret_cast<Value*>(self); }
-static
-VALUE value_alloc(VALUE klass)
-{ return Data_Wrap_Struct(klass, 0, value_delete, new Value); }
-
-static
 VALUE value_initialize(VALUE self, VALUE ptr, VALUE type)
 {
-    Value* value;
-    Data_Get_Struct(self, Value, value);
+    Value* value = rb_value2cxx(self);
 
-    void* p = RDLPTR(ptr)->ptr;
-
+    // Protect 'type' against the GC
+    rb_iv_set(self, "@type", type);
     Type const* t;
     Data_Get_Struct(type, Type, t);
-    
-    *value = Value(p, *t);
 
-    rb_iv_set(self, "@type", type);
+    if(NIL_P(ptr))
+        ptr = rb_dlptr_malloc(t->getSize(), free);
+
+    // Protect 'ptr' against the GC
+    ptr = rb_funcall(ptr, rb_intern("to_ptr"), 1, type);
+    rb_iv_set(self, "@ptr", ptr);
+
+    *value = Value(rb_dlptr2cptr(ptr), *t);
     return self;
 }
 
@@ -137,8 +159,7 @@ static
 VALUE value_respond_to_p(VALUE self, VALUE id)
 {
     try { 
-        Value* v = 0;
-        Data_Get_Struct(self, Value, v);
+        Value* v = rb_value2cxx(self);
 
         value_get_field(*v, StringValuePtr(id));
         return Qtrue;
@@ -150,8 +171,7 @@ VALUE value_respond_to_p(VALUE self, VALUE id)
 static
 VALUE value_method_missing(VALUE self, int argc, VALUE* argv)
 {
-    Value* v = 0;
-    Data_Get_Struct(self, Value, v);
+    Value* v = rb_value2cxx(self);
 
     if (argc == 1)
     {
@@ -175,11 +195,6 @@ VALUE value_method_missing(VALUE self, int argc, VALUE* argv)
     return Qnil;
 }
 
-// Never destroy a type. The Type objects are destroyed with
-// the registry they belong
-static 
-void type_delete() {}
-
 static 
 void registry_free(void* ptr) { delete reinterpret_cast<Registry*>(ptr); }
 
@@ -193,25 +208,27 @@ VALUE registry_alloc(VALUE klass)
 static
 VALUE registry_get(VALUE self, VALUE name)
 {
-    Registry* registry = 0;
-    Data_Get_Struct(self, Registry, registry);
+    Registry* registry = rb_registry2cxx(self);
     Type const* type = registry->get( StringValuePtr(name) );
 
     if (! type)
         return Qnil;
 
-    VALUE rtype = Data_Wrap_Struct(cType, 0, type_delete, const_cast<Type*>(type));
+    VALUE rtype = Data_Wrap_Struct(cType, 0, do_not_delete, const_cast<Type*>(type));
     // Set a registry attribute to keep the registry alive
     rb_iv_set(rtype, "@registry", self);
 
     return rtype;
 }
 
+/* Private method to import a given file in the registry
+ * We expect Registry#import to format the arguments before calling
+ * do_import
+ */
 static
 VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
 {
-    Registry* registry;
-    Data_Get_Struct(self, Registry, registry);
+    Registry* registry = rb_registry2cxx(self);
     
     PluginManager::self manager;
     Importer* importer = manager->importer( StringValuePtr(kind) );
@@ -219,13 +236,11 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
     config_set config;
     if (! NIL_P(options))
     {
-        // Get the hash keys
-        VALUE keys = rb_funcall(options, rb_intern("keys"), 0);
-        
-        for (int i = 0; i < RARRAY(keys)->len; ++i)
+        for (int i = 0; i < RARRAY(options)->len; ++i)
         {
-            VALUE k = RARRAY(keys)->ptr[i];
-            VALUE v = rb_hash_aref(options, k);
+            VALUE entry = RARRAY(options)->ptr[i];
+            VALUE k = RARRAY(entry)->ptr[0];
+            VALUE v = RARRAY(entry)->ptr[1];
 
             if ( TYPE(v) == T_ARRAY )
             {
@@ -242,7 +257,7 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
     return Qnil;
 }
 
-void Init_typelib_api()
+extern "C" void Init_typelib_api()
 {
     mTypelib  = rb_define_module("Typelib");
     
@@ -257,7 +272,7 @@ void Init_typelib_api()
     rb_define_method(cRegistry, "get", (VALUE (*)(...))registry_get, 1);
     // do_import is called by the Ruby-defined import, which formats the 
     // option hash (if there is one) and can detect the import type by extension
-    rb_define_method(cRegistry, "do_import", (VALUE (*)(...))registry_import, 2);
+    rb_define_method(cRegistry, "do_import", (VALUE (*)(...))registry_import, 3);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
 }
