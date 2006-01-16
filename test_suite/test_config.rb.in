@@ -1,0 +1,6 @@
+$LOAD_PATH << 
+    "@top_builddir@/bindings/ruby/ext/.libs" <<
+    "@top_builddir@/bindings/ruby/lib" <<
+    "@top_srcdir@/bindings/ruby/ext" <<
+    "@top_srcdir@/bindings/ruby/lib"
+

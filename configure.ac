@@ -52,8 +52,7 @@ AC_CONFIG_FILES(
     lang/tlb/Makefile
 
     test_suite/Makefile
-    test_suite/testsuite.hh
-
+    test_suite/test_config.rb
 )
 AC_CONFIG_FILES([bindings/ruby/ext/extconf.rb], [ruby -Cbindings/ruby/ext extconf.rb])
 

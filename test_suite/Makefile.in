@@ -13,6 +13,9 @@ testsuite_CPPFLAGS = -I$(top_srcdir) -I$(builddir) $(UTILMM_CXXFLAGS)
 testsuite_CXXFLAGS = 
 testsuite_LDFLAGS = $(top_builddir)/typelib/libtypeLib.la $(top_builddir)/lang/cimport/libtypeLang_c.la $(top_builddir)/lang/tlb/libtypeLang_tlb.la $(ANTLR_LDFLAGS) $(UTILMM_LDFLAGS)
 
+ruby_tests:
+	$(TESTRB) $(top_srcdir)/test_suite
+
 include $(top_srcdir)/mk/test.mk
 include $(top_srcdir)/mk/depend.mk
 
