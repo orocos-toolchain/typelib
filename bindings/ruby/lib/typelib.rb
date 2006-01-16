@@ -63,6 +63,18 @@ module Typelib
             do_import(file, kind, options)
         end
     end
+
+    class Array < Value
+        def initialize(ptr, type)
+            if !type.array?
+                raise ArgumentError, "Cannot build a Typelib::Array object with a type which is not an array"
+            elsif !ptr
+                raise ArgumentError, "Cannot build a Typelib::Array object without a pointer"
+            end
+
+            super
+        end
+    end
 end
 
 require 'dl'

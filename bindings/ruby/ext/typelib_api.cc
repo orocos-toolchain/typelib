@@ -16,15 +16,16 @@ static VALUE mTypelib   = Qnil;
 static VALUE cValue     = Qnil;
 static VALUE cRegistry  = Qnil;
 static VALUE cType      = Qnil;
+static VALUE cArray     = Qnil;
 
 // NOP deleter, for Type objects and some Ptr objects
 static void do_not_delete(void*) {}
 
-static Registry* rb_registry2cxx(VALUE self)
+static Registry& rb_registry2cxx(VALUE self)
 {
     Registry* registry = 0;
     Data_Get_Struct(self, Registry, registry);
-    return registry;
+    return *registry;
 }
 
 static
@@ -37,14 +38,15 @@ VALUE typelib_wrap_type(Type const& type, VALUE registry)
 }
 
 
-static Value* rb_value2cxx(VALUE self)
+static Value& rb_value2cxx(VALUE self)
 {
     Value* value = 0;
     Data_Get_Struct(self, Value, value);
-    return value;
+    return *value;
 }
 
 #include "visitors.hh"
+#include "array.hh"
 
 /***********************************************************************************
  *
@@ -65,7 +67,7 @@ VALUE value_alloc(VALUE klass)
 static
 VALUE value_initialize(VALUE self, VALUE ptr, VALUE type)
 {
-    Value* value = rb_value2cxx(self);
+    Value& value = rb_value2cxx(self);
 
     // Protect 'type' against the GC
     rb_iv_set(self, "@type", type);
@@ -78,7 +80,7 @@ VALUE value_initialize(VALUE self, VALUE ptr, VALUE type)
     // Protect 'ptr' against the GC
     rb_iv_set(self, "@ptr", ptr);
 
-    *value = Value(rb_dlptr2cptr(ptr), *t);
+    value = Value(rb_dlptr2cptr(ptr), *t);
     
     return self;
 }
@@ -94,9 +96,9 @@ static
 VALUE value_field_attributes(VALUE self, VALUE id)
 {
     try {
-        Value* v = rb_value2cxx(self);
+        Value& v = rb_value2cxx(self);
 
-        Type const& type(value_get_field(*v, StringValuePtr(id)).getType());
+        Type const& type(value_get_field(v, StringValuePtr(id)).getType());
         return type_is_assignable(type);
     } catch(FieldNotFound) { 
         return Qnil;
@@ -129,8 +131,8 @@ VALUE registry_alloc(VALUE klass)
 static
 VALUE registry_get(VALUE self, VALUE name)
 {
-    Registry* registry = rb_registry2cxx(self);
-    Type const* type = registry->get( StringValuePtr(name) );
+    Registry& registry = rb_registry2cxx(self);
+    Type const* type = registry.get( StringValuePtr(name) );
 
     if (! type) return Qnil;
     return typelib_wrap_type(*type, self);
@@ -143,7 +145,7 @@ VALUE registry_get(VALUE self, VALUE name)
 static
 VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
 {
-    Registry* registry = rb_registry2cxx(self);
+    Registry& registry = rb_registry2cxx(self);
     
     PluginManager::self manager;
     Importer* importer = manager->importer( StringValuePtr(kind) );
@@ -168,8 +170,15 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
     }
         
     // TODO: error checking
-    importer->load(StringValuePtr(file), config, *registry);
+    importer->load(StringValuePtr(file), config, registry);
     return Qnil;
+}
+
+static VALUE type_is_array(VALUE self)
+{ 
+    Type const* type;
+    Data_Get_Struct(self, Type, type);
+    return (type->getCategory() == Type::Array) ? Qtrue : Qfalse;
 }
 
 extern "C" void Init_typelib_api()
@@ -182,7 +191,15 @@ extern "C" void Init_typelib_api()
     rb_define_method(cValue, "field_attributes", RUBY_METHOD_FUNC(value_field_attributes), 1);
     rb_define_method(cValue, "get_field", RUBY_METHOD_FUNC(rbvalue_get_field), 1);
     rb_define_method(cValue, "set_field", RUBY_METHOD_FUNC(rbvalue_set_field), 2);
-    
+
+    cArray    = rb_define_class_under(mTypelib, "Array", cValue);
+    rb_define_alloc_func(cArray, value_alloc);
+    // The initialize method is defined in the Ruby part of the library
+    rb_define_method(cArray, "[]",      RUBY_METHOD_FUNC(typelib_array_get), 1);
+    rb_define_method(cArray, "[]=",     RUBY_METHOD_FUNC(typelib_array_set), 2);
+    rb_define_method(cArray, "each",    RUBY_METHOD_FUNC(typelib_array_each), 0);
+    rb_define_method(cArray, "size",    RUBY_METHOD_FUNC(typelib_array_size), 0);
+
     cRegistry = rb_define_class_under(mTypelib, "Registry", rb_cObject);
     rb_define_alloc_func(cRegistry, registry_alloc);
     rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_get), 1);
@@ -191,5 +208,7 @@ extern "C" void Init_typelib_api()
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 3);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
+    rb_define_method(cType, "array?", RUBY_METHOD_FUNC(type_is_array), 0);
 }
+
 

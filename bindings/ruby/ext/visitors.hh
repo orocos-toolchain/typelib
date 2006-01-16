@@ -9,73 +9,17 @@ static VALUE typelib_to_ruby(VALUE value, VALUE name);
 static VALUE typelib_from_ruby(Value value, VALUE new_value);
 static VALUE typelib_from_ruby(VALUE value, VALUE name, VALUE new_value);
 
-static Array const& Typelib_Get_Array(Value& value)
-{
-    try { return dynamic_cast<Array const&>(value.getType()); }
-    catch(...)
-    { rb_raise(rb_eTypeError, "expecting an Array"); }
-}
-
-static Value typelib_array_element(VALUE rbarray, VALUE rbindex)
-{
-    Value& value(*rb_value2cxx(rbarray));
-    Array const& array(Typelib_Get_Array(value));
-    size_t index = FIX2UINT(rbindex);
-    
-    if (array.getDimension() > index)
-    {
-        rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index, array.getSize());
-        return Value();
-    }
-
-    Type const& array_type(array.getIndirection());
-
-    int8_t* data = *reinterpret_cast<int8_t**>(value.getData());
-    data += array_type.getSize() * index;
-    return Value(data, array_type);
-}
-
-static VALUE typelib_array_get(VALUE self, VALUE rbindex)
-{ 
-    Value element = typelib_array_element(self, rbindex);
-    VALUE registry = typelib_value_get_registry(self);
-
-    return typelib_to_ruby(element, registry); 
-}
-
-static VALUE typelib_array_set(VALUE self, VALUE rbindex, VALUE newvalue)
-{ 
-    Value element = typelib_array_element(self, rbindex);
-    return typelib_from_ruby(element, newvalue); 
-}
-
-static VALUE typelib_array_each(VALUE rbarray)
-{
-    Value& value(*rb_value2cxx(rbarray));
-    Array const& array(Typelib_Get_Array(value));
-    Type  const& array_type(array.getIndirection());
-    VALUE registry(typelib_value_get_registry(rbarray));
-
-    int8_t* data = *reinterpret_cast<int8_t**>(value.getData());
-
-    VALUE last_value = Qnil;
-    for (size_t i = 0; i < array.getDimension(); ++i, data += array_type.getSize())
-        last_value = rb_yield( typelib_to_ruby( Value(data, array_type), registry ) );
-
-    return last_value;
-}
-
 /* There are constraints when creating a Ruby wrapper for a Type,
  * mainly for avoiding GC issues
  * This function does the work
  * It needs the registry v type is from
  */
-static VALUE wrap_value(Value v, VALUE registry)
+static VALUE wrap_value(Value v, VALUE registry, VALUE klass)
 {
     VALUE new_type  = typelib_wrap_type(v.getType(), registry);
     VALUE ptr       = rb_dlptr_new(v.getData(), v.getType().getSize(), do_not_delete);
     VALUE args[2] = { ptr, new_type };
-    return rb_class_new_instance(2, args, cValue);
+    return rb_class_new_instance(2, args, klass);
 }
 
 /* This visitor takes a Value class and a field name,
@@ -100,12 +44,12 @@ class RubyGetter : public ValueVisitor
 
     virtual bool visit_array    (Value const& v, Array const& a) 
     {
-        throw UnsupportedType(a);
+        m_value = wrap_value(v, m_registry, cArray);
         return false;
     }
     virtual bool visit_compound (Value const& v, Compound const& c)
     { 
-        m_value = wrap_value(v, m_registry);
+        m_value = wrap_value(v, m_registry, cValue);
         return false; 
     }
     virtual bool visit_enum     (Value const& v, Enum const& e)   { throw UnsupportedType(v.getType()); }
@@ -156,9 +100,9 @@ class RubySetter : public ValueVisitor
     virtual bool visit_ (float   & value) { value = NUM2DBL(m_value); return false; }
     virtual bool visit_ (double  & value) { value = NUM2DBL(m_value); return false; }
 
-    virtual bool visit_array    (Value const& v, Array const&) { throw UnsupportedType(v.getType()); }
-    virtual bool visit_compound (Value const& v, Compound const&) { throw UnsupportedType(v.getType()); }
-    virtual bool visit_enum     (Value const& v, Enum const&) { throw UnsupportedType(v.getType()); }
+    virtual bool visit_array    (Value const& v, Array const&)      { throw UnsupportedType(v.getType()); }
+    virtual bool visit_compound (Value const& v, Compound const&)   { throw UnsupportedType(v.getType()); }
+    virtual bool visit_enum     (Value const& v, Enum const&)       { throw UnsupportedType(v.getType()); }
     
 public:
     RubySetter()
@@ -201,7 +145,7 @@ static VALUE typelib_to_ruby(VALUE value, VALUE name)
 { 
     // Get the registry
     VALUE registry = typelib_value_get_registry(value);
-    return typelib_to_ruby(*rb_value2cxx(value), name, registry); 
+    return typelib_to_ruby(rb_value2cxx(value), name, registry); 
 }
 
 /* Converts a Ruby's VALUE to Typelib::Value */
@@ -214,7 +158,7 @@ static VALUE typelib_from_ruby(Value value, VALUE new_value)
 /* Sets a given field in +value+ */
 static VALUE typelib_from_ruby(VALUE value, VALUE name, VALUE new_value)
 {
-    Value& tlib_value(*rb_value2cxx(value));
+    Value& tlib_value(rb_value2cxx(value));
     try { 
         Value field_value = value_get_field(tlib_value, StringValuePtr(name));
         typelib_from_ruby(field_value, new_value);

@@ -43,7 +43,7 @@ class TC_Value < Test::Unit::TestCase
         assert( a.respond_to?("d=") )
     end
 
-    def test_value_get
+    def test_get
         a = Value.new(nil, make_registry.get("/struct A"))
         GC.start
         a = set_struct_A_value(a)
@@ -53,7 +53,7 @@ class TC_Value < Test::Unit::TestCase
         assert_equal(40, a.d)
     end
 
-    def test_value_set
+    def test_set
         a = Value.new(nil, make_registry.get("/struct A"))
         GC.start
         a.a = 1;
@@ -63,7 +63,7 @@ class TC_Value < Test::Unit::TestCase
         assert( check_struct_A_value(a) )
     end
 
-    def test_value_complex
+    def test_recursive
         b = Value.new(nil, make_registry.get("/struct B"))
         GC.start
         assert(b.respond_to?(:a))
@@ -77,5 +77,20 @@ class TC_Value < Test::Unit::TestCase
         assert_equal(40, b.a.d)
     end
 
+    def test_array_basics
+        b = Value.new(nil, make_registry.get("/struct B"))
+        GC.start
+        assert(b.respond_to?(:c))
+        assert(! b.respond_to?(:c=))
+        assert(b.c.is_a?(Typelib::Array))
+        assert_equal(100, b.c.size)
+    end
+    #def test_array_get
+    #    b = Value.new(nil, make_registry.get("/struct B"))
+    #    set_B_c_value(b)
+    #    [0..(b.c.size - 1)].each do |i|
+    #        assert( ( b.c[i] - Float(i)/10.0 ).abs < 0.01 )
+    #    end
+    #end
 end
 
