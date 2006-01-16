@@ -12,9 +12,8 @@ APP_NAME=typelib
 APP_SRC= import.cc inspect.cc mode.cc plugin.cc preprocess.cc typelib.cc cimportplugin.cc tlbimportplugin.cc
 APP_CPPFLAGS=$(TYPELIB_CXXFLAGS) $(UTILMM_CXXFLAGS) -I$(top_srcdir)
 # APP_CXXFLAGS=
-APP_LDFLAGS=$(TYPELIB_LIBS) $(UTILMM_LDFLAGS)
-APP_LIBS=$(top_builddir)/lang/cimport/libtypeLib.la
-		
+APP_LDFLAGS=$(UTILMM_LDFLAGS)
+APP_LIBS=$(top_builddir)/typelib/libtypeLib.la
 
 include $(top_srcdir)/mk/app.mk
 include $(top_srcdir)/mk/autotools.mk
