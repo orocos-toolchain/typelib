@@ -27,14 +27,13 @@ lang_c_SRC = import.cc Dictionary.cc Support.cc \
 	    typesolver.cc packing.cc $(cparser_CC)
 
 # read info libtool about these variables
-lang_c_VERSION = 0
-lang_c_AGE = 0
-lang_c_REVISION = 1
+# lang_c_VERSION = 0
+# lang_c_AGE = 0
+# lang_c_REVISION = 1
 
 lang_c_CPPFLAGS = $(TYPELIB_CXXFLAGS) $(ANTLR_CFLAGS) $(UTILMM_CXXFLAGS) -I$(builddir) -I$(srcdir)
 # do not link against libantlr. The guys doing the Debian package know nothing about PIC :(
 lang_c_LDFLAGS = $(UTILMM_LDFLAGS) $(BOOST_FILESYSTEM_LDFLAGS)
-lang_c_LIBS= $(TYPELIB_LIBS)
 
 ############ end: lang_c
 

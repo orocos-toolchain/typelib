@@ -16,9 +16,9 @@ LIB_NAME = typeLang_tlb
 lang_tlb_SRC = export.cc import.cc
 
 # read info libtool about these variables
-lang_tlb_VERSION = 0
-lang_tlb_AGE = 0
-lang_tlb_REVISION = 1
+# lang_tlb_VERSION = 0
+# lang_tlb_AGE = 0
+# lang_tlb_REVISION = 1
 
 lang_tlb_CPPFLAGS = -I$(top_srcdir)/typelib $(LIBXML_CFLAGS)
 lang_tlb_LDFLAGS = $(LIBXML_LIBS)

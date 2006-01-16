@@ -9,7 +9,7 @@ builddir=@builddir@
 
 include $(top_builddir)/mk/init.mk
 
-SUBDIRS = typelib lang tools 
+SUBDIRS = lang typelib tools 
 
 .PHONY: build doc
 
