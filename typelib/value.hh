@@ -32,29 +32,31 @@ namespace Typelib
     {
         class TypeDispatch;
         friend class TypeDispatch;
-        bool m_recursive;
+        bool m_defval;
+
+        TypeDispatch* m_dispatcher;
 
     protected:
-        virtual bool visit_ (int8_t  &) { return true; }
-        virtual bool visit_ (uint8_t &) { return true; }
-        virtual bool visit_ (int16_t &) { return true; }
-        virtual bool visit_ (uint16_t&) { return true; }
-        virtual bool visit_ (int32_t &) { return true; }
-        virtual bool visit_ (uint32_t&) { return true; }
-        virtual bool visit_ (int64_t &) { return true; }
-        virtual bool visit_ (uint64_t&) { return true; }
-        virtual bool visit_ (float   &) { return true; }
-        virtual bool visit_ (double  &) { return true; }
+        virtual bool visit_ (int8_t  &) { return m_defval; }
+        virtual bool visit_ (uint8_t &) { return m_defval; }
+        virtual bool visit_ (int16_t &) { return m_defval; }
+        virtual bool visit_ (uint16_t&) { return m_defval; }
+        virtual bool visit_ (int32_t &) { return m_defval; }
+        virtual bool visit_ (uint32_t&) { return m_defval; }
+        virtual bool visit_ (int64_t &) { return m_defval; }
+        virtual bool visit_ (uint64_t&) { return m_defval; }
+        virtual bool visit_ (float   &) { return m_defval; }
+        virtual bool visit_ (double  &) { return m_defval; }
 
-        virtual bool visit_pointer  (Value const&) { return m_recursive; }
-        virtual bool visit_array    (Value const&) { return m_recursive; }
-        virtual bool visit_compound (Value const&) { return m_recursive; }
-        virtual bool visit_field    (Field const&, Value const&) { return true; }
-        virtual bool visit_enum     (Value const&) { return m_recursive; }
+        virtual bool visit_pointer  (Value const& v, Pointer const& t);
+        virtual bool visit_array    (Value const& v, Array const& a);
+        virtual bool visit_compound (Value const&, Compound const& c); 
+        virtual bool visit_field    (Value const&, Compound const& c, Field const& f);
+        virtual bool visit_enum     (Value const&, Enum const& e);
 
     public:
-        ValueVisitor(bool recursive = false) 
-            : m_recursive(recursive) {}
+        ValueVisitor(bool defval = false) 
+            : m_defval(defval), m_dispatcher(0) {}
         virtual ~ValueVisitor() {}
         void apply(Value v);
     };
@@ -110,8 +112,8 @@ namespace Typelib
     public:
         ~FieldNotFound() throw() {}
         std::string const name;
-        FieldNotFound(std::string const& name)
-            : name(name) {}
+        FieldNotFound(std::string const& name_)
+            : name(name_) {}
     };
 
     /** Gets the object describing a given field */
@@ -120,7 +122,8 @@ namespace Typelib
         std::string m_name;
         Value m_field;
 
-        bool visit_field(Field const& field, Value const& value)
+        bool visit_compound(Compound const& type) { return true; }
+        bool visit_field(Value const& value, Compound const&, Field const& field)
         {
             if (field.getName() == m_name)
             {
@@ -132,7 +135,7 @@ namespace Typelib
         
     public:
         FieldGetter()
-            : ValueVisitor(false) {}
+            : ValueVisitor(true) {}
         Value apply(Value v, std::string const& name)
         {
             m_name = name;

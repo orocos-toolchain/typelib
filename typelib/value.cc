@@ -6,6 +6,8 @@ namespace Typelib
 {
     class ValueVisitor::TypeDispatch : public TypeVisitor
     {
+        friend class ValueVisitor;
+
         // The dispatching stack
         std::list<uint8_t*> m_stack;
 
@@ -17,7 +19,7 @@ namespace Typelib
         {
             switch(t.getSize())
             {
-                case 1:  return m_visitor.visit_(*reinterpret_cast<T8*>(value));
+                case 1: return m_visitor.visit_(*reinterpret_cast<T8*>(value));
                 case 2: return m_visitor.visit_(*reinterpret_cast<T16*>(value));
                 case 4: return m_visitor.visit_(*reinterpret_cast<T32*>(value));
                 case 8: return m_visitor.visit_(*reinterpret_cast<T64*>(value));
@@ -27,6 +29,13 @@ namespace Typelib
         }
 
     protected:
+        bool do_visit (Enum const& type) { return TypeVisitor::visit_(type); }
+        bool do_visit (Pointer const& type) { return TypeVisitor::visit_(type); }
+        bool do_visit (Array const& type) { return TypeVisitor::visit_(type); }
+        bool do_visit (Compound const& type) { return TypeVisitor::visit_(type); }
+        bool do_visit (Compound const& type, Field const& field) { return TypeVisitor::visit_(type); }
+
+
         virtual bool visit_ (Numeric const& type)
         { 
             uint8_t* value(m_stack.back());
@@ -49,6 +58,7 @@ namespace Typelib
             assert(false);
             return true;
         }
+
         virtual bool visit_ (Enum const& type)
         { 
             throw UnsupportedType(type);
@@ -57,32 +67,28 @@ namespace Typelib
 
         virtual bool visit_ (Pointer const& type)
         {
+            Value v(m_stack.back(), type);
             m_stack.push_back( *reinterpret_cast<uint8_t**>(m_stack.back()) );
-            bool ret = TypeVisitor::visit_(type.getIndirection());
+            bool ret = m_visitor.visit_pointer(v, type);
             m_stack.pop_back();
             return ret;
         }
         virtual bool visit_ (Array const& type)
         {
-            Type const& array_type(type.getIndirection());
-            uint8_t* array_front = *reinterpret_cast<uint8_t**>(m_stack.back());
-            for (size_t i = 0; i < type.getDimension(); ++i)
-            {
-                m_stack.push_back( array_front + array_type.getSize() * i );
-                bool ret = TypeVisitor::visit_(array_type);
-                m_stack.pop_back();
-                if (!ret) return false;
-            }
-
+            throw UnsupportedType(type);
             return true;
+        }
+
+        virtual bool visit_ (Compound const& type)
+        {
+            Value v(m_stack.back(), type);
+            return m_visitor.visit_compound(v, type);
         }
 
         virtual bool visit_ (Compound const& type, Field const& field)
         {
             m_stack.push_back( m_stack.back() + field.getOffset() );
-            bool ret = m_visitor.visit_field(field, Value(m_stack.back(), field.getType()));
-            if (ret)
-                ret = TypeVisitor::visit_(field.getType());
+            bool ret = m_visitor.visit_field(Value(m_stack.back(), field.getType()), type, field);
             m_stack.pop_back();
             return ret;
         }
@@ -99,6 +105,18 @@ namespace Typelib
         }
 
     };
+
+    bool ValueVisitor::visit_pointer  (Value const& v, Pointer const& t)
+    { return m_dispatcher->TypeVisitor::visit_(t); }
+    bool ValueVisitor::visit_array    (Value const& v, Array const& a) 
+    { return m_dispatcher->TypeVisitor::visit_(a); }
+    bool ValueVisitor::visit_compound (Value const&, Compound const& c) 
+    { return m_dispatcher->TypeVisitor::visit_(c); }
+    bool ValueVisitor::visit_field    (Value const&, Compound const& c, Field const& f) 
+    { return m_dispatcher->TypeVisitor::visit_(c, f); }
+    bool ValueVisitor::visit_enum     (Value const&, Enum const& e) 
+    { return m_dispatcher->TypeVisitor::visit_(e); }
+
 }
 
 namespace Typelib
@@ -106,7 +124,9 @@ namespace Typelib
     void ValueVisitor::apply(Value v)
     {
         TypeDispatch dispatcher(*this);
+        m_dispatcher = &dispatcher;
         dispatcher.apply(v);
+        m_dispatcher = 0;
     }
 }
 
