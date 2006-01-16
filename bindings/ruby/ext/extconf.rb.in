@@ -1,6 +1,6 @@
 require 'mkmf'
 
-$CPPFLAGS += " -I@top_srcdir@ @UTILMM_CFLAGS@"
+$CPPFLAGS += " -I@top_srcdir@ @UTILMM_CFLAGS@ -g3 -O0 -Wshadow"
 $LDFLAGS  += "@top_builddir@/typelib/libtypeLib.la -ldl"
 #CONFIG['CC'] = "@top_builddir@/libtool --mode=compile #{CONFIG['CC']}"
 COMPILE_C   = "@top_builddir@/libtool --mode=compile #{COMPILE_C}"
