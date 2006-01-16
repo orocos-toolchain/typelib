@@ -2,6 +2,31 @@ module Typelib
     class Value
         # Get a DL::Ptr object for this value
         def to_ptr; @ptr end
+
+        def respond_to?(name)
+            name = name.to_s
+            value = if name[-1] == ?=
+                        field_attributes(name[0..-2]) == 1
+                    else
+                        field_attributes(name)
+                    end
+
+            if value.nil?
+                super
+            else
+                value
+            end
+        end
+        def method_missing(name, *args, &proc)
+            name = name.to_s
+            value = if name[-1] == ?=
+                        set_field(name[0..-2], args[0])
+                    elsif args.empty?
+                        get_field(name)
+                    end
+            
+            value || super
+        end
     end
 
     class Type
@@ -40,6 +65,7 @@ module Typelib
     end
 end
 
+require 'dl'
 require 'typelib_api'
 
 

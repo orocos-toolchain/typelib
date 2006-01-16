@@ -1,5 +1,7 @@
 #include <ruby.h>
+extern "C" {
 #include <dl.h>
+}
 #include <typelib/registry.hh>
 #include <typelib/typevisitor.hh>
 #include <typelib/value.hh>
@@ -41,6 +43,14 @@ static
 VALUE value_alloc(VALUE klass)
 { return Data_Wrap_Struct(klass, 0, value_delete, new Value); }
 
+static
+VALUE typelib_wrap_type(Type const& type, VALUE registry)
+{
+    VALUE rtype = Data_Wrap_Struct(cType, 0, do_not_delete, const_cast<Type*>(&type));
+    // Set a registry attribute to keep the registry alive
+    rb_iv_set(rtype, "@registry", registry);
+    return rtype;
+}
 
 /** This visitor takes a Value class and a field name,
  *  and returns the VALUE object which corresponds to
@@ -49,6 +59,7 @@ VALUE value_alloc(VALUE klass)
 class RubyGetter : public ValueVisitor
 {
     VALUE m_value;
+    VALUE m_self;
 
     virtual bool visit_ (int8_t  & value) { m_value = CHR2FIX(value); return false; }
     virtual bool visit_ (uint8_t & value) { m_value = CHR2FIX(value); return false; }
@@ -61,31 +72,35 @@ class RubyGetter : public ValueVisitor
     virtual bool visit_ (float   & value) { m_value = rb_float_new(value); return false; }
     virtual bool visit_ (double  & value) { m_value = rb_float_new(value); return false; }
 
-    virtual bool visit_pointer  (Value const&)   { return true; }
-    virtual bool visit_array    (Value const& v) { throw UnsupportedType(v.getType()); }
-    virtual bool visit_compound (Value const& v)
+    virtual bool visit_array    (Value const& v, Array const& a) { throw UnsupportedType(v.getType()); }
+    virtual bool visit_compound (Value const& v, Compound const& c)
     { 
-        m_value = Data_Wrap_Struct(cValue, 0, value_delete, new Value(v));
+        VALUE ptr       = rb_dlptr_new(v.getData(), v.getType().getSize(), do_not_delete);
+        VALUE self_type = rb_iv_get(m_self, "@type");
+        VALUE new_type  = typelib_wrap_type(v.getType(), rb_iv_get(self_type, "@registry"));
+        VALUE args[2] = { ptr, new_type };
+        m_value = rb_class_new_instance(2, args, cValue);
         return false; 
     }
-    // Shouldn't get in visit_field since visit_compound returns false
-    virtual bool visit_field    (Field const&, Value const&) { return false; }
-    virtual bool visit_enum     (Value const& v)   { throw UnsupportedType(v.getType()); }
+    virtual bool visit_enum     (Value const& v, Enum const& e)   { throw UnsupportedType(v.getType()); }
     
 public:
     RubyGetter()
         : ValueVisitor(false) {}
 
-    VALUE apply(Value v, VALUE name)
+    VALUE apply(VALUE self, VALUE name)
     {
-        m_value = Qnil;
+        m_self = self;
+        Value& value = *rb_value2cxx(self);
+
+        m_value    = Qnil;
         try { 
-            Value v = value_get_field(v, StringValuePtr(name));
-            ValueVisitor::apply(v);
+            Value field_value = value_get_field(value, StringValuePtr(name));
+            ValueVisitor::apply(field_value);
             return m_value;
         } 
-        catch(FieldNotFound) { return Qnil; }
-        catch(UnsupportedType) { return Qnil; }
+        catch(FieldNotFound)    { return Qnil; }
+        catch(UnsupportedType)  { return Qnil; }
     }
 };
 
@@ -104,27 +119,22 @@ class RubySetter : public ValueVisitor
     virtual bool visit_ (float   & value) { value = NUM2DBL(m_value); return false; }
     virtual bool visit_ (double  & value) { value = NUM2DBL(m_value); return false; }
 
-    virtual bool visit_pointer  (Value const&)   { return true; }
-    virtual bool visit_array    (Value const& v) { throw UnsupportedType(v.getType()); }
-    virtual bool visit_compound (Value const& v)
-    { 
-        m_value = Data_Wrap_Struct(cValue, 0, value_delete, new Value(v));
-        return false; 
-    }
-    // Shouldn't get in visit_field since visit_compound returns false
-    virtual bool visit_field    (Field const&, Value const&) { return false; }
-    virtual bool visit_enum     (Value const& v)   { throw UnsupportedType(v.getType()); }
+    virtual bool visit_array    (Value const& v, Array const&) { throw UnsupportedType(v.getType()); }
+    virtual bool visit_compound (Value const& v, Compound const&) { throw UnsupportedType(v.getType()); }
+    virtual bool visit_enum     (Value const& v, Enum const&) { throw UnsupportedType(v.getType()); }
     
 public:
     RubySetter()
         : ValueVisitor(false) {}
 
-    bool apply(Value v, VALUE name, VALUE new_value)
+    bool apply(VALUE self, VALUE name, VALUE new_value)
     {
+        Value& v = *rb_value2cxx(self);
+
         m_value = new_value;
         try { 
-            Value v = value_get_field(v, StringValuePtr(name));
-            ValueVisitor::apply(v);
+            Value field_value = value_get_field(v, StringValuePtr(name));
+            ValueVisitor::apply(field_value);
             return true;
         } 
         catch(FieldNotFound) { return false; } 
@@ -146,53 +156,57 @@ VALUE value_initialize(VALUE self, VALUE ptr, VALUE type)
         ptr = rb_dlptr_malloc(t->getSize(), free);
 
     // Protect 'ptr' against the GC
-    ptr = rb_funcall(ptr, rb_intern("to_ptr"), 1, type);
     rb_iv_set(self, "@ptr", ptr);
 
     *value = Value(rb_dlptr2cptr(ptr), *t);
+    
     return self;
 }
 
-// TODO: check if the given field is settable/gettable
-// for now, we only check its existence
-static
-VALUE value_respond_to_p(VALUE self, VALUE id)
+static VALUE type_is_assignable(Type const& type)
 {
-    try { 
-        Value* v = rb_value2cxx(self);
-
-        value_get_field(*v, StringValuePtr(id));
-        return Qtrue;
-    } catch(FieldNotFound) { 
-        return rb_call_super(1, &id);
+    switch(type.getCategory())
+    {
+    case Type::Numeric:
+        return INT2FIX(1);
+    case Type::Pointer:
+        return type_is_assignable( dynamic_cast<Pointer const&>(type).getIndirection());
+    default:
+        return INT2FIX(0);
     }
+    // never reached
 }
 
 static
-VALUE value_method_missing(VALUE self, int argc, VALUE* argv)
+VALUE value_field_attributes(VALUE self, VALUE id)
 {
-    Value* v = rb_value2cxx(self);
+    try {
+        Value* v = rb_value2cxx(self);
 
-    if (argc == 1)
-    {
-        RubyGetter getter;
-        VALUE ruby_value = getter.apply(*v, argv[0]);
-        if (NIL_P(ruby_value))
-            return rb_call_super(argc, argv);
-        return ruby_value;
+        Type const& type(value_get_field(*v, StringValuePtr(id)).getType());
+        return type_is_assignable(type);
+    } catch(FieldNotFound) { 
+        return Qnil;
     }
-    else if (argc == 2)
-    {
-        RubySetter setter;
-        if (!setter.apply(*v, argv[0], argv[1]))
-            return rb_call_super(argc, argv);
-        return argv[1];
-    }
-    else
-        return rb_call_super(argc, argv);
+}
 
-    // never reached
-    return Qnil;
+
+/** value_get_field and value_set_field are called
+ * from the method_missing method defined in Ruby
+ */
+static
+VALUE rbvalue_get_field(VALUE self, VALUE name)
+{
+    RubyGetter getter;
+    return getter.apply(self, name);
+}
+static
+VALUE rbvalue_set_field(VALUE self, VALUE name, VALUE newval)
+{
+    RubySetter setter;
+    if (!setter.apply(self, name, newval))
+        return Qnil;
+    return newval;
 }
 
 static 
@@ -205,20 +219,15 @@ VALUE registry_alloc(VALUE klass)
     return Data_Wrap_Struct(klass, 0, registry_free, registry);
 }
 
+
 static
 VALUE registry_get(VALUE self, VALUE name)
 {
     Registry* registry = rb_registry2cxx(self);
     Type const* type = registry->get( StringValuePtr(name) );
 
-    if (! type)
-        return Qnil;
-
-    VALUE rtype = Data_Wrap_Struct(cType, 0, do_not_delete, const_cast<Type*>(type));
-    // Set a registry attribute to keep the registry alive
-    rb_iv_set(rtype, "@registry", self);
-
-    return rtype;
+    if (! type) return Qnil;
+    return typelib_wrap_type(*type, self);
 }
 
 /* Private method to import a given file in the registry
@@ -263,16 +272,17 @@ extern "C" void Init_typelib_api()
     
     cValue    = rb_define_class_under(mTypelib, "Value", rb_cObject);
     rb_define_alloc_func(cValue, value_alloc);
-    rb_define_method(cValue, "initialize", (VALUE (*)(...))value_initialize, 2);
-    rb_define_method(cValue, "method_missing", (VALUE (*)(...))value_method_missing, -1);
-    rb_define_method(cValue, "respond_to?", (VALUE (*)(...))value_respond_to_p, 1);
+    rb_define_method(cValue, "initialize", RUBY_METHOD_FUNC(value_initialize), 2);
+    rb_define_method(cValue, "field_attributes", RUBY_METHOD_FUNC(value_field_attributes), 1);
+    rb_define_method(cValue, "get_field", RUBY_METHOD_FUNC(rbvalue_get_field), 1);
+    rb_define_method(cValue, "set_field", RUBY_METHOD_FUNC(rbvalue_set_field), 2);
     
     cRegistry = rb_define_class_under(mTypelib, "Registry", rb_cObject);
     rb_define_alloc_func(cRegistry, registry_alloc);
-    rb_define_method(cRegistry, "get", (VALUE (*)(...))registry_get, 1);
+    rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_get), 1);
     // do_import is called by the Ruby-defined import, which formats the 
-    // option hash (if there is one) and can detect the import type by extension
-    rb_define_method(cRegistry, "do_import", (VALUE (*)(...))registry_import, 3);
+    // option hash (if there is one), and can detect the import type by extension
+    rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 3);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
 }
