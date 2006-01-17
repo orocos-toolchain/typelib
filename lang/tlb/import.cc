@@ -46,10 +46,10 @@ namespace
 
         TypeNode
             ( xmlNodePtr node = 0
-            , string const& name = string()
-            , string const& file = string()
-            , NodeLoader loader = 0 )
-            : xml(node), name(name), file(file), loader(loader) {}
+            , string const& name_ = string()
+            , string const& file_ = string()
+            , NodeLoader loader_ = 0 )
+            : xml(node), name(name_), file(file_), loader(loader_) {}
     };
     typedef std::map<string, TypeNode> TypeMap;
 }
