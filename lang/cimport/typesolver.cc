@@ -46,6 +46,20 @@ void TypeSolver::beginEnumDefinition(const std::string& name)
     CPPParser::beginEnumDefinition(name);
 }
 
+void TypeSolver::enumElement(const std::string& name, bool has_value, int value)
+{
+    if (!has_value)
+    {
+        if (m_enum_values.empty())
+            value = 0;
+        else
+            value = m_enum_values.back().second + 1;
+    }
+    
+    m_enum_values.push_back(make_pair(name, value));
+    CPPParser::enumElement(name, has_value, value);
+}
+
 void TypeSolver::endEnumDefinition()
 {
     if (! m_class_name.empty())
@@ -60,8 +74,15 @@ void TypeSolver::buildClassObject(bool define_type)
 
     if (m_class_type == tsENUM)
     {
-        object = new Enum(m_registry.getFullName(m_class_name));
         assert(!define_type);
+
+        auto_ptr<Enum> enum_def(new Enum(m_registry.getFullName(m_class_name)));
+        ValueMap::iterator it;
+        for (it = m_enum_values.begin(); it != m_enum_values.end(); ++it)
+            enum_def->add(it->first, it->second);
+        
+        m_enum_values.clear();
+        object = enum_def.release();
     }
     else
     {

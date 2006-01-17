@@ -389,7 +389,7 @@ void CPPParser::endClassDefinition()
     qualifierPrefix.resize(index);
 }
 
-void CPPParser::enumElement(const std::string& e)
+void CPPParser::enumElement(const std::string& e, bool has_value, int value)
 { }
 
 void CPPParser::beginEnumDefinition(const std::string& e)

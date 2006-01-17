@@ -145,10 +145,26 @@ namespace Typelib
     namespace
     {
         enum FindSizeOfEnum { EnumField };
+        BOOST_STATIC_ASSERT(( sizeof(FindSizeOfEnum) == sizeof(int) ));
     }
     Enum::Enum(const string& name)
         : Type (name, sizeof(FindSizeOfEnum), Type::Enum) { }
-
+    Enum::ValueMap const& Enum::values() const { return m_values; }
+    void Enum::add(std::string const& name, int value)
+    { 
+        std::pair<ValueMap::iterator, bool> inserted;
+        inserted = m_values.insert( make_pair(name, value) );
+        if (!inserted.second && inserted.first->second != value)
+            throw AlreadyExists();
+    }
+    int  Enum::get(std::string const& name)
+    {
+        ValueMap::iterator it = m_values.find(name);
+        if (it == m_values.end())
+            throw DoesNotExist();
+        else
+            return it->second;
+    }
 
 
     Array::Array(Type const& of, size_t new_dim)

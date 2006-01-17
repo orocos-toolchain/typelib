@@ -93,6 +93,7 @@ options
     buildAST =false;
     codeGenMakeSwitchThreshold = 2;
     codeGenBitsetTestThreshold = 3;
+    defaultErrorHandler=false;
 }
 
 {
@@ -200,7 +201,7 @@ protected:
     virtual void beginClassDefinition(TypeSpecifier,const std::string&);
     virtual void endClassDefinition();
     virtual void beginEnumDefinition(const std::string&);
-    virtual void enumElement(const std::string&);
+    virtual void enumElement(const std::string&, bool has_value, int value);
     virtual void endEnumDefinition();
 
     // Declaration and definition stuff
@@ -453,9 +454,19 @@ enumerator_list
 	:	enumerator (COMMA enumerator)*
 	;
 
-enumerator
-	:	id:ID (ASSIGNEQUAL constant_expression)?
-		{ enumElement(id->getText()); }
+enumerator 
+        { bool has_value = false; int value; int sign = 1; }
+/* We don't want to parse any enum definition. Limit to constant expressions */
+/*	:	id:ID (ASSIGNEQUAL enum_value:constant_expression  */
+  	:	id:ID (
+                        ASSIGNEQUAL 
+                        (   MINUS { sign = -1; } 
+                        |   PLUS
+                        )?
+                        value = int_constant 
+                        { has_value = true ; }
+                      )?
+		{ enumElement(id->getText(), has_value, sign*value); }
 	;
 
 /* This matches a generic qualified identifier ::T::B::foo
@@ -1143,6 +1154,7 @@ options
 	k = 3;
 	importVocab = STDC;
 	testLiterals = false;
+        defaultErrorHandler=false;
 }
 
 // DW 4/11/02 put in to support manual hoisting

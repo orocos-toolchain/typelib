@@ -45,6 +45,7 @@ namespace Typelib
         std::string   getName() const;
         size_t        getSize() const;
         Category      getCategory() const;
+        bool          isNull() const;
     };
 
     class NullType : public Type
@@ -73,7 +74,19 @@ namespace Typelib
     class Enum : public Type
     {
     public:
+        typedef std::map<std::string, int> ValueMap;
+        class AlreadyExists {};
+        class DoesNotExist  {};
+        
         Enum(const std::string& name);
+        void add(std::string const& name, int value);
+        int  get(std::string const& name);
+        
+        std::list<std::string> names() const;
+        ValueMap const& values() const;
+
+    private:
+        ValueMap m_values;
     };
 
     /** A field in a Compound type */

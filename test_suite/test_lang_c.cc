@@ -54,7 +54,28 @@ public:
         BOOST_REQUIRE( registry.has("/E") );
         BOOST_REQUIRE_EQUAL(registry.get("/E")->getCategory(), Type::Enum);
         Enum const& e(dynamic_cast<Enum const&>(*registry.get("/E")));
+        Enum::ValueMap const& map = e.values();
 
+        // Check that the values in Enum are the ones we are expecting
+        struct ExpectedValue
+        {
+            char const* name;
+            int         value;
+        };
+        ExpectedValue expected[] = {
+            { "FIRST", FIRST },
+            { "SECOND", SECOND },
+            { "THIRD", THIRD },
+            { "LAST", LAST },
+            { 0, 0 }
+        };
+            
+        for (ExpectedValue* exp_it = expected; exp_it->name; ++exp_it)
+        {
+            Enum::ValueMap::const_iterator it = map.find(exp_it->name);
+            BOOST_REQUIRE( it != map.end() );
+            BOOST_REQUIRE_EQUAL(exp_it->value, it->second);
+        }
     }
 };
 
