@@ -56,10 +56,10 @@ class TC_Value < Test::Unit::TestCase
     def test_set
         a = Value.new(nil, make_registry.get("/struct A"))
         GC.start
-        a.a = 1;
-        a.b = 2;
-        a.c = 3;
-        a.d = 4;
+        a.a = 10;
+        a.b = 20;
+        a.c = 30;
+        a.d = 40;
         assert( check_struct_A_value(a) )
     end
 
@@ -106,6 +106,17 @@ class TC_Value < Test::Unit::TestCase
             assert( ( v - Float(i)/10.0 ).abs < 0.01 )
         end
     end
+    def test_wrapping
+        registry = make_registry
+        test_lib = Typelib.dlopen('.libs/test_rb_value.so', registry)
+        typelib_wrap = Typelib.wrap(test_lib, 'test_simple_function_wrapping', "int", "int", "short")
 
+        assert_equal(1, typelib_wrap[1, 2].first)
+
+        typelib_wrap = Typelib.wrap(test_lib, 'test_ptr_passing', "int", "struct A*")
+        a = Value.new(nil, registry.get("struct A"))
+        set_struct_A_value(a)
+        assert_equal(1, typelib_wrap[a.to_ptr].first)
+    end
 end
 

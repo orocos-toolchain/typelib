@@ -45,8 +45,16 @@ static Value& rb_value2cxx(VALUE self)
     return *value;
 }
 
+static Type& rb_type2cxx(VALUE self)
+{
+    Type* type = 0;
+    Data_Get_Struct(self, Type, type);
+    return *type;
+}
+
 #include "visitors.hh"
 #include "array.hh"
+#include "ruby-dl.hh"
 
 /***********************************************************************************
  *
@@ -138,6 +146,49 @@ VALUE registry_get(VALUE self, VALUE name)
     return typelib_wrap_type(*type, self);
 }
 
+static
+VALUE typelib_do_dlopen(VALUE self, VALUE lib, VALUE registry)
+{
+    VALUE handle = rb_funcall(rb_mDL, rb_intern("dlopen"), 1, lib);
+    rb_iv_set(handle, "@typelib_registry", registry);
+    return handle;
+}
+
+static
+VALUE typelib_do_wrap_function(int argc, VALUE* argv, VALUE self)
+{
+    if (argc <= 2)
+        rb_raise(rb_eArgError, "expecting at least 3 arguments, got %i", argc);
+
+    VALUE lib = argv[0], name = argv[1];
+
+    int    spec_size = argc - 2;
+    VALUE  tlib_spec[256];
+    if (spec_size >= 256)
+        rb_raise(rb_eArgError, "Too much arguments");
+
+    // OK, change the strings in tlib_spec into Type objects
+    VALUE     rbregistry(rb_iv_get(lib, "@typelib_registry"));
+    Registry& registry(rb_registry2cxx(rbregistry));
+    for (int i = 0; i < spec_size; ++i)
+    {
+        tlib_spec[i] = argv[i + 2];
+        if (! rb_obj_is_kind_of(tlib_spec[i], cType))
+        {
+            char const* type_name = StringValuePtr(tlib_spec[i]);
+            Type const* type = registry.build(type_name);
+            if (!type)
+                rb_raise(rb_eArgError, "Unknown type %s", type_name);
+            tlib_spec[i] = typelib_wrap_type(*type, rbregistry); 
+        }
+    }
+
+    
+    std::string dlspec = typelib_get_dl_spec(spec_size, tlib_spec);
+    VALUE rb_dlspec = rb_str_new2(dlspec.c_str());
+    return rb_funcall(lib, rb_intern("[]"), 2, name, rb_dlspec);
+}
+
 /* Private method to import a given file in the registry
  * We expect Registry#import to format the arguments before calling
  * do_import
@@ -184,6 +235,8 @@ static VALUE type_is_array(VALUE self)
 extern "C" void Init_typelib_api()
 {
     mTypelib  = rb_define_module("Typelib");
+    rb_define_singleton_method(mTypelib, "dlopen", RUBY_METHOD_FUNC(typelib_do_dlopen), 2);
+    rb_define_singleton_method(mTypelib, "wrap", RUBY_METHOD_FUNC(typelib_do_wrap_function), -1);
     
     cValue    = rb_define_class_under(mTypelib, "Value", rb_cObject);
     rb_define_alloc_func(cValue, value_alloc);

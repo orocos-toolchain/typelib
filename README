@@ -1,0 +1,7 @@
+
+
+== Ruby bindings
+For now, double and float support for the Ruby/DL interface is disabled
+since it does not work well on non-i386. Trying that raises a ArgumentError
+
+

@@ -1,9 +1,20 @@
+#include <stdio.h>
+#include <math.h>
 #include <ruby.h>
 #include <typelib/value.hh>
 #include <test_suite/test_cimport.1>
 #include <math.h>
 
 using namespace Typelib;
+
+static bool do_check_struct_A_value(A const& a)
+{ 
+    if (a.a == 10 && a.b == 20 && a.c == 30 && a.d == 40)
+        return true;
+    printf("do_check_struct_A_value failed: a=%i, b=%i, c=%i, d=%i\n",
+            (int)a.a, (int)a.b, (int)a.c, (int)a.d);
+    return false;
+}
 
 /*
  * This file provides the C-side of the test_rb_value testsuite
@@ -15,7 +26,7 @@ static VALUE check_struct_A_value(VALUE self, VALUE ra)
     Data_Get_Struct(ra, Value, value);
 
     A& a(*reinterpret_cast<A*>(value->getData()));
-    if (a.a == 1 && a.b == 2 && a.c == 3 && a.d == 4)
+    if (do_check_struct_A_value(a))
         return Qtrue;
     return Qfalse;
 }
@@ -58,9 +69,30 @@ static VALUE set_B_c_value(VALUE self, VALUE rb)
 
 extern "C" void Init_test_rb_value()
 {
-    rb_define_method(rb_mKernel, "check_B_c_value", RUBY_METHOD_FUNC(check_B_c_value), 1);
-    rb_define_method(rb_mKernel, "set_B_c_value", RUBY_METHOD_FUNC(set_B_c_value), 1);
-    rb_define_method(rb_mKernel, "check_struct_A_value", RUBY_METHOD_FUNC(check_struct_A_value), 1);
-    rb_define_method(rb_mKernel, "set_struct_A_value", RUBY_METHOD_FUNC(set_struct_A_value), 1);
+    rb_define_method(rb_mKernel, "check_B_c_value",         RUBY_METHOD_FUNC(check_B_c_value), 1);
+    rb_define_method(rb_mKernel, "set_B_c_value",           RUBY_METHOD_FUNC(set_B_c_value), 1);
+    rb_define_method(rb_mKernel, "check_struct_A_value",    RUBY_METHOD_FUNC(check_struct_A_value), 1);
+    rb_define_method(rb_mKernel, "set_struct_A_value",      RUBY_METHOD_FUNC(set_struct_A_value), 1);
+}
+
+extern "C" void init_dl_wrapping() { }
+/* Testing function wrapped by Typelib::wrap (using Ruby::DL)
+ * The function is supposed to return 1 if the arguments have these values:
+ *   first  == 1
+ *   second == 0.02
+ */
+extern "C" int test_simple_function_wrapping(int first, short second)
+{
+    if (first == 1 && second == 2)
+        return 1;
+    printf("test_simple_function_wrapping failed: first=%i second=%i\n", first, second);
+    return 0;
+}
+
+extern "C" int test_ptr_passing(A* a)
+{
+    if (do_check_struct_A_value(*a))
+        return 1;
+    return 0;
 }
 
