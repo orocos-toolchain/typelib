@@ -148,13 +148,13 @@ namespace Typelib
         
     };
 
-    Value value_get_field(Value v, std::string const& name)
+    inline Value value_get_field(Value v, std::string const& name)
     {
         FieldGetter getter;
         return getter.apply(v, name);
     }
 
-    Value value_get_field(void* ptr, Type const& type, std::string const& name)
+    inline Value value_get_field(void* ptr, Type const& type, std::string const& name)
     {
         Value v(ptr, type);
         return value_get_field(v, name);
