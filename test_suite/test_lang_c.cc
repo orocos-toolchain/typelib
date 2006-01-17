@@ -36,16 +36,25 @@ public:
         Field  const* b_a = b->getField("a");
         BOOST_REQUIRE_EQUAL( &(b_a->getType()), registry.get("/ADef") );
 
+        // Check the type of c (array of floats)
         Field  const* b_c = b->getField("c");
         BOOST_REQUIRE_EQUAL( &(b_c->getType()), registry.get("/float[100]") );
         BOOST_REQUIRE_EQUAL( b_c->getType().getCategory(), Type::Array );
 
+        // Check the array indirection
         Array const& b_c_array(dynamic_cast<Array const&>(b_c->getType()));
         BOOST_REQUIRE_EQUAL( &b_c_array.getIndirection(), registry.get("/float") );
 
+        // Check the sizes
         BOOST_REQUIRE_EQUAL( registry.get("/struct A")->getSize(), sizeof(A) );
         BOOST_REQUIRE_EQUAL( b->getSize(), sizeof(B) );
         BOOST_REQUIRE_EQUAL( b_c_array.getDimension(), 100UL );
+
+        // Check the enum behaviour
+        BOOST_REQUIRE( registry.has("/E") );
+        BOOST_REQUIRE_EQUAL(registry.get("/E")->getCategory(), Type::Enum);
+        Enum const& e(dynamic_cast<Enum const&>(*registry.get("/E")));
+
     }
 };
 
