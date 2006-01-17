@@ -9,7 +9,6 @@
 using namespace std;
 
 #include <iostream>
-#include "value.hh"
 
 namespace Typelib
 {
@@ -141,32 +140,16 @@ namespace Typelib
     }
     */
 
-    Enum::Enum(const string& name, Type const& base_type)
-        : Type(name, base_type.getSize(), Type::Enum), m_base(base_type) { }
 
-    Enum::~Enum()
+
+    namespace
     {
-        ValueMap::iterator it = m_values.begin();
-        for (it = m_values.begin(); it != m_values.end(); ++it)
-            it->second.deleter(it->second.data);
+        enum FindSizeOfEnum { EnumField };
     }
-    Type const& Enum::getBaseType() const { return m_base; }
+    Enum::Enum(const string& name)
+        : Type (name, sizeof(FindSizeOfEnum), Type::Enum) { }
 
-    void Enum::add(std::string const& name, void* value, void (*deleter)(void*))
-    { 
-        EnumValue newval = { value, deleter };
-        if( ! m_values.insert( make_pair(name, newval) ).second )
-            throw AlreadyDefined();
-    }
 
-    Value Enum::get(std::string const& name)
-    {
-        ValueMap::iterator it = m_values.find(name);
-        if (it == m_values.end())
-            return Value();
-        
-        return Value(it->second.data, m_base);
-    }
 
     Array::Array(Type const& of, size_t new_dim)
         : Indirect(getArrayName(of.getName(), new_dim), new_dim * of.getSize(), Type::Array, of)

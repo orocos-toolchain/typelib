@@ -135,9 +135,7 @@ namespace
 
     Type const* load_enum(TypeNode const& node, Factory& factory)
     { 
-        string base_type_name = getAttribute<string>(node.xml, "base");
-        Type const* base_type = factory.build(base_type_name);
-        Type* type = new Enum(node.name, *base_type);
+        Type* type = new Enum(node.name);
         factory.insert(node, type); 
         return type;
     }

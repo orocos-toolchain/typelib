@@ -60,7 +60,7 @@ void TypeSolver::buildClassObject(bool define_type)
 
     if (m_class_type == tsENUM)
     {
-        object = new Enum(m_registry.getFullName(m_class_name), *m_registry.get("/int"));
+        object = new Enum(m_registry.getFullName(m_class_name));
         assert(!define_type);
     }
     else

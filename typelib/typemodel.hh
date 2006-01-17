@@ -9,7 +9,6 @@
   
 namespace Typelib
 {
-    class Value;
     class Type 
     {
     public:
@@ -73,24 +72,8 @@ namespace Typelib
 
     class Enum : public Type
     {
-        Type const& m_base;
-        
-        struct EnumValue 
-        { 
-            void* data; 
-            void (*deleter)(void*); 
-        };
-        typedef std::map<std::string, EnumValue> ValueMap;
-        ValueMap m_values;
-        
     public:
-        struct AlreadyDefined {};
-        
-        Enum(const std::string& name, Type const& base_type);
-        ~Enum();
-        Type const& getBaseType() const;
-        void add(std::string const& name, void* value, void (*deleter)(void*));
-        Value get(std::string const& name);
+        Enum(const std::string& name);
     };
 
     /** A field in a Compound type */
