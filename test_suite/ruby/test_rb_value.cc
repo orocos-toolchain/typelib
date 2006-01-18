@@ -16,6 +16,13 @@ static bool do_check_struct_A_value(A const& a)
     return false;
 }
 
+static void do_set_struct_A_value(A& a)
+{
+    a.a = 10;
+    a.b = 20;
+    a.c = 30;
+    a.d = 40;
+}
 /*
  * This file provides the C-side of the test_rb_value testsuite
  */
@@ -37,10 +44,7 @@ static VALUE set_struct_A_value(VALUE self, VALUE ra)
     Data_Get_Struct(ra, Value, value);
 
     A& a(*reinterpret_cast<A*>(value->getData()));
-    a.a = 10;
-    a.b = 20;
-    a.c = 30;
-    a.d = 40;
+    do_set_struct_A_value(a);
     return ra;
 }
 
@@ -94,5 +98,12 @@ extern "C" int test_ptr_passing(A* a)
     if (do_check_struct_A_value(*a))
         return 1;
     return 0;
+}
+
+extern "C" struct A* test_ptr_return()
+{
+    static A a;
+    do_set_struct_A_value(a);
+    return &a;
 }
 

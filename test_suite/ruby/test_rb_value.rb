@@ -82,7 +82,7 @@ class TC_Value < Test::Unit::TestCase
         GC.start
         assert(b.respond_to?(:c))
         assert(! b.respond_to?(:c=))
-        assert(b.c.is_a?(Typelib::Array))
+        assert(b.c.is_a?(Typelib::ValueArray))
         assert_equal(100, b.c.size)
     end
     def test_array_set
@@ -106,17 +106,39 @@ class TC_Value < Test::Unit::TestCase
             assert( ( v - Float(i)/10.0 ).abs < 0.01 )
         end
     end
+    def test_enum
+        e = Value.new(nil, make_registry.get("EContainer"));
+        assert(e.respond_to?(:value))
+        assert(e.respond_to?(:value=))
+        e.value = 0
+        assert_equal(:FIRST, e.value)
+        e.value = "FIRST"
+        assert_equal(:FIRST, e.value)
+        e.value = :SECOND
+        assert_equal(:SECOND, e.value)
+    end
+
     def test_wrapping
         registry = make_registry
         test_lib = Typelib.dlopen('.libs/test_rb_value.so', registry)
-        typelib_wrap = Typelib.wrap(test_lib, 'test_simple_function_wrapping', "int", "int", "short")
 
-        assert_equal(1, typelib_wrap[1, 2].first)
+        typelib_wrap = Typelib.wrap(test_lib, 'test_simple_function_wrapping', "int", "int", "short")
+        assert_equal(1, typelib_wrap[1, 2])
 
         typelib_wrap = Typelib.wrap(test_lib, 'test_ptr_passing', "int", "struct A*")
         a = Value.new(nil, registry.get("struct A"))
         set_struct_A_value(a)
-        assert_equal(1, typelib_wrap[a.to_ptr].first)
+        assert_equal(1, typelib_wrap[a.to_ptr])
+
+        # Now, test simple type coercion
+        assert_equal(1, typelib_wrap[a])
+
+        typelib_wrap = Typelib.wrap(test_lib, 'test_ptr_return', 'struct A*')
+        a = typelib_wrap.call
+        assert_equal(10, a.a)
+        assert_equal(20, a.b)
+        assert_equal(30, a.c)
+        assert_equal(40, a.d)
     end
 end
 

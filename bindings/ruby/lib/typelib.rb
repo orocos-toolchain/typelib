@@ -1,3 +1,10 @@
+require 'pp'
+module DL
+    class Handle
+        def registry; @typelib_registry end
+    end
+end
+
 module Typelib
     class Value
         # Get a DL::Ptr object for this value
@@ -64,18 +71,53 @@ module Typelib
         end
     end
 
-    class Array < Value
+    class ValueArray < Value
         def initialize(ptr, type)
             if !type.array?
-                raise ArgumentError, "Cannot build a Typelib::Array object with a type which is not an array"
+                raise ArgumentError, "Cannot build a Typelib::ValueArray object with a type which is not an array"
             elsif !ptr
-                raise ArgumentError, "Cannot build a Typelib::Array object without a pointer"
+                raise ArgumentError, "Cannot build a Typelib::ValueArray object without a pointer"
             end
 
             super
         end
 
         include Enumerable
+    end
+
+    def self.wrap(lib, name, return_type = nil, *arg_types)
+        return_type, *arg_types = Array[return_type, *arg_types].collect do |typedef|
+            next if typedef.nil?
+
+            typedef = if Type === typedef
+                          typedef
+                      elsif typedef.respond_to?(:to_str)
+                          lib.registry.build(typedef.to_str)
+                      else
+                          raise ArgumentError, "expected a Typelib::Type or a string, got #{typedef}"
+                      end
+
+            if typedef.compound?
+                raise ArgumentError, "Structs aren't allowed directly in a function call, use pointers instead"
+            end
+
+            typedef
+        end
+        
+        dl_wrapper = do_wrap(lib, name, return_type, *arg_types)
+        return lambda do |*args| 
+            if args.size != arg_types.size
+                raise ArgumentError, "#{arg_types.size - 1} arguments expected, got #{args.size}"
+            end
+            ret = call_function(return_type, args, arg_types, dl_wrapper) 
+            
+            # Create a Value object if needed
+            if DL::PtrData === ret
+                Value.new(ret, return_type.deference)
+            else
+                ret
+            end
+        end
     end
 end
 

@@ -36,6 +36,7 @@ class DLSpec : public TypeVisitor
     }
     virtual bool visit_ (Enum const& type)      
     { 
+        BOOST_STATIC_ASSERT(( sizeof(Enum::integral_type) == sizeof(int) ));
         m_spec = "I"; 
         return false;
     }

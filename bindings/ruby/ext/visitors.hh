@@ -9,6 +9,43 @@ static VALUE typelib_to_ruby(VALUE value, VALUE name);
 static VALUE typelib_from_ruby(Value value, VALUE new_value);
 static VALUE typelib_from_ruby(VALUE value, VALUE name, VALUE new_value);
 
+/* Get the Ruby symbol associated with a C enum, or nil
+ * if the value is not valid for this enum
+ */
+VALUE enum_get_rb_symbol(Enum::integral_type value, Enum const& e)
+{
+    std::string symbol = e.get(value);
+    try { return ID2SYM(rb_intern(symbol.c_str())); }
+    catch(Enum::ValueNotFound) { return Qnil; }
+}
+
+/* Get the C value associated with a ruby representation of an enum
+ * Valid ruby representations are: symbols, strings and integer
+ */
+Enum::integral_type rb_enum_get_value(VALUE rb_value, Enum const& e)
+{
+    // m_value can be either an integer, a symbol or a string
+    if (TYPE(rb_value) == T_FIXNUM)
+    {
+        Enum::integral_type value = FIX2INT(rb_value);
+        try { e.get(value); }
+        catch(Enum::ValueNotFound)
+        { rb_raise(rb_eArgError, "%i is not a valid value for %s", value, e.getName().c_str()); }
+
+        return value;
+    }
+
+    char const* name;
+    if (SYMBOL_P(rb_value))
+        name = rb_id2name(SYM2ID(rb_value));
+    else
+        name = StringValuePtr(rb_value);
+
+    try { return e.get(name); }
+    catch(Enum::SymbolNotFound)
+    { rb_raise(rb_eArgError, "%s is not a valid symbol for %s", name, e.getName().c_str()); }
+}
+
 /* There are constraints when creating a Ruby wrapper for a Type,
  * mainly for avoiding GC issues
  * This function does the work
@@ -42,17 +79,21 @@ class RubyGetter : public ValueVisitor
     virtual bool visit_ (float   & value) { m_value = rb_float_new(value); return false; }
     virtual bool visit_ (double  & value) { m_value = rb_float_new(value); return false; }
 
-    virtual bool visit_array    (Value const& v, Array const& a) 
+    virtual bool visit_(Value const& v, Array const& a) 
     {
-        m_value = wrap_value(v, m_registry, cArray);
+        m_value = wrap_value(v, m_registry, cValueArray);
         return false;
     }
-    virtual bool visit_compound (Value const& v, Compound const& c)
+    virtual bool visit_(Value const& v, Compound const& c)
     { 
         m_value = wrap_value(v, m_registry, cValue);
         return false; 
     }
-    virtual bool visit_enum     (Value const& v, Enum const& e)   { throw UnsupportedType(v.getType()); }
+    virtual bool visit_(Enum::integral_type& v, Enum const& e)   
+    { 
+        m_value = enum_get_rb_symbol(v, e);
+        return false;
+    }
     
 public:
     RubyGetter()
@@ -79,6 +120,8 @@ static VALUE type_is_assignable(Type const& type)
         return INT2FIX(1);
     case Type::Pointer:
         return type_is_assignable( dynamic_cast<Pointer const&>(type).getIndirection());
+    case Type::Enum:
+        return INT2FIX(1);
     default:
         return INT2FIX(0);
     }
@@ -100,9 +143,13 @@ class RubySetter : public ValueVisitor
     virtual bool visit_ (float   & value) { value = NUM2DBL(m_value); return false; }
     virtual bool visit_ (double  & value) { value = NUM2DBL(m_value); return false; }
 
-    virtual bool visit_array    (Value const& v, Array const&)      { throw UnsupportedType(v.getType()); }
-    virtual bool visit_compound (Value const& v, Compound const&)   { throw UnsupportedType(v.getType()); }
-    virtual bool visit_enum     (Value const& v, Enum const&)       { throw UnsupportedType(v.getType()); }
+    virtual bool visit_(Value const& v, Array const&)      { throw UnsupportedType(v.getType()); }
+    virtual bool visit_(Value const& v, Compound const&)   { throw UnsupportedType(v.getType()); }
+    virtual bool visit_(Enum::integral_type& v, Enum const& e)
+    { 
+        v = rb_enum_get_value(m_value, e);
+        return false;
+    }
     
 public:
     RubySetter()
@@ -115,7 +162,7 @@ public:
             ValueVisitor::apply(value); 
             return new_value;
         }
-        catch(UnsupportedType) { return Qnil; }
+        catch(UnsupportedType)      { return Qnil; }
     }
 };
 

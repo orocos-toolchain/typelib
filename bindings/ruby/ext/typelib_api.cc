@@ -16,13 +16,16 @@ static VALUE mTypelib   = Qnil;
 static VALUE cValue     = Qnil;
 static VALUE cRegistry  = Qnil;
 static VALUE cType      = Qnil;
-static VALUE cArray     = Qnil;
+static VALUE cValueArray     = Qnil;
 
 // NOP deleter, for Type objects and some Ptr objects
 static void do_not_delete(void*) {}
 
 static Registry& rb_registry2cxx(VALUE self)
 {
+    if (! rb_obj_is_kind_of(self, cRegistry))
+        rb_raise(rb_eTypeError, "expected Registry");
+
     Registry* registry = 0;
     Data_Get_Struct(self, Registry, registry);
     return *registry;
@@ -40,6 +43,9 @@ VALUE typelib_wrap_type(Type const& type, VALUE registry)
 
 static Value& rb_value2cxx(VALUE self)
 {
+    if (! rb_obj_is_kind_of(self, cValue))
+        rb_raise(rb_eTypeError, "expected Registry");
+
     Value* value = 0;
     Data_Get_Struct(self, Value, value);
     return *value;
@@ -47,6 +53,9 @@ static Value& rb_value2cxx(VALUE self)
 
 static Type& rb_type2cxx(VALUE self)
 {
+    if (! rb_obj_is_kind_of(self, cType))
+        rb_raise(rb_eTypeError, "expected Registry");
+    
     Type* type = 0;
     Data_Get_Struct(self, Type, type);
     return *type;
@@ -147,6 +156,16 @@ VALUE registry_get(VALUE self, VALUE name)
 }
 
 static
+VALUE registry_build(VALUE self, VALUE name)
+{
+    Registry& registry = rb_registry2cxx(self);
+    Type const* type = registry.build( StringValuePtr(name) );
+
+    if (! type) return Qnil;
+    return typelib_wrap_type(*type, self);
+}
+
+static
 VALUE typelib_do_dlopen(VALUE self, VALUE lib, VALUE registry)
 {
     VALUE handle = rb_funcall(rb_mDL, rb_intern("dlopen"), 1, lib);
@@ -155,38 +174,56 @@ VALUE typelib_do_dlopen(VALUE self, VALUE lib, VALUE registry)
 }
 
 static
-VALUE typelib_do_wrap_function(int argc, VALUE* argv, VALUE self)
+VALUE typelib_do_wrap(int argc, VALUE* argv, VALUE klass)
 {
-    if (argc <= 2)
-        rb_raise(rb_eArgError, "expecting at least 3 arguments, got %i", argc);
+    std::string dlspec = typelib_get_dl_spec(argc - 2, argv + 2);
+    VALUE rb_dlspec = rb_str_new2(dlspec.c_str());
+    return rb_funcall(argv[0], rb_intern("[]"), 2, argv[1], rb_dlspec);
+}
 
-    VALUE lib = argv[0], name = argv[1];
+static
+VALUE typelib_call_function(VALUE klass, VALUE return_type, VALUE args, VALUE types, VALUE function)
+{
+    Check_Type(args,  T_ARRAY);
+    Check_Type(types, T_ARRAY);
 
-    int    spec_size = argc - 2;
-    VALUE  tlib_spec[256];
-    if (spec_size >= 256)
-        rb_raise(rb_eArgError, "Too much arguments");
-
-    // OK, change the strings in tlib_spec into Type objects
-    VALUE     rbregistry(rb_iv_get(lib, "@typelib_registry"));
-    Registry& registry(rb_registry2cxx(rbregistry));
-    for (int i = 0; i < spec_size; ++i)
+    // Get the arguments
+    size_t argcount = RARRAY(args)->len;
+    VALUE new_args = rb_ary_new2(argcount);
+    for (size_t i = 0; i < argcount; ++i)
     {
-        tlib_spec[i] = argv[i + 2];
-        if (! rb_obj_is_kind_of(tlib_spec[i], cType))
+        VALUE object = RARRAY(args)->ptr[i];
+        // first type is the return type
+        Type const& type = rb_type2cxx(RARRAY(types)->ptr[i]);
+
+        if (type.getCategory() == Type::Pointer 
+                && !rb_obj_is_kind_of(object, rb_cDLPtrData))
         {
-            char const* type_name = StringValuePtr(tlib_spec[i]);
-            Type const* type = registry.build(type_name);
-            if (!type)
-                rb_raise(rb_eArgError, "Unknown type %s", type_name);
-            tlib_spec[i] = typelib_wrap_type(*type, rbregistry); 
+            // TODO: typecheck
+            object = rb_funcall(object, rb_intern("to_ptr"), 0);
         }
+        else if (type.getCategory() == Type::Enum)
+            object = INT2FIX( rb_enum_get_value(object, dynamic_cast<Enum const&>(type)) );
+
+        RARRAY(new_args)->ptr[i] = object;
     }
 
-    
-    std::string dlspec = typelib_get_dl_spec(spec_size, tlib_spec);
-    VALUE rb_dlspec = rb_str_new2(dlspec.c_str());
-    return rb_funcall(lib, rb_intern("[]"), 2, name, rb_dlspec);
+    // Call the function via DL and get the real return value
+    VALUE dl_ret = rb_funcall3(function, rb_intern("call"), argcount, RARRAY(new_args)->ptr);
+    VALUE ret = rb_ary_entry(dl_ret, 0);
+
+    if (NIL_P(return_type))
+        return Qnil;
+
+    // Change enums into symbols. Pointers are handled in the Ruby code
+    Type const& rettype(rb_type2cxx(return_type));
+    if (rettype.getCategory() == Type::Enum)
+    {
+        Enum const& ret_enum(static_cast<Enum const&>(rettype));
+        ret = INT2FIX(enum_get_rb_symbol(dl_ret, ret_enum));
+    }
+
+    return ret;
 }
 
 /* Private method to import a given file in the registry
@@ -225,18 +262,34 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
     return Qnil;
 }
 
-static VALUE type_is_array(VALUE self)
+static VALUE type_is_a(VALUE self, Type::Category category)
 { 
-    Type const* type;
-    Data_Get_Struct(self, Type, type);
-    return (type->getCategory() == Type::Array) ? Qtrue : Qfalse;
+    Type const& type(rb_type2cxx(self));
+    return (type.getCategory() == category) ? Qtrue : Qfalse;
+}
+static VALUE type_is_array(VALUE self)      { return type_is_a(self, Type::Array); }
+static VALUE type_is_compound(VALUE self)   { return type_is_a(self, Type::Compound); }
+static VALUE type_is_pointer(VALUE self)    { return type_is_a(self, Type::Pointer); }
+static VALUE type_pointer_deference(VALUE self)
+{
+    VALUE registry = rb_iv_get(self, "@registry");
+    Type const& type(rb_type2cxx(self));
+
+    // This sucks. Must define type_deference on pointer only
+    if (type.getCategory() != Type::Pointer)
+        rb_raise(rb_eTypeError, "Type#deference called on a non-pointer type");
+
+    Pointer const& pointer(static_cast<Pointer const&>(type));
+    return typelib_wrap_type(pointer.getIndirection(), registry);
 }
 
 extern "C" void Init_typelib_api()
 {
     mTypelib  = rb_define_module("Typelib");
     rb_define_singleton_method(mTypelib, "dlopen", RUBY_METHOD_FUNC(typelib_do_dlopen), 2);
-    rb_define_singleton_method(mTypelib, "wrap", RUBY_METHOD_FUNC(typelib_do_wrap_function), -1);
+    // do_wrap arguments are formatted by Ruby code
+    rb_define_singleton_method(mTypelib, "do_wrap", RUBY_METHOD_FUNC(typelib_do_wrap), -1);
+    rb_define_singleton_method(mTypelib, "call_function", RUBY_METHOD_FUNC(typelib_call_function), 4);
     
     cValue    = rb_define_class_under(mTypelib, "Value", rb_cObject);
     rb_define_alloc_func(cValue, value_alloc);
@@ -245,23 +298,27 @@ extern "C" void Init_typelib_api()
     rb_define_method(cValue, "get_field", RUBY_METHOD_FUNC(rbvalue_get_field), 1);
     rb_define_method(cValue, "set_field", RUBY_METHOD_FUNC(rbvalue_set_field), 2);
 
-    cArray    = rb_define_class_under(mTypelib, "Array", cValue);
-    rb_define_alloc_func(cArray, value_alloc);
+    cValueArray    = rb_define_class_under(mTypelib, "ValueArray", cValue);
+    rb_define_alloc_func(cValueArray, value_alloc);
     // The initialize method is defined in the Ruby part of the library
-    rb_define_method(cArray, "[]",      RUBY_METHOD_FUNC(typelib_array_get), 1);
-    rb_define_method(cArray, "[]=",     RUBY_METHOD_FUNC(typelib_array_set), 2);
-    rb_define_method(cArray, "each",    RUBY_METHOD_FUNC(typelib_array_each), 0);
-    rb_define_method(cArray, "size",    RUBY_METHOD_FUNC(typelib_array_size), 0);
+    rb_define_method(cValueArray, "[]",      RUBY_METHOD_FUNC(typelib_array_get), 1);
+    rb_define_method(cValueArray, "[]=",     RUBY_METHOD_FUNC(typelib_array_set), 2);
+    rb_define_method(cValueArray, "each",    RUBY_METHOD_FUNC(typelib_array_each), 0);
+    rb_define_method(cValueArray, "size",    RUBY_METHOD_FUNC(typelib_array_size), 0);
 
     cRegistry = rb_define_class_under(mTypelib, "Registry", rb_cObject);
     rb_define_alloc_func(cRegistry, registry_alloc);
     rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_get), 1);
+    rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_build), 1);
     // do_import is called by the Ruby-defined import, which formats the 
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 3);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
-    rb_define_method(cType, "array?", RUBY_METHOD_FUNC(type_is_array), 0);
+    rb_define_method(cType, "array?",       RUBY_METHOD_FUNC(type_is_array), 0);
+    rb_define_method(cType, "compound?",    RUBY_METHOD_FUNC(type_is_compound), 0);
+    rb_define_method(cType, "pointer?",     RUBY_METHOD_FUNC(type_is_pointer), 0);
+    rb_define_method(cType, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), 0);
 }
 
 

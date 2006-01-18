@@ -2,7 +2,7 @@ static Array const& Typelib_Get_Array(Value& value)
 {
     try { return dynamic_cast<Array const&>(value.getType()); }
     catch(...)
-    { rb_raise(rb_eTypeError, "expecting an Array"); }
+    { rb_raise(rb_eTypeError, "expecting a ValueArray"); }
 }
 
 static Value typelib_array_element(VALUE rbarray, VALUE rbindex)
