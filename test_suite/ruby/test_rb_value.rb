@@ -1,13 +1,12 @@
-require 'test/unit'
 require 'test_config'
-require '.libs/test_rb_value'
 require 'typelib'
+require 'test/unit'
+require '.libs/test_rb_value'
 require 'pp'
 
 class TC_Value < Test::Unit::TestCase
     include Typelib
 
-    
     # Not in setup() since we want to make sure
     # that the registry is not destroyed by the GC
     def make_registry
@@ -118,33 +117,5 @@ class TC_Value < Test::Unit::TestCase
         assert_equal(:SECOND, e.value)
     end
 
-    def test_wrapping
-        registry = make_registry
-        test_lib = Typelib.dlopen('.libs/test_rb_value.so', registry)
-
-        typelib_wrap = Typelib.wrap(test_lib, 'test_simple_function_wrapping', "int", "int", "short")
-        assert_equal(1, typelib_wrap[1, 2])
-
-        typelib_wrap = Typelib.wrap(test_lib, 'test_ptr_passing', "int", "struct A*")
-        a = Value.new(nil, registry.get("struct A"))
-        set_struct_A_value(a)
-        assert_equal(1, typelib_wrap[a.to_ptr])
-
-        # Now, test simple type coercion
-        assert_equal(1, typelib_wrap[a])
-
-        typelib_wrap = Typelib.wrap(test_lib, 'test_ptr_return', 'struct A*')
-        a = typelib_wrap.call
-        assert_equal(10, a.a)
-        assert_equal(20, a.b)
-        assert_equal(30, a.c)
-        assert_equal(40, a.d)
-
-        # Check that parameters passed by pointer are changed
-        test_lib = Typelib.wrap(test_lib, 'test_ptr_argument_changes', nil, 'struct B*')
-        b = Value.new(nil, registry.get("struct B"))
-        test_lib[b]
-        check_B_c_value(b)
-    end
 end
 

@@ -7,7 +7,7 @@ static Array const& Typelib_Get_Array(Value& value)
 
 static Value typelib_array_element(VALUE rbarray, VALUE rbindex)
 {
-    Value& value(rb_value2cxx(rbarray));
+    Value& value(rb_get_cxx<Value>(rbarray));
     Array const& array(Typelib_Get_Array(value));
     size_t index = NUM2INT(rbindex);
     
@@ -40,7 +40,7 @@ static VALUE typelib_array_set(VALUE self, VALUE rbindex, VALUE newvalue)
 
 static VALUE typelib_array_each(VALUE rbarray)
 {
-    Value& value(rb_value2cxx(rbarray));
+    Value& value(rb_get_cxx<Value>(rbarray));
     Array const& array(Typelib_Get_Array(value));
     Type  const& array_type(array.getIndirection());
     VALUE registry(typelib_value_get_registry(rbarray));
@@ -56,7 +56,7 @@ static VALUE typelib_array_each(VALUE rbarray)
 
 static VALUE typelib_array_size(VALUE rbarray)
 {
-    Value& value(rb_value2cxx(rbarray));
+    Value& value(rb_get_cxx<Value>(rbarray));
     Array const& array(Typelib_Get_Array(value));
     return INT2FIX(array.getDimension());
 }

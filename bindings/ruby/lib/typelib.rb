@@ -86,6 +86,11 @@ module Typelib
     end
 
     def self.wrap(lib, name, return_type = nil, *arg_types)
+
+        if arg_types.include?(nil)
+            raise ArgumentError, '"nil" is only allowed as return type'
+        end
+
         return_type, *arg_types = Array[return_type, *arg_types].collect do |typedef|
             next if typedef.nil?
 
@@ -99,6 +104,8 @@ module Typelib
 
             if typedef.compound?
                 raise ArgumentError, "Structs aren't allowed directly in a function call, use pointers instead"
+            elsif typedef.pointer? && !typedef.deference.compound?
+                raise ArgumentError, "Passing non-structs as pointers is not supported yet"
             end
 
             typedef

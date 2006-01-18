@@ -21,7 +21,15 @@ static VALUE cValueArray     = Qnil;
 // NOP deleter, for Type objects and some Ptr objects
 static void do_not_delete(void*) {}
 
-static Registry& rb_registry2cxx(VALUE self)
+/********************************
+ *
+ *  Define rb_get_cxx, to get the C++ object wrapped by a Ruby object
+ *
+ */
+template<typename T> static T& rb_get_cxx(VALUE self);
+
+template<>
+static Registry& rb_get_cxx(VALUE self)
 {
     if (! rb_obj_is_kind_of(self, cRegistry))
         rb_raise(rb_eTypeError, "expected Registry");
@@ -29,6 +37,28 @@ static Registry& rb_registry2cxx(VALUE self)
     Registry* registry = 0;
     Data_Get_Struct(self, Registry, registry);
     return *registry;
+}
+
+template<>
+static Value& rb_get_cxx(VALUE self)
+{
+    if (! rb_obj_is_kind_of(self, cValue))
+        rb_raise(rb_eTypeError, "expected Registry");
+
+    Value* value = 0;
+    Data_Get_Struct(self, Value, value);
+    return *value;
+}
+
+template<>
+static Type& rb_get_cxx(VALUE self)
+{
+    if (! rb_obj_is_kind_of(self, cType))
+        rb_raise(rb_eTypeError, "expected Registry");
+    
+    Type* type = 0;
+    Data_Get_Struct(self, Type, type);
+    return *type;
 }
 
 static
@@ -40,26 +70,6 @@ VALUE typelib_wrap_type(Type const& type, VALUE registry)
     return rtype;
 }
 
-
-static Value& rb_value2cxx(VALUE self)
-{
-    if (! rb_obj_is_kind_of(self, cValue))
-        rb_raise(rb_eTypeError, "expected Registry");
-
-    Value* value = 0;
-    Data_Get_Struct(self, Value, value);
-    return *value;
-}
-
-static Type& rb_type2cxx(VALUE self)
-{
-    if (! rb_obj_is_kind_of(self, cType))
-        rb_raise(rb_eTypeError, "expected Registry");
-    
-    Type* type = 0;
-    Data_Get_Struct(self, Type, type);
-    return *type;
-}
 
 #include "visitors.hh"
 #include "array.hh"
@@ -84,7 +94,7 @@ VALUE value_alloc(VALUE klass)
 static
 VALUE value_initialize(VALUE self, VALUE ptr, VALUE type)
 {
-    Value& value = rb_value2cxx(self);
+    Value& value = rb_get_cxx<Value>(self);
 
     // Protect 'type' against the GC
     rb_iv_set(self, "@type", type);
@@ -113,7 +123,7 @@ static
 VALUE value_field_attributes(VALUE self, VALUE id)
 {
     try {
-        Value& v = rb_value2cxx(self);
+        Value& v = rb_get_cxx<Value>(self);
 
         Type const& type(value_get_field(v, StringValuePtr(id)).getType());
         return type_is_assignable(type);
@@ -148,7 +158,7 @@ VALUE registry_alloc(VALUE klass)
 static
 VALUE registry_get(VALUE self, VALUE name)
 {
-    Registry& registry = rb_registry2cxx(self);
+    Registry& registry = rb_get_cxx<Registry>(self);
     Type const* type = registry.get( StringValuePtr(name) );
 
     if (! type) return Qnil;
@@ -158,7 +168,7 @@ VALUE registry_get(VALUE self, VALUE name)
 static
 VALUE registry_build(VALUE self, VALUE name)
 {
-    Registry& registry = rb_registry2cxx(self);
+    Registry& registry = rb_get_cxx<Registry>(self);
     Type const* type = registry.build( StringValuePtr(name) );
 
     if (! type) return Qnil;
@@ -194,12 +204,16 @@ VALUE typelib_call_function(VALUE klass, VALUE return_type, VALUE args, VALUE ty
     {
         VALUE object = RARRAY(args)->ptr[i];
         // first type is the return type
-        Type const& type = rb_type2cxx(RARRAY(types)->ptr[i]);
+        Type const& type = rb_get_cxx<Type>(RARRAY(types)->ptr[i]);
 
         if (type.getCategory() == Type::Pointer 
                 && !rb_obj_is_kind_of(object, rb_cDLPtrData))
         {
-            // TODO: typecheck
+            Pointer const& ptr_type = static_cast<Pointer const&>(type);
+            Type const&    object_type = rb_get_cxx<Value>(object).getType();
+            if (object_type != ptr_type.getIndirection())
+                rb_raise(rb_eArgError, "expected %s", ptr_type.getIndirection().getName().c_str());
+
             object = rb_funcall(object, rb_intern("to_ptr"), 0);
         }
         else if (type.getCategory() == Type::Enum)
@@ -216,7 +230,7 @@ VALUE typelib_call_function(VALUE klass, VALUE return_type, VALUE args, VALUE ty
         return Qnil;
 
     // Change enums into symbols. Pointers are handled in the Ruby code
-    Type const& rettype(rb_type2cxx(return_type));
+    Type const& rettype(rb_get_cxx<Type>(return_type));
     if (rettype.getCategory() == Type::Enum)
     {
         Enum const& ret_enum(static_cast<Enum const&>(rettype));
@@ -233,7 +247,7 @@ VALUE typelib_call_function(VALUE klass, VALUE return_type, VALUE args, VALUE ty
 static
 VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
 {
-    Registry& registry = rb_registry2cxx(self);
+    Registry& registry = rb_get_cxx<Registry>(self);
     
     PluginManager::self manager;
     Importer* importer = manager->importer( StringValuePtr(kind) );
@@ -264,7 +278,7 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
 
 static VALUE type_is_a(VALUE self, Type::Category category)
 { 
-    Type const& type(rb_type2cxx(self));
+    Type const& type(rb_get_cxx<Type>(self));
     return (type.getCategory() == category) ? Qtrue : Qfalse;
 }
 static VALUE type_is_array(VALUE self)      { return type_is_a(self, Type::Array); }
@@ -273,7 +287,7 @@ static VALUE type_is_pointer(VALUE self)    { return type_is_a(self, Type::Point
 static VALUE type_pointer_deference(VALUE self)
 {
     VALUE registry = rb_iv_get(self, "@registry");
-    Type const& type(rb_type2cxx(self));
+    Type const& type(rb_get_cxx<Type>(self));
 
     // This sucks. Must define type_deference on pointer only
     if (type.getCategory() != Type::Pointer)

@@ -192,7 +192,7 @@ static VALUE typelib_to_ruby(VALUE value, VALUE name)
 { 
     // Get the registry
     VALUE registry = typelib_value_get_registry(value);
-    return typelib_to_ruby(rb_value2cxx(value), name, registry); 
+    return typelib_to_ruby(rb_get_cxx<Value>(value), name, registry); 
 }
 
 /* Converts a Ruby's VALUE to Typelib::Value */
@@ -205,7 +205,7 @@ static VALUE typelib_from_ruby(Value value, VALUE new_value)
 /* Sets a given field in +value+ */
 static VALUE typelib_from_ruby(VALUE value, VALUE name, VALUE new_value)
 {
-    Value& tlib_value(rb_value2cxx(value));
+    Value& tlib_value(rb_get_cxx<Value>(value));
     try { 
         Value field_value = value_get_field(tlib_value, StringValuePtr(name));
         typelib_from_ruby(field_value, new_value);
