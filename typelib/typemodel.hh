@@ -46,6 +46,9 @@ namespace Typelib
         size_t        getSize() const;
         Category      getCategory() const;
         bool          isNull() const;
+
+        bool operator == (Type const& with) const;
+        bool operator != (Type const& with) const;
     };
 
     class NullType : public Type

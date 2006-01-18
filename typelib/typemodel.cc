@@ -25,6 +25,10 @@ namespace Typelib
 
     void   Type::setSize(size_t size) { m_size = size; }
     size_t Type::getSize() const { return m_size; }
+    bool   Type::operator != (Type const& with) const
+    { return this != &with; }
+    bool   Type::operator == (Type const& with) const
+    { return this == &with; }
 
 
 
