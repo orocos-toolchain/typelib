@@ -48,11 +48,11 @@ namespace Typelib
         virtual bool visit_ (float   &) { return m_defval; }
         virtual bool visit_ (double  &) { return m_defval; }
 
-        virtual bool visit_pointer  (Value const& v, Pointer const& t);
-        virtual bool visit_array    (Value const& v, Array const& a);
-        virtual bool visit_compound (Value const&, Compound const& c); 
-        virtual bool visit_field    (Value const&, Compound const& c, Field const& f);
-        virtual bool visit_enum     (Value const&, Enum const& e);
+        virtual bool visit_ (Value const& v, Pointer const& t);
+        virtual bool visit_ (Value const& v, Array const& a);
+        virtual bool visit_ (Value const& v, Compound const& c); 
+        virtual bool visit_ (Value const& v, Compound const& c, Field const& f);
+        virtual bool visit_ (Enum::integral_type& v, Enum const& e);
 
     public:
         ValueVisitor(bool defval = false) 
@@ -122,8 +122,8 @@ namespace Typelib
         std::string m_name;
         Value m_field;
 
-        bool visit_compound(Compound const& type) { return true; }
-        bool visit_field(Value const& value, Compound const&, Field const& field)
+        bool visit_(Compound const& type) { return true; }
+        bool visit_(Value const& value, Compound const&, Field const& field)
         {
             if (field.getName() == m_name)
             {

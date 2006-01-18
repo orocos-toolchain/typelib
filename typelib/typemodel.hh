@@ -74,13 +74,17 @@ namespace Typelib
     class Enum : public Type
     {
     public:
+        typedef int integral_type;
         typedef std::map<std::string, int> ValueMap;
-        class AlreadyExists {};
-        class DoesNotExist  {};
+
+        class AlreadyExists  {};
+        class SymbolNotFound {};
+        class ValueNotFound  {};
         
         Enum(const std::string& name);
-        void add(std::string const& name, int value);
-        int  get(std::string const& name);
+        void            add(std::string const& name, int value);
+        integral_type   get(std::string const& name) const;
+        std::string     get(integral_type value) const;
         
         std::list<std::string> names() const;
         ValueMap const& values() const;

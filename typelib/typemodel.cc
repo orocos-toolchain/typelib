@@ -145,7 +145,7 @@ namespace Typelib
     namespace
     {
         enum FindSizeOfEnum { EnumField };
-        BOOST_STATIC_ASSERT(( sizeof(FindSizeOfEnum) == sizeof(int) ));
+        BOOST_STATIC_ASSERT(( sizeof(FindSizeOfEnum) == sizeof(Enum::integral_type) ));
     }
     Enum::Enum(const string& name)
         : Type (name, sizeof(FindSizeOfEnum), Type::Enum) { }
@@ -157,13 +157,23 @@ namespace Typelib
         if (!inserted.second && inserted.first->second != value)
             throw AlreadyExists();
     }
-    int  Enum::get(std::string const& name)
+    Enum::integral_type  Enum::get(std::string const& name) const
     {
-        ValueMap::iterator it = m_values.find(name);
+        ValueMap::const_iterator it = m_values.find(name);
         if (it == m_values.end())
-            throw DoesNotExist();
+            throw SymbolNotFound();
         else
             return it->second;
+    }
+    std::string Enum::get(Enum::integral_type value) const
+    {
+        ValueMap::const_iterator it;
+        for (it = m_values.begin(); it != m_values.end(); ++it)
+        {
+            if (it->second == value)
+                return it->first;
+        }
+        throw ValueNotFound();
     }
 
 
