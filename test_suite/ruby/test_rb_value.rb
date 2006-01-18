@@ -139,6 +139,12 @@ class TC_Value < Test::Unit::TestCase
         assert_equal(20, a.b)
         assert_equal(30, a.c)
         assert_equal(40, a.d)
+
+        # Check that parameters passed by pointer are changed
+        test_lib = Typelib.wrap(test_lib, 'test_ptr_argument_changes', nil, 'struct B*')
+        b = Value.new(nil, registry.get("struct B"))
+        test_lib[b]
+        check_B_c_value(b)
     end
 end
 

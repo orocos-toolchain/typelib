@@ -60,14 +60,19 @@ static VALUE check_B_c_value(VALUE self, VALUE rb)
     return Qtrue;
 }
 
+static void do_set_B_c_value(B& b)
+{
+    for (int i = 0; i < 100; ++i)
+        b.c[i] = float(i) / 10.0f;
+}
+
 static VALUE set_B_c_value(VALUE self, VALUE rb)
 {
     Value* value = 0;
     Data_Get_Struct(rb, Value, value);
 
     B& b(*reinterpret_cast<B*>(value->getData()));
-    for (int i = 0; i < 100; ++i)
-        b.c[i] = float(i) / 10.0f;
+    do_set_B_c_value(b);
     return Qnil;
 }
 
@@ -105,5 +110,10 @@ extern "C" struct A* test_ptr_return()
     static A a;
     do_set_struct_A_value(a);
     return &a;
+}
+
+extern "C" void test_ptr_argument_changes(struct B* b)
+{
+    do_set_B_c_value(*b);
 }
 
