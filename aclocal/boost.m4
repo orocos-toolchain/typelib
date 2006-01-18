@@ -1,6 +1,8 @@
-dnl $Rev: 1050 $
-dnl $Id: boost.m4 1050 2005-10-12 16:23:18Z sjoyeux $
+dnl $Rev: 1160 $
+dnl $Id: boost.m4 1160 2005-11-29 15:01:48Z sjoyeux $
 
+dnl Checks that boost/version.hpp is present and defines the --with-boost option
+dnl
 AC_DEFUN([CLBS_CHECK_BOOST],
  [
   AC_SUBST(BOOST_CPPFLAGS)
@@ -13,7 +15,7 @@ AC_DEFUN([CLBS_CHECK_BOOST],
 
   BOOST_ROOT=""
 
-dnl Extract the path name from a --with-boost=PATH argument
+  dnl Extract the path name from a --with-boost=PATH argument
   AC_ARG_WITH(boost,
 	AC_HELP_STRING([--with-boost=PATH],
 	               [absolute path where the Boost C++ libraries reside]),
@@ -27,26 +29,24 @@ dnl Extract the path name from a --with-boost=PATH argument
     	 fi
 	])
 
-dnl Checking for Boost headers
-   CPPFLAGS_OLD=$CPPFLAGS
-   CPPFLAGS="$CPPFLAGS $BOOST_TMP_CPPFLAGS"
-   AC_LANG_SAVE
-   AC_LANG_CPLUSPLUS
-   AC_CHECK_HEADER([boost/version.hpp], [have_boost="yes"])
-   AC_LANG_RESTORE
-   CPPFLAGS=$CPPFLAGS_OLD 
-   if test "x$have_boost" = "xyes" ; then 
-     ifelse([$1], , :, [$1])
-     BOOST_CPPFLAGS="$BOOST_TMP_CPPFLAGS"
-     BOOST_LDFLAGS=$BOOST_TMP_LDFLAGS
-     HAVE_BOOST=1
-     AC_DEFINE(HAVE_BOOST)
-   else
-     ifelse([$2], , :, [$2])
-   fi
- ]
-)
+  dnl Check for common boost headers
+  CPPFLAGS_OLD=$CPPFLAGS
+  CPPFLAGS="$CPPFLAGS $BOOST_TMP_CPPFLAGS"
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_CHECK_HEADER([boost/version.hpp], [have_boost="yes"])
+  AC_LANG_RESTORE
+  CPPFLAGS=$CPPFLAGS_OLD 
+  AS_IF([test "x$have_boost" = "xyes"], [
+    $1
+    BOOST_CPPFLAGS="$BOOST_TMP_CPPFLAGS"
+    BOOST_LDFLAGS=$BOOST_TMP_LDFLAGS
+    HAVE_BOOST=1
+    AC_DEFINE(HAVE_BOOST)
+   ], [$2])
+])
 
+dnl Helper macro for CLBS_BOOST_SUBLIB
 AC_DEFUN([CLBS_BOOST_SUBLIB_DEFINE],
 [
     AC_DEFINE(HAVE_BOOST_$2, [], [If the boost/$1 library is available])
@@ -59,6 +59,14 @@ AC_DEFUN([CLBS_BOOST_SUBLIB_DEFINE],
     AC_SUBST(HAVE_BOOST_$2)
 ])
 
+
+dnl Checks for a boost library which has a .so 
+dnl These particular tests are defined:
+dnl     CLBS_BOOST_THREAD
+dnl     CLBS_BOOST_REGEX  
+dnl     CLBS_BOOST_FILESYSTEM
+dnl     CLBS_BOOST_TEST
+dnl all of these use 
 dnl CLBS_BOOST_SUBLIB(libname, library, header, class, [if found], [if not found])
 AC_DEFUN([CLBS_BOOST_SUBLIB],
 [
@@ -125,17 +133,13 @@ AC_DEFUN([CLBS_BOOST_THREAD],
     LDFLAGS=$clbs_sv_LDFLAGS
   fi
 
-  if test "$has_working_bthreads" != "no"; then
-    ifelse([$1], , , $1)
+  AS_IF([test "$has_working_bthreads" != "no"], [
+    $1
     BOOST_THREAD_CXXFLAGS="$PTHREAD_CXXFLAGS"
     BOOST_THREAD_LDFLAGS="$BOOST_THREAD_LDFLAGS $PTHREAD_LIBS"
     AC_SUBST(BOOST_THREAD_CXXFLAGS)
     AC_SUBST(BOOST_THREAD_LDFLAGS)
-  ifelse([$2], [], [], [
-  else
-    $2
-  ])
-  fi
+  ], [$2])
 ])
 
 dnl CLBS_BOOST_REGEX(if-found, if-not-found)
@@ -171,14 +175,14 @@ AC_DEFUN([CLBS_BOOST_TEST], [
         LDFLAGS=$clbs_sv_LDFLAGS
         AC_LANG_POP
 
-        if test "$has_working_test" = "yes"; then
+        AS_IF([test "$has_working_test" = "yes"], [
            AC_MSG_RESULT([yes])
            CLBS_BOOST_SUBLIB_DEFINE(test, TEST)
-           ifelse([$1], [], [], [$1])
-        else
+           $1
+        ], [
            AC_MSG_RESULT([no])
-           ifelse([$2], [], [], [$2])
-        fi
+           $2
+        ])
     fi
 ])
 

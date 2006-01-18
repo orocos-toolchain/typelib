@@ -1,19 +1,11 @@
-# $Revision: 1022 $
-# $Id: compile.mk 1022 2005-10-11 12:06:01Z sjoyeux $
+# $Revision: 1259 $
+# $Id: compile.mk 1259 2006-01-18 12:32:19Z sjoyeux $
 
 %.lo: DESCRIPTION="Compiling $(notdir $@) (libtool)"
 	
 %.lo: %.c
-	$(COMMAND_PREFIX)$(LTCC) $(CFLAGS) $($(MODULE)_CXXFLAGS) -c $(CPPFLAGS) $($(MODULE)_CPPFLAGS) -o $@ $<
+	$(COMMAND_PREFIX)$(LTCC) $(PREFER_NON_PIC) $(CFLAGS) $($(MODULE)_CFLAGS) -c $(CPPFLAGS) $($(MODULE)_CPPFLAGS) -o $@ $<
 	
 %.lo: %.cc
-	$(COMMAND_PREFIX)$(LTCXX) $(CXXFLAGS) $($(MODULE)_CXXFLAGS) -c $(CPPFLAGS) $($(MODULE)_CPPFLAGS) -o $@ $<
-
-%.o: DESCRIPTION="Compiling $(notdir $@)"
-	
-%.o: %.c
-	$(COMMAND_PREFIX)$(CC)  $(CFLAGS) $(APP_CFLAGS) -c $(CPPFLAGS) $(APP_CPPFLAGS) $< -o $@ 
-
-%.o: %.cc
-	$(COMMAND_PREFIX)$(CXX) $(CXXFLAGS) $(APP_CXXFLAGS) -c $(CPPFLAGS) $(APP_CPPFLAGS) $< -o $@ 
+	$(COMMAND_PREFIX)$(LTCXX) $(PREFER_NON_PIC) $(CXXFLAGS) $($(MODULE)_CXXFLAGS) -c $(CPPFLAGS) $($(MODULE)_CPPFLAGS) -o $@ $<
 

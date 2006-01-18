@@ -1,5 +1,5 @@
-# $Revision: 1060 $
-# $Id: init.mk.in 1060 2005-10-13 08:42:01Z sjoyeux $
+# $Revision: 1257 $
+# $Id: init.mk.in 1257 2006-01-18 12:18:19Z sjoyeux $
 
 prefix       = @prefix@
 exec_prefix  = @exec_prefix@
@@ -23,7 +23,7 @@ LIBS     = @LIBS@
 
 CC       = @CC@
 ifeq ($(findstring gcc,$(CC)),gcc)
-GNU_CC_EXTRA_FLAGS=-Wall
+GNU_CC_EXTRA_FLAGS=-Wall -Wshadow
 endif
 CFLAGS   = @CFLAGS@ $(GNU_CC_EXTRA_FLAGS)
 

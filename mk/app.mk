@@ -1,9 +1,9 @@
-# $Revision: 1056 $
-# $Id: app.mk 1056 2005-10-13 08:40:19Z sjoyeux $
+# $Revision: 1259 $
+# $Id: app.mk 1259 2006-01-18 12:32:19Z sjoyeux $
 
-APP_OBJS = $(APP_SRC:%.cc=%.o)
+APP_OBJS = $(APP_SRC:%.cc=%.lo)
 
-$(APP_NAME)_LIB_DEPENDS=$(filter %.la,$($(MODULE)_LIBS))
+$(APP_NAME)_LIB_DEPENDS=$(filter %.la,$($(APP_NAME)_LIBS))
 ifneq ($($(APP_NAME)_LIB_DEPENDS),)
 $($(APP_NAME)_LIB_DEPENDS): recurse-build
 endif
@@ -11,6 +11,8 @@ recurse-build:
 
 build: $(APP_NAME)
 $(APP_NAME): DESCRIPTION='Linking application $(APP_NAME) (libtool)'
+$(APP_NAME): PREFER_NON_PIC=-prefer-non-pic
+$(APP_NAME): MODULE=APP
 $(APP_NAME): $(APP_OBJS) $(APP_EXTRAS) $($(APP_NAME)_LIB_DEPENDS)
 	$(COMMAND_PREFIX)$(LTLD) $(LDFLAGS) $(APP_LDFLAGS) -o $@ $(APP_OBJS) $(APP_EXTRAS) $(LIBS) $(APP_LIBS)
 
