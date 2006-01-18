@@ -1,0 +1,32 @@
+# $Revision: 1076 $
+# $Id: Makefile-recursive.in 1076 2005-10-13 11:30:15Z sjoyeux $
+#
+
+top_srcdir=@top_srcdir@
+top_builddir=@top_builddir@
+srcdir=@srcdir@
+builddir=@builddir@
+
+include $(top_builddir)/mk/init.mk
+
+ext/Makefile: ext/extconf.rb
+	$(RUBY) -C ext extconf.rb
+
+build: ext/Makefile
+	$(MAKE) -C ext
+
+clean: 
+	$(MAKE) -C ext clean
+	rm -f ext/Makefile
+
+distclean: clean
+	rm -f ext/Makefile ext/extconf.rb Makefile
+
+RBLIBDIR = $(libdir)/$(shell $(RUBY) -rrbconfig -e "puts Config::CONFIG['sitelibdir'].gsub(/^.*site_ruby/, 'site_ruby')")
+RBEXTDIR = $(libdir)/$(shell $(RUBY) -rrbconfig -e "puts Config::CONFIG['sitearchdir'].gsub(/^.*(?>site_ruby)/, 'site_ruby')")
+install: 
+	$(INSTALL_DIR) $(DESTDIR)$(RBEXTDIR)
+	$(INSTALL_LIB) ext/typelib_api.la $(DESTDIR)$(RBEXTDIR)
+	$(INSTALL_DIR) $(DESTDIR)$(RBLIBDIR)
+	$(INSTALL_DATA) $(srcdir)/lib/typelib.rb $(DESTDIR)$(RBLIBDIR)
+	

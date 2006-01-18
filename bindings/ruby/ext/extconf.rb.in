@@ -1,12 +1,21 @@
 require 'mkmf'
 
+autoconf_prefix="@prefix@"
+autoconf_exec_prefix="@exec_prefix@"
+
+suffix = Config::CONFIG['sitearchdir'].gsub(/.*site_ruby/, "site_ruby")
+
+Config::MAKEFILE_CONFIG['prefix']=autoconf_prefix
+Config::MAKEFILE_CONFIG['exec_prefix'] = autoconf_exec_prefix
+autoconf_libdir = "@libdir@"
+
 $CPPFLAGS += " -I@top_srcdir@ @UTILMM_CFLAGS@ -g3 -O0 -Wshadow"
 $LDFLAGS  += "@top_builddir@/typelib/libtypeLib.la -ldl"
 #CONFIG['CC'] = "@top_builddir@/libtool --mode=compile #{CONFIG['CC']}"
 COMPILE_C   = "@top_builddir@/libtool --mode=compile #{COMPILE_C}"
 COMPILE_CXX = "@top_builddir@/libtool --mode=compile #{COMPILE_CXX}"
 $OBJEXT = 'lo'
-CONFIG['LDSHARED'] = "@top_builddir@/libtool --mode=link #{CONFIG['CC']} -module -rpath @libdir@/typelib -avoid-version"
+CONFIG['LDSHARED'] = "@top_builddir@/libtool --mode=link #{CONFIG['CC']} -module -rpath #{autoconf_libdir}/#{suffix} -avoid-version"
 CONFIG['DLEXT'] = 'la'
 
 create_makefile('typelib_api', "@srcdir@")

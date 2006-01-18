@@ -17,7 +17,8 @@ ANTLR= cantlr
 ANTLR_CFLAGS=
 ANTLR_LDFLAGS= -lantlr-pic
 
-RUBY=   ruby1.8
-TESTRB= testrb1.8
+HAS_RUBY_SUPPORT=@HAS_RUBY_SUPPORT@
+RUBY=   @RUBY@
+TESTRB= testrb
 
 

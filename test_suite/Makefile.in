@@ -13,12 +13,18 @@ testsuite_CPPFLAGS = -I$(top_srcdir) -I$(builddir) $(UTILMM_CXXFLAGS)
 testsuite_CXXFLAGS = 
 testsuite_LDFLAGS = $(top_builddir)/typelib/libtypeLib.la $(top_builddir)/lang/cimport/libtypeLang_c.la $(top_builddir)/lang/tlb/libtypeLang_tlb.la $(ANTLR_LDFLAGS) $(UTILMM_LDFLAGS)
 
+ruby/Makefile: ruby/extconf.rb
+	$(RUBY) -C ruby extconf.rb
+
+build: ruby/extconf.rb
+	$(MAKE) -C ruby
+
+ifeq($(HAS_RUBY_SUPPORT),yes)
+test: ruby_tests
 ruby_tests:
 	cd ruby && $(TESTRB) $(top_srcdir)/test_suite/ruby
-
-SUBDIRS = ruby
+endif
 
 include $(top_srcdir)/mk/test.mk
 include $(top_srcdir)/mk/depend.mk
-include $(top_srcdir)/mk/recurse.mk
 

@@ -33,13 +33,14 @@ AC_SUBST(LIBTOOL_DEPS)
 AC_PROG_INSTALL
 
 ############ Dependencies
+CLBS_CHECK_RUBY([], [AC_MSG_WARN([Disabled Ruby support])])
 CLBS_CHECK_BOOST([], AC_MSG_ERROR([Unable to find the Boost library]))
 CLBS_BOOST_FILESYSTEM([], AC_MSG_ERROR([Unable to find the Boost/Filesystem library]))
 PKG_CHECK_MODULES(LIBXML, libxml-2.0,, [AC_MSG_ERROR([libxml2 is needed])])
 PKG_CHECK_MODULES(UTILMM, utilmm,, [AC_MSG_ERROR([UtilMM is needed])])
 
 ############ Output files
-AC_CONFIG_FILES(
+AC_CONFIG_FILES([
     typelib.pc
     Init.make
     mk/init.mk
@@ -51,12 +52,20 @@ AC_CONFIG_FILES(
     lang/cimport/Makefile
     lang/tlb/Makefile
 
+    bindings/Makefile
+
     test_suite/Makefile
     test_suite/ruby/test_config.rb
-)
-AC_CONFIG_FILES([bindings/ruby/ext/extconf.rb], [ruby -Cbindings/ruby/ext extconf.rb])
-AC_CONFIG_FILES([test_suite/ruby/extconf.rb], [ruby -Ctest_suite/ruby extconf.rb])
+])
 
+if test "x$HAS_RUBY_SUPPORT" = "xyes"; then
+AC_CONFIG_FILES([ 
+    bindings/ruby/Makefile
+    bindings/ruby/ext/extconf.rb
+    test_suite/ruby/extconf.rb
+    ])
+fi
+    
 ############ Doxygen
 dnl is present if Doxyfile.in exists AND doxygen is available
 if test "x$HAVE_DOX" = "xyes"; then

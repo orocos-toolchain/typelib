@@ -1,0 +1,14 @@
+# $Revision: 1076 $
+# $Id: Makefile-recursive.in 1076 2005-10-13 11:30:15Z sjoyeux $
+#
+
+top_srcdir=@top_srcdir@
+top_builddir=@top_builddir@
+srcdir=@srcdir@
+builddir=@builddir@
+
+include $(top_builddir)/mk/init.mk
+
+SUBDIRS = ruby
+include $(top_srcdir)/mk/recurse.mk
+
