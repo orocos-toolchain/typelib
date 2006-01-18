@@ -1,5 +1,5 @@
-# $Revision: 1022 $
-# $Id: tcl-module.mk 1022 2005-10-11 12:06:01Z sjoyeux $
+# $Revision: 1265 $
+# $Id: tcl-module.mk 1265 2006-01-18 15:10:54Z sjoyeux $
 
 build_lib=$(TCLMODULE)$(TCL_SHLIB_SUFFIX)
 
@@ -19,10 +19,10 @@ $(build_lib): $($(TCLMODULE)_OBJS)
 		$(CFLAGS) $($(TCLMODULE)_CFLAGS) -c $(CPPFLAGS) $($(TCLMODULE)_CPPFLAGS) -o $@ $<
 
 ################ Install
-install: $(tclmoduledir)/$(build_lib)
-$(tclmoduledir)/$(build_lib): $(build_lib)
-	$(INSTALL_DIR) $(tclmoduledir)
-	$(INSTALL_LIB) $(build_lib) $(tclmoduledir)
+install: $(DESTDIR)$(tclmoduledir)/$(build_lib)
+$$(DESTDIR)(tclmoduledir)/$(build_lib): $(build_lib)
+	$(INSTALL_DIR) $(DESTDIR)$(tclmoduledir)
+	$(INSTALL_LIB) $(build_lib) $(DESTDIR)$(tclmoduledir)
 
 ################ Cleanup
 clean: $(TCLMODULE)-lib-clean

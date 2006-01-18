@@ -1,5 +1,5 @@
-# $Revision: 1259 $
-# $Id: app.mk 1259 2006-01-18 12:32:19Z sjoyeux $
+# $Revision: 1265 $
+# $Id: app.mk 1265 2006-01-18 15:10:54Z sjoyeux $
 
 APP_OBJS = $(APP_SRC:%.cc=%.lo)
 
@@ -28,8 +28,8 @@ app-clean:
 install: app-install
 app-install: DESCRIPTION='Installing $(APP_NAME) (libtool)'
 app-install: $(APP_NAME)
-	$(INSTALL_DIR) $(bindir)
-	$(COMMAND_PREFIX)$(INSTALL_PROGRAM) $(APP_NAME) $(bindir)/$(APP_NAME)
+	$(INSTALL_DIR) $(DESTDIR)$(bindir)
+	$(COMMAND_PREFIX)$(INSTALL_PROGRAM) $(APP_NAME) $(DESTDIR)$(bindir)/$(APP_NAME)
 
 ############### Dependencies
 DEP_SRC += $(APP_SRC)
