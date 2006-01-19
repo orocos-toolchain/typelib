@@ -52,11 +52,11 @@ module Typelib
             "tlb" => "tlb"
         }
         def self.guess_type(file)
-            ext = File.extname(file)
+            ext = File.extname(file)[1..-1]
             if TYPE_BY_EXT.has_key?(ext)
                 return TYPE_BY_EXT[ext]
             else
-                raise "Cannot guess file type for #{file}"
+                raise "Cannot guess file type for #{file}: unknown extension '#{ext}'"
             end
         end
 
