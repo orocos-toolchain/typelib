@@ -31,7 +31,7 @@ module Typelib
                     elsif args.empty?
                         get_field(name)
                     end
-            
+
             value || super
         end
     end
@@ -113,14 +113,6 @@ module Typelib
         return_spec = Array[*return_spec]
         return_type = return_spec.shift
 
-        return_spec.each do |index|
-            if index == 0 || index.abs >= arg_types.size
-                raise ArgumentError, "Index out of bound: there is no positional parameter #{index.abs}"
-            elsif !arg_types[index.abs].pointer?
-                raise ArgumentError, "Parameter #{index.abs} is supposed to be an output value, but it is not a pointer"
-            end
-        end
-
         return_type, *arg_types = Array[return_type, *arg_types].collect do |typedef|
             next if typedef.nil?
 
@@ -129,7 +121,7 @@ module Typelib
                       elsif typedef.respond_to?(:to_str)
                           lib.registry.build(typedef.to_str)
                       else
-                          raise ArgumentError, "expected a Typelib::Type or a string, got #{typedef}"
+                          raise ArgumentError, "expected a Typelib::Type or a string, got #{typedef.inspect}"
                       end
 
             if typedef.compound?
@@ -139,18 +131,28 @@ module Typelib
             typedef
         end
 
-        # Change enums into symbols. Pointers are handled in the Ruby code
+        return_spec.each do |index|
+            ary_idx = index.abs - 1
+            if index == 0 || ary_idx >= arg_types.size
+                raise ArgumentError, "Index out of bound: there is no positional parameter #{index.abs}"
+            elsif !arg_types[ary_idx].pointer?
+                raise ArgumentError, "Parameter #{index.abs} is supposed to be an output value, but it is not a pointer"
+            end
+        end
 
-        dl_wrapper = build_basic_wrapper(lib, name, return_type, return_spec, arg_types)
+        dl_wrapper = do_wrap(lib, name, return_type, *arg_types)
 
         return lambda do |*args| 
+            user_args_count = args.size
+
             return_spec.each do |index|
                 next unless index > 0
-                args.insert(index, Value.new(nil, arg_types[index]))
+                args.insert(index - 1, Value.new(nil, arg_types[index - 1].deference))
             end
 
             if args.size != arg_types.size
-                raise ArgumentError, "#{arg_types.size - 1} arguments expected, got #{ruby_input.size}"
+                wrapper_args_count = args.size - user_args_count
+                raise ArgumentError, "#{arg_types.size - wrapper_args_count} arguments expected, got #{user_args_count}"
             end
 
             ret = call_function(return_type, args, arg_types, dl_wrapper) 
@@ -163,32 +165,25 @@ module Typelib
 
             ruby_returns = []
             if return_type
-                ruby_returns << if retval === DL::PtrData
-                                    ruby_returns << make_return_value(retval, return_type.deference)
-                                else
-                                    retval
-                                end
+                ruby_returns << 
+                    if DL::PtrData === retval
+                        Value.new(retval, return_type.deference).to_ruby
+                    else
+                        retval
+                    end
             end
 
-            ruby_returns << retval if return_type
             return_spec.each do |index|
-                ruby_returns << arg_types[index.abs].deference(retargs[index.abs])
+                ary_idx = index.abs - 1
+                ruby_returns << Value.new(retargs[ary_idx], arg_types[ary_idx].deference).to_ruby
             end
-            ruby_returns
-        end
-    end
 
-    def self.build_basic_wrapper(lib, name, return_type, return_spec, arg_types)
-        ruby_output             = []
-        ruby_needs_allocation   = []
-        ruby_input              = []
-            arg_type = arg_types[index.abs]
-            ruby_output << arg_type
-            ruby_input  << arg_type if index < 0
-            ruby_needs_allocation << arg_type
+            if ruby_returns.size > 1
+                ruby_returns
+            else
+                ruby_returns.first
+            end
         end
-        
-        do_wrap(lib, name, return_spec, *arg_types)
     end
 end
 

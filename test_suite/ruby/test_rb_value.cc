@@ -113,7 +113,15 @@ extern "C" struct A* test_ptr_return()
 }
 
 extern "C" void test_ptr_argument_changes(struct B* b)
-{
-    do_set_B_c_value(*b);
+{ do_set_B_c_value(*b); }
+
+extern "C" void test_arg_input_output(int* value, INPUT_OUTPUT_MODE mode) 
+{ 
+    if (mode == BOTH && *value != 10)
+    {
+        *value = 0;
+        return;
+    }
+    *value = 5; 
 }
 

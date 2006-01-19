@@ -27,12 +27,16 @@ static void do_not_delete(void*) {}
  *
  */
 template<typename T> static T& rb_get_cxx(VALUE self);
+static void check_is_kind_of(VALUE self, VALUE expected)
+{
+    if (! rb_obj_is_kind_of(self, expected))
+        rb_raise(rb_eTypeError, "expected %s, got %s", rb_class2name(expected), rb_obj_classname(self));
+}
 
 template<>
 static Registry& rb_get_cxx(VALUE self)
 {
-    if (! rb_obj_is_kind_of(self, cRegistry))
-        rb_raise(rb_eTypeError, "expected Registry");
+    check_is_kind_of(self, cRegistry);
 
     Registry* registry = 0;
     Data_Get_Struct(self, Registry, registry);
@@ -42,8 +46,7 @@ static Registry& rb_get_cxx(VALUE self)
 template<>
 static Value& rb_get_cxx(VALUE self)
 {
-    if (! rb_obj_is_kind_of(self, cValue))
-        rb_raise(rb_eTypeError, "expected Registry");
+    check_is_kind_of(self, cValue);
 
     Value* value = 0;
     Data_Get_Struct(self, Value, value);
@@ -53,12 +56,19 @@ static Value& rb_get_cxx(VALUE self)
 template<>
 static Type& rb_get_cxx(VALUE self)
 {
-    if (! rb_obj_is_kind_of(self, cType))
-        rb_raise(rb_eTypeError, "expected Registry");
+    check_is_kind_of(self, cType);
     
     Type* type = 0;
     Data_Get_Struct(self, Type, type);
     return *type;
+}
+
+template<typename T>
+static VALUE rb_cxx_equality(VALUE rbself, VALUE rbwith)
+{
+    T const& self(rb_get_cxx<T>(rbself));
+    T const& with(rb_get_cxx<T>(rbwith));
+    return (self == with) ? Qtrue : Qfalse;
 }
 
 static
@@ -98,16 +108,15 @@ VALUE value_initialize(VALUE self, VALUE ptr, VALUE type)
 
     // Protect 'type' against the GC
     rb_iv_set(self, "@type", type);
-    Type const* t;
-    Data_Get_Struct(type, Type, t);
+    Type const& t(rb_get_cxx<Type>(type));
 
     if(NIL_P(ptr))
-        ptr = rb_dlptr_malloc(t->getSize(), free);
+        ptr = rb_dlptr_malloc(t.getSize(), free);
 
     // Protect 'ptr' against the GC
     rb_iv_set(self, "@ptr", ptr);
 
-    value = Value(rb_dlptr2cptr(ptr), *t);
+    value = Value(rb_dlptr2cptr(ptr), t);
     
     return self;
 }
@@ -136,6 +145,8 @@ static VALUE rbvalue_get_field(VALUE self, VALUE name)
 { return typelib_to_ruby(self, name); }
 static VALUE rbvalue_set_field(VALUE self, VALUE name, VALUE newval)
 { return typelib_from_ruby(self, name, newval); }
+static VALUE value_equality(VALUE rbself, VALUE rbwith)
+{ return rb_cxx_equality<Value>(rbself, rbwith); }
 
 /***********************************************************************************
  *
@@ -206,18 +217,41 @@ VALUE typelib_call_function(VALUE klass, VALUE return_type, VALUE args, VALUE ty
         // first type is the return type
         Type const& type = rb_get_cxx<Type>(RARRAY(types)->ptr[i]);
 
+        // Manage immediate values
+        if (IMMEDIATE_P(object))
+        {
+            if (type.getCategory() == Type::Enum)
+                object = INT2FIX( rb_enum_get_value(object, dynamic_cast<Enum const&>(type)) );
+            else if (type.getCategory() == Type::Pointer)
+            {
+                // Build directly a DL::Ptr object, no need to build a Ruby Value wrapper
+                // TODO: typechecking
+                Pointer const& ptr_type = static_cast<Pointer const&>(type);
+                Type const& pointed_type = ptr_type.getIndirection();
+                VALUE ptr = rb_dlptr_malloc(pointed_type.getSize(), free);
+
+                Value typelib_value(rb_dlptr2cptr(ptr), pointed_type);
+                if (!typelib_from_ruby(typelib_value, object))
+                    rb_raise(rb_eTypeError, "Wrong argument type %s", rb_obj_classname(object));
+
+                object = ptr;
+            }
+        }
+
         if (type.getCategory() == Type::Pointer 
                 && !rb_obj_is_kind_of(object, rb_cDLPtrData))
         {
             Pointer const& ptr_type = static_cast<Pointer const&>(type);
+
+            // If this is an immediate value, build a Value object
             Type const&    object_type = rb_get_cxx<Value>(object).getType();
             if (object_type != ptr_type.getIndirection())
-                rb_raise(rb_eArgError, "expected %s", ptr_type.getIndirection().getName().c_str());
+                rb_raise(rb_eTypeError, "expected %s, got %s", 
+                        ptr_type.getIndirection().getName().c_str(),
+                        object_type.getName().c_str());
 
             object = rb_funcall(object, rb_intern("to_ptr"), 0);
         }
-        else if (type.getCategory() == Type::Enum)
-            object = INT2FIX( rb_enum_get_value(object, dynamic_cast<Enum const&>(type)) );
 
         RARRAY(new_args)->ptr[i] = object;
     }
@@ -283,28 +317,44 @@ static VALUE type_is_a(VALUE self, Type::Category category)
 static VALUE type_is_array(VALUE self)      { return type_is_a(self, Type::Array); }
 static VALUE type_is_compound(VALUE self)   { return type_is_a(self, Type::Compound); }
 static VALUE type_is_pointer(VALUE self)    { return type_is_a(self, Type::Pointer); }
-static VALUE type_pointer_deference(int argc, VALUE* object, VALUE self)
-{
-    if (argc > 1)
-        rb_raise(rb_eArgError, "got more than 1 argument (%i)", argc);
-    
-    VALUE registry = rb_iv_get(self, "@registry");
-    Type const& type(rb_get_cxx<Type>(self));
+static VALUE type_equality(VALUE rbself, VALUE rbwith)
+{ return rb_cxx_equality<Type>(rbself, rbwith); }
 
-    // This sucks. Must define type_deference on pointer only
+static Type const& type_pointer_deference_cxx(Type const& type)
+{
+    // This sucks. Must define type_deference on pointers only
     if (type.getCategory() != Type::Pointer)
         rb_raise(rb_eTypeError, "Type#deference called on a non-pointer type");
 
     Pointer const& pointer(static_cast<Pointer const&>(type));
-    Type const& deference_type = pointer.getIndirection();
-    if (!argc)
-        typelib_wrap_type(deference_type, registry);
+    return pointer.getIndirection();
+}
 
+static VALUE value_pointer_deference(VALUE self)
+{
+    Value const& value(rb_get_cxx<Value>(self));
+    Type  const& type(value.getType());
+    Type  const& deference_type(type_pointer_deference_cxx(type));
+    
+    VALUE rb_type = rb_iv_get(self, "@type");
+    VALUE registry = rb_iv_get(rb_type, "@registry");
 
-    Value const& ptr_value = rb_get_cxx<Value>(object[0]);
-    Value new_value( *reinterpret_cast<void**>(ptr_value.getData()), deference_type );
-
+    Value new_value( *reinterpret_cast<void**>(value.getData()), deference_type );
     return typelib_to_ruby(new_value, registry);
+}
+static VALUE type_pointer_deference(VALUE self)
+{
+    VALUE registry = rb_iv_get(self, "@registry");
+    Type const& type(rb_get_cxx<Type>(self));
+    Type const& deference_type = type_pointer_deference_cxx(type);
+    return typelib_wrap_type(deference_type, registry);
+}
+static VALUE value_to_ruby(VALUE self)
+{
+    Value const& value(rb_get_cxx<Value>(self));
+    VALUE type = rb_iv_get(self, "@type");
+    VALUE registry = rb_iv_get(type, "@registry");
+    return typelib_to_ruby(value, registry);
 }
 
 extern "C" void Init_typelib_api()
@@ -321,6 +371,9 @@ extern "C" void Init_typelib_api()
     rb_define_method(cValue, "field_attributes", RUBY_METHOD_FUNC(value_field_attributes), 1);
     rb_define_method(cValue, "get_field", RUBY_METHOD_FUNC(rbvalue_get_field), 1);
     rb_define_method(cValue, "set_field", RUBY_METHOD_FUNC(rbvalue_set_field), 2);
+    rb_define_method(cValue, "deference", RUBY_METHOD_FUNC(value_pointer_deference), 0);
+    rb_define_method(cValue, "to_ruby", RUBY_METHOD_FUNC(value_to_ruby), 0);
+    rb_define_method(cValue, "==", RUBY_METHOD_FUNC(&value_equality), 1);
 
     cValueArray    = rb_define_class_under(mTypelib, "ValueArray", cValue);
     rb_define_alloc_func(cValueArray, value_alloc);
@@ -342,7 +395,8 @@ extern "C" void Init_typelib_api()
     rb_define_method(cType, "array?",       RUBY_METHOD_FUNC(type_is_array), 0);
     rb_define_method(cType, "compound?",    RUBY_METHOD_FUNC(type_is_compound), 0);
     rb_define_method(cType, "pointer?",     RUBY_METHOD_FUNC(type_is_pointer), 0);
-    rb_define_method(cType, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), -1);
+    rb_define_method(cType, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), 0);
+    rb_define_method(cType, "==", RUBY_METHOD_FUNC(&type_equality), 1);
 }
 
 
