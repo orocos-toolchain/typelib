@@ -298,7 +298,9 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
     }
         
     // TODO: error checking
-    importer->load(StringValuePtr(file), config, registry);
+    if (!importer->load(StringValuePtr(file), config, registry))
+        rb_raise(rb_eRuntimeError, "cannot import %s", StringValuePtr(file));
+
     return Qnil;
 }
 
