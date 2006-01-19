@@ -223,18 +223,17 @@ VALUE typelib_call_function(VALUE klass, VALUE return_type, VALUE args, VALUE ty
     }
 
     // Call the function via DL and get the real return value
-    VALUE dl_ret = rb_funcall3(function, rb_intern("call"), argcount, RARRAY(new_args)->ptr);
-    VALUE ret = rb_ary_entry(dl_ret, 0);
-
-    if (NIL_P(return_type))
-        return Qnil;
-
-    // Change enums into symbols. Pointers are handled in the Ruby code
-    Type const& rettype(rb_get_cxx<Type>(return_type));
-    if (rettype.getCategory() == Type::Enum)
+    VALUE ret = rb_funcall3(function, rb_intern("call"), argcount, RARRAY(new_args)->ptr);
+    VALUE return_value = rb_ary_entry(ret, 0);
+    
+    if (!NIL_P(return_value))
     {
-        Enum const& ret_enum(static_cast<Enum const&>(rettype));
-        ret = INT2FIX(enum_get_rb_symbol(dl_ret, ret_enum));
+        Type const& rettype(rb_get_cxx<Type>(return_type));
+        if (rettype.getCategory() == Type::Enum)
+        {
+            Enum const& ret_enum(static_cast<Enum const&>(rettype));
+            rb_ary_store(ret, 0, INT2FIX(enum_get_rb_symbol(ret, ret_enum)));
+        }
     }
 
     return ret;
@@ -284,8 +283,11 @@ static VALUE type_is_a(VALUE self, Type::Category category)
 static VALUE type_is_array(VALUE self)      { return type_is_a(self, Type::Array); }
 static VALUE type_is_compound(VALUE self)   { return type_is_a(self, Type::Compound); }
 static VALUE type_is_pointer(VALUE self)    { return type_is_a(self, Type::Pointer); }
-static VALUE type_pointer_deference(VALUE self)
+static VALUE type_pointer_deference(int argc, VALUE* object, VALUE self)
 {
+    if (argc > 1)
+        rb_raise(rb_eArgError, "got more than 1 argument (%i)", argc);
+    
     VALUE registry = rb_iv_get(self, "@registry");
     Type const& type(rb_get_cxx<Type>(self));
 
@@ -294,7 +296,15 @@ static VALUE type_pointer_deference(VALUE self)
         rb_raise(rb_eTypeError, "Type#deference called on a non-pointer type");
 
     Pointer const& pointer(static_cast<Pointer const&>(type));
-    return typelib_wrap_type(pointer.getIndirection(), registry);
+    Type const& deference_type = pointer.getIndirection();
+    if (!argc)
+        typelib_wrap_type(deference_type, registry);
+
+
+    Value const& ptr_value = rb_get_cxx<Value>(object[0]);
+    Value new_value( *reinterpret_cast<void**>(ptr_value.getData()), deference_type );
+
+    return typelib_to_ruby(new_value, registry);
 }
 
 extern "C" void Init_typelib_api()
@@ -332,7 +342,7 @@ extern "C" void Init_typelib_api()
     rb_define_method(cType, "array?",       RUBY_METHOD_FUNC(type_is_array), 0);
     rb_define_method(cType, "compound?",    RUBY_METHOD_FUNC(type_is_compound), 0);
     rb_define_method(cType, "pointer?",     RUBY_METHOD_FUNC(type_is_pointer), 0);
-    rb_define_method(cType, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), 0);
+    rb_define_method(cType, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), -1);
 }
 
 

@@ -85,10 +85,40 @@ module Typelib
         include Enumerable
     end
 
-    def self.wrap(lib, name, return_type = nil, *arg_types)
-
+    # Wraps a function defined in +lib+
+    #
+    # +return_spec+ defines what the function returns. It can be either
+    # an object or an array
+    #   - if it is an object, then this object is the name of the type returned
+    #     by the function, or nil if the function returns nothing. If +return_spec+
+    #     is an array, the first element of this array defines this return type
+    #   - the other elements of the array are *positional parameters*. They define
+    #     what arguments of the function are either return values or both
+    #     argument and return value.
+    #     Use positive indexes to use an argument as a return value only and 
+    #     negative indexes to use an argument as both input and output. Arguments
+    #     are indexed starting from 1
+    #
+    # The wrapped function will behave as:
+    #   output_values = wrapper.call(*input_values)
+    #   
+    # where output_values is the array of values specified by return_spec and
+    # input_values the function arguments /without the arguments that are output 
+    # values/
+    # 
+    def self.wrap(lib, name, return_spec = nil, *arg_types)
         if arg_types.include?(nil)
             raise ArgumentError, '"nil" is only allowed as return type'
+        end
+        return_spec = Array[*return_spec]
+        return_type = return_spec.shift
+
+        return_spec.each do |index|
+            if index == 0 || index.abs >= arg_types.size
+                raise ArgumentError, "Index out of bound: there is no positional parameter #{index.abs}"
+            elsif !arg_types[index.abs].pointer?
+                raise ArgumentError, "Parameter #{index.abs} is supposed to be an output value, but it is not a pointer"
+            end
         end
 
         return_type, *arg_types = Array[return_type, *arg_types].collect do |typedef|
@@ -104,31 +134,64 @@ module Typelib
 
             if typedef.compound?
                 raise ArgumentError, "Structs aren't allowed directly in a function call, use pointers instead"
-            elsif typedef.pointer? && !typedef.deference.compound?
-                raise ArgumentError, "Passing non-structs as pointers is not supported yet"
             end
 
             typedef
         end
-        
-        dl_wrapper = do_wrap(lib, name, return_type, *arg_types)
+
+        # Change enums into symbols. Pointers are handled in the Ruby code
+
+        dl_wrapper = build_basic_wrapper(lib, name, return_type, return_spec, arg_types)
+
         return lambda do |*args| 
+            return_spec.each do |index|
+                next unless index > 0
+                args.insert(index, Value.new(nil, arg_types[index]))
+            end
+
             if args.size != arg_types.size
-                raise ArgumentError, "#{arg_types.size - 1} arguments expected, got #{args.size}"
+                raise ArgumentError, "#{arg_types.size - 1} arguments expected, got #{ruby_input.size}"
             end
+
             ret = call_function(return_type, args, arg_types, dl_wrapper) 
-            
-            # Create a Value object if needed
-            if DL::PtrData === ret
-                Value.new(ret, return_type.deference)
-            else
-                ret
+            if return_type.nil? && return_spec.empty?
+                return
             end
+
+            retval  = ret.shift
+            retargs = ret.shift
+
+            ruby_returns = []
+            if return_type
+                ruby_returns << if retval === DL::PtrData
+                                    ruby_returns << make_return_value(retval, return_type.deference)
+                                else
+                                    retval
+                                end
+            end
+
+            ruby_returns << retval if return_type
+            return_spec.each do |index|
+                ruby_returns << arg_types[index.abs].deference(retargs[index.abs])
+            end
+            ruby_returns
         end
+    end
+
+    def self.build_basic_wrapper(lib, name, return_type, return_spec, arg_types)
+        ruby_output             = []
+        ruby_needs_allocation   = []
+        ruby_input              = []
+            arg_type = arg_types[index.abs]
+            ruby_output << arg_type
+            ruby_input  << arg_type if index < 0
+            ruby_needs_allocation << arg_type
+        end
+        
+        do_wrap(lib, name, return_spec, *arg_types)
     end
 end
 
 require 'dl'
 require 'typelib_api'
-
 

@@ -79,6 +79,11 @@ class RubyGetter : public ValueVisitor
     virtual bool visit_ (float   & value) { m_value = rb_float_new(value); return false; }
     virtual bool visit_ (double  & value) { m_value = rb_float_new(value); return false; }
 
+    virtual bool visit_(Value const& v, Pointer const& p)
+    {
+        m_value = wrap_value(v, m_registry, cValue);
+        return false;
+    }
     virtual bool visit_(Value const& v, Array const& a) 
     {
         m_value = wrap_value(v, m_registry, cValueArray);
