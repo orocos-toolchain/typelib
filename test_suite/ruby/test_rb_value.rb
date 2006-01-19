@@ -18,6 +18,14 @@ class TC_Value < Test::Unit::TestCase
         registry
     end
 
+    def test_registry
+        assert_raises(RuntimeError) { Registry.guess_type("bla.1") }
+        assert_equal("c", Registry.guess_type("blo.c"))
+        assert_equal("c", Registry.guess_type("blo.h"))
+        assert_equal("tlb", Registry.guess_type("blo.tlb"))
+
+        assert_raises(RuntimeError) { Registry.new.import("bla.c") }
+    end
     def test_import
         registry = make_registry
         assert( registry.get("/struct A") )
