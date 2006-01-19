@@ -76,13 +76,17 @@ class TC_DL < Test::Unit::TestCase
         assert_raises(ArgumentError) { typelib_wrap[10, :BOTH] }
         assert_equal(5, typelib_wrap[:OUTPUT])
         
-        
         typelib_wrap = Typelib.wrap(test_lib, 'test_ptr_argument_changes', [nil, -1], 'struct B*')
         b.a = 250;
         new_b = typelib_wrap[b]
         # b and new_b are supposed to be the same objects
         assert_equal(b, new_b)
         check_B_c_value(new_b)
+
+        # Check enum I/O handling
+        typelib_wrap = Typelib.wrap(test_lib, 'test_enum_io_handling', [nil, -1], 'INPUT_OUTPUT_MODE*')
+        assert_equal(:BOTH, typelib_wrap[:OUTPUT])
+        assert_equal(:OUTPUT, typelib_wrap[:BOTH])
     end
 end
 

@@ -125,3 +125,16 @@ extern "C" void test_arg_input_output(int* value, INPUT_OUTPUT_MODE mode)
     *value = 5; 
 }
 
+extern "C" void test_enum_io_handling(INPUT_OUTPUT_MODE* mode)
+{
+    switch(*mode)
+    {
+        case BOTH:
+            *mode = OUTPUT;
+            break;
+        case OUTPUT:
+            *mode = BOTH;
+            break;
+    }
+}
+
