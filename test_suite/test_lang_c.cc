@@ -16,13 +16,28 @@ public:
     void test_import()
     {
         Registry registry;
-        static const char* test_file = TEST_DATA_PATH("test_cimport.1");
-        
-        // Load the file in registry
+        static const char* test_file = TEST_DATA_PATH("test_cimport.h");
+
         PluginManager::self manager;
         Importer* importer = manager->importer("c");
         utilmm::config_set config;
+        
+        // Load the file in registry
         BOOST_REQUIRE( !importer->load("does_not_exist", config, registry) );
+        BOOST_REQUIRE( !importer->load("test_cimport.h", config, registry) );
+        {
+            Registry temp_registry;
+            config.set("includes", "../");
+            config.set("defines", "GOOD");
+            BOOST_REQUIRE( importer->load("test_cimport.h", config, temp_registry) );
+        }
+        {
+            Registry temp_registry;
+            config.insert("rawflags", "-I../");
+            config.insert("rawflags", "-DGOOD");
+            BOOST_REQUIRE( importer->load("test_cimport.h", config, temp_registry) );
+        }
+
         BOOST_REQUIRE( importer->load(test_file, config, registry) );
 
         // Check that the types are defined

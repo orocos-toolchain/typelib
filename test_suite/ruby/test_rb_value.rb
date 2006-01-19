@@ -25,6 +25,19 @@ class TC_Value < Test::Unit::TestCase
         assert_equal("tlb", Registry.guess_type("blo.tlb"))
 
         assert_raises(RuntimeError) { Registry.new.import("bla.c") }
+
+        registry = Registry.new
+        testfile = File.join(SRCDIR, "test_cimport.h")
+        assert_raises(RuntimeError) { registry.import(testfile) }
+        assert_nothing_raised {
+            registry.import(testfile, nil, :includes => [ File.join(SRCDIR, '..') ], :defines => [ 'GOOD' ])
+        }
+
+        registry = Registry.new
+        assert_nothing_raised {
+            registry.import(testfile, nil, :rawflags => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
+        }
+
     end
     def test_import
         registry = make_registry

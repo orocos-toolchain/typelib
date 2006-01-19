@@ -40,11 +40,14 @@ namespace
             typedef list<string> strlist;
             list<string> defines  = config.get< list<string> >("defines");
             list<string> includes = config.get< list<string> >("includes");
+            list<string> rawflags = config.get< list<string> >("rawflags");
 
             for (strlist::const_iterator it = defines.begin(); it != defines.end(); ++it)
-                cpp.push(" -D" + *it);
+                cpp.push("-D" + *it);
             for (strlist::const_iterator it = includes.begin(); it != includes.end(); ++it)
-                cpp.push(" -I" + *it);
+                cpp.push("-I" + *it);
+            for (strlist::const_iterator it = rawflags.begin(); it != rawflags.end(); ++it)
+                cpp.push(*it);
 
             cpp.redirect_to(process::Stdout, tmpfile.handle(), false);
 

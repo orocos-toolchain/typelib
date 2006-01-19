@@ -62,7 +62,7 @@ module Typelib
 
         def self.format_options(option_hash)
             return nil if !option_hash
-            option_hash.to_a
+            option_hash.to_a.collect { |opt| [ opt[0].to_s, opt[1] ] }
         end
 
         def import(file, kind = nil, options = nil)
