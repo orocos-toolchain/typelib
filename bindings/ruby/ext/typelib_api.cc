@@ -17,6 +17,7 @@ static VALUE cValue     = Qnil;
 static VALUE cRegistry  = Qnil;
 static VALUE cType      = Qnil;
 static VALUE cValueArray     = Qnil;
+static VALUE cLibrary   = Qnil;
 
 // NOP deleter, for Type objects and some Ptr objects
 static void do_not_delete(void*) {}
@@ -187,26 +188,18 @@ VALUE registry_build(VALUE self, VALUE name)
 }
 
 static
-VALUE typelib_do_dlopen(VALUE self, VALUE lib, VALUE registry)
+VALUE library_do_wrap(int argc, VALUE* argv, VALUE self)
 {
-    VALUE handle = rb_funcall(rb_mDL, rb_intern("dlopen"), 1, lib);
-    rb_iv_set(handle, "@typelib_registry", registry);
-    return handle;
-}
-
-static
-VALUE typelib_do_wrap(int argc, VALUE* argv, VALUE klass)
-{
-    std::string dlspec = typelib_get_dl_spec(argc - 2, argv + 2);
+    std::string dlspec = typelib_get_dl_spec(argc - 1, argv + 1);
     VALUE rb_dlspec = rb_str_new2(dlspec.c_str());
-    return rb_funcall(argv[0], rb_intern("[]"), 2, argv[1], rb_dlspec);
+    return rb_funcall(self, rb_intern("[]"), 2, argv[0], rb_dlspec);
 }
 
 static
-VALUE typelib_call_function(VALUE klass, VALUE return_type, VALUE args, VALUE types, VALUE function)
+VALUE typelib_call_function(VALUE klass, VALUE wrapper, VALUE args, VALUE return_type, VALUE arg_types)
 {
     Check_Type(args,  T_ARRAY);
-    Check_Type(types, T_ARRAY);
+    Check_Type(arg_types, T_ARRAY);
 
     // Get the arguments
     size_t argcount = RARRAY(args)->len;
@@ -215,7 +208,7 @@ VALUE typelib_call_function(VALUE klass, VALUE return_type, VALUE args, VALUE ty
     {
         VALUE object = RARRAY(args)->ptr[i];
         // first type is the return type
-        Type const& type = rb_get_cxx<Type>(RARRAY(types)->ptr[i]);
+        Type const& type = rb_get_cxx<Type>(RARRAY(arg_types)->ptr[i]);
 
         // Manage immediate values
         if (IMMEDIATE_P(object))
@@ -257,7 +250,7 @@ VALUE typelib_call_function(VALUE klass, VALUE return_type, VALUE args, VALUE ty
     }
 
     // Call the function via DL and get the real return value
-    VALUE ret = rb_funcall3(function, rb_intern("call"), argcount, RARRAY(new_args)->ptr);
+    VALUE ret = rb_funcall3(wrapper, rb_intern("call"), argcount, RARRAY(new_args)->ptr);
     VALUE return_value = rb_ary_entry(ret, 0);
     
     if (!NIL_P(return_value))
@@ -360,10 +353,7 @@ static VALUE value_to_ruby(VALUE self)
 extern "C" void Init_typelib_api()
 {
     mTypelib  = rb_define_module("Typelib");
-    rb_define_singleton_method(mTypelib, "dlopen", RUBY_METHOD_FUNC(typelib_do_dlopen), 2);
-    // do_wrap arguments are formatted by Ruby code
-    rb_define_singleton_method(mTypelib, "do_wrap", RUBY_METHOD_FUNC(typelib_do_wrap), -1);
-    rb_define_singleton_method(mTypelib, "call_function", RUBY_METHOD_FUNC(typelib_call_function), 4);
+    rb_define_singleton_method(mTypelib, "do_call_function", RUBY_METHOD_FUNC(typelib_call_function), 4);
     
     cValue    = rb_define_class_under(mTypelib, "Value", rb_cObject);
     rb_define_alloc_func(cValue, value_alloc);
@@ -397,6 +387,10 @@ extern "C" void Init_typelib_api()
     rb_define_method(cType, "pointer?",     RUBY_METHOD_FUNC(type_is_pointer), 0);
     rb_define_method(cType, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), 0);
     rb_define_method(cType, "==", RUBY_METHOD_FUNC(&type_equality), 1);
+
+    cLibrary  = rb_const_get(mTypelib, rb_intern("Library"));
+    // do_wrap arguments are formatted by Ruby code
+    rb_define_method(cLibrary, "do_wrap", RUBY_METHOD_FUNC(library_do_wrap), -1);
 }
 
 
