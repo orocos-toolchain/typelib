@@ -26,6 +26,11 @@ namespace Typelib
 
         void* getData() const { return m_data; }
         Type const& getType() const { return m_type; }
+
+        bool operator == (Value const& with) const
+        { return (m_data == with.m_data) && (m_type.get() == with.m_type.get()); }
+        bool operator != (Value const& with) const
+        { return (m_data != with.m_data) || (m_type.get() != with.m_type.get()); }
     };
 
     class ValueVisitor
