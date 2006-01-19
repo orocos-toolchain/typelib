@@ -19,7 +19,7 @@ ruby/Makefile: ruby/extconf.rb
 build: ruby/extconf.rb
 	$(MAKE) -C ruby
 
-ifeq($(HAS_RUBY_SUPPORT),yes)
+ifeq ($(HAS_RUBY_SUPPORT),yes)
 test: ruby_tests
 ruby_tests:
 	cd ruby && $(TESTRB) $(top_srcdir)/test_suite/ruby
