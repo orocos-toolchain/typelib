@@ -27,14 +27,14 @@ public:
         BOOST_REQUIRE( !importer->load("test_cimport.h", config, registry) );
         {
             Registry temp_registry;
-            config.set("includes", "../");
-            config.set("defines", "GOOD");
+            config.set("include", "../");
+            config.set("define", "GOOD");
             BOOST_REQUIRE( importer->load("test_cimport.h", config, temp_registry) );
         }
         {
             Registry temp_registry;
-            config.insert("rawflags", "-I../");
-            config.insert("rawflags", "-DGOOD");
+            config.insert("rawflag", "-I../");
+            config.insert("rawflag", "-DGOOD");
             BOOST_REQUIRE( importer->load("test_cimport.h", config, temp_registry) );
         }
 
