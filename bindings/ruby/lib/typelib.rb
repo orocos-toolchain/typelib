@@ -39,6 +39,14 @@ module Typelib
 
     class Type
         attr_reader :registry
+        def respond_to?(name); has_field?(name.to_s) end
+        def method_missing(name, *args, &proc)
+            begin
+                get_field(name.to_s)
+            rescue NoMethodError
+                super
+            end
+        end
     end
 
     class Registry
