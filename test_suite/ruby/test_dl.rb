@@ -108,6 +108,11 @@ class TC_DL < Test::Unit::TestCase
 
         wrapper = lib.wrap('test_string_return', 'char*')
         assert_equal("string_return", wrapper[].to_string)
+
+        wrapper = lib.wrap('test_string_argument_modification', 'void', 'char*', 'int')
+        buffer = Value.new(nil, lib.registry.build("char[256]"))
+        wrapper[buffer, 256]
+        assert_equal("string_return", buffer.to_string)
     end
 end
 

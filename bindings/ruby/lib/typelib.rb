@@ -184,37 +184,47 @@ module Typelib
             args.insert(ary_idx, Value.new(nil, arg_types[ary_idx].deference))
         end
 
+        # Check we have the right count of arguments
+        if args.size != arg_types.size
+            wrapper_args_count = args.size - user_args_count
+            raise ArgumentError, "#{arg_types.size - wrapper_args_count} arguments expected, got #{user_args_count}"
+        end
+
         # The only things we can handle are:
         #  - Value objects
         #  - String objects
         #  - immediate values
         filtered_args = []
         args.each_with_index do |arg, idx|
-            if Value === arg || DL::PtrData === arg || Kernel.immediate?(arg)
-                filtered_args << arg
-            else
-                # Check that idx is an indirect type on char, and that arg is a string
-                expected_type = arg_types[idx]
-                if expected_type.deference.name != "/char" || !arg.respond_to?(:to_str)
-                    raise TypeError, "cannot cast #{arg} on #{expected_type.deference.name}"
-                end
-
-                # Ruby strings ARE null-terminated
-                # The thing which is not checked here is that there is no NULL bytes
-                # inside of the string. Frankly, I don't care
-                filtered_args << arg.to_str.to_ptr
+            expected_type = arg_types[idx]
+            if !expected_type.pointer? && !Kernel.immediate?(arg)
+                raise TypeError, "#{arg.inspect} cannot be used for #{expected_type} arguments"
             end
-        end
 
-        # Check we had the right count of arguments
-        if args.size != arg_types.size
-            wrapper_args_count = args.size - user_args_count
-            raise ArgumentError, "#{arg_types.size - wrapper_args_count} arguments expected, got #{user_args_count}"
+            filtered =  if DL::PtrData === arg
+                            arg
+                        elsif Kernel.immediate?(arg)
+                            filter_immediate_arg(arg, expected_type)
+                        elsif Value === arg
+                            filter_value_arg(arg, expected_type)
+                        elsif expected_type.deference.name == "/char" && arg.respond_to?(:to_str)
+                            # Ruby strings ARE null-terminated
+                            # The thing which is not checked here is that there is no NULL bytes
+                            # inside of the string.
+                            arg.to_str.to_ptr
+                        else
+                            nil
+                        end
+
+            if !filtered
+                raise TypeError, "cannot use #{arg} for a #{expected_type.name} argument"
+            end
+            filtered_args << filtered
         end
 
         # Do call the wrapper
         # The C part will take care of immediate values that are also output values
-        retval, retargs = do_call_function(wrapper, args, return_type, arg_types) 
+        retval, retargs = do_call_function(wrapper, filtered_args, return_type, arg_types) 
         return if return_type.nil? && return_spec.empty?
 
         # Get the return array
@@ -241,6 +251,7 @@ module Typelib
 
             value = retargs[ary_idx]
             type  = arg_types[ary_idx]
+            p value
             ruby_returns << Value.new(value, type.deference).to_ruby
         end
 

@@ -186,68 +186,70 @@ VALUE library_do_wrap(int argc, VALUE* argv, VALUE self)
 }
 
 static
+VALUE filter_immediate_arg(VALUE self, VALUE arg_val, VALUE rb_arg_type)
+{
+    Type const& arg_type = rb_get_cxx<Type>(rb_arg_type);
+
+    if (arg_type.getCategory() == Type::Enum)
+        return INT2FIX( rb_enum_get_value(arg_val, static_cast<Enum const&>(arg_type)) );
+    else if (arg_type.getCategory() == Type::Pointer)
+    {
+        // Build directly a DL::Ptr object, no need to build a Ruby Value wrapper
+        Pointer const& ptr_type = static_cast<Pointer const&>(arg_type);
+        Type const& pointed_type = ptr_type.getIndirection();
+        VALUE ptr = rb_dlptr_malloc(pointed_type.getSize(), free);
+
+        Value typelib_value(rb_dlptr2cptr(ptr), pointed_type);
+        if (!typelib_from_ruby(typelib_value, arg_val))
+            return Qnil;
+
+        return ptr;
+    }
+    return arg_val;
+}
+
+static 
+VALUE filter_value_arg(VALUE self, VALUE arg_val, VALUE rb_arg_type)
+{
+    Type const& arg_type    = rb_get_cxx<Type>(rb_arg_type);
+    Value const& value      = rb_get_cxx<Value>(arg_val);
+    Type const& value_type  = value.getType();     
+
+    if (value_type == arg_type)
+        return rb_dlptr_new(value.getData(), value_type.getSize(), do_not_delete);
+
+    // There is only pointers left to handle
+    if (arg_type.getCategory() != Type::Pointer)
+        return Qnil;
+
+    Pointer const& ptr_type   = static_cast<Pointer const&>(arg_type);
+    Type const& pointed_type  = ptr_type.getIndirection();
+
+    // /void == /nil, so that if expected_type is null, then 
+    // it is because the argument can hold any kind of pointers
+    if (pointed_type.isNull() || value_type == pointed_type)
+        return rb_funcall(arg_val, rb_intern("to_ptr"), 0);
+    
+    // One thing left: array -> pointer convertion
+    if (! value_type.getCategory() == Type::Array)
+        return Qnil;
+
+    Array const& array_type = static_cast<Array const&>(value_type);
+    if (array_type.getIndirection() != pointed_type)
+        return Qnil;
+    return rb_funcall(arg_val, rb_intern("to_ptr"), 0);
+}
+
+static
 VALUE typelib_call_function(VALUE klass, VALUE wrapper, VALUE args, VALUE return_type, VALUE arg_types)
 {
     Check_Type(args,  T_ARRAY);
     Check_Type(arg_types, T_ARRAY);
 
-    // Get the arguments
-    size_t argcount = RARRAY(args)->len;
-    VALUE new_args = rb_ary_new2(argcount);
-    for (size_t i = 0; i < argcount; ++i)
-    {
-        VALUE object = RARRAY(args)->ptr[i];
-        // first type is the return type
-        Type const& type = rb_get_cxx<Type>(RARRAY(arg_types)->ptr[i]);
-
-        // Manage immediate values
-        if (IMMEDIATE_P(object))
-        {
-            if (type.getCategory() == Type::Enum)
-                object = INT2FIX( rb_enum_get_value(object, dynamic_cast<Enum const&>(type)) );
-            else if (type.getCategory() == Type::Pointer)
-            {
-                // Build directly a DL::Ptr object, no need to build a Ruby Value wrapper
-                Pointer const& ptr_type = static_cast<Pointer const&>(type);
-                Type const& pointed_type = ptr_type.getIndirection();
-                VALUE ptr = rb_dlptr_malloc(pointed_type.getSize(), free);
-
-                Value typelib_value(rb_dlptr2cptr(ptr), pointed_type);
-                if (!typelib_from_ruby(typelib_value, object))
-                    rb_raise(rb_eTypeError, "Wrong argument type %s", rb_obj_classname(object));
-
-                object = ptr;
-            }
-        }
-        else if (! rb_obj_is_kind_of(object, cValue) && !rb_obj_is_kind_of(object, rb_cDLPtrData))
-        {
-            if (! rb_respond_to(object, rb_intern("to_str")))
-                rb_raise(rb_eTypeError, "wrong argument type %s", rb_obj_classname(object));
-        }
-        else if (type.getCategory() == Type::Pointer 
-                && !rb_obj_is_kind_of(object, rb_cDLPtrData))
-        {
-            Pointer const& ptr_type     = static_cast<Pointer const&>(type);
-            Type const& expected_type   = ptr_type.getIndirection();
-            Type const& object_type     = rb_get_cxx<Value>(object).getType();
-
-            // /void == /nil, so that if expected_type is null, then 
-            // it ptr_type can hold anything
-            if (!expected_type.isNull() && object_type != expected_type)
-                rb_raise(rb_eTypeError, "expected %s, got %s", 
-                        ptr_type.getIndirection().getName().c_str(),
-                        object_type.getName().c_str());
-
-            object = rb_funcall(object, rb_intern("to_ptr"), 0);
-        }
-
-        RARRAY(new_args)->ptr[i] = object;
-    }
-
     // Call the function via DL and get the real return value
-    VALUE ret = rb_funcall3(wrapper, rb_intern("call"), argcount, RARRAY(new_args)->ptr);
+    VALUE ret = rb_funcall3(wrapper, rb_intern("call"), RARRAY(args)->len, RARRAY(args)->ptr);
+
     VALUE return_value = rb_ary_entry(ret, 0);
-    
     if (!NIL_P(return_value))
     {
         Type const& rettype(rb_get_cxx<Type>(return_type));
@@ -472,6 +474,8 @@ extern "C" void Init_typelib_api()
 {
     mTypelib  = rb_define_module("Typelib");
     rb_define_singleton_method(mTypelib, "do_call_function", RUBY_METHOD_FUNC(typelib_call_function), 4);
+    rb_define_singleton_method(mTypelib, "filter_immediate_arg", RUBY_METHOD_FUNC(filter_immediate_arg), 2);
+    rb_define_singleton_method(mTypelib, "filter_value_arg", RUBY_METHOD_FUNC(filter_value_arg), 2);
     
     cValue    = rb_define_class_under(mTypelib, "Value", rb_cObject);
     rb_define_alloc_func(cValue, value_alloc);
@@ -515,9 +519,6 @@ extern "C" void Init_typelib_api()
     cLibrary  = rb_const_get(mTypelib, rb_intern("Library"));
     // do_wrap arguments are formatted by Ruby code
     rb_define_method(cLibrary, "do_wrap", RUBY_METHOD_FUNC(library_do_wrap), -1);
-
-
-
     
     rb_define_method(rb_mKernel, "immediate?", RUBY_METHOD_FUNC(kernel_is_immediate), 1);
     rb_define_method(rb_cDLPtrData, "to_ptr", RUBY_METHOD_FUNC(dl_ptr_to_ptr), 0);

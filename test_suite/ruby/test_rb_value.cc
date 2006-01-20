@@ -156,5 +156,8 @@ extern "C" {
     static const char* static_string = "string_return";
     const char* test_string_return()
     { return static_string; }
+    void test_string_argument_modification(char* str, int buffer_length)
+    { strcpy(str, static_string); }
 }
+
 
