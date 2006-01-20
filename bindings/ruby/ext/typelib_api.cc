@@ -27,46 +27,35 @@ static void do_not_delete(void*) {}
  *  Define rb_get_cxx, to get the C++ object wrapped by a Ruby object
  *
  */
-template<typename T> static T& rb_get_cxx(VALUE self);
-static void check_is_kind_of(VALUE self, VALUE expected)
+template<typename T> static VALUE rb_get_class();
+template<> static VALUE rb_get_class<Registry>() { return cRegistry; }
+template<> static VALUE rb_get_class<Type>()     { return cType; }
+template<> static VALUE rb_get_class<Value>()    { return cValue; }
+
+template<typename T>
+static void check_is_kind_of(VALUE self)
 {
+    VALUE expected = rb_get_class<T>();
     if (! rb_obj_is_kind_of(self, expected))
         rb_raise(rb_eTypeError, "expected %s, got %s", rb_class2name(expected), rb_obj_classname(self));
 }
 
-template<>
-static Registry& rb_get_cxx(VALUE self)
+template<typename T>
+static T& rb_get_cxx(VALUE self)
 {
-    check_is_kind_of(self, cRegistry);
+    check_is_kind_of<T>(self);
 
-    Registry* registry = 0;
-    Data_Get_Struct(self, Registry, registry);
-    return *registry;
-}
-
-template<>
-static Value& rb_get_cxx(VALUE self)
-{
-    check_is_kind_of(self, cValue);
-
-    Value* value = 0;
-    Data_Get_Struct(self, Value, value);
-    return *value;
-}
-
-template<>
-static Type& rb_get_cxx(VALUE self)
-{
-    check_is_kind_of(self, cType);
-    
-    Type* type = 0;
-    Data_Get_Struct(self, Type, type);
-    return *type;
+    void* object = 0;
+    Data_Get_Struct(self, void, object);
+    return *reinterpret_cast<T*>(object);
 }
 
 template<typename T>
 static VALUE rb_cxx_equality(VALUE rbself, VALUE rbwith)
 {
+    if (rb_obj_class(rbself) != rb_obj_class(rbwith))
+        return Qfalse;
+
     T const& self(rb_get_cxx<T>(rbself));
     T const& with(rb_get_cxx<T>(rbwith));
     return (self == with) ? Qtrue : Qfalse;

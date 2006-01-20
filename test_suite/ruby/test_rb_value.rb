@@ -39,6 +39,14 @@ class TC_Value < Test::Unit::TestCase
         }
     end
 
+    def test_basic_behaviour
+        # Check that == returns false when the two objects aren't of the same class
+        # (for instance type == nil shall return false)
+        type = Registry.new.get("/int")
+        assert_nothing_raised { type == nil }
+        assert_nothing_raised { type =! nil }
+    end
+                                
     def test_import
         registry = make_registry
         assert( registry.get("/struct A") )
