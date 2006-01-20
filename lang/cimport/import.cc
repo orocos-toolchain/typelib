@@ -32,15 +32,24 @@ namespace
 
         try { 
             tempfile tmpfile("typelib_cimport");
+            path tmp_path = tmpfile.path();
+            FILE* handle = tmpfile.handle();
+
+            bool keep_output = config.get<bool>("keep_cpp_output");
+            if (keep_output)
+            {
+                std::clog << "cpp output goes to " << tmp_path.native_file_string() << std::endl;
+                tmpfile.detach();
+            }
 
             cpp.push("cpp");
             cpp.push(file.native_file_string());
 
             // Build the command line for cpp
             typedef list<string> strlist;
-            list<string> defines  = config.get< list<string> >("defines");
-            list<string> includes = config.get< list<string> >("includes");
-            list<string> rawflags = config.get< list<string> >("rawflags");
+            list<string> defines  = config.get< list<string> >("define");
+            list<string> includes = config.get< list<string> >("include");
+            list<string> rawflags = config.get< list<string> >("rawflag");
 
             for (strlist::const_iterator it = defines.begin(); it != defines.end(); ++it)
                 cpp.push("-D" + *it);
@@ -49,14 +58,13 @@ namespace
             for (strlist::const_iterator it = rawflags.begin(); it != rawflags.end(); ++it)
                 cpp.push(*it);
 
-            cpp.redirect_to(process::Stdout, tmpfile.handle(), false);
-
+            cpp.redirect_to(process::Stdout, handle, false);
             cpp.start();
             cpp.wait();
             if (cpp.exit_normal() && !cpp.exit_status())
             {
-                path tmp_path = tmpfile.path();
-                tmpfile.detach();
+                if (!keep_output)
+                    tmpfile.detach();
                 return tmp_path;
             }
             
