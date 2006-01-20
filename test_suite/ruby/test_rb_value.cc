@@ -76,71 +76,85 @@ static VALUE set_B_c_value(VALUE self, VALUE rb)
     return Qnil;
 }
 
-extern "C" void Init_test_rb_value()
-{
-    rb_define_method(rb_mKernel, "check_B_c_value",         RUBY_METHOD_FUNC(check_B_c_value), 1);
-    rb_define_method(rb_mKernel, "set_B_c_value",           RUBY_METHOD_FUNC(set_B_c_value), 1);
-    rb_define_method(rb_mKernel, "check_struct_A_value",    RUBY_METHOD_FUNC(check_struct_A_value), 1);
-    rb_define_method(rb_mKernel, "set_struct_A_value",      RUBY_METHOD_FUNC(set_struct_A_value), 1);
-}
+extern "C" {
 
-/* Testing function wrapped by Typelib::wrap (using Ruby::DL)
- * The function is supposed to return 1 if the arguments have these values:
- *   first  == 1
- *   second == 0.02
- */
-extern "C" int test_simple_function_wrapping(int first, short second)
-{
-    if (first == 1 && second == 2)
-        return 1;
-    printf("test_simple_function_wrapping failed: first=%i second=%i\n", first, second);
-    return 0;
-}
-
-extern "C" int test_ptr_passing(A* a)
-{
-    if (do_check_struct_A_value(*a))
-        return 1;
-    return 0;
-}
-
-extern "C" struct A* test_ptr_return()
-{
-    static A a;
-    do_set_struct_A_value(a);
-    return &a;
-}
-
-extern "C" void test_ptr_argument_changes(struct B* b)
-{ do_set_B_c_value(*b); }
-
-extern "C" void test_arg_input_output(int* value, INPUT_OUTPUT_MODE mode) 
-{ 
-    if (mode == BOTH && *value != 10)
+    void Init_test_rb_value()
     {
-        *value = 0;
-        return;
+        rb_define_method(rb_mKernel, "check_B_c_value",         RUBY_METHOD_FUNC(check_B_c_value), 1);
+        rb_define_method(rb_mKernel, "set_B_c_value",           RUBY_METHOD_FUNC(set_B_c_value), 1);
+        rb_define_method(rb_mKernel, "check_struct_A_value",    RUBY_METHOD_FUNC(check_struct_A_value), 1);
+        rb_define_method(rb_mKernel, "set_struct_A_value",      RUBY_METHOD_FUNC(set_struct_A_value), 1);
     }
-    *value = 5; 
-}
 
-extern "C" void test_enum_io_handling(INPUT_OUTPUT_MODE* mode)
-{
-    switch(*mode)
+    /* Testing function wrapped by Typelib::wrap (using Ruby::DL)
+     * The function is supposed to return 1 if the arguments have these values:
+     *   first  == 1
+     *   second == 0.02
+     */
+    int test_simple_function_wrapping(int first, short second)
     {
-        case BOTH:
-            *mode = OUTPUT;
-            break;
-        case OUTPUT:
-            *mode = BOTH;
-            break;
+        if (first == 1 && second == 2)
+            return 1;
+        printf("test_simple_function_wrapping failed: first=%i second=%i\n", first, second);
+        return 0;
     }
+
+    int test_ptr_passing(A* a)
+    {
+        if (do_check_struct_A_value(*a))
+            return 1;
+        return 0;
+    }
+
+    struct A* test_ptr_return()
+    {
+        static A a;
+        do_set_struct_A_value(a);
+        return &a;
+    }
+
+    void test_ptr_argument_changes(struct B* b)
+    { do_set_B_c_value(*b); }
+
+    void test_arg_input_output(int* value, INPUT_OUTPUT_MODE mode) 
+    { 
+        if (mode == BOTH && *value != 10)
+        {
+            *value = 0;
+            return;
+        }
+        *value = 5; 
+    }
+
+    void test_enum_io_handling(INPUT_OUTPUT_MODE* mode)
+    {
+        switch(*mode)
+        {
+            case BOTH:
+                *mode = OUTPUT;
+                break;
+            case OUTPUT:
+                *mode = BOTH;
+                break;
+        }
+    }
+
+    static int opaque_handler;
+    OpaqueType test_opaque_handling()
+    { return &opaque_handler; }
+
+    int check_opaque_value(OpaqueType handler)
+    { return (handler == &opaque_handler) ? 1 : 0; }
+
+    int test_string_argument(char const* value)
+    {
+        if (strcmp(value, "test"))
+            return 0;
+        return 1;
+    }
+
+    static const char* static_string = "string_return";
+    const char* test_string_return()
+    { return static_string; }
 }
-
-static int opaque_handler;
-extern "C" OpaqueType test_opaque_handling()
-{ return &opaque_handler; }
-
-extern "C" int check_opaque_value(OpaqueType handler)
-{ return (handler == &opaque_handler) ? 1 : 0; }
 

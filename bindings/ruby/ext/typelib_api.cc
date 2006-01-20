@@ -219,8 +219,12 @@ VALUE typelib_call_function(VALUE klass, VALUE wrapper, VALUE args, VALUE return
                 object = ptr;
             }
         }
-
-        if (type.getCategory() == Type::Pointer 
+        else if (! rb_obj_is_kind_of(object, cValue) && !rb_obj_is_kind_of(object, rb_cDLPtrData))
+        {
+            if (! rb_respond_to(object, rb_intern("to_str")))
+                rb_raise(rb_eTypeError, "wrong argument type %s", rb_obj_classname(object));
+        }
+        else if (type.getCategory() == Type::Pointer 
                 && !rb_obj_is_kind_of(object, rb_cDLPtrData))
         {
             Pointer const& ptr_type     = static_cast<Pointer const&>(type);
@@ -443,6 +447,27 @@ static VALUE value_to_ruby(VALUE self)
     return typelib_to_ruby(value, registry);
 }
 
+
+
+
+
+/**********************************************************************
+ *
+ * Extension of the standard libraries
+ *
+ */
+
+static VALUE kernel_is_immediate(VALUE klass, VALUE object)
+{ return IMMEDIATE_P(object) ? Qtrue : Qfalse; }
+static VALUE dl_ptr_to_ptr(VALUE klass, VALUE ptr)
+{
+    VALUE newptr = rb_dlptr_malloc(sizeof(void*), free);
+    *reinterpret_cast<void**>(rb_dlptr2cptr(newptr)) = rb_dlptr2cptr(ptr);
+    // Protect ptr against GC
+    rb_iv_set(newptr, "@points_on", newptr);
+    return newptr;
+}
+
 extern "C" void Init_typelib_api()
 {
     mTypelib  = rb_define_module("Typelib");
@@ -490,6 +515,13 @@ extern "C" void Init_typelib_api()
     cLibrary  = rb_const_get(mTypelib, rb_intern("Library"));
     // do_wrap arguments are formatted by Ruby code
     rb_define_method(cLibrary, "do_wrap", RUBY_METHOD_FUNC(library_do_wrap), -1);
+
+
+
+    
+    rb_define_method(rb_mKernel, "immediate?", RUBY_METHOD_FUNC(kernel_is_immediate), 1);
+    rb_define_method(rb_cDLPtrData, "to_ptr", RUBY_METHOD_FUNC(dl_ptr_to_ptr), 0);
 }
+
 
 

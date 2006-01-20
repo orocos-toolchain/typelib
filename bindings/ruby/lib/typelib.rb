@@ -175,13 +175,35 @@ module Typelib
 
     def self.function_call(wrapper, args, return_type, return_spec, arg_types)
         user_args_count = args.size
-
+        
         # Create a Value object to collect the data we'll get
         # from output-only arguments
         return_spec.each do |index|
             next unless index > 0
             ary_idx = index - 1
             args.insert(ary_idx, Value.new(nil, arg_types[ary_idx].deference))
+        end
+
+        # The only things we can handle are:
+        #  - Value objects
+        #  - String objects
+        #  - immediate values
+        filtered_args = []
+        args.each_with_index do |arg, idx|
+            if Value === arg || DL::PtrData === arg || Kernel.immediate?(arg)
+                filtered_args << arg
+            else
+                # Check that idx is an indirect type on char, and that arg is a string
+                expected_type = arg_types[idx]
+                if expected_type.deference.name != "/char" || !arg.respond_to?(:to_str)
+                    raise TypeError, "cannot cast #{arg} on #{expected_type.deference.name}"
+                end
+
+                # Ruby strings ARE null-terminated
+                # The thing which is not checked here is that there is no NULL bytes
+                # inside of the string. Frankly, I don't care
+                filtered_args << arg.to_str.to_ptr
+            end
         end
 
         # Check we had the right count of arguments
@@ -198,23 +220,31 @@ module Typelib
         # Get the return array
         ruby_returns = []
         if return_type
-            ruby_returns << handle_ptr_output(retval, return_type)
+            # There's no point of returning a simple value by pointer,
+            # so we assume that if the function returns a pointer on a simple
+            # type, that's what the user wants
+            if DL::PtrData === retval && !return_type.deference.null?
+                ruby_value = Value.new(retval, return_type.deference).to_ruby
+
+                if Kernel.immediate?(ruby_value)
+                    ruby_returns << Value.new(retval.to_ptr, return_type)
+                else
+                    ruby_returns << ruby_value
+                end
+            else
+                ruby_returns << retval
+            end
         end
 
         return_spec.each do |index|
             ary_idx = index.abs - 1
-            ruby_returns << handle_ptr_output(retargs[ary_idx], arg_types[ary_idx])
+
+            value = retargs[ary_idx]
+            type  = arg_types[ary_idx]
+            ruby_returns << Value.new(value, type.deference).to_ruby
         end
 
         return *ruby_returns
-    end
-
-    def self.handle_ptr_output(value, type)
-        if DL::PtrData === value && !type.deference.null?
-            Value.new(value, type.deference).to_ruby
-        else
-            value
-        end
     end
 end
 
