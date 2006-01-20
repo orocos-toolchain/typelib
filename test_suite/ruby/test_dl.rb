@@ -89,6 +89,12 @@ class TC_DL < Test::Unit::TestCase
         assert_equal(:OUTPUT, typelib_wrap[:BOTH])
     end
 
+    def test_void_return_type
+        typelib_wrap = test_lib.wrap('test_ptr_argument_changes', ["void", 1], 'struct B*')
+        b = typelib_wrap.call
+        check_B_c_value(b)
+    end
+
     def test_opaque_handling
         typelib_wrap = test_lib.wrap('test_opaque_handling', "OpaqueType")
         my_handler = typelib_wrap[]

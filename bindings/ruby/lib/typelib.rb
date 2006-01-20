@@ -143,6 +143,7 @@ module Typelib
 
                 typedef
             end
+            return_type = nil if return_type && return_type.null?
 
             return_spec.each do |index|
                 ary_idx = index.abs - 1
