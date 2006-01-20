@@ -317,6 +317,30 @@ static VALUE type_is_pointer(VALUE self)    { return type_is_a(self, Type::Point
 static VALUE type_is_null(VALUE self)    { return type_is_a(self, Type::NullType); }
 static VALUE type_equality(VALUE rbself, VALUE rbwith)
 { return rb_cxx_equality<Type>(rbself, rbwith); }
+Field const* type_get_cxx_field(VALUE self, VALUE field_name)
+{
+    Type const& type(rb_get_cxx<Type>(self));
+    if (type.getCategory() != Type::Compound)
+        rb_raise(rb_eTypeError, "expected a compound, got %s", rb_obj_classname(self));
+
+    Compound const& compound = static_cast<Compound const&>(type);
+    return compound.getField(StringValuePtr(field_name));
+}
+static VALUE type_has_field(VALUE self, VALUE field_name)
+{ return type_get_cxx_field(self, field_name) ? Qtrue : Qfalse; }
+static VALUE type_get_field(VALUE self, VALUE field_name)
+{
+    Field const* field = type_get_cxx_field(self, field_name);
+    if (! field)
+    {
+        rb_raise(rb_eNoMethodError, "no such field '%s' in '%s'", 
+                StringValuePtr(field_name), 
+                rb_get_cxx<Type>(self).getName().c_str());
+    }
+
+    VALUE registry = rb_iv_get(self, "@registry");
+    return typelib_wrap_type(field->getType(), registry);
+}
 
 static Type const& type_pointer_deference_cxx(Type const& type)
 {
@@ -393,6 +417,8 @@ extern "C" void Init_typelib_api()
     rb_define_method(cType, "null?",        RUBY_METHOD_FUNC(type_is_null), 0);
     rb_define_method(cType, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), 0);
     rb_define_method(cType, "==", RUBY_METHOD_FUNC(&type_equality), 1);
+    rb_define_method(cType, "has_field?",   RUBY_METHOD_FUNC(type_has_field), 1);
+    rb_define_method(cType, "get_field",    RUBY_METHOD_FUNC(type_get_field), 1);
 
     cLibrary  = rb_const_get(mTypelib, rb_intern("Library"));
     // do_wrap arguments are formatted by Ruby code

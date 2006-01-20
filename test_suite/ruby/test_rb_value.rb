@@ -30,23 +30,30 @@ class TC_Value < Test::Unit::TestCase
         testfile = File.join(SRCDIR, "test_cimport.h")
         assert_raises(RuntimeError) { registry.import(testfile) }
         assert_nothing_raised {
-            registry.import(testfile, nil, :includes => [ File.join(SRCDIR, '..') ], :defines => [ 'GOOD' ])
+            registry.import(testfile, nil, :include => [ File.join(SRCDIR, '..') ], :define => [ 'GOOD' ])
         }
 
         registry = Registry.new
         assert_nothing_raised {
-            registry.import(testfile, nil, :rawflags => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
+            registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
         }
-
     end
+
     def test_import
         registry = make_registry
         assert( registry.get("/struct A") )
         assert( registry.get("/ADef") )
     end
 
-    def test_respond_to
-        a = Value.new(nil, make_registry.get("/struct A"))
+    def test_compound
+        # First, check compound Type objects
+        registry = make_registry
+        a_type = registry.get("/struct A")
+        assert(a_type.respond_to?(:b))
+        assert(a_type.b == registry.get("/long"))
+
+        # Then, the same on values
+        a = Value.new(nil, a_type)
         GC.start
         check_respond_to_fields(a)
     end
