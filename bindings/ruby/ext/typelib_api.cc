@@ -11,6 +11,7 @@ extern "C" {
 
 using namespace Typelib;
 using utilmm::config_set;
+using std::string;
 
 static VALUE mTypelib   = Qnil;
 static VALUE cValue     = Qnil;
@@ -207,7 +208,6 @@ VALUE typelib_call_function(VALUE klass, VALUE wrapper, VALUE args, VALUE return
             else if (type.getCategory() == Type::Pointer)
             {
                 // Build directly a DL::Ptr object, no need to build a Ruby Value wrapper
-                // TODO: typechecking
                 Pointer const& ptr_type = static_cast<Pointer const&>(type);
                 Type const& pointed_type = ptr_type.getIndirection();
                 VALUE ptr = rb_dlptr_malloc(pointed_type.getSize(), free);
@@ -358,6 +358,76 @@ static VALUE value_pointer_deference(VALUE self)
     Value new_value( *reinterpret_cast<void**>(value.getData()), deference_type );
     return typelib_to_ruby(new_value, registry);
 }
+
+static void check_is_string_handler(VALUE object, char*& str, string::size_type& buffer_size)
+{
+    Value const& value(rb_get_cxx<Value>(object));
+    Type  const& type(value.getType());
+    if (type.getCategory() != Type::Array && type.getCategory() != Type::Pointer)
+        rb_raise(rb_eTypeError, "Value#to_string called on a type which is neither char* nor char[]");
+
+    Type const& data_type(static_cast<Indirect const&>(value.getType()).getIndirection());
+    if (data_type.getName() != "/char")
+        rb_raise(rb_eTypeError, "Value#to_string called on a type which is neither char* nor char[]");
+
+    if (type.getCategory() == Type::Array)
+    {
+        // return the count of characters to consider
+        str = reinterpret_cast<char*>(value.getData());
+        buffer_size = static_cast<Array const&>(type).getDimension();
+    }
+    else
+    {
+        str = *reinterpret_cast<char**>(value.getData());
+        buffer_size = string::npos;
+    }
+}
+static string::size_type string_get_size(char const* str, string::size_type buffer_size)
+{
+    if (buffer_size == string::npos)
+        return strlen(str);
+
+    for (string::size_type i = 0; i < buffer_size; ++i)
+        if (! str[i]) return i + 1;
+
+    return buffer_size;
+}
+
+static VALUE value_from_string(VALUE self, VALUE from)
+{
+    char* str;
+    string::size_type buffer_size;
+    check_is_string_handler(self, str, buffer_size);
+
+    if (buffer_size == string::npos)
+        rb_raise(rb_eTypeError, "cannot initialize a char* pointer using a Ruby string. Use an array instead");
+
+    string::size_type from_length = RSTRING(StringValue(from))->len;
+    if ((buffer_size - 1) < from_length)
+        rb_raise(rb_eTypeError, "array to small: %i, while %i was needed", buffer_size, from_length + 1);
+
+    strncpy(str, StringValueCStr(from), buffer_size - 1);
+    str[buffer_size - 1] = 0;
+    return self;
+}
+static VALUE value_to_string(VALUE self)
+{
+    char* str;
+    string::size_type buffer_size;
+    check_is_string_handler(self, str, buffer_size);
+
+    if (buffer_size == string::npos)
+    {
+        // TODO: maybe refuse doing this if the value object is tainted
+        return rb_str_new2(str);
+    }
+    else
+    {
+        string::size_type string_size = string_get_size(str, buffer_size);
+        return rb_str_new(str, string_size - 1);
+    }
+}
+
 static VALUE type_pointer_deference(VALUE self)
 {
     VALUE registry = rb_iv_get(self, "@registry");
@@ -387,6 +457,8 @@ extern "C" void Init_typelib_api()
     rb_define_method(cValue, "deference", RUBY_METHOD_FUNC(value_pointer_deference), 0);
     rb_define_method(cValue, "to_ruby", RUBY_METHOD_FUNC(value_to_ruby), 0);
     rb_define_method(cValue, "==", RUBY_METHOD_FUNC(&value_equality), 1);
+    rb_define_method(cValue, "to_string", RUBY_METHOD_FUNC(&value_to_string), 0);
+    rb_define_method(cValue, "from_string", RUBY_METHOD_FUNC(&value_from_string), 1);
 
     cValueArray    = rb_define_class_under(mTypelib, "ValueArray", cValue);
     rb_define_alloc_func(cValueArray, value_alloc);

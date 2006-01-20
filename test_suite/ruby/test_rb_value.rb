@@ -50,7 +50,16 @@ class TC_Value < Test::Unit::TestCase
         assert_equal(type, type.deference.to_ptr)
         assert_equal(type, type.to_ptr.deference)
     end
-                                
+
+    def test_string_handling
+        buffer_t = Registry.new.build("/char[256]")
+        buffer = Value.new(nil, buffer_t)
+        
+        # Check that .from_string.to_string is an identity
+        assert_equal("first test", buffer.from_string("first test").to_string)
+        assert_raises(TypeError) { buffer.from_string("a"*512) }
+    end
+
     def test_import
         registry = make_registry
         assert( registry.get("/struct A") )
