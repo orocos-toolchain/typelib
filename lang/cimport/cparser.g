@@ -455,19 +455,27 @@ enumerator_list
 	;
 
 enumerator 
-        { bool has_value = false; int value; int sign = 1; }
+        { bool has_value = false; int value; }
 /* We don't want to parse any enum definition. Limit to constant expressions */
 /*	:	id:ID (ASSIGNEQUAL enum_value:constant_expression  */
-  	:	id:ID (
-                        ASSIGNEQUAL 
-                        (   MINUS { sign = -1; } 
-                        |   PLUS
-                        )?
-                        value = int_constant 
-                        { has_value = true ; }
-                      )?
-		{ enumElement(id->getText(), has_value, sign*value); }
+  	:	id:ID (ASSIGNEQUAL value = enum_value_expression { has_value = true; })?
+		{ enumElement(id->getText(), has_value, value); }
 	;
+
+enum_value_expression returns [int value]
+    : ( LPAREN value = enum_value_expression RPAREN
+      | value = enum_value_constant
+      )
+    ;
+    
+enum_value_constant returns [int value]
+    { int sign = 1; }
+    : (   MINUS { sign = -1; } 
+      |   PLUS
+      )?
+    value = int_constant 
+    { value *= sign; }
+    ;
 
 /* This matches a generic qualified identifier ::T::B::foo
  * (including OPERATOR).
