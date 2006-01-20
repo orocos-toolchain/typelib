@@ -45,6 +45,7 @@ public:
         BOOST_REQUIRE( registry.has("/struct B") );
         BOOST_REQUIRE( registry.has("/ADef") );
         BOOST_REQUIRE( registry.has("/B") );
+        BOOST_REQUIRE( registry.has("/OpaqueType") );
 
         // Check that the size of B.a is the same as A
         Compound const* b   = static_cast<Compound const*>(registry.get("/B"));

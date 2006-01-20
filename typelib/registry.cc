@@ -56,7 +56,7 @@ namespace Typelib
 {
     char const* const Registry::s_stdsource = "__stdtypes__";
     Type const& Registry::null() { 
-        static NullType const null_type;
+        static NullType const null_type("/nil");
         return null_type; 
     }
     
@@ -138,6 +138,9 @@ namespace Typelib
     void Registry::addStandardTypes()
     {
         BOOST_STATIC_ASSERT((NamespaceMark == '/'));
+
+        add(new NullType("/nil"), s_stdsource);
+        alias("/nil", "/void", s_stdsource);
         
         add(make_std_numeric<char>("/char"),                     s_stdsource);
         add(make_std_numeric<signed char>("/signed char"),       s_stdsource);

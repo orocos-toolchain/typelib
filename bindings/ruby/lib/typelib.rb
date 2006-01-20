@@ -185,22 +185,24 @@ module Typelib
         # Get the return array
         ruby_returns = []
         if return_type
-            ruby_returns << 
-            if DL::PtrData === retval
-                Value.new(retval, return_type.deference).to_ruby
-            else
-                retval
-            end
+            ruby_returns << handle_ptr_output(retval, return_type)
         end
 
         return_spec.each do |index|
             ary_idx = index.abs - 1
-            ruby_returns << Value.new(retargs[ary_idx], arg_types[ary_idx].deference).to_ruby
+            ruby_returns << handle_ptr_output(retargs[ary_idx], arg_types[ary_idx])
         end
 
         return *ruby_returns
     end
 
+    def self.handle_ptr_output(value, type)
+        if DL::PtrData === value && !type.deference.null?
+            Value.new(value, type.deference).to_ruby
+        else
+            value
+        end
+    end
 end
 
 require 'dl'

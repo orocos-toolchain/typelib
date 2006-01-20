@@ -88,5 +88,12 @@ class TC_DL < Test::Unit::TestCase
         assert_equal(:BOTH, typelib_wrap[:OUTPUT])
         assert_equal(:OUTPUT, typelib_wrap[:BOTH])
     end
+
+    def test_opaque_handling
+        typelib_wrap = test_lib.wrap('test_opaque_handling', "OpaqueType")
+        my_handler = typelib_wrap[]
+        typelib_wrap = test_lib.wrap('check_opaque_value', 'int', 'OpaqueType')
+        assert_equal(1, typelib_wrap[my_handler])
+    end
 end
 

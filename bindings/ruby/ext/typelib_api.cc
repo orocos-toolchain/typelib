@@ -234,11 +234,13 @@ VALUE typelib_call_function(VALUE klass, VALUE wrapper, VALUE args, VALUE return
         if (type.getCategory() == Type::Pointer 
                 && !rb_obj_is_kind_of(object, rb_cDLPtrData))
         {
-            Pointer const& ptr_type = static_cast<Pointer const&>(type);
+            Pointer const& ptr_type     = static_cast<Pointer const&>(type);
+            Type const& expected_type   = ptr_type.getIndirection();
+            Type const& object_type     = rb_get_cxx<Value>(object).getType();
 
-            // If this is an immediate value, build a Value object
-            Type const&    object_type = rb_get_cxx<Value>(object).getType();
-            if (object_type != ptr_type.getIndirection())
+            // /void == /nil, so that if expected_type is null, then 
+            // it ptr_type can hold anything
+            if (!expected_type.isNull() && object_type != expected_type)
                 rb_raise(rb_eTypeError, "expected %s, got %s", 
                         ptr_type.getIndirection().getName().c_str(),
                         object_type.getName().c_str());
@@ -312,6 +314,7 @@ static VALUE type_is_a(VALUE self, Type::Category category)
 static VALUE type_is_array(VALUE self)      { return type_is_a(self, Type::Array); }
 static VALUE type_is_compound(VALUE self)   { return type_is_a(self, Type::Compound); }
 static VALUE type_is_pointer(VALUE self)    { return type_is_a(self, Type::Pointer); }
+static VALUE type_is_null(VALUE self)    { return type_is_a(self, Type::NullType); }
 static VALUE type_equality(VALUE rbself, VALUE rbwith)
 { return rb_cxx_equality<Type>(rbself, rbwith); }
 
@@ -387,6 +390,7 @@ extern "C" void Init_typelib_api()
     rb_define_method(cType, "array?",       RUBY_METHOD_FUNC(type_is_array), 0);
     rb_define_method(cType, "compound?",    RUBY_METHOD_FUNC(type_is_compound), 0);
     rb_define_method(cType, "pointer?",     RUBY_METHOD_FUNC(type_is_pointer), 0);
+    rb_define_method(cType, "null?",        RUBY_METHOD_FUNC(type_is_null), 0);
     rb_define_method(cType, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), 0);
     rb_define_method(cType, "==", RUBY_METHOD_FUNC(&type_equality), 1);
 

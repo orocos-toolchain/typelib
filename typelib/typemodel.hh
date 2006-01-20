@@ -54,7 +54,7 @@ namespace Typelib
     class NullType : public Type
     {
     public:
-        NullType() : Type("nil", 0, Type::NullType ) {}
+        NullType(std::string const& name) : Type(name, 0, Type::NullType ) {}
     };
 
     class Numeric : public Type

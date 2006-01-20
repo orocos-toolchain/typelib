@@ -84,7 +84,6 @@ extern "C" void Init_test_rb_value()
     rb_define_method(rb_mKernel, "set_struct_A_value",      RUBY_METHOD_FUNC(set_struct_A_value), 1);
 }
 
-extern "C" void init_dl_wrapping() { }
 /* Testing function wrapped by Typelib::wrap (using Ruby::DL)
  * The function is supposed to return 1 if the arguments have these values:
  *   first  == 1
@@ -137,4 +136,11 @@ extern "C" void test_enum_io_handling(INPUT_OUTPUT_MODE* mode)
             break;
     }
 }
+
+static int opaque_handler;
+extern "C" OpaqueType test_opaque_handling()
+{ return &opaque_handler; }
+
+extern "C" int check_opaque_value(OpaqueType handler)
+{ return (handler == &opaque_handler) ? 1 : 0; }
 
