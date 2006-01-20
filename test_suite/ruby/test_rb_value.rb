@@ -45,6 +45,10 @@ class TC_Value < Test::Unit::TestCase
         type = Registry.new.get("/int")
         assert_nothing_raised { type == nil }
         assert_nothing_raised { type =! nil }
+
+        type = Registry.new.build("/int*")
+        assert_equal(type, type.deference.to_ptr)
+        assert_equal(type, type.to_ptr.deference)
     end
                                 
     def test_import

@@ -331,6 +331,11 @@ static VALUE type_get_field(VALUE self, VALUE field_name)
     return typelib_wrap_type(field->getType(), registry);
 }
 
+static VALUE type_name(VALUE self)
+{
+    Type const& type = rb_get_cxx<Type>(self);
+    return rb_str_new2(type.getName().c_str());
+}
 static Type const& type_pointer_deference_cxx(Type const& type)
 {
     // This sucks. Must define type_deference on pointers only
@@ -408,6 +413,7 @@ extern "C" void Init_typelib_api()
     rb_define_method(cType, "==", RUBY_METHOD_FUNC(&type_equality), 1);
     rb_define_method(cType, "has_field?",   RUBY_METHOD_FUNC(type_has_field), 1);
     rb_define_method(cType, "get_field",    RUBY_METHOD_FUNC(type_get_field), 1);
+    rb_define_method(cType, "name",         RUBY_METHOD_FUNC(type_name), 0);
 
     cLibrary  = rb_const_get(mTypelib, rb_intern("Library"));
     // do_wrap arguments are formatted by Ruby code

@@ -47,6 +47,10 @@ module Typelib
                 super
             end
         end
+
+        def to_ptr
+            registry.build(name + "*")
+        end
     end
 
     class Registry
