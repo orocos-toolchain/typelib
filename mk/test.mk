@@ -1,5 +1,5 @@
-# $Revision: 1022 $
-# $Id: test.mk 1022 2005-10-11 12:06:01Z sjoyeux $
+# $Revision: 1284 $
+# $Id: test.mk 1284 2006-01-20 09:37:27Z sjoyeux $
 
 ifneq (1,$(HAS_TEST_SUPPORT))
     $(error Test support not enabled)
@@ -20,8 +20,11 @@ APP_CFLAGS = $($(TEST_SUITE)_CFLAGS)
 APP_LDFLAGS = $($(TEST_SUITE)_LDFLAGS) $(CLBS_TEST_LDFLAGS) -l$(TEST_LIB)
 APP_LIBS = $($(TEST_SUITE)_LIBS)
 
-test:
-	cd $(builddir) && ./$(APP_NAME)
+TEST_RUN_DIR ?= $(builddir)
+
+test: boost-test
+boost-test:
+	test_abs_path=$(CURDIR)/$(builddir)/$(APP_NAME) && cd $(TEST_RUN_DIR) && $$test_abs_path
 
 include $(top_srcdir)/mk/app.mk
 
