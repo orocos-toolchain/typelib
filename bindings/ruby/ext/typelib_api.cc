@@ -173,7 +173,8 @@ VALUE registry_build(VALUE self, VALUE name)
     Registry& registry = rb_get_cxx<Registry>(self);
     Type const* type = registry.build( StringValuePtr(name) );
 
-    if (! type) return Qnil;
+    if (! type) 
+        rb_raise(rb_eTypeError, "invalid type %s", StringValuePtr(name));
     return typelib_wrap_type(*type, self);
 }
 
