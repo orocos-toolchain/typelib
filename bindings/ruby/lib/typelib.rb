@@ -98,8 +98,9 @@ module Typelib
         include Enumerable
     end
 
-    def self.dlopen(lib_path, registry)
+    def self.dlopen(lib_path, registry = nil)
         lib = DL.dlopen(lib_path)
+        registry = Registry.new if !registry
         Library.new(lib, registry)
     end
 
