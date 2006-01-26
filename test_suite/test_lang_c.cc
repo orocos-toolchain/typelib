@@ -66,6 +66,13 @@ public:
         BOOST_REQUIRE_EQUAL( b->getSize(), sizeof(B) );
         BOOST_REQUIRE_EQUAL( b_c_array.getDimension(), 100UL );
 
+        // Test the forms of DEFINE_STR and DEFINE_ID
+        BOOST_REQUIRE( registry.has("/DEFINE_STR") );
+        BOOST_REQUIRE( registry.has("/DEFINE_ID") );
+        BOOST_REQUIRE_EQUAL(Type::Compound, registry.get("/DEFINE_STR")->getCategory());
+        BOOST_REQUIRE_EQUAL(Type::Pointer, registry.get("/DEFINE_ID")->getCategory());
+        BOOST_REQUIRE( *registry.get("/DEFINE_STR") == static_cast<Pointer const*>(registry.get("/DEFINE_ID"))->getIndirection());
+
         // Check the enum behaviour
         BOOST_REQUIRE( registry.has("/E") );
         BOOST_REQUIRE_EQUAL(registry.get("/E")->getCategory(), Type::Enum);

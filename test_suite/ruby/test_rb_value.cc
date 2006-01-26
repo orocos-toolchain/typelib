@@ -144,7 +144,10 @@ extern "C" {
     { return &opaque_handler; }
 
     int check_opaque_value(OpaqueType handler)
-    { return (handler == &opaque_handler) ? 1 : 0; }
+    { 
+        printf("check_opaque_value: handler=0x%x, &opaque_handler=0x%x\n", handler, opaque_handler);
+        return (handler == &opaque_handler) ? 1 : 0; 
+    }
 
     int test_string_argument(char const* value)
     {
@@ -158,6 +161,18 @@ extern "C" {
     { return static_string; }
     void test_string_argument_modification(char* str, int buffer_length)
     { strcpy(str, static_string); }
+
+    DEFINE_STR id;
+    int test_id_handling(DEFINE_ID* new_id)
+    {
+        *new_id = &id;
+        return 1;
+    }
+    int check_id_value(DEFINE_ID test_id)
+    { 
+        printf("check_id_value, test_id=%x, &id=%x\n", test_id, &id);
+        return (test_id == &id) ? 1 : 0; 
+    }
 }
 
 

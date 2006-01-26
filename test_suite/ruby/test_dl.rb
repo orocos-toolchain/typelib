@@ -99,7 +99,16 @@ class TC_DL < Test::Unit::TestCase
         wrapper = lib.wrap('test_opaque_handling', "OpaqueType")
         my_handler = wrapper[]
         wrapper = lib.wrap('check_opaque_value', 'int', 'OpaqueType')
+        puts "test_opaque_handling: handler=#{my_handler.inspect}"
         assert_equal(1, wrapper[my_handler])
+
+        wrapper = lib.wrap('test_id_handling', ['int', 1], 'DEFINE_ID*')
+        ret, id = wrapper[]
+        assert_equal(1, ret)
+        wrapper = lib.wrap('check_id_value', 'int', 'DEFINE_ID')
+        puts "test_opaque_handling: id=#{id.inspect}"
+        ret = wrapper[id]
+        assert_equal(1, ret)
     end
 
     def test_string_handling

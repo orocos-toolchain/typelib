@@ -217,7 +217,14 @@ VALUE filter_value_arg(VALUE self, VALUE arg_val, VALUE rb_arg_type)
     Type const& value_type  = value.getType();     
 
     if (value_type == arg_type)
-        return rb_dlptr_new(value.getData(), value_type.getSize(), do_not_delete);
+    {
+        if (value_type.getCategory() == Type::Pointer)
+            return rb_dlptr_new(*reinterpret_cast<void**>(value.getData()), value_type.getSize(), do_not_delete);
+        else if (value_type.getCategory() == Type::Numeric)
+            return rb_funcall(arg_val, rb_intern("to_ruby"), 0);
+        else
+            return Qnil;
+    }
 
     // There is only pointers left to handle
     if (arg_type.getCategory() != Type::Pointer)
