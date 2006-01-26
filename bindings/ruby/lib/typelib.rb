@@ -8,6 +8,7 @@ end
 
 module Typelib
     class Value
+        attr_reader :type
         # Get a DL::Ptr object for this value
         def to_ptr; @ptr end
 
@@ -34,6 +35,10 @@ module Typelib
                     end
 
             value || super
+        end
+
+        def inspect
+            sprintf("<%s @%s (%s)>", self.class, @ptr.inspect, type.name)
         end
     end
 
@@ -138,6 +143,7 @@ module Typelib
             end
             return_spec = Array[*return_spec]
             return_type = return_spec.shift
+            return_spec = return_spec.sort # MUST be sorted for #insert to work (see on top of #function_call
 
             return_type, *arg_types = Array[return_type, *arg_types].collect do |typedef|
                 next if typedef.nil?
@@ -163,7 +169,7 @@ module Typelib
                 if index == 0 || ary_idx >= arg_types.size
                     raise ArgumentError, "Index out of bound: there is no positional parameter #{index.abs}"
                 elsif !arg_types[ary_idx].pointer?
-                    raise ArgumentError, "Parameter #{index.abs} is supposed to be an output value, but it is not a pointer"
+                    raise ArgumentError, "Parameter #{index.abs} is supposed to be an output value, but it is not a pointer (#{arg_types[ary_idx].name})"
                 end
             end
 
@@ -218,7 +224,7 @@ module Typelib
                         end
 
             if !filtered
-                raise TypeError, "cannot use #{arg} for a #{expected_type.name} argument"
+                raise TypeError, "cannot use #{arg.inspect} for a #{expected_type.name} argument"
             end
             filtered_args << filtered
         end
@@ -252,7 +258,6 @@ module Typelib
 
             value = retargs[ary_idx]
             type  = arg_types[ary_idx]
-            p value
             ruby_returns << Value.new(value, type.deference).to_ruby
         end
 
