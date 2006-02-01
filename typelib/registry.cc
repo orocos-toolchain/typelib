@@ -135,6 +135,7 @@ namespace Typelib
         }
     }
 
+#   define DECLARE_STD_TYPE(name) add(make_std_numeric<name>("/" #name), s_stdsource)
     void Registry::addStandardTypes()
     {
         BOOST_STATIC_ASSERT((NamespaceMark == '/'));
@@ -142,19 +143,27 @@ namespace Typelib
         add(new NullType("/nil"), s_stdsource);
         alias("/nil", "/void", s_stdsource);
         
-        add(make_std_numeric<char>("/char"),                     s_stdsource);
-        add(make_std_numeric<signed char>("/signed char"),       s_stdsource);
-        add(make_std_numeric<unsigned char>("/unsigned char"),   s_stdsource);
-        add(make_std_numeric<short>("/short"),                   s_stdsource);
-        add(make_std_numeric<short>("/signed short"),            s_stdsource);
-        add(make_std_numeric<unsigned short>("/unsigned short"), s_stdsource);
-        add(make_std_numeric<int>("/int"),                       s_stdsource);
-        add(make_std_numeric<signed>("/signed"),                 s_stdsource);
-        add(make_std_numeric<int>("/signed int"),                s_stdsource);
-        add(make_std_numeric<unsigned>("/unsigned"),             s_stdsource);
-        add(make_std_numeric<unsigned int>("/unsigned int"),     s_stdsource);
-        add(make_std_numeric<long>("/long"),                     s_stdsource);
-        add(make_std_numeric<unsigned long>("/unsigned long"),   s_stdsource);
+        DECLARE_STD_TYPE(char);
+        DECLARE_STD_TYPE(signed char);
+        DECLARE_STD_TYPE(unsigned char);
+
+        DECLARE_STD_TYPE(short);
+        DECLARE_STD_TYPE(short int);
+        DECLARE_STD_TYPE(signed short);
+        DECLARE_STD_TYPE(signed short int);
+        DECLARE_STD_TYPE(unsigned short);
+        DECLARE_STD_TYPE(unsigned short int);
+
+        DECLARE_STD_TYPE(long);
+        DECLARE_STD_TYPE(long int);
+        DECLARE_STD_TYPE(signed long);
+        DECLARE_STD_TYPE(signed long int);
+        DECLARE_STD_TYPE(unsigned long);
+        DECLARE_STD_TYPE(unsigned long int);
+
+        DECLARE_STD_TYPE(int);
+        DECLARE_STD_TYPE(signed int);
+        DECLARE_STD_TYPE(unsigned int);
 
         BOOST_STATIC_ASSERT(( sizeof(float) == sizeof(int32_t) ));
         BOOST_STATIC_ASSERT(( sizeof(double) == sizeof(int64_t) ));
