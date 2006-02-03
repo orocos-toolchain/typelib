@@ -36,6 +36,8 @@ module Typelib
 
             value || super
         end
+        def [](name); get_field(name.to_s) end
+        def []=(name, value); set_field(name.to_s, value) end
 
         def inspect
             sprintf("<%s @%s (%s)>", self.class, @ptr.inspect, type.name)
@@ -44,17 +46,41 @@ module Typelib
 
     class Type
         attr_reader :registry
-        def respond_to?(name); has_field?(name.to_s) end
+        def respond_to?(name); super || (compound? && has_field?(name.to_s)) end
         def method_missing(name, *args, &proc)
-            begin
-                get_field(name.to_s)
-            rescue NoMethodError
+            if compound?
+                begin
+                    get_field(name.to_s)
+                rescue NoMethodError
+                    super
+                end
+            else
                 super
             end
         end
+        def [](name); get_field(name.to_s) end
 
         def to_ptr
             registry.build(name + "*")
+        end
+
+        def pretty_print(pp)
+            pp.text name
+            if compound?
+                pp.group(2, '{', '}') do
+                    all_fields = enum_for(:each_field).
+                        collect { |name, field| [name,field] }.
+                        sort_by { |name, _| name.downcase }
+                    
+                    pp.seplist(all_fields) { |field|
+                        name, type = *field
+                        pp.text name
+                        pp.text ' <'
+                        type.pretty_print(pp)
+                        pp.text '>'
+                    }
+                end
+            end
         end
     end
 
