@@ -344,6 +344,30 @@ static VALUE type_get_field(VALUE self, VALUE field_name)
     VALUE registry = rb_iv_get(self, "@registry");
     return typelib_wrap_type(field->getType(), registry);
 }
+static VALUE type_each_field(VALUE self)
+{
+    Type const& type(rb_get_cxx<Type>(self));
+    if (type.getCategory() != Type::Compound)
+        rb_raise(rb_eTypeError, "expected a compound, got %s", rb_obj_classname(self));
+
+    VALUE registry = rb_iv_get(self, "@registry");
+
+    Compound const& compound(static_cast<Compound const&>(type));
+    Compound::FieldList const& fields(compound.getFields());
+    Compound::FieldList::const_iterator it, end = fields.end();
+
+    VALUE yield_ary = rb_ary_new2(2);
+    for (it = fields.begin(); it != end; ++it)
+    {
+        VALUE field_name = rb_str_new2(it->getName().c_str());
+        VALUE field_type = typelib_wrap_type(it->getType(), registry);
+        rb_ary_store(yield_ary, 0, field_name);
+        rb_ary_store(yield_ary, 1, field_type);
+        rb_yield(yield_ary);
+    }
+
+    return Qnil;
+}
 
 static VALUE type_name(VALUE self)
 {
@@ -519,10 +543,11 @@ extern "C" void Init_typelib_api()
     rb_define_method(cType, "pointer?",     RUBY_METHOD_FUNC(type_is_pointer), 0);
     rb_define_method(cType, "null?",        RUBY_METHOD_FUNC(type_is_null), 0);
     rb_define_method(cType, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), 0);
-    rb_define_method(cType, "==", RUBY_METHOD_FUNC(&type_equality), 1);
+    rb_define_method(cType, "==",           RUBY_METHOD_FUNC(&type_equality), 1);
     rb_define_method(cType, "has_field?",   RUBY_METHOD_FUNC(type_has_field), 1);
     rb_define_method(cType, "get_field",    RUBY_METHOD_FUNC(type_get_field), 1);
     rb_define_method(cType, "name",         RUBY_METHOD_FUNC(type_name), 0);
+    rb_define_method(cType, "each_field",   RUBY_METHOD_FUNC(type_each_field), 0);
 
     cLibrary  = rb_const_get(mTypelib, rb_intern("Library"));
     // do_wrap arguments are formatted by Ruby code
