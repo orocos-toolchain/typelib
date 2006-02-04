@@ -46,7 +46,7 @@ static
 VALUE value_get_registry(VALUE self)
 {
     VALUE type = rb_class_of(self);
-    return rb_iv_get(type, "@type");
+    return rb_iv_get(type, "@registry");
 }
 
 /* Check if a given attribute exists and if it is writable
