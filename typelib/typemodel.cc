@@ -180,6 +180,14 @@ namespace Typelib
         }
         throw ValueNotFound();
     }
+    std::list<std::string> Enum::names() const
+    {
+        list<string> ret;
+        ValueMap::const_iterator it;
+        for (it = m_values.begin(); it != m_values.end(); ++it)
+            ret.push_back(it->first);
+        return ret;
+    }
 
 
     Array::Array(Type const& of, size_t new_dim)
