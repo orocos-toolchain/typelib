@@ -5,6 +5,7 @@ namespace cxx2rb {
             case Type::Compound:    return cCompound;
             case Type::Pointer:     return cPointer;
             case Type::Array:       return cArray;
+            case Type::Enum:        return cEnum;
             default:                return cType;
         }
     }

@@ -298,6 +298,7 @@ extern "C" void Init_typelib_api()
     rb_define_method(cCompound, "set_field", RUBY_METHOD_FUNC(value_field_set), 2);
 
     cEnum = rb_define_class_under(mTypelib, "EnumType", cType);
+    rb_define_singleton_method(cEnum, "keys", RUBY_METHOD_FUNC(enum_keys), 0);
 
     cLibrary  = rb_const_get(mTypelib, rb_intern("Library"));
     // do_wrap arguments are formatted by Ruby code

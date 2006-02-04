@@ -1,3 +1,4 @@
+require 'set'
 require 'test_config'
 require 'typelib'
 require 'test/unit'
@@ -159,7 +160,12 @@ class TC_Value < Test::Unit::TestCase
         end
     end
     def test_enum
-        e = make_registry.get("EContainer").new(nil);
+        e_type = make_registry.get("EContainer")
+        assert(e_type.respond_to?(:value))
+        enum = e_type.value
+        assert_equal(%w{FIRST SECOND THIRD FOURTH LAST}.to_set, enum.keys.to_set)
+
+        e = e_type.new(nil)
         assert(e.respond_to?(:value))
         assert(e.respond_to?(:value=))
         e.value = 0

@@ -40,4 +40,21 @@ namespace rb2cxx {
     }
 }
 
+VALUE enum_keys(VALUE self)
+{
+    Enum const& type = static_cast<Enum const&>(rb2cxx::object<Type>(self));
+
+    VALUE keys = rb_iv_get(self, "@values");
+    if (!NIL_P(keys)) 
+        return keys;
+
+    keys = rb_ary_new();
+    typedef std::list<std::string> string_list;
+    string_list names = type.names();
+    for (string_list::const_iterator it = names.begin(); it != names.end(); ++it)
+        rb_ary_push(keys, rb_str_new2(it->c_str()));
+
+    rb_iv_set(self, "@values", keys);
+    return keys;
+}
 

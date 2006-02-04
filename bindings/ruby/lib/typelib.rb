@@ -103,20 +103,8 @@ module Typelib
     class PointerType < Type
         def to_ruby; self end
     end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#    class EnumType < Type
+#    end
 
 
 
