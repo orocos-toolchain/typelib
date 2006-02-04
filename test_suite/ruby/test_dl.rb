@@ -22,7 +22,7 @@ class TC_DL < Test::Unit::TestCase
         assert_equal(1, wrapper[1, 2])
 
         wrapper = lib.wrap('test_ptr_passing', "int", "struct A*")
-        a = Value.new(nil, registry.get("struct A"))
+        a = registry.get("struct A").new(nil)
         set_struct_A_value(a)
         assert_equal(1, wrapper[a.to_ptr])
 
@@ -41,9 +41,9 @@ class TC_DL < Test::Unit::TestCase
     def test_ptr_changes
         # Check that parameters passed by pointer are changed
         wrapper = lib.wrap('test_ptr_argument_changes', nil, 'struct B*')
-        b = Value.new(nil, registry.get("struct B"))
+        b = registry.get("struct B").new(nil)
         wrapper[b]
-        check_B_c_value(b)
+        assert(check_B_c_value(b))
     end
 
     def test_validation
@@ -55,8 +55,8 @@ class TC_DL < Test::Unit::TestCase
         # Check that plain structures aren't allowed
         assert_raises(ArgumentError) { lib.wrap('test_simple_function_wrapping', "int", "struct A") }
 
-        a = Value.new(nil, registry.get("struct A"))
-        b = Value.new(nil, registry.get("struct B"))
+        a = registry.get("struct A").new(nil)
+        b = registry.get("struct B").new(nil)
         # Check that pointers are properly typechecked
         wrapper = lib.wrap('test_ptr_return', 'struct A*')
         assert_raises(ArgumentError) { wrapper[b] }
@@ -65,7 +65,7 @@ class TC_DL < Test::Unit::TestCase
     def test_argument_output
         wrapper = lib.wrap('test_ptr_argument_changes', [nil, 1], 'struct B*')
         b = wrapper.call
-        check_B_c_value(b)
+        assert(check_B_c_value(b))
 
         wrapper = lib.wrap('test_arg_input_output', [nil, -1], 'int*', 'INPUT_OUTPUT_MODE')
         assert_raises(ArgumentError) { wrapper[:OUTPUT] }
@@ -77,11 +77,11 @@ class TC_DL < Test::Unit::TestCase
         assert_equal(5, wrapper[:OUTPUT])
         
         wrapper = lib.wrap('test_ptr_argument_changes', [nil, -1], 'struct B*')
-        b.a = 250;
+        b.a.a = 250;
         new_b = wrapper[b]
         # b and new_b are supposed to be the same objects
         assert_equal(b, new_b)
-        check_B_c_value(new_b)
+        assert(check_B_c_value(new_b))
 
         # Check enum I/O handling
         wrapper = lib.wrap('test_enum_io_handling', [nil, -1], 'INPUT_OUTPUT_MODE*')
@@ -92,7 +92,7 @@ class TC_DL < Test::Unit::TestCase
     def test_void_return_type
         wrapper = lib.wrap('test_ptr_argument_changes', ["void", 1], 'struct B*')
         b = wrapper.call
-        check_B_c_value(b)
+        assert(check_B_c_value(b))
     end
 
     def test_opaque_handling
@@ -119,7 +119,7 @@ class TC_DL < Test::Unit::TestCase
         assert_equal("string_return", wrapper[].to_string)
 
         wrapper = lib.wrap('test_string_argument_modification', 'void', 'char*', 'int')
-        buffer = Value.new(nil, lib.registry.build("char[256]"))
+        buffer = lib.registry.build("char[256]").new(nil)
         wrapper[buffer, 256]
         assert_equal("string_return", buffer.to_string)
     end

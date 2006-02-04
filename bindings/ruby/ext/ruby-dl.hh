@@ -78,7 +78,7 @@ static std::string typelib_get_dl_spec(int argc, VALUE* argv)
             spec += "0";
         else
         {
-            Type const& type(rb_get_cxx<Type>(argv[i]));
+            Type const& type(rb2cxx::object<Type>(argv[i]));
             spec += converter.apply(type);
         }
     }

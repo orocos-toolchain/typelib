@@ -1,3 +1,4 @@
+require 'enumerator'
 require 'delegate'
 require 'pp'
 module DL
@@ -7,82 +8,118 @@ module DL
 end
 
 module Typelib
-    class Value
-        attr_reader :type
-        # Get a DL::Ptr object for this value
+    # Base class for all types
+    # Registry types are wrapped into subclasses of Type
+    # or other Type-derived classes (Array, Pointer, ...)
+    #
+    # Value objects are wrapped into instances of these classes
+    class Type
+        @writable = true
+        class << self
+            attr_reader :registry
+            def writable?
+                if @writable.nil?
+                    superclass.writable?
+                else
+                    @writable
+                end
+            end
+            def to_ptr; registry.build(name + "*") end
+            def pretty_print(pp); pp.text name end
+        end
+
+        def ==(other); self.class == other.class && to_ptr == other.to_ptr end
+
+        # Get a pointer on this value
         def to_ptr; @ptr end
 
-        def respond_to?(name)
-            name = name.to_s
-            value = if name[-1] == ?=
-                        field_attributes(name[0..-2]) == 1
-                    else
-                        field_attributes(name)
-                    end
-
-            if value.nil?
-                super
-            else
-                value
-            end
-        end
-        def method_missing(name, *args, &proc)
-            name = name.to_s
-            value = if name[-1] == ?=
-                        set_field(name[0..-2], args[0])
-                    elsif args.empty?
-                        get_field(name)
-                    end
-
-            value || super
-        end
-        def [](name); get_field(name.to_s) end
-        def []=(name, value); set_field(name.to_s, value) end
-
         def inspect
-            sprintf("<%s @%s (%s)>", self.class, @ptr.inspect, type.name)
+            sprintf("<%s @%s (%s)>", self.class, @ptr.inspect, self.class.name)
         end
     end
 
-    class Type
-        attr_reader :registry
-        def respond_to?(name); super || (compound? && has_field?(name.to_s)) end
-        def method_missing(name, *args, &proc)
-            if compound?
-                begin
-                    get_field(name.to_s)
-                rescue NoMethodError
-                    super
-                end
-            else
-                super
-            end
-        end
-        def [](name); get_field(name.to_s) end
+    class CompoundType < Type
+        @writable = false
 
-        def to_ptr
-            registry.build(name + "*")
+        # The extension defines a @fields array of [ name, offset, type ] arrays
+        # They define the list of available fields defined by this type
+        class << self
+            def each_field(&iter)
+                @fields.each(&iter)
+            end
+
+            def subclass_initialize
+                @fields = Hash.new
+                singleton_class = class << self; self end
+
+                get_fields.each do |name, offset, type|
+                    @fields[name] = type
+
+                    if !instance_methods.include?(name)
+                        define_method(name, &lambda { || get_field(name) })
+                        if type.writable?
+                            define_method("#{name}=", &lambda { |value| set_field(name, value) })
+                        end
+                    end
+                    if !singleton_class.instance_methods.include?(name)
+                        singleton_class.send(:define_method, name, &lambda { || type })
+                    end
+                end
+            end
+
+            def [](name); @fields[name] end
         end
+
+        def []=(name, value); set_field(name, value) end
+        def [](name); get_field(name) end
+        def to_ruby; self end
 
         def pretty_print(pp)
-            pp.text name
-            if compound?
-                pp.group(2, '{', '}') do
-                    all_fields = enum_for(:each_field).
-                        collect { |name, field| [name,field] }.
-                        sort_by { |name, _| name.downcase }
-                    
-                    pp.seplist(all_fields) { |field|
-                        name, type = *field
-                        pp.text name
-                        pp.text ' <'
-                        type.pretty_print(pp)
-                        pp.text '>'
-                    }
-                end
+            super
+
+            pp.group(2, '{', '}') do
+                all_fields = self.class.enum_for(:each_field).
+                    collect { |name, field| [name,field] }.
+                    sort_by { |name, _| name.downcase }
+                
+                pp.seplist(all_fields) { |field|
+                    name, type = *field
+                    pp.text name
+                    pp.text ' <'
+                    type.pretty_print(pp)
+                    pp.text '>'
+                }
             end
         end
     end
+
+    class ArrayType < Type
+        @writable = false
+
+        def to_ruby; self end
+        include Enumerable
+    end
+
+    class PointerType < Type
+        def to_ruby; self end
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     class Registry
         TYPE_BY_EXT = {
@@ -113,20 +150,6 @@ module Typelib
             options = Registry.format_options(options)
             do_import(file, kind, options)
         end
-    end
-
-    class ValueArray < Value
-        def initialize(ptr, type)
-            if !type.array?
-                raise ArgumentError, "Cannot build a Typelib::ValueArray object with a type which is not an array"
-            elsif !ptr
-                raise ArgumentError, "Cannot build a Typelib::ValueArray object without a pointer"
-            end
-
-            super
-        end
-
-        include Enumerable
     end
 
     def self.dlopen(lib_path, registry = nil)
@@ -174,15 +197,15 @@ module Typelib
             return_type, *arg_types = Array[return_type, *arg_types].collect do |typedef|
                 next if typedef.nil?
 
-                typedef = if Type === typedef
-                              typedef
-                          elsif typedef.respond_to?(:to_str)
+                typedef = if typedef.respond_to?(:to_str)
                               registry.build(typedef.to_str)
+                          elsif Class === typedef && typedef < Type
+                              typedef
                           else
                               raise ArgumentError, "expected a Typelib::Type or a string, got #{typedef.inspect}"
                           end
 
-                if typedef.compound?
+                if typedef < CompoundType
                     raise ArgumentError, "Structs aren't allowed directly in a function call, use pointers instead"
                 end
 
@@ -194,7 +217,7 @@ module Typelib
                 ary_idx = index.abs - 1
                 if index == 0 || ary_idx >= arg_types.size
                     raise ArgumentError, "Index out of bound: there is no positional parameter #{index.abs}"
-                elsif !arg_types[ary_idx].pointer?
+                elsif !(arg_types[ary_idx] < PointerType)
                     raise ArgumentError, "Parameter #{index.abs} is supposed to be an output value, but it is not a pointer (#{arg_types[ary_idx].name})"
                 end
             end
@@ -214,7 +237,7 @@ module Typelib
         return_spec.each do |index|
             next unless index > 0
             ary_idx = index - 1
-            args.insert(ary_idx, Value.new(nil, arg_types[ary_idx].deference))
+            args.insert(ary_idx, arg_types[ary_idx].deference.new(nil))
         end
 
         # Check we have the right count of arguments
@@ -230,15 +253,15 @@ module Typelib
         filtered_args = []
         args.each_with_index do |arg, idx|
             expected_type = arg_types[idx]
-            if !expected_type.pointer? && !Kernel.immediate?(arg)
-                raise TypeError, "#{arg.inspect} cannot be used for #{expected_type} arguments"
+            if !(expected_type < PointerType) && !Kernel.immediate?(arg)
+                raise TypeError, "#{arg.inspect} cannot be used for #{expected_type.name} arguments"
             end
 
             filtered =  if DL::PtrData === arg
                             arg
                         elsif Kernel.immediate?(arg)
                             filter_immediate_arg(arg, expected_type)
-                        elsif Value === arg
+                        elsif Type === arg
                             filter_value_arg(arg, expected_type)
                         elsif expected_type.deference.name == "/char" && arg.respond_to?(:to_str)
                             # Ruby strings ARE null-terminated
@@ -267,10 +290,10 @@ module Typelib
             # so we assume that if the function returns a pointer on a simple
             # type, that's what the user wants
             if DL::PtrData === retval && !return_type.deference.null?
-                ruby_value = Value.new(retval, return_type.deference).to_ruby
+                ruby_value = return_type.deference.new(retval).to_ruby
 
                 if Kernel.immediate?(ruby_value)
-                    ruby_returns << Value.new(retval.to_ptr, return_type)
+                    ruby_returns << return_type.new(retval.to_ptr)
                 else
                     ruby_returns << ruby_value
                 end
@@ -284,7 +307,7 @@ module Typelib
 
             value = retargs[ary_idx]
             type  = arg_types[ary_idx]
-            ruby_returns << Value.new(value, type.deference).to_ruby
+            ruby_returns << type.deference.new(value).to_ruby
         end
 
         return *ruby_returns
