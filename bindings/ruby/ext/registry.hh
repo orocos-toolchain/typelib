@@ -17,7 +17,7 @@ VALUE registry_alloc(VALUE klass)
 
 
 static
-VALUE registry_get(VALUE self, VALUE name)
+VALUE registry_do_get(VALUE self, VALUE name)
 {
     Registry& registry = rb2cxx::object<Registry>(self);
     Type const* type = registry.get( StringValuePtr(name) );
@@ -27,7 +27,7 @@ VALUE registry_get(VALUE self, VALUE name)
 }
 
 static
-VALUE registry_build(VALUE self, VALUE name)
+VALUE registry_do_build(VALUE self, VALUE name)
 {
     Registry& registry = rb2cxx::object<Registry>(self);
     Type const* type = registry.build( StringValuePtr(name) );

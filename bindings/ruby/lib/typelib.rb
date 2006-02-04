@@ -133,11 +133,18 @@ module Typelib
             option_hash.to_a.collect { |opt| [ opt[0].to_s, opt[1] ] }
         end
 
+        def initialize
+            @wrappers = Hash.new
+        end
+
         def import(file, kind = nil, options = nil)
             kind = Registry.guess_type(file) if !kind
             options = Registry.format_options(options)
             do_import(file, kind, options)
         end
+
+        def get(name); @wrappers[name] || do_get(name) end
+        def build(name); @wrappers[name] || do_build(name) end
     end
 
     def self.dlopen(lib_path, registry = nil)
