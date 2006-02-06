@@ -13,7 +13,6 @@ AC_CANONICAL_HOST
 dnl AC_PROG_CC
 AC_PROG_CXX
 CLBS_DEBUG_OPTIONS
-CLBS_TEST_SUPPORT
 
 ############ Check for doxygen availability if Doxygen.in is present
 HAVE_DOX="no"
@@ -33,11 +32,13 @@ AC_SUBST(LIBTOOL_DEPS)
 AC_PROG_INSTALL
 
 ############ Dependencies
+CLBS_CHECK_ANTLR
 CLBS_CHECK_RUBY([], [AC_MSG_WARN([Disabled Ruby support])])
 CLBS_CHECK_BOOST([], AC_MSG_ERROR([Unable to find the Boost library]))
 CLBS_BOOST_FILESYSTEM([], AC_MSG_ERROR([Unable to find the Boost/Filesystem library]))
 PKG_CHECK_MODULES(LIBXML, libxml-2.0,, [AC_MSG_ERROR([libxml2 is needed])])
 PKG_CHECK_MODULES(UTILMM, utilmm,, [AC_MSG_ERROR([UtilMM is needed])])
+CLBS_TEST_SUPPORT
 
 ############ Output files
 AC_CONFIG_FILES([
