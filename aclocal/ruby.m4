@@ -1,10 +1,14 @@
 dnl $Rev: 1267 $
 dnl $Id: ruby.m4 1267 2006-01-18 15:19:48Z sjoyeux $
 
-dnl MD_CHECK_RUBY(action-if-found, action-if-not-found)
+dnl CLBS_CHECK_RUBY(action-if-found, action-if-not-found)
+dnl defines: RUBY, RUBY_EXTENSION_BASEDIR, RUBY_VERSION, HAS_RUBY_SUPPORT
 AC_DEFUN([CLBS_CHECK_RUBY], [
     md_ruby_support=yes
-    AC_PATH_PROG([RUBY], [ruby])
+    AC_ARG_VAR(RUBY, [the Ruby interpreter])
+    if test -z "$RUBY"; then
+        AC_PATH_PROG([RUBY], [ruby])
+    fi
     test -z "$RUBY" && md_ruby_support=no
 
     if test "$md_ruby_support" = "yes"; then
