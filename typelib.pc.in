@@ -6,5 +6,6 @@ includedir=@includedir@
 Name: typelib
 Description: Type model and manipulation library
 Version: @VERSION@
-Libs: -L${libdir}
+Libs: -L${libdir} -ltypeLib
 Cflags: -I${includedir}
+
