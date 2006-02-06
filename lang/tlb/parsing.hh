@@ -6,90 +6,47 @@
 
 namespace Parsing
 {
-    class ParsingError
-    {
-        std::string m_file;
-        int m_line, m_column;
-
-    public:
-        ParsingError(const std::string& file, int line = 0, int column = 0)
-            : m_file(file), m_line(line), m_column(column) {}
-        virtual ~ParsingError() {}
-
-        void setFile(const std::string& path) { m_file = path; }
-        std::string getFile() const { return m_file; }
-        int getLine() const { return m_line; }
-        int getColumn() const { return m_column; }
-
-        virtual std::string toString () const
-        { 
-            std::ostringstream out;
-            out << "Parsing error in " << m_file;
-            if (m_line)
-                out << " " << m_line;
-            if (m_column)
-                out << ":" << m_column;
-            return out.str();
-        }
-    };
-
-    class MalformedXML : public ParsingError
+    using Typelib::ImportError;
+    class MalformedXML : public ImportError
     {
     public:
-        MalformedXML(const std::string& file) 
-            : ParsingError(file) {}
-
-        virtual std::string toString() const
-        { return "XML error in " + getFile(); }
+        MalformedXML(const std::string& file = "") 
+            : ImportError(file, "malformed XML") {}
     };
 
-    class UnexpectedElement : public ParsingError
+    class UnexpectedElement : public ImportError
     {
         std::string m_found, m_expected;
     public:
-        UnexpectedElement(const std::string& file, const std::string& found, const std::string expected)
-            : ParsingError(file), m_found(found), m_expected(expected) {}
+        UnexpectedElement(const std::string& found_, const std::string expected_, const std::string& file = "")
+            : ImportError(file, "unexpected element " + found_ + ", was expecting " + expected_)
+            , m_found(found_), m_expected(expected_) { }
+        ~UnexpectedElement() throw() {}
 
-        std::string getFound() const    { return m_found; }
-        std::string getExpected() const { return m_expected; }
-
-        virtual std::string toString() const
-        { 
-            std::ostringstream out("Unexpected element ");
-            out << m_found;
-            if (!m_expected.empty()) out << " instead of " << m_expected;
-            out << " in " + getFile();
-
-            return out.str();
-        }
+        std::string found() const    { return m_found; }
+        std::string expected() const { return m_expected; }
     };
 
-    class BadRootElement : public UnexpectedElement
+    class BadRootElement : public ImportError
     {
+        std::string m_found, m_expected;
     public:
-        BadRootElement(const std::string& file, const std::string& found, const std::string expected)
-            : UnexpectedElement(file, found, expected) {}
+        BadRootElement(const std::string& found_, const std::string expected_, const std::string& file = "")
+            : ImportError(file, "this document is not a Typelib type library: found " + found_ + " instead of " + expected_)
+            , m_found(found_), m_expected(expected_) {}
+        ~BadRootElement() throw() {}
 
-        virtual std::string toString() const
-        { 
-            std::ostringstream out("Bad root element ");
-            out << getFound();
-            if (!getExpected().empty()) out << " instead of " << getExpected();
-            out << " in " + getFile();
-
-            return out.str();
-        }
+        std::string found() const    { return m_found; }
+        std::string expected() const { return m_expected; }
     };
 
-    class MissingAttribute : public ParsingError
+    class MissingAttribute : public ImportError
     {
         std::string m_attribute;
     public:
-        MissingAttribute(const std::string& file, const std::string& attribute)
-            : ParsingError(file), m_attribute(attribute) {}
-
-        virtual std::string toString() const
-        { return "Missing attribute '" + m_attribute + "' in " + getFile(); }
+        MissingAttribute(const std::string& attribute, const std::string& file = "")
+            : ImportError(file, "missing attribute " + attribute), m_attribute(attribute) {}
+        ~MissingAttribute() throw() {}
     };
 };
 

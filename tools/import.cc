@@ -87,16 +87,17 @@ bool Import::apply(int argc, char* const argv[])
     if (! base_tlb.empty() && boost::filesystem::exists(base_tlb))
     {
         auto_ptr<Importer> read_db(PluginManager::self()->importer("tlb"));
-        if (! read_db->load(base_tlb, config, registry))
+        try { read_db->load(base_tlb, config, registry); }
+        catch(ImportError e)
         { 
-            cerr << "Error loading registry " << base_tlb << endl; 
+            cerr << "error base registry " << base_tlb << ": " << e.toString() << endl; 
             return false;
         }
     }
 
     if (! plugin->apply(remaining, config, registry))
         return false;
-
+    
     // Get the output stream object. It is either an ofstream on output_tlb,
     // or cout if --output=- was provided
     std::auto_ptr<ofstream> filestream; // if the output is a file
@@ -108,7 +109,7 @@ bool Import::apply(int argc, char* const argv[])
         filestream.reset( new ofstream(output_tlb.c_str()) );
         if (! filestream->is_open())
         {
-            cerr << "Cannot open " << output_tlb << " for writing" << endl;
+            cerr << "cannot open " << output_tlb << " for writing" << endl;
             return false;
         }
         outstream = filestream.get();
@@ -121,7 +122,7 @@ bool Import::apply(int argc, char* const argv[])
     }
     catch(...)
     {
-        cerr << "Error when writing the type data base " << output_tlb << endl;
+        cerr << "error when writing the type data base " << output_tlb << endl;
         return false;
     }
     

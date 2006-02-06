@@ -30,10 +30,11 @@ namespace Typelib
             ( std::ostream& stream
             , Registry const& registry );
 
-        /** Serialize one type in \c stream */
+        /** Serialize one type in \c stream. If recursive is true, it saves
+         * also all types \c type references */
         virtual bool save
             ( std::ostream& stream
-            , RegistryIterator const& type) = 0;
+            , RegistryIterator const& type ) = 0;
     };
 }
 

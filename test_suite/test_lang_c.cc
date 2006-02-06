@@ -23,22 +23,22 @@ public:
         utilmm::config_set config;
         
         // Load the file in registry
-        BOOST_REQUIRE( !importer->load("does_not_exist", config, registry) );
-        BOOST_REQUIRE( !importer->load("test_cimport.h", config, registry) );
+        BOOST_REQUIRE_THROW( importer->load("does_not_exist", config, registry), ImportError);
+        BOOST_REQUIRE_THROW( importer->load("test_cimport.h", config, registry), ImportError );
         {
             Registry temp_registry;
             config.set("include", "../");
             config.set("define", "GOOD");
-            BOOST_REQUIRE( importer->load("test_cimport.h", config, temp_registry) );
+            BOOST_REQUIRE_NO_THROW( importer->load("test_cimport.h", config, temp_registry) );
         }
         {
             Registry temp_registry;
             config.insert("rawflag", "-I../");
             config.insert("rawflag", "-DGOOD");
-            BOOST_REQUIRE( importer->load("test_cimport.h", config, temp_registry) );
+            BOOST_REQUIRE_NO_THROW( importer->load("test_cimport.h", config, temp_registry) );
         }
 
-        BOOST_REQUIRE( importer->load(test_file, config, registry) );
+        BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
 
         // Check that the types are defined
         BOOST_REQUIRE( registry.has("/struct A") );

@@ -3,11 +3,13 @@
 
 #include <map>
 #include <string>
-#include "utilmm/singleton/use.hh"
+#include <utilmm/singleton/use.hh>
+#include <utilmm/configfile/configset.hh>
 
 namespace Typelib
 {
     // We should create a NamedObject class somewhere... :p
+    class Registry;
     
     class Exporter;
     class ExportPlugin
@@ -66,6 +68,29 @@ namespace Typelib
         
         Importer* importer(std::string const& name) const;
         Exporter* exporter(std::string const& name) const;
+
+        static std::string save(std::string const& kind, Registry const& registry);
+        static void save(std::string const& kind, Registry const& registry, std::ostream& into);
+
+        static Registry* load
+            ( std::string const& kind
+            , std::istream& stream
+            , utilmm::config_set const& config );
+        static void load
+            ( std::string const& kind
+            , std::istream& stream
+            , utilmm::config_set const& config
+            , Registry& into );
+
+        static Registry* load
+            ( std::string const& kind
+            , std::string const& file
+            , utilmm::config_set const& config );
+        static void load
+            ( std::string const& kind
+            , std::string const& file
+            , utilmm::config_set const& config
+            , Registry& into );
 
         typedef utilmm::singleton::use<PluginManager> self;
     private:

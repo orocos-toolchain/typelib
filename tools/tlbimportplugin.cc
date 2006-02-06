@@ -39,15 +39,11 @@ bool TlbImportPlugin::apply(const OptionList& remaining, const config_set& optio
         return true;
     }
     catch(Typelib::RegistryException& e)
-    {
-        cerr << "Error in type management: " << e.toString() << endl;
-        return false;
-    }
+    { cerr << "Error in type management: " << e.toString() << endl; }
+    catch(Typelib::ImportError e)
+    { cerr << e.toString() << endl; }
     catch(std::exception& e)
-    {
-        cerr << "Error parsing file " << file << ":\n\t"
-            << typeid(e).name() << endl;
-        return false;
-    }
+    { cerr << "Error parsing file " << file << ":\n\t" << typeid(e).name() << endl; }
+    return false;
 }
 

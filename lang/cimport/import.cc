@@ -72,47 +72,26 @@ namespace
         }
         catch(utilmm::unix_error) { return path(); }
     }
-
-    bool parse(path const& file, Typelib::Registry& registry)
-    {
-        // Check that the input file can be opened
-        ifstream s(file.native_file_string().c_str());
-        if (!s)
-        {
-            cerr << file.native_file_string() << ": error: cannot open for reading\n";
-            return false;
-        }
-
-        try {
-            CPPLexer cpp_lexer(s);
-
-            TypeSolver reader(cpp_lexer, registry);
-            reader.init();
-            reader.translation_unit();
-        }
-        catch (ANTLRException const& e) 
-        { 
-            cerr << file.native_file_string() << ": error: " << e.toString() << endl; 
-            return false;
-        }
-        catch (Typelib::Undefined const& e)
-        { 
-            cerr << file.native_file_string() << ": error: " << e.getName() << " undefined" << endl; 
-            return false;
-        }
-        catch(std::exception const& e)
-        { 
-            cerr << file.native_file_string() << ": error: internal error of type " 
-                << typeid(e).name() << endl
-                << file.native_file_string() << ": " << e.what() << endl;
-            return false;
-        }
-
-        return true;
-    }
 }
 
-bool CImport::load
+void CImport::load
+    ( std::istream& stream
+    , utilmm::config_set const& config
+    , Registry& registry )
+{
+    try {
+        CPPLexer cpp_lexer(stream);
+
+        TypeSolver reader(cpp_lexer, registry);
+        reader.init();
+        reader.translation_unit();
+    }
+    catch (ANTLRException const& e) 
+    { throw ImportError("", "syntax error: " + e.toString()); }
+}
+    
+
+void CImport::load
     ( std::string const& file
     , utilmm::config_set const& config
     , Registry& registry)
@@ -122,21 +101,21 @@ bool CImport::load
     {
         temp = runcpp(file, config);
         if (temp.empty())
-        {
-            cerr << "Error while running the preprocessor" << endl;
-            return false;
-        }
+            throw ImportError("", "error running the preprocessor");
 
-        bool retval = parse(temp, registry);
+        // Check that the input file can be opened
+        ifstream s(temp.native_file_string().c_str());
+        if (!s)
+            throw ImportError("", "cannot open for reading");
+
+        load(s, config, registry);
         remove(temp);
-        return retval;
     }
     catch(...) 
     { 
         if (! temp.empty())
             remove(temp); 
-        return false;
+        throw;
     }
 }
-
 

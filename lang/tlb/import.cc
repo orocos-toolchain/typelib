@@ -1,5 +1,4 @@
 #include "import.hh"
-#include "xmltools.hh"
 
 #include "typemodel.hh"
 #include "typebuilder.hh"
@@ -206,7 +205,20 @@ namespace
     }
 }
 
-bool TlbImport::load
+void TlbImport::load
+    ( std::istream& stream
+    , utilmm::config_set const& config
+    , Typelib::Registry& registry)
+{
+    // libXML is not really iostream-compatible :(
+    // Get the whole document
+    std::stringbuf buffer;
+    stream >> &buffer;
+    parse("", xmlParseMemory(buffer.str().c_str(), buffer.in_avail()), registry);
+}
+
+
+void TlbImport::load
     ( std::string const& path
     , utilmm::config_set const& config
     , Typelib::Registry& registry)
@@ -221,15 +233,27 @@ bool TlbImport::load
         full_path = string(cwd) + "/" + path;
     } else full_path = path;
 
-    xmlDocPtr doc = xmlParseFile(path.c_str());
+    try {
+        parse(full_path, xmlParseFile(path.c_str()), registry);
+    }
+    catch(ImportError& e)
+    { 
+        e.setFile(path);
+        throw;
+    }
+}
+
+void TlbImport::parse(std::string const& source_id, xmlDocPtr doc, Registry& registry)
+{
     if (!doc) 
-        throw Parsing::MalformedXML(path);
+        throw Parsing::MalformedXML();
 
     try
     {
         xmlNodePtr root_node = xmlDocGetRootElement(doc);
         if (!root_node) 
-            return false;
+            return;
+
         checkNodeName<Parsing::BadRootElement>(root_node, "typelib");
 
         TypeMap all_types;
@@ -238,27 +262,15 @@ bool TlbImport::load
             if (!xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>("text")))
                 continue;
 
-            ::load(full_path, all_types, node);
+            ::load(source_id, all_types, node);
         }
 
         Factory factory(registry);
         factory.build(all_types);
     }
-    catch(Parsing::ParsingError& error)
-    {
-        xmlFreeDoc(doc);
-        error.setFile(path);
-        std::cerr << "error: " << path.c_str() << ": " << error.toString() << std::endl;
-        return false;
+    catch(...) { 
+        xmlFreeDoc(doc); 
+        throw;
     }
-    catch(RegistryException& error)
-    {
-        xmlFreeDoc(doc);
-        std::cerr << "error: " << path.c_str() << ": " << error.toString() << std::endl;
-        return false;
-    }
-
-    xmlFreeDoc(doc);
-    return true;
 }
 

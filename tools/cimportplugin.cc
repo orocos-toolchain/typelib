@@ -42,21 +42,15 @@ bool CImportPlugin::apply(const OptionList& remaining, const config_set& options
             return false;
         }
                 
-        if (! importer->load(file, options, registry))
-            return false;
-
+        importer->load(file, options, registry);
         return true;
     }
     catch(Typelib::RegistryException& e)
-    {
-        cerr << "Error in type management: " << e.toString() << endl;
-        return false;
-    }
+    { cerr << "error: " << e.toString() << endl; }
+    catch(Typelib::ImportError e)
+    { cerr << e.toString() << endl; }
     catch(std::exception& e)
-    {
-        cerr << "Error parsing file " << file << ":\n\t"
-            << typeid(e).name() << endl;
-        return false;
-    }
+    { cerr << "Error parsing file " << file << ":\n\t" << typeid(e).name() << endl; }
+    return false;
 }
 

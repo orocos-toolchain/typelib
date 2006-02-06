@@ -13,7 +13,7 @@ MODULE = typeLib
 LIB_NAME = typeLib
 
 typeLib_SRC = registry.cc typebuilder.cc typemodel.cc typename.cc typevisitor.cc typedisplay.cc exporter.cc \
-	      pluginmanager.cc ioplugins.cc value.cc
+	      pluginmanager.cc ioplugins.cc value.cc importer.cc
 
 # read info libtool about these variables
 typeLib_VERSION = 0
@@ -24,10 +24,12 @@ typeLib_CPPFLAGS = $(LIBXML_CFLAGS) $(BOOST_CXXFLAGS) $(UTILMM_CXXFLAGS) -I$(top
 typeLib_LDFLAGS = $(LIBXML_LIBS) $(BOOST_LDFLAGS) $(UTILMM_LDFLAGS)
 typeLib_LIBS	= $(top_builddir)/lang/cimport/libtypeLang_c.la $(top_builddir)/lang/tlb/libtypeLang_tlb.la
 
+HEADERS=exporter.hh importer.hh ioplugins.hh manip.hh pluginmanager.hh registry.hh registryiterator.hh typebuilder.hh typedisplay.hh typemodel.hh typename.hh typevisitor.hh value.hh
 install: header-install
 header-install:
 	$(INSTALL_DIR) $(includedir)/typelib
-	$(INSTALL_DATA) $(addprefix $(srcdir)/,registry.hh typemodel.hh typename.hh typevisitor.hh typedisplay.hh) $(includedir)/typelib
+	$(INSTALL_DATA) $(addprefix $(srcdir)/,$(HEADERS)) $(includedir)/typelib
+
 
 ############ end: typeLib
 
