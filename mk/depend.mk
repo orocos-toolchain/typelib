@@ -28,5 +28,6 @@ endif
 
 clean: dep-clean
 dep-clean:
-	-rm -f $(DEP_FILES)
+	@echo "Removing dependencies"
+	@rm -f $(DEP_FILES)
 
