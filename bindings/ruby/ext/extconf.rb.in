@@ -15,7 +15,7 @@ $LDFLAGS  += "@top_builddir@/typelib/libtypeLib.la -ldl"
 COMPILE_C   = "@top_builddir@/libtool --mode=compile #{COMPILE_C}"
 COMPILE_CXX = "@top_builddir@/libtool --mode=compile #{COMPILE_CXX}"
 $OBJEXT = 'lo'
-CONFIG['LDSHARED'] = "@top_builddir@/libtool --mode=link #{CONFIG['CC']} -module -rpath #{autoconf_libdir}/#{suffix} -avoid-version"
+CONFIG['LDSHARED'] = "@top_builddir@/libtool --mode=link @CXX@ -module -rpath #{autoconf_libdir}/#{suffix} -avoid-version"
 CONFIG['DLEXT'] = 'la'
 
 create_makefile('typelib_api', "@srcdir@")
