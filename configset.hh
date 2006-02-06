@@ -72,8 +72,12 @@ namespace utilmm
 
         /** Set the value for this key */
         void set(std::string const& name, std::string const& value);
+        /** Sets multiple values for this key */
+        void set(std::string const& name, std::list<std::string> const& value);
         /** Insert a value in this config_set */
         void insert(std::string const& name, std::string const& value);
+        /** Inserts multiple values in this config_set */
+        void insert(std::string const& name, std::list<std::string> const& value);
         /** Add a child to this config_set */
         void insert(std::string const& name, config_set const* value);
     };
