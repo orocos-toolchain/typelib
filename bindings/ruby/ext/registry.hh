@@ -69,8 +69,9 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
     }
         
     // TODO: error checking
-    if (!importer->load(StringValuePtr(file), config, registry))
-        rb_raise(rb_eRuntimeError, "cannot import %s", StringValuePtr(file));
+    try { importer->load(StringValuePtr(file), config, registry); }
+    catch(Typelib::ImportError e)
+    { rb_raise(rb_eRuntimeError, "cannot import %s: %s", StringValuePtr(file), e.what()); }
 
     return Qnil;
 }

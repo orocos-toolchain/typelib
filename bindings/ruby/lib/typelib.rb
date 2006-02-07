@@ -18,7 +18,7 @@ module Typelib
         class << self
             attr_reader :registry
             def writable?
-                if @writable.nil?
+                if !defined?(@writable)
                     superclass.writable?
                 else
                     @writable
@@ -101,10 +101,12 @@ module Typelib
     end
 
     class PointerType < Type
+        @writable = false
         def to_ruby; self end
     end
-#    class EnumType < Type
-#    end
+    class EnumType < Type
+        @writable = true
+    end
 
 
 
