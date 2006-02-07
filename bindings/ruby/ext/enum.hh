@@ -48,11 +48,11 @@ VALUE enum_keys(VALUE self)
     if (!NIL_P(keys)) 
         return keys;
 
-    keys = rb_ary_new();
+    keys = rb_hash_new();
     typedef std::list<std::string> string_list;
     string_list names = type.names();
     for (string_list::const_iterator it = names.begin(); it != names.end(); ++it)
-        rb_ary_push(keys, rb_str_new2(it->c_str()));
+        rb_hash_aset(keys, rb_str_new2(it->c_str()), INT2FIX(type.get(*it)));
 
     rb_iv_set(self, "@values", keys);
     return keys;
