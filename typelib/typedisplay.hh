@@ -27,6 +27,27 @@ namespace Typelib
     public:
         TypeDisplayVisitor(std::ostream& stream, std::string const& base_indent);
     };
+
+    namespace details
+    {
+        struct do_type_display
+        {
+            Type const& type;
+            std::string indent;
+            do_type_display(Type const& type_, std::string const& indent_ = "")
+                : type(type_), indent(indent_) {}
+        };
+        inline std::ostream& operator << (std::ostream& stream, do_type_display display)
+        {
+            TypeDisplayVisitor visitor(stream, display.indent);
+            visitor.apply(display.type);
+            return stream;
+        }
+    }
+    inline details::do_type_display type_display(Type const& type, std::string const& indent = "")
+    { return details::do_type_display(type, indent); }
+    inline std::ostream& operator << (std::ostream& stream, Type const& type)
+    { return stream << type_display(type); }
 }
 
 #endif
