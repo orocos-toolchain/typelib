@@ -175,6 +175,7 @@ AC_DEFUN([CLBS_BOOST_TEST], [
         LDFLAGS=$clbs_sv_LDFLAGS
         AC_LANG_POP
 
+        HAS_BOOST_TEST=$has_working_test
         AS_IF([test "$has_working_test" = "yes"], [
            AC_MSG_RESULT([yes])
            CLBS_BOOST_SUBLIB_DEFINE(test, TEST)
