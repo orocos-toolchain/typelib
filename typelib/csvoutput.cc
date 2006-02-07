@@ -102,7 +102,9 @@ namespace
         bool visit_ (double  & value) { return display(value); }
         bool visit_ (Enum::integral_type& v, Enum const& e)
         { 
-            m_output.push_back(e.get(v)); 
+            try { m_output.push_back(e.get(v)); }
+            catch(Typelib::Enum::ValueNotFound)
+            { display(v); }
             return true;
         }
 
