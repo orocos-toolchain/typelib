@@ -1,3 +1,6 @@
+dnl $Id: antlr.m4 1361 2006-02-07 08:19:53Z sjoyeux $
+dnl $Rev: 1361 $
+
 AC_DEFUN([CLBS_CHECK_ANTLR], [
     AC_ARG_VAR(ANTLR, [the Antlr tool])
     if test -z "$ANTLR"; then

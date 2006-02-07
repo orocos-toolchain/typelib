@@ -1,5 +1,5 @@
-dnl $Rev: 1039 $
-dnl $Id: clbs.m4 1039 2005-10-12 09:17:32Z sjoyeux $
+dnl $Rev: 1375 $
+dnl $Id: clbs.m4 1375 2006-02-07 13:34:51Z sjoyeux $
 
 AC_DEFUN([FPY_DIRNAME_EXPR],
          [[expr ".$1" : '\(\.\)[^/]*$' \| "x$1" : 'x\(.*\)/[^/]*$']])
@@ -26,19 +26,17 @@ AC_DEFUN([CLBS_GET_USRLIBDIR], [
   ])
 
 AC_DEFUN([CLBS_TEST_SUPPORT], [
-    AC_REQUIRE([CLBS_BOOST_TEST])
-    HAS_TEST_SUPPORT=$HAS_BOOST_TEST
-    if test "x$HAS_TEST_SUPPORT" = "xyes"; then
-        AC_MSG_NOTICE([Enabling test support])
-        CLBS_TEST_CPPFLAGS=$BOOST_TEST_CPPFLAGS
-        CLBS_TEST_LDFLAGS=$BOOST_TEST_LDFLAGS
-        AC_SUBST(CLBS_TEST_CPPFLAGS)
-        AC_SUBST(CLBS_TEST_LDFLAGS)
-    else
-        AC_MSG_ERROR([Cannot enable test support])
-    fi
-    AC_SUBST(HAS_TEST_SUPPORT)
-
+     AC_REQUIRE([CLBS_BOOST_TEST])
+     HAS_TEST_SUPPORT=$HAS_BOOST_TEST
+     if test "x$HAS_TEST_SUPPORT" = "xyes"; then
+         AC_MSG_NOTICE([Enabling test support])
+         CLBS_TEST_CPPFLAGS=$BOOST_TEST_CPPFLAGS
+         CLBS_TEST_LDFLAGS=$BOOST_TEST_LDFLAGS
+         AC_SUBST(CLBS_TEST_CPPFLAGS)
+         AC_SUBST(CLBS_TEST_LDFLAGS)
+     else
+         AC_MSG_ERROR([Cannot enable test support])
+     fi
 ])
 
 AC_DEFUN([CLBS_PCH_SUPPORT], [
@@ -69,14 +67,14 @@ AC_DEFUN([CLBS_DEBUG_OPTIONS], [
       CFLAGS="${CFLAGS} -g3 -O0 -DDEBUG"
       CXXFLAGS="${CFLAGS}"
       CLBS_DEBUG_RESULT([yes, full])
-  elif test "x$debug" = "xyes"; then
-      CFLAGS="${CFLAGS} -g -O1 -DDEBUG"
-      CXXFLAGS="${CFLAGS}"
-      CLBS_DEBUG_RESULT([yes])
   elif test "x$debug" = "xno"; then
       CFLAGS="${CFLAGS} -O3 -DNDEBUG"
       CXXFLAGS="${CFLAGS} -O3 -finline-functions"
       CLBS_DEBUG_RESULT([no])
+  else
+      CFLAGS="${CFLAGS} -g -O1 -DDEBUG"
+      CXXFLAGS="${CFLAGS}"
+      CLBS_DEBUG_RESULT([yes])
   fi
 ])
 

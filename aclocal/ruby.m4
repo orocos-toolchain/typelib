@@ -1,5 +1,5 @@
-dnl $Rev: 1267 $
-dnl $Id: ruby.m4 1267 2006-01-18 15:19:48Z sjoyeux $
+dnl $Rev: 1362 $
+dnl $Id: ruby.m4 1362 2006-02-07 08:20:39Z sjoyeux $
 
 dnl CLBS_CHECK_RUBY(action-if-found, action-if-not-found)
 dnl defines: RUBY, RUBY_EXTENSION_BASEDIR, RUBY_VERSION, HAS_RUBY_SUPPORT
