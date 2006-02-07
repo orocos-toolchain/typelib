@@ -1,7 +1,7 @@
 # $Revision: 1284 $
 # $Id: test.mk 1284 2006-01-20 09:37:27Z sjoyeux $
 
-ifneq (1,$(HAS_TEST_SUPPORT))
+ifneq (yes,$(HAS_TEST_SUPPORT))
     $(error Test support not enabled)
 endif
 
