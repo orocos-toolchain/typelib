@@ -68,29 +68,36 @@ module Typelib
             end
 
             def [](name); @fields[name] end
+
+            def pretty_print(pp)
+                super
+
+                pp.breakable
+                pp.text '{'
+                pp.breakable
+                pp.group(2, '', '') do
+                    all_fields = enum_for(:each_field).
+                        collect { |name, field| [name,field] }.
+                        sort_by { |name, _| name.downcase }
+                    
+                    pp.breakable
+                    pp.seplist(all_fields) do |field|
+                        name, type = *field
+                        pp.text name
+                        pp.group(2, '<', '>') do
+                            type.pretty_print(pp)
+                        end
+                    end
+                end
+                pp.breakable
+                pp.text '}'
+            end
         end
 
         def []=(name, value); set_field(name, value) end
         def [](name); get_field(name) end
         def to_ruby; self end
 
-        def pretty_print(pp)
-            super
-
-            pp.group(2, '{', '}') do
-                all_fields = self.class.enum_for(:each_field).
-                    collect { |name, field| [name,field] }.
-                    sort_by { |name, _| name.downcase }
-                
-                pp.seplist(all_fields) { |field|
-                    name, type = *field
-                    pp.text name
-                    pp.text ' <'
-                    type.pretty_print(pp)
-                    pp.text '>'
-                }
-            end
-        end
     end
 
     class ArrayType < Type
