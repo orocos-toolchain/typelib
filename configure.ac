@@ -56,6 +56,7 @@ AC_CONFIG_FILES([
     bindings/Makefile
 
     test_suite/Makefile
+    test_suite/testsuite.hh
     test_suite/ruby/test_config.rb
 ])
 
