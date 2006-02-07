@@ -119,7 +119,18 @@ namespace
 
     bool TlbExportVisitor::visit_ (Enum const& type)
     {
-        m_stream << "<enum name=\"" << type.getName() << "\"/>";
+        Enum::ValueMap const& values = type.values();
+        if (values.empty())
+            m_stream << "<enum name=\"" << type.getName() << "\"/>";
+        else
+        {
+            m_stream << "<enum name=\"" << type.getName() << "\">\n";
+            Enum::ValueMap::const_iterator it, end = values.end();
+            for (it = values.begin(); it != values.end(); ++it)
+                m_stream << "  <value symbol=\"" << it->first << "\" value=\"" << it->second << "\"/>\n" << endl;
+            m_stream << "</enum>";
+        }
+
         return true;
     }
 

@@ -79,14 +79,17 @@ namespace
                 build(m_map.begin()->first);
         }
 
-        Type const* build(string const& name)
+        // Do NOT pass name by reference. It could be destroyed by the
+        // m_map.erase(it)
+        Type const* build(string const name)
         {
             string basename = TypeBuilder::getBaseTypename(name);
 
             Type const* base = m_registry.get(basename);
+            TypeMap::iterator it = m_map.find(basename);
+
             if (! base)
             {
-                TypeMap::iterator it = m_map.find(basename);
                 if (it == m_map.end())
                     throw Undefined(basename);
 
@@ -94,6 +97,13 @@ namespace
                 m_map.erase(it);
 
                 base = type.loader(type, *this);
+            }
+            else if (it != m_map.end())
+            {
+                // TODO check that the definition in the file
+                // TODO and the definition in the registry 
+                // TODO match
+                m_map.erase(it);
             }
 
             if (basename == name)
@@ -134,7 +144,17 @@ namespace
 
     Type const* load_enum(TypeNode const& node, Factory& factory)
     { 
-        Type* type = new Enum(node.name);
+        Enum* type = new Enum(node.name);
+        for(xmlNodePtr xml = node.xml->xmlChildrenNode; xml; xml=xml->next)
+        {
+            if (!xmlStrcmp(xml->name, reinterpret_cast<const xmlChar*>("text")))
+                continue;
+
+            string symbol = getAttribute<string>(xml, "symbol");
+            Enum::integral_type value  = getAttribute<Enum::integral_type>(xml, "value");
+            type->add(symbol, value);
+        }
+
         factory.insert(node, type); 
         return type;
     }
@@ -212,9 +232,15 @@ void TlbImport::load
 {
     // libXML is not really iostream-compatible :(
     // Get the whole document
-    std::stringbuf buffer;
-    stream >> &buffer;
-    parse("", xmlParseMemory(buffer.str().c_str(), buffer.in_avail()), registry);
+    std::string document;
+
+    while (stream.good())
+    {
+        std::stringbuf buffer;
+        stream >> &buffer;
+        document += buffer.str();
+    }
+    parse("", xmlParseMemory(document.c_str(), document.length()), registry);
 }
 
 
