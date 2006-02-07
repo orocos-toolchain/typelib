@@ -112,11 +112,18 @@ module Typelib
         def to_ruby; self end
     end
     class EnumType < Type
-        @writable = true
+        class << self
+            attr_reader :values
+            def pretty_print(pp)
+                super
+                pp.group(2, '{', '}') do
+                    pp.seplist(keys) do |keydef|
+                        pp.text keydef.join(" = ")
+                    end
+                end
+            end
+        end
     end
-
-
-
 
     class Registry
         TYPE_BY_EXT = {
