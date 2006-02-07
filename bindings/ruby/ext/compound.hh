@@ -3,31 +3,6 @@
  * Typelib::Compound
  */
 
-namespace rb2cxx {
-    static Field const* get_field(VALUE self, VALUE field_name)
-    {
-        Type const& type(rb2cxx::object<Type>(self));
-        Compound const& compound = static_cast<Compound const&>(type);
-        return compound.getField(StringValuePtr(field_name));
-    }
-}
-
-static VALUE compound_has_field(VALUE self, VALUE field_name)
-{ return rb2cxx::get_field(self, field_name) ? Qtrue : Qfalse; }
-static VALUE compound_get_field(VALUE self, VALUE field_name)
-{
-    Field const* field = rb2cxx::get_field(self, field_name);
-    if (! field)
-    {
-        rb_raise(rb_eNoMethodError, "no such field '%s' in '%s'", 
-                StringValuePtr(field_name), 
-                rb2cxx::object<Type>(self).getName().c_str());
-    }
-
-    VALUE registry = rb_iv_get(self, "@registry");
-    return cxx2rb::type_wrap(field->getType(), registry);
-}
-
 static VALUE compound_get_fields(VALUE self)
 {
     Type const& type(rb2cxx::object<Type>(self));

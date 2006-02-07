@@ -49,24 +49,6 @@ VALUE value_get_registry(VALUE self)
     return rb_iv_get(type, "@registry");
 }
 
-/* Check if a given attribute exists and if it is writable
- *
- * Returns +nil+ if the attribute does not exist, 0 if it is readonly
- * and 1 if it is writable
- *
- * This method is not to be used by client code. It is called by respond_to?
- */
-static
-VALUE compound_field_is_writable(VALUE self, VALUE rb_type)
-{
-    try {
-        Type const& type = rb2cxx::object<Type>(rb_type);
-        return type_is_assignable(type);
-    } catch(FieldNotFound) { 
-        return Qnil;
-    }
-}
-
 static VALUE value_field_get(VALUE value, VALUE name)
 { 
     // Get the registry
