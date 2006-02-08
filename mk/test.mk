@@ -1,5 +1,5 @@
-# $Revision: 1284 $
-# $Id: test.mk 1284 2006-01-20 09:37:27Z sjoyeux $
+# $Revision: 1397 $
+# $Id: test.mk 1397 2006-02-08 08:12:03Z sjoyeux $
 
 ifneq (yes,$(HAS_TEST_SUPPORT))
     $(error Test support not enabled)

@@ -19,10 +19,12 @@ clean: recurse-clean
 distclean: recurse-distclean
 dep: recurse-dep
 
+CONFIG_OUTPUT_FILES=typelib.pc typelib-config.h
+
 install: pkgconfig-install
 pkgconfig-install:
-	$(INSTALL_DIR)  $(libdir)/pkgconfig
-	$(INSTALL_DATA) typelib.pc $(libdir)/pkgconfig
+	$(INSTALL_DIR)  $(DESTDIR)$(libdir)/pkgconfig
+	$(INSTALL_DATA) typelib.pc $(DESTDIR)$(libdir)/pkgconfig
 
 ifeq ($(HAVE_DOX), yes)
 doc: Doxyfile

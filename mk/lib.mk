@@ -1,5 +1,5 @@
-# $Revision: 1265 $
-# $Id: lib.mk 1265 2006-01-18 15:10:54Z sjoyeux $
+# $Revision: 1381 $
+# $Id: lib.mk 1381 2006-02-07 13:46:29Z sjoyeux $
 
 ################ Build
 build: $(MODULE)-build-lib
@@ -27,7 +27,7 @@ endif
 
 $(MODULE)_LIB_DEPENDS=$(filter %.la,$($(MODULE)_LIBS))
 ifneq ($($(MODULE)_LIB_DEPENDS),)
-$($(MODULE)_LIB_DEPENDS): recurse-build
+$($(MODULE)_LIB_DEPENDS): | recurse-build
 endif
 recurse-build:
 
