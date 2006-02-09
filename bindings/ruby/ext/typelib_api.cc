@@ -47,65 +47,65 @@ VALUE library_do_wrap(int argc, VALUE* argv, VALUE self)
 }
 
 static
-VALUE filter_immediate_arg(VALUE self, VALUE arg_val, VALUE rb_arg_type)
+VALUE filter_immediate_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
 {
-    Type const& arg_type = rb2cxx::object<Type>(rb_arg_type);
+    Type const& expected_type = rb2cxx::object<Type>(rb_expected_type);
 
-    if (arg_type.getCategory() == Type::Enum)
-        return INT2FIX( rb2cxx::enum_value(arg_val, static_cast<Enum const&>(arg_type)) );
-    else if (arg_type.getCategory() == Type::Pointer)
+    if (expected_type.getCategory() == Type::Enum)
+        return INT2FIX( rb2cxx::enum_value(arg, static_cast<Enum const&>(expected_type)) );
+    else if (expected_type.getCategory() == Type::Pointer)
     {
         // Build directly a DL::Ptr object, no need to build a Ruby Value wrapper
-        Pointer const& ptr_type = static_cast<Pointer const&>(arg_type);
+        Pointer const& ptr_type = static_cast<Pointer const&>(expected_type);
         Type const& pointed_type = ptr_type.getIndirection();
         VALUE ptr = rb_dlptr_malloc(pointed_type.getSize(), free);
 
         Value typelib_value(rb_dlptr2cptr(ptr), pointed_type);
-        if (!typelib_from_ruby(typelib_value, arg_val))
+        if (!typelib_from_ruby(typelib_value, arg))
             return Qnil;
 
         return ptr;
     }
-    return arg_val;
+    return arg;
 }
 
 static 
-VALUE filter_value_arg(VALUE self, VALUE arg_val, VALUE rb_arg_type)
+VALUE filter_value_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
 {
-    Type const& arg_type    = rb2cxx::object<Type>(rb_arg_type);
-    Value const& value      = rb2cxx::object<Value>(arg_val);
-    Type const& value_type  = value.getType();     
+    Type const& expected_type   = rb2cxx::object<Type>(rb_expected_type);
+    Value const& arg_value      = rb2cxx::object<Value>(arg);
+    Type const& arg_type        = arg_value.getType();     
 
-    if (value_type == arg_type)
+    if (arg_type == expected_type)
     {
-        if (value_type.getCategory() == Type::Pointer)
-            return rb_dlptr_new(*reinterpret_cast<void**>(value.getData()), value_type.getSize(), do_not_delete);
-        else if (value_type.getCategory() == Type::Numeric)
-            return rb_funcall(arg_val, rb_intern("to_ruby"), 0);
+        if (arg_type.getCategory() == Type::Pointer)
+            return rb_dlptr_new(*reinterpret_cast<void**>(arg_value.getData()), arg_type.getSize(), do_not_delete);
+        else if (arg_type.getCategory() == Type::Numeric)
+            return rb_funcall(arg, rb_intern("to_ruby"), 0);
         else
             return Qnil;
     }
 
     // There is only pointers left to handle
-    if (arg_type.getCategory() != Type::Pointer)
+    if (expected_type.getCategory() != Type::Pointer)
         return Qnil;
 
-    Pointer const& ptr_type   = static_cast<Pointer const&>(arg_type);
-    Type const& pointed_type  = ptr_type.getIndirection();
+    Pointer const& expected_ptr_type   = static_cast<Pointer const&>(expected_type);
+    Type const& expected_pointed_type  = expected_ptr_type.getIndirection();
 
     // /void == /nil, so that if expected_type is null, then 
     // it is because the argument can hold any kind of pointers
-    if (pointed_type.isNull() || value_type == pointed_type)
-        return rb_funcall(arg_val, rb_intern("to_dlptr"), 0);
+    if (expected_pointed_type.isNull() || expected_pointed_type == arg_type)
+        return rb_funcall(arg, rb_intern("to_dlptr"), 0);
     
     // One thing left: array -> pointer convertion
-    if (! value_type.getCategory() == Type::Array)
+    if (! arg_type.getCategory() == Type::Array)
         return Qnil;
 
-    Array const& array_type = static_cast<Array const&>(value_type);
-    if (array_type.getIndirection() != pointed_type)
+    Array const& array_type = static_cast<Array const&>(arg_type);
+    if (array_type.getIndirection() != expected_pointed_type)
         return Qnil;
-    return rb_funcall(arg_val, rb_intern("to_dlptr"), 0);
+    return rb_funcall(arg, rb_intern("to_dlptr"), 0);
 }
 
 static
