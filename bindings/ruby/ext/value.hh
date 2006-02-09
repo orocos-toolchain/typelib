@@ -68,8 +68,7 @@ static VALUE value_field_set(VALUE self, VALUE name, VALUE newval)
 static VALUE value_to_ruby(VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));
-    VALUE type = rb_iv_get(self, "@type");
-    VALUE registry = rb_iv_get(type, "@registry");
+    VALUE registry = value_get_registry(self);
     return typelib_to_ruby(value, registry);
 }
 
@@ -78,8 +77,7 @@ static VALUE value_pointer_deference(VALUE self)
     Value const& value(rb2cxx::object<Value>(self));
     Indirect const& indirect(static_cast<Indirect const&>(value.getType()));
     
-    VALUE rb_type  = rb_iv_get(self, "@type");
-    VALUE registry = rb_iv_get(rb_type, "@registry");
+    VALUE registry = value_get_registry(self);
 
     Value new_value( *reinterpret_cast<void**>(value.getData()), indirect.getIndirection() );
     return typelib_to_ruby(new_value, registry);
