@@ -289,8 +289,6 @@ module Typelib
                             # The thing which is not checked here is that there is no NULL bytes
                             # inside of the string.
                             arg.to_str.to_ptr
-                        else
-                            nil
                         end
 
             if !filtered
