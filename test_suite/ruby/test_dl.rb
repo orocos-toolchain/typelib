@@ -30,8 +30,7 @@ class TC_DL < Test::Unit::TestCase
         assert_equal(1, wrapper[a])
 
         wrapper = lib.wrap('test_ptr_return', 'struct A*')
-        a = wrapper.call
-        p a.class.name
+        a = wrapper.call.deference
         assert_equal(10, a.a)
         assert_equal(20, a.b)
         assert_equal(30, a.c)
