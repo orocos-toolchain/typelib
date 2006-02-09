@@ -24,13 +24,14 @@ class TC_DL < Test::Unit::TestCase
         wrapper = lib.wrap('test_ptr_passing', "int", "struct A*")
         a = registry.get("struct A").new(nil)
         set_struct_A_value(a)
-        assert_equal(1, wrapper[a.to_ptr])
-
-        # Now, test simple type coercion
+        # Untyped call a.to_dlptr is a pointer on A
+        assert_equal(1, wrapper[a.to_dlptr])
+        # Now, test struct A => struct A* conversion
         assert_equal(1, wrapper[a])
 
         wrapper = lib.wrap('test_ptr_return', 'struct A*')
         a = wrapper.call
+        p a.class.name
         assert_equal(10, a.a)
         assert_equal(20, a.b)
         assert_equal(30, a.c)

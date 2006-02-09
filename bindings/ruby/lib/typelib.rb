@@ -28,13 +28,23 @@ module Typelib
             def pretty_print(pp); pp.text name end
         end
 
-        def ==(other); self.class == other.class && to_ptr == other.to_ptr end
+        def ==(other)
+            if Type === other
+                self.class == other.class && to_dlptr == other.to_dlptr 
+            else
+                other == self.to_ruby
+            end
+        end
+
+        def to_ptr
+            self.class.to_ptr.new(@ptr.to_ptr)
+        end
 
         # Get a pointer on this value
-        def to_ptr; @ptr end
+        def to_dlptr; @ptr end
 
         def inspect
-            sprintf("<%s @%s (%s)>", self.class, @ptr.inspect, self.class.name)
+            sprintf("<%s @%s (%s)>", self.class, to_dlptr.inspect, self.class.name)
         end
     end
 
@@ -297,17 +307,8 @@ module Typelib
         # Get the return array
         ruby_returns = []
         if return_type
-            # There's no point of returning a simple value by pointer,
-            # so we assume that if the function returns a pointer on a simple
-            # type, that's what the user wants
-            if DL::PtrData === retval && !return_type.deference.null?
-                ruby_value = return_type.deference.new(retval).to_ruby
-
-                if Kernel.immediate?(ruby_value)
-                    ruby_returns << return_type.new(retval.to_ptr)
-                else
-                    ruby_returns << ruby_value
-                end
+            if DL::PtrData === retval
+                ruby_returns << return_type.new(retval.to_ptr)
             else
                 ruby_returns << retval
             end

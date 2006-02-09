@@ -96,7 +96,7 @@ VALUE filter_value_arg(VALUE self, VALUE arg_val, VALUE rb_arg_type)
     // /void == /nil, so that if expected_type is null, then 
     // it is because the argument can hold any kind of pointers
     if (pointed_type.isNull() || value_type == pointed_type)
-        return rb_funcall(arg_val, rb_intern("to_ptr"), 0);
+        return rb_funcall(arg_val, rb_intern("to_dlptr"), 0);
     
     // One thing left: array -> pointer convertion
     if (! value_type.getCategory() == Type::Array)
@@ -105,7 +105,7 @@ VALUE filter_value_arg(VALUE self, VALUE arg_val, VALUE rb_arg_type)
     Array const& array_type = static_cast<Array const&>(value_type);
     if (array_type.getIndirection() != pointed_type)
         return Qnil;
-    return rb_funcall(arg_val, rb_intern("to_ptr"), 0);
+    return rb_funcall(arg_val, rb_intern("to_dlptr"), 0);
 }
 
 static
@@ -247,7 +247,7 @@ static VALUE value_to_string(VALUE self)
 
 static VALUE kernel_is_immediate(VALUE klass, VALUE object)
 { return IMMEDIATE_P(object) ? Qtrue : Qfalse; }
-static VALUE dl_ptr_to_ptr(VALUE klass, VALUE ptr)
+static VALUE dl_ptr_to_ptr(VALUE ptr)
 {
     VALUE newptr = rb_dlptr_malloc(sizeof(void*), free);
     *reinterpret_cast<void**>(rb_dlptr2cptr(newptr)) = rb_dlptr2cptr(ptr);
@@ -307,6 +307,4 @@ extern "C" void Init_typelib_api()
     rb_define_method(rb_mKernel, "immediate?", RUBY_METHOD_FUNC(kernel_is_immediate), 1);
     rb_define_method(rb_cDLPtrData, "to_ptr", RUBY_METHOD_FUNC(dl_ptr_to_ptr), 0);
 }
-
-
 

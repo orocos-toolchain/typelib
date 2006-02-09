@@ -46,14 +46,26 @@ class TC_Value < Test::Unit::TestCase
         type = Registry.new.get("/int")
         assert_equal("/int", type.name)
         assert_nothing_raised { type == nil }
-        assert_nothing_raised { type =! nil }
+        assert_nothing_raised { type != nil }
+    end
 
+    def test_pointer_type
         type = Registry.new.build("/int*")
         assert_not_equal(type, type.deference)
         assert_not_equal(type, type.to_ptr)
         assert_not_equal(type.to_ptr, type.deference)
         assert_equal(type, type.deference.to_ptr)
         assert_equal(type, type.to_ptr.deference)
+    end
+    def test_pointer_value
+        type  = Registry.new.build("/int")
+        value = type.new(nil)
+        assert_equal(value.class, type)
+        ptr   = value.to_ptr
+        p ptr
+        p ptr.deference
+        p value
+        assert_equal(value, ptr.deference)
     end
 
     def test_string_handling
@@ -163,7 +175,7 @@ class TC_Value < Test::Unit::TestCase
         e_type = make_registry.get("EContainer")
         assert(e_type.respond_to?(:value))
         enum = e_type.value
-        assert_equal(%w{FIRST SECOND THIRD FOURTH LAST}.to_set, enum.keys.to_set)
+        assert_equal([["FIRST", 0], ["SECOND", 1], ["THIRD", -1], ["FOURTH", -2], ["LAST", -1]].to_set, enum.keys.to_set)
 
         e = e_type.new(nil)
         assert(e.respond_to?(:value))
