@@ -8,11 +8,13 @@
 
 using namespace boost::unit_test;
 
-#if BOOST_VERSION < 103300
+#ifndef BOOST_REQUIRE_THROW
+#  define BOOST_REQUIRE_THROW(s,c) BOOST_CHECK_THROW(s,c)
+#  define BOOST_REQUIRE_NO_THROW(s) BOOST_CHECK_NO_THROW(s)
+#  define BOOST_REQUIRE_EQUAL(s,c) BOOST_CHECK_EQUAL(s,c)
+#endif
 
-#  ifndef BOOST_REQUIRE_THROW
-#    define BOOST_REQUIRE_THROW(s,c) BOOST_CHECK_THROW(s,c)
-#  endif
+#if BOOST_VERSION < 103300
 inline void set_log_threshold_level(log_level lev)
 { unit_test_log::instance().set_log_threshold_level(lev); }
 #else

@@ -26,11 +26,11 @@ public:
             
             ostringstream stream;
             stream << csv_header(type, "base");
-            BOOST_REQUIRE_EQUAL("base", stream.str());
+            BOOST_CHECK_EQUAL("base", stream.str());
 
             stream.str("");
             stream << csv(type, &f32);
-            BOOST_REQUIRE_EQUAL("0.52", stream.str());
+            BOOST_CHECK_EQUAL("0.52", stream.str());
         }
         
         {
@@ -44,11 +44,11 @@ public:
                 A a = { 10, 20, 'b', 52 };
                 Type const& a_type = *registry->get("/struct A");
                 stream << csv_header(a_type, "a");
-                BOOST_REQUIRE_EQUAL("a.a a.b a.c a.d", stream.str());
+                BOOST_CHECK_EQUAL("a.a a.b a.c a.d", stream.str());
                 
                 stream.str("");
                 stream << csv(a_type, &a);
-                BOOST_REQUIRE_EQUAL("10 20 b 52", stream.str());
+                BOOST_CHECK_EQUAL("10 20 b 52", stream.str());
             }
         }
     }

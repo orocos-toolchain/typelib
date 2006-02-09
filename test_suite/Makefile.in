@@ -17,12 +17,12 @@ typelib_LDFLAGS = $(top_builddir)/typelib/libtypeLib.la $(top_builddir)/lang/cim
 ruby/Makefile: ruby/extconf.rb
 	$(RUBY) -C ruby extconf.rb
 
-build: ruby/extconf.rb
+build: ruby/Makefile
 	$(MAKE) -C ruby
 
 ifeq ($(HAS_RUBY_SUPPORT),yes)
-test: ruby_tests
-ruby_tests:
+test: ruby-test
+ruby-test:
 	cd $(builddir)/ruby && $(TESTRB) $(top_srcdir)/test_suite/ruby
 endif
 

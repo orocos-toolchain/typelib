@@ -24,10 +24,10 @@ public:
         uint16_t ui16 = 15;
         int32_t  i32  = 456;
 
-        BOOST_REQUIRE_EQUAL(f32, value_cast<float>(&f32, *registry.get("float")));
-        BOOST_REQUIRE_EQUAL(ui16, value_cast<uint16_t>(&ui16, *registry.get("uint16_t")));
-        BOOST_REQUIRE_EQUAL(i32, value_cast<int32_t>(&i32, *registry.get("int32_t")));
-        BOOST_REQUIRE_THROW(value_cast<float>(&i32, *registry.get("int32_t")), BadValueCast);
+        BOOST_CHECK_EQUAL(f32, value_cast<float>(&f32, *registry.get("float")));
+        BOOST_CHECK_EQUAL(ui16, value_cast<uint16_t>(&ui16, *registry.get("uint16_t")));
+        BOOST_CHECK_EQUAL(i32, value_cast<int32_t>(&i32, *registry.get("int32_t")));
+        BOOST_CHECK_THROW(value_cast<float>(&i32, *registry.get("int32_t")), BadValueCast);
     }
     
     // Tests structure handling
@@ -44,10 +44,10 @@ public:
             A a = { 10, 20, 'b', 52 };
             Value v_a(&a, *registry.get("/struct A"));
 
-            BOOST_REQUIRE_THROW( value_get_field(v_a, "does_not_exists"), FieldNotFound );
-            BOOST_REQUIRE_EQUAL(a.a, value_cast<long>(value_get_field(v_a, "a")));
-            BOOST_REQUIRE_EQUAL(a.b, value_cast<long>(value_get_field(v_a, "b")));
-            BOOST_REQUIRE_EQUAL(a.c, value_cast<char>(value_get_field(v_a, "c")));
+            BOOST_CHECK_THROW( value_get_field(v_a, "does_not_exists"), FieldNotFound );
+            BOOST_CHECK_EQUAL(a.a, value_cast<long>(value_get_field(v_a, "a")));
+            BOOST_CHECK_EQUAL(a.b, value_cast<long>(value_get_field(v_a, "b")));
+            BOOST_CHECK_EQUAL(a.c, value_cast<char>(value_get_field(v_a, "c")));
 
             B b;
             b.a = a;
@@ -56,9 +56,9 @@ public:
 
             Value v_b(&b, *registry.get("/B"));
             Value v_b_a(value_get_field(v_b, "a"));
-            BOOST_REQUIRE_EQUAL(a.a, value_cast<long>(value_get_field(v_b_a, "a")));
-            BOOST_REQUIRE_EQUAL(a.b, value_cast<long>(value_get_field(v_b_a, "b")));
-            BOOST_REQUIRE_EQUAL(a.c, value_cast<char>(value_get_field(v_b_a, "c")));
+            BOOST_CHECK_EQUAL(a.a, value_cast<long>(value_get_field(v_b_a, "a")));
+            BOOST_CHECK_EQUAL(a.b, value_cast<long>(value_get_field(v_b_a, "b")));
+            BOOST_CHECK_EQUAL(a.c, value_cast<char>(value_get_field(v_b_a, "c")));
         }
     }
 };

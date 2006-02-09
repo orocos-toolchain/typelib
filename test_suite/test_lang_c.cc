@@ -23,59 +23,59 @@ public:
         utilmm::config_set config;
         
         // Load the file in registry
-        BOOST_REQUIRE_THROW( importer->load("does_not_exist", config, registry), ImportError);
-        BOOST_REQUIRE_THROW( importer->load("test_cimport.h", config, registry), ImportError );
+        BOOST_CHECK_THROW( importer->load("does_not_exist", config, registry), ImportError);
+        BOOST_CHECK_THROW( importer->load("test_cimport.h", config, registry), ImportError );
         {
             Registry temp_registry;
             config.set("include", "../");
             config.set("define", "GOOD");
-            BOOST_REQUIRE_NO_THROW( importer->load("test_cimport.h", config, temp_registry) );
+            BOOST_CHECK_NO_THROW( importer->load("test_cimport.h", config, temp_registry) );
         }
         {
             Registry temp_registry;
             config.insert("rawflag", "-I../");
             config.insert("rawflag", "-DGOOD");
-            BOOST_REQUIRE_NO_THROW( importer->load("test_cimport.h", config, temp_registry) );
+            BOOST_CHECK_NO_THROW( importer->load("test_cimport.h", config, temp_registry) );
         }
 
         BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
 
         // Check that the types are defined
-        BOOST_REQUIRE( registry.has("/struct A") );
-        BOOST_REQUIRE( registry.has("/struct B") );
-        BOOST_REQUIRE( registry.has("/ADef") );
-        BOOST_REQUIRE( registry.has("/B") );
-        BOOST_REQUIRE( registry.has("/OpaqueType") );
+        BOOST_CHECK( registry.has("/struct A") );
+        BOOST_CHECK( registry.has("/struct B") );
+        BOOST_CHECK( registry.has("/ADef") );
+        BOOST_CHECK( registry.has("/B") );
+        BOOST_CHECK( registry.has("/OpaqueType") );
 
         // Check that the size of B.a is the same as A
         Compound const* b   = static_cast<Compound const*>(registry.get("/B"));
         Field  const* b_a = b->getField("a");
-        BOOST_REQUIRE_EQUAL( &(b_a->getType()), registry.get("/ADef") );
+        BOOST_CHECK_EQUAL( &(b_a->getType()), registry.get("/ADef") );
 
         // Check the type of c (array of floats)
         Field  const* b_c = b->getField("c");
-        BOOST_REQUIRE_EQUAL( &(b_c->getType()), registry.get("/float[100]") );
-        BOOST_REQUIRE_EQUAL( b_c->getType().getCategory(), Type::Array );
+        BOOST_CHECK_EQUAL( &(b_c->getType()), registry.get("/float[100]") );
+        BOOST_CHECK_EQUAL( b_c->getType().getCategory(), Type::Array );
 
         // Check the array indirection
         Array const& b_c_array(dynamic_cast<Array const&>(b_c->getType()));
-        BOOST_REQUIRE_EQUAL( &b_c_array.getIndirection(), registry.get("/float") );
+        BOOST_CHECK_EQUAL( &b_c_array.getIndirection(), registry.get("/float") );
 
         // Check the sizes
-        BOOST_REQUIRE_EQUAL( registry.get("/struct A")->getSize(), sizeof(A) );
-        BOOST_REQUIRE_EQUAL( b->getSize(), sizeof(B) );
-        BOOST_REQUIRE_EQUAL( b_c_array.getDimension(), 100UL );
+        BOOST_CHECK_EQUAL( registry.get("/struct A")->getSize(), sizeof(A) );
+        BOOST_CHECK_EQUAL( b->getSize(), sizeof(B) );
+        BOOST_CHECK_EQUAL( b_c_array.getDimension(), 100UL );
 
         // Test the forms of DEFINE_STR and DEFINE_ID
-        BOOST_REQUIRE( registry.has("/DEFINE_STR") );
-        BOOST_REQUIRE( registry.has("/DEFINE_ID") );
-        BOOST_REQUIRE_EQUAL(Type::Compound, registry.get("/DEFINE_STR")->getCategory());
-        BOOST_REQUIRE_EQUAL(Type::Pointer, registry.get("/DEFINE_ID")->getCategory());
-        BOOST_REQUIRE( *registry.get("/DEFINE_STR") == static_cast<Pointer const*>(registry.get("/DEFINE_ID"))->getIndirection());
+        BOOST_CHECK( registry.has("/DEFINE_STR") );
+        BOOST_CHECK( registry.has("/DEFINE_ID") );
+        BOOST_CHECK_EQUAL(Type::Compound, registry.get("/DEFINE_STR")->getCategory());
+        BOOST_CHECK_EQUAL(Type::Pointer, registry.get("/DEFINE_ID")->getCategory());
+        BOOST_CHECK( *registry.get("/DEFINE_STR") == static_cast<Pointer const*>(registry.get("/DEFINE_ID"))->getIndirection());
 
         // Check the enum behaviour
-        BOOST_REQUIRE( registry.has("/E") );
-        BOOST_REQUIRE_EQUAL(registry.get("/E")->getCategory(), Type::Enum);
+        BOOST_CHECK( registry.has("/E") );
+        BOOST_CHECK_EQUAL(registry.get("/E")->getCategory(), Type::Enum);
         Enum const& e(dynamic_cast<Enum const&>(*registry.get("/E")));
         Enum::ValueMap const& map = e.values();
 
@@ -97,7 +97,7 @@ public:
         {
             Enum::ValueMap::const_iterator it = map.find(exp_it->name);
             BOOST_REQUIRE( it != map.end() );
-            BOOST_REQUIRE_EQUAL(exp_it->value, it->second);
+            BOOST_CHECK_EQUAL(exp_it->value, it->second);
         }
     }
 };
