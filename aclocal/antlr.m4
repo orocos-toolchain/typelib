@@ -1,5 +1,5 @@
-dnl $Id: antlr.m4 1361 2006-02-07 08:19:53Z sjoyeux $
-dnl $Rev: 1361 $
+dnl $Id: antlr.m4 1402 2006-02-09 13:30:56Z sjoyeux $
+dnl $Rev: 1402 $
 
 AC_DEFUN([CLBS_CHECK_ANTLR], [
     AC_ARG_VAR(ANTLR, [the Antlr tool])
@@ -37,8 +37,6 @@ AC_DEFUN([CLBS_CHECK_ANTLR], [
     # Transform <path>/libantlr.a into -L<path> -lantlr, which is more libtool friendly
     antlr_libdir=`dirname $ANTLR_LIBS`
     antlr_libname=`echo "$ANTLR_LIBS" | sed "s#$antlr_libdir/lib## ; s#\.a##"`
-    echo $antlr_libdir
-    echo $antlr_libname
     ANTLR_LIBS="\"-L$antlr_libdir\" \"-l$antlr_libname\""
     AC_SUBST(ANTLR_LIBS)
 ])
