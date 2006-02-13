@@ -26,6 +26,10 @@ module Typelib
             end
             def to_ptr; registry.build(name + "*") end
             def pretty_print(pp); pp.text name end
+
+            alias :__real_new__ :new
+            def wrap(ptr); __real_new__(ptr) end
+            def new; __real_new__(nil) end
         end
 
         def ==(other)
@@ -37,7 +41,7 @@ module Typelib
         end
 
         def to_ptr
-            self.class.to_ptr.new(@ptr.to_ptr)
+            self.class.to_ptr.wrap(@ptr.to_ptr)
         end
 
         # Get a pointer on this value
@@ -50,13 +54,28 @@ module Typelib
 
     class CompoundType < Type
         @writable = false
+        def initialize(ptr, init = nil)
+            super(ptr)
+            return unless init
+
+            # init is either an array of values (the fields in order) or a hash
+            # (named parameters)
+            if Array === init
+                # we assume that the values are given in order
+                init.each_with_index { |value, idx| self[self.class.fields[idx].first] = value }
+            elsif init.respond_to?(:each)
+                # init.each shall yield (name, value)
+                init.each { |name, value| self[name.to_s] = value }
+            else
+                raise ArgumentError, "expected either an array or a hash, got #{init.inspect}"
+            end
+        end
 
         # The extension defines a @fields array of [ name, offset, type ] arrays
         # They define the list of available fields defined by this type
         class << self
-            def each_field(&iter)
-                @fields.each(&iter)
-            end
+            def new(*init);         __real_new__(nil, *init) end
+            def wrap(ptr, *init);   __real_new__(ptr, *init) end
 
             def subclass_initialize
                 @fields = Array.new
@@ -77,10 +96,9 @@ module Typelib
                 end
             end
 
-            def [](name)
-                @fields.find { |n, t| n == name }.last
-                    
-            end
+            attr_reader :fields
+            def [](name); @fields.find { |n, t| n == name }.last end
+            def each_field(&iter); @fields.each(&iter) end
 
             def pretty_print(pp)
                 super
@@ -110,7 +128,6 @@ module Typelib
         def []=(name, value); set_field(name, value) end
         def [](name); get_field(name) end
         def to_ruby; self end
-
     end
 
     class ArrayType < Type
@@ -261,7 +278,7 @@ module Typelib
         return_spec.each do |index|
             next unless index > 0
             ary_idx = index - 1
-            args.insert(ary_idx, arg_types[ary_idx].deference.new(nil))
+            args.insert(ary_idx, arg_types[ary_idx].deference.new)
         end
 
         # Check we have the right count of arguments
@@ -309,7 +326,7 @@ module Typelib
         ruby_returns = []
         if return_type
             if DL::PtrData === retval
-                ruby_returns << return_type.new(retval.to_ptr)
+                ruby_returns << return_type.wrap(retval.to_ptr)
             else
                 ruby_returns << retval
             end
@@ -320,7 +337,7 @@ module Typelib
 
             value = retargs[ary_idx]
             type  = arg_types[ary_idx]
-            ruby_returns << type.deference.new(value).to_ruby
+            ruby_returns << type.deference.wrap(value).to_ruby
         end
 
         return *ruby_returns

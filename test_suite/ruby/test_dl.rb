@@ -22,7 +22,7 @@ class TC_DL < Test::Unit::TestCase
         assert_equal(1, wrapper[1, 2])
 
         wrapper = lib.wrap('test_ptr_passing', "int", "struct A*")
-        a = registry.get("struct A").new(nil)
+        a = registry.get("struct A").new
         set_struct_A_value(a)
         # Untyped call a.to_dlptr is a pointer on A
         assert_equal(1, wrapper[a.to_dlptr])
@@ -41,7 +41,7 @@ class TC_DL < Test::Unit::TestCase
     def test_ptr_changes
         # Check that parameters passed by pointer are changed
         wrapper = lib.wrap('test_ptr_argument_changes', nil, 'struct B*')
-        b = registry.get("struct B").new(nil)
+        b = registry.get("struct B").new
         wrapper[b]
         assert(check_B_c_value(b))
     end
@@ -55,8 +55,8 @@ class TC_DL < Test::Unit::TestCase
         # Check that plain structures aren't allowed
         assert_raises(ArgumentError) { lib.wrap('test_simple_function_wrapping', "int", "struct A") }
 
-        a = registry.get("struct A").new(nil)
-        b = registry.get("struct B").new(nil)
+        a = registry.get("struct A").new
+        b = registry.get("struct B").new
         # Check that pointers are properly typechecked
         wrapper = lib.wrap('test_ptr_return', 'struct A*')
         assert_raises(ArgumentError) { wrapper[b] }
@@ -119,7 +119,7 @@ class TC_DL < Test::Unit::TestCase
         assert_equal("string_return", wrapper[].to_string)
 
         wrapper = lib.wrap('test_string_argument_modification', 'void', 'char*', 'int')
-        buffer = lib.registry.build("char[256]").new(nil)
+        buffer = lib.registry.build("char[256]").new
         wrapper[buffer, 256]
         assert_equal("string_return", buffer.to_string)
     end

@@ -59,7 +59,7 @@ class TC_Value < Test::Unit::TestCase
     end
     def test_pointer_value
         type  = Registry.new.build("/int")
-        value = type.new(nil)
+        value = type.new
         assert_equal(value.class, type)
         ptr   = value.to_ptr
         p ptr
@@ -70,7 +70,7 @@ class TC_Value < Test::Unit::TestCase
 
     def test_string_handling
         buffer_t = Registry.new.build("/char[256]")
-        buffer = buffer_t.new(nil)
+        buffer = buffer_t.new
         
         # Check that .from_string.to_string is an identity
         assert_equal("first test", buffer.from_string("first test").to_string)
@@ -91,9 +91,13 @@ class TC_Value < Test::Unit::TestCase
         assert(a_type.b == registry.get("/long"))
 
         # Then, the same on values
-        a = a_type.new(nil)
+        a = a_type.new
         GC.start
         check_respond_to_fields(a)
+
+        # Check initialization
+        a = a_type.new :b => 10
+        assert_equal(10, a.b)
     end
 
     def check_respond_to_fields(a)
@@ -109,7 +113,7 @@ class TC_Value < Test::Unit::TestCase
     end
 
     def test_get
-        a = make_registry.get("/struct A").new(nil)
+        a = make_registry.get("/struct A").new
         GC.start
         a = set_struct_A_value(a)
         assert_equal(10, a.a)
@@ -119,7 +123,7 @@ class TC_Value < Test::Unit::TestCase
     end
 
     def test_set
-        a = make_registry.get("/struct A").new(nil)
+        a = make_registry.get("/struct A").new
         GC.start
         a.a = 10;
         a.b = 20;
@@ -129,7 +133,7 @@ class TC_Value < Test::Unit::TestCase
     end
 
     def test_recursive
-        b = make_registry.get("/struct B").new(nil)
+        b = make_registry.get("/struct B").new
         GC.start
         assert(b.respond_to?(:a))
         assert(! b.respond_to?(:a=))
@@ -143,7 +147,7 @@ class TC_Value < Test::Unit::TestCase
     end
 
     def test_array_basics
-        b = make_registry.get("/struct B").new(nil)
+        b = make_registry.get("/struct B").new
         GC.start
         assert(b.respond_to?(:c))
         assert(! b.respond_to?(:c=))
@@ -151,21 +155,21 @@ class TC_Value < Test::Unit::TestCase
         assert_equal(100, b.c.size)
     end
     def test_array_set
-        b = make_registry.get("/struct B").new(nil)
+        b = make_registry.get("/struct B").new
         (0..(b.c.size - 1)).each do |i|
             b.c[i] = Float(i)/10.0
         end
         check_B_c_value(b)
     end
     def test_array_get
-        b = make_registry.get("/struct B").new(nil)
+        b = make_registry.get("/struct B").new
         set_B_c_value(b)
         (0..(b.c.size - 1)).each do |i|
             assert( ( b.c[i] - Float(i)/10.0 ).abs < 0.01 )
         end
     end
     def test_array_each
-        b = make_registry.get("/struct B").new(nil)
+        b = make_registry.get("/struct B").new
         set_B_c_value(b)
         b.c.each_with_index do |v, i|
             assert( ( v - Float(i)/10.0 ).abs < 0.01 )
@@ -177,7 +181,7 @@ class TC_Value < Test::Unit::TestCase
         enum = e_type.value
         assert_equal([["FIRST", 0], ["SECOND", 1], ["THIRD", -1], ["FOURTH", -2], ["LAST", -1]].to_set, enum.keys.to_set)
 
-        e = e_type.new(nil)
+        e = e_type.new
         assert(e.respond_to?(:value))
         assert(e.respond_to?(:value=))
         e.value = 0

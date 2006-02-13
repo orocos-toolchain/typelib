@@ -8,7 +8,7 @@ namespace cxx2rb {
     {
         VALUE type      = type_wrap(v.getType(), registry);
         VALUE ptr       = rb_dlptr_new(v.getData(), v.getType().getSize(), do_not_delete);
-        return rb_funcall(type, rb_intern("new"), 1, ptr);
+        return rb_funcall(type, rb_intern("wrap"), 1, ptr);
     }
 }
 
@@ -23,9 +23,6 @@ static void value_delete(void* self) { delete reinterpret_cast<Value*>(self); }
 static VALUE value_alloc(VALUE klass)
 { return Data_Wrap_Struct(klass, 0, value_delete, new Value); }
 
-/** Initializes a Typelib::Value object using a Ruby::DL PtrData
- * object and a Typelib::Type object
- */
 static
 VALUE value_initialize(VALUE self, VALUE ptr)
 {
