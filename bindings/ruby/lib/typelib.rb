@@ -59,11 +59,11 @@ module Typelib
             end
 
             def subclass_initialize
-                @fields = Hash.new
+                @fields = Array.new
                 singleton_class = class << self; self end
 
                 get_fields.each do |name, offset, type|
-                    @fields[name] = type
+                    @fields << [name, type]
 
                     if !instance_methods.include?(name)
                         define_method(name, &lambda { || get_field(name) })
@@ -77,7 +77,10 @@ module Typelib
                 end
             end
 
-            def [](name); @fields[name] end
+            def [](name)
+                @fields.find { |n, t| n == name }.last
+                    
+            end
 
             def pretty_print(pp)
                 super
