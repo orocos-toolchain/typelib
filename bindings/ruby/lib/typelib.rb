@@ -60,14 +60,12 @@ module Typelib
 
             # init is either an array of values (the fields in order) or a hash
             # (named parameters)
-            if Array === init
-                # we assume that the values are given in order
-                init.each_with_index { |value, idx| self[self.class.fields[idx].first] = value }
-            elsif init.respond_to?(:each)
+            if Hash === init
                 # init.each shall yield (name, value)
                 init.each { |name, value| self[name.to_s] = value }
             else
-                raise ArgumentError, "expected either an array or a hash, got #{init.inspect}"
+                # we assume that the values are given in order
+                init.each_with_index { |value, idx| self[self.class.fields[idx].first] = value }
             end
         end
 
