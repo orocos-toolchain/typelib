@@ -47,11 +47,8 @@ public:
     {
         m_registry = registry;
         m_value = Qnil;
-        try { 
-            ValueVisitor::apply(value);
-            return m_value;
-        }
-        catch(UnsupportedType) { return Qnil; }
+        ValueVisitor::apply(value);
+        return m_value;
     }
 };
 
@@ -70,8 +67,24 @@ class RubySetter : public ValueVisitor
     virtual bool visit_ (float   & value) { value = NUM2DBL(m_value); return false; }
     virtual bool visit_ (double  & value) { value = NUM2DBL(m_value); return false; }
 
-    virtual bool visit_(Value const& v, Array const&)      { throw UnsupportedType(v.getType()); }
-    virtual bool visit_(Value const& v, Compound const&)   { throw UnsupportedType(v.getType()); }
+    virtual bool visit_(Value const& v, Array const& a)
+    { 
+        if (a.getIndirection().getName() == "/char")
+        {
+            char*  value = StringValuePtr(m_value);
+            size_t length = strlen(value);
+            if (length < a.getDimension())
+            {
+                memcpy(v.getData(), value, length + 1);
+                return false;
+            }
+        }
+        throw UnsupportedType(v.getType()); 
+    }
+    virtual bool visit_(Value const& v, Compound const& c)
+    { 
+        throw UnsupportedType(v.getType()); 
+    }
     virtual bool visit_(Enum::integral_type& v, Enum const& e)
     { 
         v = rb2cxx::enum_value(m_value, e);
@@ -82,14 +95,11 @@ public:
     RubySetter()
         : ValueVisitor(false) {}
 
-    bool apply(Value value, VALUE new_value)
+    VALUE apply(Value value, VALUE new_value)
     {
         m_value = new_value;
-        try { 
-            ValueVisitor::apply(value); 
-            return new_value;
-        }
-        catch(UnsupportedType)      { return Qnil; }
+        ValueVisitor::apply(value); 
+        return new_value;
     }
 };
 
@@ -111,13 +121,18 @@ static VALUE typelib_to_ruby(Value value, VALUE name, VALUE registry)
         Value field_value = value_get_field(value, StringValuePtr(name));
         return typelib_to_ruby(field_value, registry);
     } 
-    catch(FieldNotFound)   { return Qnil; } 
+    catch(FieldNotFound)   {} 
+    rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name));
 }
 
 /* Converts a Ruby's VALUE to Typelib::Value */
 static VALUE typelib_from_ruby(Value value, VALUE new_value)
 {
-    RubySetter setter;
-    return setter.apply(value, new_value);
+    std::string type_name;
+    try {
+        RubySetter setter;
+        return setter.apply(value, new_value);
+    } catch(UnsupportedType e) { type_name = e.type.getName(); }
+    rb_raise(rb_eTypeError, "cannot assign to '%s'", type_name.c_str());
 }
 

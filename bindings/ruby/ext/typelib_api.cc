@@ -61,9 +61,7 @@ VALUE filter_immediate_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
         VALUE ptr = rb_dlptr_malloc(pointed_type.getSize(), free);
 
         Value typelib_value(rb_dlptr2cptr(ptr), pointed_type);
-        if (!typelib_from_ruby(typelib_value, arg))
-            return Qnil;
-
+        typelib_from_ruby(typelib_value, arg);
         return ptr;
     }
     return arg;

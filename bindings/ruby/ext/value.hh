@@ -55,12 +55,13 @@ static VALUE value_field_get(VALUE value, VALUE name)
 static VALUE value_field_set(VALUE self, VALUE name, VALUE newval)
 { 
     Value& tlib_value(rb2cxx::object<Value>(self));
-    try { 
+
+    try {
         Value field_value = value_get_field(tlib_value, StringValuePtr(name));
         typelib_from_ruby(field_value, newval);
         return newval;
-    } 
-    catch(FieldNotFound)   { return Qnil; } 
+    } catch(FieldNotFound) {}
+    rb_raise(rb_eArgError, "no field '%s' in '%s'", StringValuePtr(name), rb_obj_classname(self));
 }
 static VALUE value_to_ruby(VALUE self)
 {
