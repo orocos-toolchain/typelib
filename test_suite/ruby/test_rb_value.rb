@@ -98,6 +98,9 @@ class TC_Value < Test::Unit::TestCase
         # Check initialization
         a = a_type.new :b => 10
         assert_equal(10, a.b)
+        a = a_type.new 10, 20
+        assert_equal(10, a.a)
+        assert_equal(20, a.b)
     end
 
     def check_respond_to_fields(a)

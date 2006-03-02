@@ -21,6 +21,11 @@ class TC_DL < Test::Unit::TestCase
         wrapper = lib.wrap('test_simple_function_wrapping', "int", "int", "short")
         assert_equal(1, wrapper[1, 2])
 
+        wrapper = lib.wrap('test_simple_function_wrapping', "int", lib.registry.get("int"), "short")
+        assert_equal(1, wrapper[1, 2])
+
+        assert_raises(ArgumentError) { lib.wrap('test_simple_function_wrapping', "int", wrapper, "short") }
+
         wrapper = lib.wrap('test_ptr_passing', "int", "struct A*")
         a = registry.get("struct A").new
         set_struct_A_value(a)
@@ -35,7 +40,6 @@ class TC_DL < Test::Unit::TestCase
         assert_equal(20, a.b)
         assert_equal(30, a.c)
         assert_equal(40, a.d)
-
     end
 
     def test_ptr_changes
@@ -54,6 +58,11 @@ class TC_DL < Test::Unit::TestCase
 
         # Check that plain structures aren't allowed
         assert_raises(ArgumentError) { lib.wrap('test_simple_function_wrapping', "int", "struct A") }
+        # Test output index validation
+        assert_raises(ArgumentError) { lib.wrap('test_ptr_argument_changes', [nil, 2], 'struct B*') }
+        assert_raises(ArgumentError) { lib.wrap('test_ptr_argument_changes', [nil, -2], 'struct B*') }
+        assert_raises(ArgumentError) { lib.wrap('test_ptr_argument_changes', [nil, 0], 'struct B*') }
+        assert_raises(ArgumentError) { lib.wrap('test_simple_function_wrapping', ["int", 1], "int") }
 
         a = registry.get("struct A").new
         b = registry.get("struct B").new
@@ -66,6 +75,7 @@ class TC_DL < Test::Unit::TestCase
         wrapper = lib.wrap('test_ptr_argument_changes', [nil, 1], 'struct B*')
         b = wrapper.call
         assert(check_B_c_value(b))
+
 
         wrapper = lib.wrap('test_arg_input_output', [nil, -1], 'int*', 'INPUT_OUTPUT_MODE')
         assert_raises(ArgumentError) { wrapper[:OUTPUT] }
