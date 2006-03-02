@@ -54,9 +54,10 @@ module Typelib
 
     class CompoundType < Type
         @writable = false
-        def initialize(ptr, init = nil)
+        def initialize(ptr, *init)
             super(ptr)
-            return unless init
+            return if init.empty?
+            init = *init
 
             # init is either an array of values (the fields in order) or a hash
             # (named parameters)
