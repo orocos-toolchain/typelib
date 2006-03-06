@@ -131,7 +131,7 @@ namespace Typelib
     {
         TypeSpec spec;
         try { spec = parse(registry, full_name); }
-        catch(...) { return 0; }
+        catch(Undefined) { return 0; }
         return spec.first;
     }
 

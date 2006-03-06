@@ -99,7 +99,8 @@ namespace Typelib
         }
     };
 
-    /** casts a Value object to a given simple type T */
+    /** Casts a Value object to a given simple type T 
+     * @throws BadValueCast */
     template<typename T>
     T& value_cast(Value v)
     {
@@ -107,11 +108,13 @@ namespace Typelib
         return caster.apply(v);
     }
 
-    /** casts a pointer to a given simple type T using \c type as the type for \c *ptr */
+    /** Casts a pointer to a given simple type T using \c type as the type for \c *ptr 
+     * @throws BadValueCast */
     template<typename T>
     T& value_cast(void* ptr, Type const& type)
     { return value_cast<T>(Value(ptr, type)); }
 
+    /** Exception raised if a non existent field is required */
     class FieldNotFound : public BadValueCast 
     {
     public:
@@ -121,7 +124,8 @@ namespace Typelib
             : name(name_) {}
     };
 
-    /** Gets the object describing a given field */
+    /** Gets the object describing a given field 
+     * Throws FieldNotFound if the field is not a field of the base type */
     class FieldGetter : public ValueVisitor
     {
         std::string m_name;
@@ -153,12 +157,16 @@ namespace Typelib
         
     };
 
+    /** Get the Value object for a named field in @c v 
+     * @throws FieldNotFound if @name is not a field of the base type */
     inline Value value_get_field(Value v, std::string const& name)
     {
         FieldGetter getter;
         return getter.apply(v, name);
     }
 
+    /** Get the Value object for a named field in @c v 
+     * @throws FieldNotFound if @name is not a field of the base type */
     inline Value value_get_field(void* ptr, Type const& type, std::string const& name)
     {
         Value v(ptr, type);

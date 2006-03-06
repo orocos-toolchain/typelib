@@ -16,6 +16,8 @@ namespace Typelib {
         template<> struct uint_t<64> { typedef uint64_t type; };
     }
 
+    /** This template converts base C types (long, int, ...) in their normalized form (uin8_t, int16_t, ...) 
+     * For consistency, it is also specialized for float and double */
     template<typename T>
     struct normalized_numeric_type 
     {
@@ -30,8 +32,8 @@ namespace Typelib {
         typedef typename getter::type           type;
     };
 
-    template<> struct normalized_numeric_type<float>  { typedef float type; };
-    template<> struct normalized_numeric_type<double> { typedef double type; };
+    template<> struct normalized_numeric_type<float>  { typedef float	type; };
+    template<> struct normalized_numeric_type<double> { typedef double	type; };
 }
 
 #endif

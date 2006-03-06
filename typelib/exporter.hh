@@ -9,6 +9,21 @@ namespace Typelib
 {
     class Type;
     class Registry;
+
+    class ExportPlugin
+    {
+        std::string m_name;
+
+    public:
+        ExportPlugin(std::string const& name)
+            : m_name(name) {}
+        virtual ~ExportPlugin() {}
+
+        std::string getName() const { return m_name; }
+        virtual Exporter* create() = 0;
+    };
+
+    /** Base class for export plugins */
     class Exporter
     {
     protected:
@@ -20,9 +35,7 @@ namespace Typelib
     public:
         virtual ~Exporter() {}
 
-        /** Serialize a whole registry
-         * It first calls begin, then save for all types in \c registry, and
-         * finally end
+        /** Serialize a whole registry using this exporter
          * 
          * @arg stream   the stream to write to
          * @arg registry the registry to be saved
@@ -31,8 +44,9 @@ namespace Typelib
             ( std::ostream& stream
             , Registry const& registry );
 
-        /** Serialize one type in \c stream. If recursive is true, it saves
-         * also all types \c type references */
+        /** Serialize one type in \c stream. It is called by Registry::save(ostream&, Registry const&) 
+	 * @arg stream	the stream to write to
+	 * @arg type	the type to be serialized */
         virtual bool save
             ( std::ostream& stream
             , RegistryIterator const& type ) = 0;

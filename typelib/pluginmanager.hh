@@ -8,23 +8,12 @@
 
 namespace Typelib
 {
-    // We should create a NamedObject class somewhere... :p
     class Registry;
     
     class Exporter;
-    class ExportPlugin
-    {
-        std::string m_name;
+    class ExportPlugin;
 
-    public:
-        ExportPlugin(std::string const& name)
-            : m_name(name) {}
-        virtual ~ExportPlugin() {}
-
-        std::string getName() const { return m_name; }
-        virtual Exporter* create() = 0;
-    };
-
+    /** Base class for exception thrown during import */
     class ImportError : public std::exception
     {
         std::string m_file;
@@ -46,19 +35,9 @@ namespace Typelib
     };
 
     class Importer;
-    class ImportPlugin
-    {
-        std::string m_name;
-        
-    public:
-        ImportPlugin(std::string const& name)
-            : m_name(name) {}
-        virtual ~ImportPlugin() {}
-
-        std::string getName() const { return m_name; }
-        virtual Importer* create() = 0;
-    };
+    class ImportPlugin;
     
+    /** Exception thrown when an unknown plugin is found */
     class PluginNotFound : public std::exception {};
 
     /** The plugin manager 
@@ -66,7 +45,7 @@ namespace Typelib
      * It is a singleton, using utilmm::singleton
      * You have to access it using
      * <code>
-     *  utilmm::singleton::use<PluginManager> manager;
+     *  PluginManager::self manager;
      *
      *  manager->importer()
      * </code>
@@ -83,36 +62,72 @@ namespace Typelib
         ~PluginManager();
         
     public:
+	/** Registers a new exporter */
         bool add(ExportPlugin* plugin);
-        bool add(ImportPlugin* plugin);
-        
+	/** Build a new import plugin from its plugin name
+	 * @throws PluginNotFound */
         Importer* importer(std::string const& name) const;
+	/** Registers a new importer */
+        bool add(ImportPlugin* plugin);
+	/** Build a new export plugin from its plugin name 
+	 * @throws PluginNotFound */
         Exporter* exporter(std::string const& name) const;
 
+	/** Converts a registry into string form
+	 * @arg kind	the output format. It has to be a valid exporter name
+	 * @arg registry the registry to export
+	 * @throws PluginNotFound if \c kind is invalid
+	 * @throws ExportError if an error occured during the export
+	 */
         static std::string save(std::string const& kind, Registry const& registry);
-        static void save(std::string const& kind, Registry const& registry, std::ostream& into);
+       	/** Exports a registry to an ostream object
+	 * @arg kind	    the output format. It has to be a valid exporter name
+	 * @arg registry    the registry to export
+	 * @arg into	    the ostream object to export to
+	 * @throws PluginNotFound if \c kind is invalid
+	 * @throws ExportError if an error occured during the export
+	 */
+	static void save(std::string const& kind, Registry const& registry, std::ostream& into);
 
+	/** Creates a registry from a istream object
+	 * @see Importer::load
+	 */
         static Registry* load
             ( std::string const& kind
             , std::istream& stream
             , utilmm::config_set const& config );
-        static void load
+	
+       	/** Imports types from a istream object to an already existing registry
+	 * @see Importer::load
+	 */
+	static void load
             ( std::string const& kind
             , std::istream& stream
             , utilmm::config_set const& config
             , Registry& into );
 
+       	/** Creates a registry from a file
+	 * @see Importer::load
+	 */
         static Registry* load
             ( std::string const& kind
             , std::string const& file
             , utilmm::config_set const& config );
+
+       	/** Imports types from a file into an already existing registry
+	 * @see Importer::load
+	 */
         static void load
             ( std::string const& kind
             , std::string const& file
             , utilmm::config_set const& config
             , Registry& into );
 
+	/** The one PluginManager object. See main PluginManager documentation
+	 * for its use.
+	 */
         typedef utilmm::singleton::use<PluginManager> self;
+
     private:
         friend class utilmm::singleton::wrapper<PluginManager>;
     };

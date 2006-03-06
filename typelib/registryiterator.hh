@@ -8,6 +8,8 @@
 namespace Typelib
 {
     class Registry;
+
+    /** Iterator on the types of the registry */
     class RegistryIterator 
         : public boost::iterator_facade
             < RegistryIterator
@@ -20,9 +22,16 @@ namespace Typelib
         RegistryIterator(RegistryIterator const& other)
             : m_iter(other.m_iter) {}
 
+	/** The type name */
         std::string getName() const { return m_iter->first; }
+	/** The source ID for this type */
         std::string getSource() const { return m_iter->second.source_id; }
+	/** Returns true if the type is an alias for another type */
         bool isAlias() const { return m_iter->first != m_iter->second.type->getName(); }
+	/** Returns the aliased type if isAlias() is true */
+	Type const& aliased() const { return *m_iter->second.type; }
+	/** Returns true if the type should be saved on export. Derived types (arrays, pointers) 
+	 * are not persistent */
         bool isPersistent() const { return m_iter->second.persistent; }
 
     private:

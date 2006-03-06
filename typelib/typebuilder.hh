@@ -10,6 +10,7 @@ namespace Typelib
 {
     class Registry;
 
+    /** Helper class to easily build a derived type (pointer, array) */
     class TypeBuilder
     {
         std::string m_basename;
@@ -53,8 +54,13 @@ namespace Typelib
         /** Get the current type */
         const Type& getType() const;
 
+	/** Build a type from its full name 
+	 * @return the new type or 0 if it can't be built */
         static const Type* build(Registry& registry, const std::string& full_name);
+	/** Get base name, that is the type \c full_name is derived from */
         static std::string getBaseTypename(const std::string& full_name);
+	/** Get base type, that is the type \c full_name is derived from
+	 * @return the new type or 0 if it can't be built */
         static const Type* getBaseType(const Registry& registry, const std::string& full_name);
 };
 };

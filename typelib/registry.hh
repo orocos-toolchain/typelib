@@ -116,7 +116,7 @@ namespace Typelib
         /** Checks for the availability of a particular type
          *
          * If \c name is a modified version (pointer or array) of a known
-         * type, then the according object is created
+         * type, then the according object can be created
          *
          * @arg name the type name
          * @return true if the Type exists or can be built, false otherwise
@@ -161,7 +161,9 @@ namespace Typelib
          * @see setDefaultNamespace getDefaultNamespace */
         std::string getFullName (const std::string& name) const;
 
+	/** Iterator pointing on the first type of the registry */
         RegistryIterator begin() const;
+	/** Past-the-end iterator on the registry */
         RegistryIterator end() const;
         
         /** Returns a null type */

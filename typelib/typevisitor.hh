@@ -13,6 +13,13 @@ namespace Typelib
             : type(type_) {}
     };
     
+    /** Base class for type visitors 
+     * Given a Type object, TypeVisitor::apply dispatches the
+     * casted type to the appropriate visit_ method
+     *
+     * The default visit_ methods either do nothing or visits the
+     * types recursively (for arrays, pointers and compound types) 
+     */
     class TypeVisitor
     {
         bool dispatch(Type const& type);

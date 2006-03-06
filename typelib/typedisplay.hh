@@ -44,8 +44,14 @@ namespace Typelib
             return stream;
         }
     }
+
     inline details::do_type_display type_display(Type const& type, std::string const& indent = "")
     { return details::do_type_display(type, indent); }
+
+    /** Pretty prints a type on a given output stream
+     * @arg stream  the stream to output to
+     * @arg indent  the type to display
+     */
     inline std::ostream& operator << (std::ostream& stream, Type const& type)
     { return stream << type_display(type); }
 }
