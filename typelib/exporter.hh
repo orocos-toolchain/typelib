@@ -2,6 +2,7 @@
 #define TYPELIB_EXPORTER_HH
 
 #include <iosfwd>
+#include "pluginmanager.hh"
 #include "registryiterator.hh"
 
 namespace Typelib
