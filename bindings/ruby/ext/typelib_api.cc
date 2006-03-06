@@ -2,11 +2,10 @@
 extern "C" {
 #include <dl.h>
 }
+#include <typelib/value.hh>
 #include <typelib/registry.hh>
 #include <typelib/typevisitor.hh>
-#include <typelib/value.hh>
 #include <typelib/pluginmanager.hh>
-#include <typelib/importer.hh>
 #include <utilmm/configfile/configset.hh>
 
 using namespace Typelib;
@@ -268,6 +267,7 @@ extern "C" void Init_typelib_api()
     // do_import is called by the Ruby-defined import, which formats the 
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 3);
+    rb_define_method(cRegistry, "to_xml", RUBY_METHOD_FUNC(registry_to_xml), 0);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
     rb_define_alloc_func(cType, value_alloc);

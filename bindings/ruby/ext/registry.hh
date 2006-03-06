@@ -46,9 +46,6 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
 {
     Registry& registry = rb2cxx::object<Registry>(self);
     
-    PluginManager::self manager;
-    Importer* importer = manager->importer( StringValuePtr(kind) );
-
     config_set config;
     if (! NIL_P(options))
     {
@@ -69,11 +66,21 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
     }
         
     // TODO: error checking
-    try { importer->load(StringValuePtr(file), config, registry); }
+    try { PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, registry); }
     catch(Typelib::ImportError e)
     { rb_raise(rb_eRuntimeError, "cannot import %s: %s", StringValuePtr(file), e.what()); }
 
     return Qnil;
 }
 
+/* Export the given registry into xml
+ */
+static
+VALUE registry_to_xml(VALUE self)
+{
+    Registry& registry = rb2cxx::object<Registry>(self);
+    
+    std::string as_xml = PluginManager::save("tlb", registry);
+    return rb_str_new(as_xml.c_str(), as_xml.length());
+}
 
