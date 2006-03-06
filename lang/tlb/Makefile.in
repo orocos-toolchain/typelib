@@ -20,7 +20,7 @@ lang_tlb_SRC = export.cc import.cc
 # lang_tlb_AGE = 0
 # lang_tlb_REVISION = 1
 
-lang_tlb_CPPFLAGS = -I$(top_srcdir)/typelib $(LIBXML_CFLAGS)
+lang_tlb_CPPFLAGS = -I$(top_srcdir)/typelib $(LIBXML_CFLAGS) $(UTILMM_CXXFLAGS)
 lang_tlb_LDFLAGS = $(LIBXML_LIBS)
 ############ end: name
 
