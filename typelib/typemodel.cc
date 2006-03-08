@@ -27,9 +27,9 @@ namespace Typelib
     size_t Type::getSize() const { return m_size; }
     bool   Type::isNull() const { return m_category == NullType; }
     bool   Type::operator != (Type const& with) const
-    { return this != &with; }
+    { return !(*this == with); }
     bool   Type::operator == (Type const& with) const
-    { return this == &with; }
+    { return (this == &with) || (getName() == with.getName()); }
 
 
 
