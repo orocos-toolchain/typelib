@@ -17,6 +17,10 @@ class TC_DL < Test::Unit::TestCase
         @lib = Typelib.dlopen('.libs/test_rb_value.so', registry)
     end
 
+    def test_aliasing
+	registry.alias "/my_own_and_only_int", "/int"
+	assert_equal(registry.get("my_own_and_only_int"), registry.get("int"))
+    end
     def test_wrapping
         wrapper = lib.wrap('test_simple_function_wrapping', "int", "int", "short")
         assert_equal(1, wrapper[1, 2])
@@ -133,5 +137,6 @@ class TC_DL < Test::Unit::TestCase
         wrapper[buffer, 256]
         assert_equal("string_return", buffer.to_string)
     end
+
 end
 

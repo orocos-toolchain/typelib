@@ -37,6 +37,28 @@ VALUE registry_do_build(VALUE self, VALUE name)
     return cxx2rb::type_wrap(*type, self);
 }
 
+static
+VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
+{
+    Registry& registry = rb2cxx::object<Registry>(self);
+
+    int error;
+    try { 
+	registry.alias(StringValuePtr(aliased), StringValuePtr(name)); 
+	return self;
+    }
+    catch(BadName)   { error = 0; }
+    catch(Undefined) { error = 1; }
+    switch(error)
+    {
+	case 0: rb_raise(rb_eArgError, "invalid type name %s", StringValuePtr(name));
+	case 1: rb_raise(rb_eArgError, "no such type %s", StringValuePtr(aliased));
+    }
+
+    // never reached
+    assert(false);
+}
+
 /* Private method to import a given file in the registry
  * We expect Registry#import to format the arguments before calling
  * do_import
