@@ -24,9 +24,9 @@ public:
         uint16_t ui16 = 15;
         int32_t  i32  = 456;
 
-        BOOST_CHECK_EQUAL(f32, value_cast<float>(&f32, *registry.get("float")));
-        BOOST_CHECK_EQUAL(ui16, value_cast<uint16_t>(&ui16, *registry.get("uint16_t")));
-        BOOST_CHECK_EQUAL(i32, value_cast<int32_t>(&i32, *registry.get("int32_t")));
+        BOOST_CHECK(f32 == value_cast<float>(&f32, *registry.get("float")));
+        BOOST_CHECK(ui16 == value_cast<uint16_t>(&ui16, *registry.get("uint16_t")));
+        BOOST_CHECK(i32 == value_cast<int32_t>(&i32, *registry.get("int32_t")));
         BOOST_CHECK_THROW(value_cast<float>(&i32, *registry.get("int32_t")), BadValueCast);
     }
     
@@ -45,9 +45,9 @@ public:
             Value v_a(&a, *registry.get("/struct A"));
 
             BOOST_CHECK_THROW( value_get_field(v_a, "does_not_exists"), FieldNotFound );
-            BOOST_CHECK_EQUAL(a.a, value_cast<long>(value_get_field(v_a, "a")));
-            BOOST_CHECK_EQUAL(a.b, value_cast<long>(value_get_field(v_a, "b")));
-            BOOST_CHECK_EQUAL(a.c, value_cast<char>(value_get_field(v_a, "c")));
+            BOOST_CHECK(a.a == value_cast<long>(value_get_field(v_a, "a")));
+            BOOST_CHECK(a.b == value_cast<long>(value_get_field(v_a, "b")));
+            BOOST_CHECK(a.c == value_cast<char>(value_get_field(v_a, "c")));
 
             B b;
             b.a = a;
@@ -56,9 +56,9 @@ public:
 
             Value v_b(&b, *registry.get("/B"));
             Value v_b_a(value_get_field(v_b, "a"));
-            BOOST_CHECK_EQUAL(a.a, value_cast<long>(value_get_field(v_b_a, "a")));
-            BOOST_CHECK_EQUAL(a.b, value_cast<long>(value_get_field(v_b_a, "b")));
-            BOOST_CHECK_EQUAL(a.c, value_cast<char>(value_get_field(v_b_a, "c")));
+            BOOST_CHECK(a.a == value_cast<long>(value_get_field(v_b_a, "a")));
+            BOOST_CHECK(a.b == value_cast<long>(value_get_field(v_b_a, "b")));
+            BOOST_CHECK(a.c == value_cast<char>(value_get_field(v_b_a, "c")));
         }
     }
 };

@@ -57,6 +57,14 @@ public:
         BOOST_CHECK_EQUAL( &(b_c->getType()), registry.get("/float[100]") );
         BOOST_CHECK_EQUAL( b_c->getType().getCategory(), Type::Array );
 
+        // Check the sizes for d, e, f
+        Field const* b_d = b->getField("d");
+        BOOST_CHECK_EQUAL( &(b_d->getType()), registry.get("/float[1]") );
+        Field const* b_e = b->getField("e");
+        BOOST_CHECK_EQUAL( &(b_e->getType()), registry.get("/float[1]") );
+        Field const* b_f = b->getField("f");
+        BOOST_CHECK_EQUAL( &(b_f->getType()), registry.get("/float[3]") );
+
         // Check the array indirection
         Array const& b_c_array(dynamic_cast<Array const&>(b_c->getType()));
         BOOST_CHECK_EQUAL( &b_c_array.getIndirection(), registry.get("/float") );

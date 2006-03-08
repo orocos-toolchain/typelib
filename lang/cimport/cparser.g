@@ -458,24 +458,9 @@ enumerator
         { bool has_value = false; int value; }
 /* We don't want to parse any enum definition. Limit to constant expressions */
 /*	:	id:ID (ASSIGNEQUAL enum_value:constant_expression  */
-  	:	id:ID (ASSIGNEQUAL value = enum_value_expression { has_value = true; })?
+  	:	id:ID (ASSIGNEQUAL value = int_constant_expression { has_value = true; })?
 		{ enumElement(id->getText(), has_value, value); }
 	;
-
-enum_value_expression returns [int value]
-    : ( LPAREN value = enum_value_expression RPAREN
-      | value = enum_value_constant
-      )
-    ;
-    
-enum_value_constant returns [int value]
-    { int sign = 1; }
-    : (   MINUS { sign = -1; } 
-      |   PLUS
-      )?
-    value = int_constant 
-    { value *= sign; }
-    ;
 
 /* This matches a generic qualified identifier ::T::B::foo
  * (including OPERATOR).
@@ -559,8 +544,7 @@ direct_declarator
                     options {warnWhenFollowAmbig = false;}:
 		    LSQUARE { array_size = 0; }
                     (  
-                        (int_constant RSQUARE)=>array_size = int_constant
-                    |   (constant_expression)? 
+                        (array_size = int_constant_expression)? 
                     )   { declaratorArray(array_size); }
                     RSQUARE
                 )+
@@ -588,8 +572,7 @@ declarator_suffixes
                     options {warnWhenFollowAmbig = false;}:
 		    LSQUARE { array_size = 0; }
                     (  
-                        (int_constant RSQUARE)=>array_size = int_constant
-                    |   (constant_expression)? 
+                        (array_size = int_constant_expression)? 
                     )   { declaratorArray(array_size); }
                     RSQUARE
                 )+
@@ -697,10 +680,8 @@ abstract_declarator
 	|	
 		(
                     LSQUARE  { array_size = 0; }
-                    (   
-                        (int_constant RSQUARE) => (array_size = int_constant)
-                    |   (constant_expression)? RSQUARE 
-                    )
+                    (array_size = int_constant_expression)? 
+                    RSQUARE 
                     { declaratorArray(array_size); }
 		)+
 	|	
@@ -711,10 +692,8 @@ abstract_declarator_suffix
         { int array_size = 0; }
 	:	
                LSQUARE  { array_size = 0; }
-               (   
-                   (int_constant RSQUARE) => (array_size = int_constant)
-               |   (constant_expression)? RSQUARE 
-               )
+               (array_size = int_constant_expression)? 
+               RSQUARE 
                { declaratorArray(array_size); }
 	|
 		LPAREN
@@ -901,7 +880,7 @@ conditional_expression
 		(QUESTIONMARK expression COLON conditional_expression)?
 	;
 
-constant_expression 
+constant_expression
 	:	
 		conditional_expression
 	;
@@ -1123,6 +1102,45 @@ constant
 	|	FLOATONE
 	|	FLOATTWO
 	;
+
+int_constant_expression returns [ int value ]
+        : value = int_constant_shift_expression
+        ;
+
+int_constant_unary_expression returns [ int value ]
+        { int sign; }
+        : (PLUS { sign = 1; }|MINUS { sign = -1; }) value = int_constant_unary_expression { value *= sign; }
+        | value = int_constant_primary_expression
+        ;
+
+int_constant_shift_expression returns [ int value ]
+        { int shiftval; }
+        : value = int_constant_add_expression
+        ( SHIFTLEFT shiftval = int_constant_add_expression { value <<= shiftval; }
+        | SHIFTRIGHT shiftval = int_constant_add_expression { value >>= shiftval; }
+        )*
+        ;
+
+int_constant_add_expression returns [ int value ]
+        { int opval, sign; }
+        : value = int_constant_mult_expression
+        ( (PLUS { sign = 1; } | MINUS { sign = -1; })
+            opval = int_constant_mult_expression { value += sign * opval; }
+        )*
+        ;
+
+int_constant_mult_expression returns [ int value ]
+        { int opval; }
+        : value = int_constant_unary_expression
+        ( STAR opval = int_constant_unary_expression { value *= opval; }
+        | DIV  opval = int_constant_unary_expression { value /= opval; }
+        )*
+        ;
+
+int_constant_primary_expression returns [ int value ]
+        : value = int_constant
+        | LPAREN value = int_constant_expression RPAREN
+        ;
 
 int_constant returns [ int value ]
         :       
