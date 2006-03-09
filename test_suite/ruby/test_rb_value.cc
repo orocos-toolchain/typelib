@@ -143,11 +143,8 @@ extern "C" {
     OpaqueType test_opaque_handling()
     { return &opaque_handler; }
 
-    int check_opaque_value(OpaqueType handler)
-    { 
-        printf("check_opaque_value: handler=0x%x, &opaque_handler=0x%x\n", handler, opaque_handler);
-        return (handler == &opaque_handler) ? 1 : 0; 
-    }
+    int check_opaque_value(OpaqueType handler, int check)
+    { return (handler == test_opaque_handling()) ? check : 0; }
 
     int test_string_argument(char const* value)
     {
@@ -163,16 +160,19 @@ extern "C" {
     { strcpy(str, static_string); }
 
     DEFINE_STR id;
-    int test_id_handling(DEFINE_ID* new_id)
+    int test_id_handling(DEFINE_ID* new_id, int check)
     {
         *new_id = &id;
-        return 1;
+        return check;
     }
-    int check_id_value(DEFINE_ID test_id)
+    int check_id_value(DEFINE_ID test_id, int check)
     { 
-        printf("check_id_value, test_id=%x, &id=%x\n", test_id, &id);
-        return (test_id == &id) ? 1 : 0; 
+        printf("check_id_value, test_id=%p, &id=%p\n", test_id, &id);
+        return (test_id == &id) ? check : 0; 
     }
+
+    void test_void_argument(void* value, int check)
+    { *static_cast<int*>(value) = check; }
 }
 
 

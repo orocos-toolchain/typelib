@@ -109,20 +109,32 @@ class TC_DL < Test::Unit::TestCase
         assert(check_B_c_value(b))
     end
 
-    def test_opaque_handling
-        wrapper = lib.wrap('test_opaque_handling', "OpaqueType")
-        my_handler = wrapper[]
-        wrapper = lib.wrap('check_opaque_value', 'int', 'OpaqueType')
-        puts "test_opaque_handling: handler=#{my_handler.inspect}"
-        assert_equal(1, wrapper[my_handler])
+    def check_argument_passing(f_def, args = [])
+	f_def << 'int'
+	check = rand(100)
+	args  << check
 
-        wrapper = lib.wrap('test_id_handling', ['int', 1], 'DEFINE_ID*')
-        ret, id = wrapper[]
-        assert_equal(1, ret)
-        wrapper = lib.wrap('check_id_value', 'int', 'DEFINE_ID')
-        puts "test_opaque_handling: id=#{id.inspect}"
-        ret = wrapper[id]
-        assert_equal(1, ret)
+        wrapper = lib.wrap(*f_def)
+
+	retcheck, *ret = wrapper[*args]
+        assert_equal(check, retcheck)
+	return ret
+    end
+
+    def test_opaque_handling
+        wrapper = lib.wrap('test_opaque_handling', 'OpaqueType')
+        my_handler = wrapper[]
+
+	check_argument_passing ['check_opaque_value', 'int', 'OpaqueType'], [my_handler]
+
+	id = check_argument_passing ['test_id_handling', ['int', 1], 'DEFINE_ID*']
+	check_argument_passing ['check_id_value', 'int', 'DEFINE_ID'], [id]
+
+	wrapper = lib.wrap('test_void_argument', 'int', 'nil*')
+	arg = lib.registry.get("int").new
+	check = rand(100)
+	wrapper[arg]
+	assert_equal(check, arg.to_ruby)
     end
 
     def test_string_handling
