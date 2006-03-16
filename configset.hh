@@ -80,6 +80,8 @@ namespace utilmm
         void insert(std::string const& name, std::list<std::string> const& value);
         /** Add a child to this config_set */
         void insert(std::string const& name, config_set const* value);
+        /** Remove the given option */
+        void erase(std::string const& name);
     };
 
     namespace details {
