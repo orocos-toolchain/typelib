@@ -277,16 +277,16 @@ namespace Typelib
 
     void Registry::clear()
     {
+	// Set the type pointer to 0 on aliases
+	for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
+	{
+	    if (it->first != it->second.type->getName())
+		it->second.type = 0;
+	}
+	    
+	// ... then delete the objects
         for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
-        {
-            Type* type = it->second.type;
-            if (type->getName() != it->first)
-            {
-                // This is an alias
-                continue;
-            }
-            delete type;
-        }
+            delete it->second.type;
             
         m_global.clear();
         m_current.clear();
