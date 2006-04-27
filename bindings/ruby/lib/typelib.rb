@@ -223,7 +223,7 @@ module Typelib
         #   output_values = wrapper.call(*input_values)
         #   
         # where output_values is the array of values specified by return_spec and
-        # input_values the function arguments /without the arguments that are output 
+        # input_values the function arguments /without the arguments that are out-only
         # values/
         # 
         def wrap(name, return_spec = nil, *arg_types)
@@ -232,7 +232,7 @@ module Typelib
             end
             return_spec = Array[*return_spec]
             return_type = return_spec.shift
-            return_spec = return_spec.sort # MUST be sorted for #insert to work (see on top of #function_call
+            return_spec = return_spec.sort # MUST be sorted for #function_call to work properly
 
             return_type, *arg_types = Array[return_type, *arg_types].collect do |typedef|
                 next if typedef.nil?
@@ -263,13 +263,48 @@ module Typelib
             end
 
             dl_wrapper = do_wrap(name, return_type, *arg_types)
-            return lambda do |*args|
-                Typelib.function_call(dl_wrapper, args, return_type, return_spec, arg_types)
-            end
+            return WrappedFunction.new(dl_wrapper, return_type, return_spec, arg_types)
         end
     end
 
-    def self.function_call(wrapper, args, return_type, return_spec, arg_types)
+    class WrappedFunction
+	attr_reader :spec
+	def initialize(*spec); @spec = spec end
+	def call(*args); Typelib.function_call(args, *spec) end
+	alias :[] :call
+	def filter(*args); Typelib.filter_function_args(args, *spec) end
+	alias :check :filter
+    end
+
+    # Implement Typelib's argument handling
+    # This method filters a particular argument given the user-supplied value and 
+    # the argument expected type. It raises TypeError if +arg+ is of the wrong type
+    def self.filter_argument(arg, expected_type)
+	if !(expected_type < PointerType) && !Kernel.immediate?(arg)
+	    raise TypeError, "#{arg.inspect} cannot be used for #{expected_type.name} arguments"
+	end
+
+	filtered =  if DL::PtrData === arg
+			arg
+		    elsif Kernel.immediate?(arg)
+			filter_immediate_arg(arg, expected_type)
+		    elsif Type === arg
+			filter_value_arg(arg, expected_type)
+		    elsif expected_type.deference.name == "/char" && arg.respond_to?(:to_str)
+			# Ruby strings ARE null-terminated
+			# The thing which is not checked here is that there is no NULL bytes
+			# inside the string.
+			arg.to_str.to_ptr
+		    end
+
+	if !filtered
+	    raise TypeError, "cannot use #{arg.inspect} for a #{expected_type.name} argument"
+	end
+	filtered
+    end
+
+    # Creates an array of objects that can safely be passed to DL function call mechanism
+    def self.filter_function_args(args, wrapper, return_type, return_spec, arg_types)
         user_args_count = args.size
         
         # Create a Value object to collect the data we'll get
@@ -277,7 +312,7 @@ module Typelib
         return_spec.each do |index|
             next unless index > 0
             ary_idx = index - 1
-            args.insert(ary_idx, arg_types[ary_idx].deference.new)
+            args.insert(ary_idx, arg_types[ary_idx].deference.new) # works because return_spec is sorted
         end
 
         # Check we have the right count of arguments
@@ -286,38 +321,15 @@ module Typelib
             raise ArgumentError, "#{arg_types.size - wrapper_args_count} arguments expected, got #{user_args_count}"
         end
 
-        # The only things we can handle are:
-        #  - Value objects
-        #  - String objects
-        #  - immediate values
-        filtered_args = []
-        args.each_with_index do |arg, idx|
-            expected_type = arg_types[idx]
-            if !(expected_type < PointerType) && !Kernel.immediate?(arg)
-                raise TypeError, "#{arg.inspect} cannot be used for #{expected_type.name} arguments"
-            end
-
-            filtered =  if DL::PtrData === arg
-                            arg
-                        elsif Kernel.immediate?(arg)
-                            filter_immediate_arg(arg, expected_type)
-                        elsif Type === arg
-                            filter_value_arg(arg, expected_type)
-                        elsif expected_type.deference.name == "/char" && arg.respond_to?(:to_str)
-                            # Ruby strings ARE null-terminated
-                            # The thing which is not checked here is that there is no NULL bytes
-                            # inside of the string.
-                            arg.to_str.to_ptr
-                        end
-
-            if !filtered
-                raise TypeError, "cannot use #{arg.inspect} for a #{expected_type.name} argument"
-            end
-            filtered_args << filtered
+        args.enum_for(:each_with_index).map do |arg, idx|
+	    filter_argument(arg, arg_types[idx])
         end
+    end
+
+    def self.function_call(args, wrapper, return_type, return_spec, arg_types)
+	filtered_args = filter_function_args(args, wrapper, return_type, return_spec, arg_types)
 
         # Do call the wrapper
-        # The C part will take care of immediate values that are also output values
         retval, retargs = do_call_function(wrapper, filtered_args, return_type, arg_types) 
         return if return_type.nil? && return_spec.empty?
 
