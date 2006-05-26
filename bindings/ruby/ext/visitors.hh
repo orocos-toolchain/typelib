@@ -110,6 +110,9 @@ public:
 /* Converts a Typelib::Value to Ruby's VALUE */
 static VALUE typelib_to_ruby(Value v, VALUE registry)
 { 
+    if (! v.getData())
+        return Qnil;
+
     RubyGetter getter;
     return getter.apply(v, registry);
 }
@@ -117,6 +120,9 @@ static VALUE typelib_to_ruby(Value v, VALUE registry)
 /* Converts a given field in +value+ */
 static VALUE typelib_to_ruby(Value value, VALUE name, VALUE registry)
 {
+    if (! value.getData())
+        return Qnil;
+
     try { 
         Value field_value = value_get_field(value, StringValuePtr(name));
         return typelib_to_ruby(field_value, registry);
