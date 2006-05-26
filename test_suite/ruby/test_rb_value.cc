@@ -171,6 +171,11 @@ extern "C" {
         return (test_id == &id) ? check : 0; 
     }
 
+    void test_null_return_value(DEFINE_ID* test_id, int check)
+    {
+	*test_id = 0;
+    }
+
     void test_void_argument(void* value, int check)
     { *static_cast<int*>(value) = check; }
 }

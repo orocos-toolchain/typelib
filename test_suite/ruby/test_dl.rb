@@ -109,6 +109,11 @@ class TC_DL < Test::Unit::TestCase
         assert(check_B_c_value(b))
     end
 
+    def test_null_return_value
+	wrapper = lib.wrap('test_null_return_value', ["void", 1], 'DEFINE_ID*')
+	assert( wrapper.call == nil )
+    end
+
     def check_argument_passing(f_def, args = [])
 	f_def << 'int'
 	check = rand(100)

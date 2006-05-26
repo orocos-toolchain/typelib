@@ -81,3 +81,11 @@ static VALUE value_pointer_deference(VALUE self)
     return typelib_to_ruby(new_value, registry);
 }
 
+static VALUE value_pointer_nil_p(VALUE self)
+{
+    Value const& value(rb2cxx::object<Value>(self));
+    if ( *reinterpret_cast<void**>(value.getData()) == 0 )
+        return Qtrue;
+    return Qfalse;
+}
+

@@ -283,6 +283,7 @@ extern "C" void Init_typelib_api()
     cPointer  = rb_define_class_under(mTypelib, "PointerType", cType);
     rb_define_singleton_method(cPointer, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), 0);
     rb_define_method(cPointer, "deference", RUBY_METHOD_FUNC(value_pointer_deference), 0);
+    rb_define_method(cPointer, "null?", RUBY_METHOD_FUNC(value_pointer_nil_p), 0);
     
     cArray    = rb_define_class_under(mTypelib, "ArrayType", cType);
     rb_define_method(cArray, "[]",      RUBY_METHOD_FUNC(array_get), 1);
