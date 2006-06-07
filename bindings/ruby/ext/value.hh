@@ -81,6 +81,13 @@ static VALUE value_pointer_deference(VALUE self)
     return typelib_to_ruby(new_value, registry);
 }
 
+static VALUE value_zero(VALUE self)
+{
+    Value const& value(rb2cxx::object<Value>(self));
+    memset(value.getData(), value.getType().getSize(), 0);
+    return self;
+}
+
 static VALUE value_pointer_nil_p(VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));

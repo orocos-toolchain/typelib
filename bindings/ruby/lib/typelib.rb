@@ -57,16 +57,27 @@ module Typelib
         def initialize(ptr, *init)
             super(ptr)
             return if init.empty?
-            init = *init
 
+            init = *init if init.size == 1 && init.first.respond_to?(:each)
+
+	    fields = self.class.fields
+	    if fields.size != init.size
+		raise ArgumentError, "wrong number of arguments (#{init.size} for #{fields.size}"
+	    end
+	    
             # init is either an array of values (the fields in order) or a hash
             # (named parameters)
             if Hash === init
                 # init.each shall yield (name, value)
-                init.each { |name, value| self[name.to_s] = value }
+                init.each do |name, value| 
+		    name = name.to_s
+		    self[name] = value 
+		end
             else
                 # we assume that the values are given in order
-                init.each_with_index { |value, idx| self[self.class.fields[idx].first] = value }
+                init.each_with_index do |value, idx| 
+		    self[self.class.fields[idx].first] = value
+		end
             end
         end
 
@@ -138,7 +149,13 @@ module Typelib
 
     class PointerType < Type
         @writable = false
-        def to_ruby; self end
+        def to_ruby
+	    if self.null?
+		nil
+	    else
+		self
+	    end
+       	end
     end
     class EnumType < Type
         class << self

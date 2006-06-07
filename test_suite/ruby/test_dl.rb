@@ -111,7 +111,7 @@ class TC_DL < Test::Unit::TestCase
 
     def test_null_return_value
 	wrapper = lib.wrap('test_null_return_value', ["void", 1], 'DEFINE_ID*')
-	assert( wrapper.call == nil )
+	assert_equal(nil, wrapper.call)
     end
 
     def check_argument_passing(f_def, args = [])

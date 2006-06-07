@@ -56,15 +56,17 @@ class TC_Value < Test::Unit::TestCase
         assert_not_equal(type.to_ptr, type.deference)
         assert_equal(type, type.deference.to_ptr)
         assert_equal(type, type.to_ptr.deference)
+
+	value = type.new
+	value.zero!
+	assert(value.null?)
+	assert_equal(nil, value.to_ruby)
     end
     def test_pointer_value
         type  = Registry.new.build("/int")
         value = type.new
         assert_equal(value.class, type)
         ptr   = value.to_ptr
-        p ptr
-        p ptr.deference
-        p value
         assert_equal(value, ptr.deference)
     end
 
@@ -96,11 +98,20 @@ class TC_Value < Test::Unit::TestCase
         check_respond_to_fields(a)
 
         # Check initialization
-        a = a_type.new :b => 10
-        assert_equal(10, a.b)
-        a = a_type.new 10, 20
+        a = a_type.new :a => 10, :b => 20, :c => 30, :d => 40
         assert_equal(10, a.a)
         assert_equal(20, a.b)
+        assert_equal(30, a.c)
+        assert_equal(40, a.d)
+
+        a = a_type.new 40, 30, 20, 10
+        assert_equal(40, a.a)
+        assert_equal(30, a.b)
+        assert_equal(20, a.c)
+        assert_equal(10, a.d)
+
+	assert_raises(ArgumentError) { a_type.new :b => 10 }
+	assert_raises(ArgumentError) { a_type.new 10 }
     end
 
     def check_respond_to_fields(a)
