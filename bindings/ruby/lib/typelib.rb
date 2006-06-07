@@ -58,7 +58,7 @@ module Typelib
             super(ptr)
             return if init.empty?
 
-            init = *init if init.size == 1 && init.first.respond_to?(:each)
+            init = init.first if init.size == 1 && Hash === init.first
 
 	    fields = self.class.fields
 	    if fields.size != init.size
