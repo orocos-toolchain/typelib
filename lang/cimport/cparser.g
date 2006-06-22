@@ -1103,22 +1103,11 @@ constant
 	|	FLOATTWO
 	;
 
+
+
+
 int_constant_expression returns [ int value ]
-        : value = int_constant_shift_expression
-        ;
-
-int_constant_unary_expression returns [ int value ]
-        { int sign; }
-        : (PLUS { sign = 1; }|MINUS { sign = -1; }) value = int_constant_unary_expression { value *= sign; }
-        | value = int_constant_primary_expression
-        ;
-
-int_constant_shift_expression returns [ int value ]
-        { int shiftval; }
         : value = int_constant_add_expression
-        ( SHIFTLEFT shiftval = int_constant_add_expression { value <<= shiftval; }
-        | SHIFTRIGHT shiftval = int_constant_add_expression { value >>= shiftval; }
-        )*
         ;
 
 int_constant_add_expression returns [ int value ]
@@ -1131,16 +1120,31 @@ int_constant_add_expression returns [ int value ]
 
 int_constant_mult_expression returns [ int value ]
         { int opval; }
-        : value = int_constant_unary_expression
-        ( STAR opval = int_constant_unary_expression { value *= opval; }
-        | DIV  opval = int_constant_unary_expression { value /= opval; }
+        : value = int_constant_shift_expression
+        ( STAR opval = int_constant_shift_expression { value *= opval; }
+        | DIVIDE  opval = int_constant_shift_expression { value /= opval; }
+        )*
+        ;
+
+int_constant_shift_expression returns [ int value ]
+        { int shiftval; }
+        : value = int_constant_primary_expression
+        ( SHIFTLEFT shiftval  = int_constant_primary_expression { value <<= shiftval; }
+        | SHIFTRIGHT shiftval = int_constant_primary_expression { value >>= shiftval; }
         )*
         ;
 
 int_constant_primary_expression returns [ int value ]
-        : value = int_constant
+        : value = int_constant_unary_expression
         | LPAREN value = int_constant_expression RPAREN
         ;
+
+int_constant_unary_expression returns [ int value ]
+        { int sign; }
+        : (PLUS { sign = 1; }|MINUS { sign = -1; }) value = int_constant_unary_expression { value *= sign; }
+        | value = int_constant
+        ;
+
 
 int_constant returns [ int value ]
         :       

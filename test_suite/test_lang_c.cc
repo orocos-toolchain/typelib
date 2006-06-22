@@ -64,6 +64,10 @@ public:
         BOOST_CHECK_EQUAL( &(b_e->getType()), registry.get("/float[1]") );
         Field const* b_f = b->getField("f");
         BOOST_CHECK_EQUAL( &(b_f->getType()), registry.get("/float[3]") );
+        Field const* b_g = b->getField("g");
+        BOOST_CHECK_EQUAL( &(b_g->getType()), registry.get("/float[2]") );
+        Field const* b_h = b->getField("h");
+        BOOST_CHECK_EQUAL( &(b_h->getType()), registry.get("/float[4]") );
 
         // Check the array indirection
         Array const& b_c_array(dynamic_cast<Array const&>(b_c->getType()));
