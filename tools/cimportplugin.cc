@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "utilmm/configfile/configset.hh"
-#include "registry.hh"
+#include "typelib/registry.hh"
 
 using namespace std;
 using namespace boost;

@@ -1,5 +1,5 @@
 #include "inspect.hh"
-#include "registry.hh"
+#include "typelib/registry.hh"
 
 #include <iostream>
 using namespace std;

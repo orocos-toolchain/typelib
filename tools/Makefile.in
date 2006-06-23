@@ -10,7 +10,7 @@ include $(top_builddir)/mk/init.mk
 
 APP_NAME=typelib
 APP_SRC= import.cc inspect.cc mode.cc plugin.cc preprocess.cc typelib.cc cimportplugin.cc tlbimportplugin.cc
-APP_CPPFLAGS=$(TYPELIB_CXXFLAGS) $(UTILMM_CXXFLAGS) -I$(top_srcdir)
+APP_CPPFLAGS=-I$(top_srcdir) $(UTILMM_CXXFLAGS)
 # APP_CXXFLAGS=
 APP_LDFLAGS=$(UTILMM_LDFLAGS)
 APP_LIBS=$(top_builddir)/typelib/libtypeLib.la
