@@ -95,9 +95,9 @@ module Typelib
                     @fields << [name, type]
 
                     if !instance_methods.include?(name)
-                        define_method(name, &lambda { || get_field(name) })
-                        if type.writable?
-                            define_method("#{name}=", &lambda { |value| set_field(name, value) })
+                        define_method(name) { get_field(name) }
+                        if type.writable? || type < CompoundType
+                            define_method("#{name}=") { |value| self[name] = value }
                         end
                     end
                     if !singleton_class.instance_methods.include?(name)
@@ -135,7 +135,14 @@ module Typelib
             end
         end
 
-        def []=(name, value); set_field(name, value) end
+        def []=(name, value)
+	    if Hash === value
+		attribute = get_field(name)
+		value.each { |k, v| attribute[k] = v }
+	    else
+		set_field(name.to_s, value) 
+	    end
+	end
         def [](name); get_field(name) end
         def to_ruby; self end
     end

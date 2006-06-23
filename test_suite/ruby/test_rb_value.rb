@@ -150,7 +150,6 @@ class TC_Value < Test::Unit::TestCase
         b = make_registry.get("/struct B").new
         GC.start
         assert(b.respond_to?(:a))
-        assert(! b.respond_to?(:a=))
         check_respond_to_fields(b.a)
 
         set_struct_A_value(b.a)
@@ -158,6 +157,13 @@ class TC_Value < Test::Unit::TestCase
         assert_equal(20, b.a.b)
         assert_equal(30, b.a.c)
         assert_equal(40, b.a.d)
+
+	# Check struct.substruct = Hash
+	b.a = { :a => 40, :b => 30, :c => 20, :d => 10 }
+        assert_equal(40, b.a.a)
+        assert_equal(30, b.a.b)
+        assert_equal(20, b.a.c)
+        assert_equal(10, b.a.d)
     end
 
     def test_array_basics
