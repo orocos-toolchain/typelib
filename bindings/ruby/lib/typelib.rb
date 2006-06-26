@@ -30,6 +30,10 @@ module Typelib
             alias :__real_new__ :new
             def wrap(ptr); __real_new__(ptr) end
             def new; __real_new__(nil) end
+
+	    def is_a?(typename)
+		typename === self.name
+	    end
         end
 
         def ==(other)
@@ -46,6 +50,9 @@ module Typelib
 
         # Get a pointer on this value
         def to_dlptr; @ptr end
+
+	# In case of compound types, the 
+	def is_a?(typename); self.class.is_a?(typename) end
 
         def inspect
             sprintf("<%s @%s (%s)>", self.class, to_dlptr.inspect, self.class.name)
@@ -86,6 +93,10 @@ module Typelib
         class << self
             def new(*init);         __real_new__(nil, *init) end
             def wrap(ptr, *init);   __real_new__(ptr, *init) end
+
+	    def is_a?(typename)
+		typename === self.name || self.fields[0].last.is_a?(typename)
+	    end
 
             def subclass_initialize
                 @fields = Array.new
