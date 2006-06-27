@@ -50,9 +50,9 @@ namespace Typelib
         }
     }
 
-    /** Display a CSV header matching for a Type object
+    /** Display a CSV header matching a Type object
      * @arg type	the type to display
-     * @arg basename	the basename to use. For simple type, it is the . For compound types, names in the header are <basename>.<fieldname>
+     * @arg basename	the basename to use. For simple type, it is the variable name. For compound types, names in the header are <basename>.<fieldname>
      * @arg sep		the separator to use
      */
     inline details::csvheader csv_header(Type const& type, std::string const& basename, std::string const& sep = " ")

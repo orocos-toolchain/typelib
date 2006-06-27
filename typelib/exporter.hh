@@ -23,13 +23,17 @@ namespace Typelib
         virtual Exporter* create() = 0;
     };
 
-    /** Base class for export plugins */
+    /** Base class for export objects */
     class Exporter
     {
     protected:
-        /** Called by save to add a prelude before saving all registry types */
+        /** Called by save to add a preamble before saving all registry types 
+	 * @see save
+	 */
         virtual bool begin(std::ostream& stream, Registry const& registry);
-        /** Called by save to add data after saving all registry types */
+        /** Called by save to add data after saving all registry types
+	 * @see save
+	 */
         virtual bool end  (std::ostream& stream, Registry const& registry);
 
     public:
@@ -39,7 +43,14 @@ namespace Typelib
          * 
          * @arg stream   the stream to write to
          * @arg registry the registry to be saved
-         */
+	 *
+       	 * The default implementation does
+	 * <code>
+	 *   begin(stream, registry)
+	 *   save(ostream, iterator) for each element in registry
+	 *   end(stream, registry)
+	 * </code>
+	 */
         virtual bool save
             ( std::ostream& stream
             , Registry const& registry );

@@ -6,6 +6,10 @@
 
 namespace Typelib
 {
+    /** Visitor to pretty-print a Type object to an output stream.
+     * You can use <code>stream << type</code> and 
+     * <code>stream << type_display(type, indent)</code> instead
+     */
     class TypeDisplayVisitor : public TypeVisitor
     {
         template<typename T>
@@ -45,6 +49,14 @@ namespace Typelib
         }
     }
 
+    /** stream operator to pretty-print a type on a stream, with indenting
+     * <code>
+     *	std::cout << Typelib::type_display(type, 2) << std::endl;
+     * </code>
+     *
+     * @arg type    the type
+     * @arg indent  base indentation
+     */
     inline details::do_type_display type_display(Type const& type, std::string const& indent = "")
     { return details::do_type_display(type, indent); }
 

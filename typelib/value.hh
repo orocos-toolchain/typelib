@@ -12,6 +12,15 @@
 
 namespace Typelib
 {
+    /** A Value object is raw data given through a void* pointer typed
+     * by a Type object
+     *
+     * There are two basic operations on value object:
+     * <ul>
+     *   <li> Typelib::value_cast typesafe cast from Value to a C type
+     *   <li> Typelib::value_get_field     gets a Value object for a field in a Compound
+     * </ul>
+     */
     class Value
     {
         void*       m_data;
@@ -24,7 +33,9 @@ namespace Typelib
         Value(void* data, Type const& type)
             : m_data(data), m_type(type) {}
 
+	/** The raw data pointer */
         void* getData() const { return m_data; }
+	/** The data type */
         Type const& getType() const { return m_type; }
 
         bool operator == (Value const& with) const
@@ -33,6 +44,8 @@ namespace Typelib
         { return (m_data != with.m_data) || (m_type.get() != with.m_type.get()); }
     };
 
+    /** A visitor object that can be used to discover the type
+     * of a Value object */
     class ValueVisitor
     {
         class TypeDispatch;
@@ -66,6 +79,8 @@ namespace Typelib
         void apply(Value v);
     };
 
+    /** Raised by value_cast when the type of a Value object
+     * is not compatible with the wanted C type */
     class BadValueCast : public std::exception {};
 
     /** This visitor checks that a given Value object

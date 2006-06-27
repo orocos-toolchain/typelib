@@ -10,6 +10,31 @@ namespace Typelib
 {
     class Registry;
 
+    /** Base class for exception thrown during import */
+    class ImportError : public std::exception
+    {
+        std::string m_file;
+        int m_line, m_column;
+        std::string m_what;
+        char* m_buffer;
+
+    public:
+        ImportError(const std::string& file, const std::string& what_ = "", int line = 0, int column = 0);
+        virtual ~ImportError() throw();
+
+        void setFile(const std::string& path);
+
+	/** The file in which the exception occured */
+        std::string getFile() const;
+	/** Line of error */
+        int getLine() const;
+	/** Column of error */
+        int getColumn() const;
+
+        virtual char const* what() throw();
+        virtual std::string toString () const;
+    };
+
     class ImportPlugin
     {
         std::string m_name;
@@ -23,7 +48,7 @@ namespace Typelib
         virtual Importer* create() = 0;
     };
 
-    /** Base class for import plugins */
+    /** Base class for import objects */
     class Importer
     {
     public:

@@ -9,6 +9,7 @@
   
 namespace Typelib
 {
+    /** Base class for all type definitions */
     class Type 
     {
     public:
@@ -30,6 +31,7 @@ namespace Typelib
         size_t      m_size;
         Category    m_category;
 
+	/** Checks that @c identifier is a valid type name */
         static bool isValidIdentifier(const std::string& identifier);
 
     protected:
@@ -42,9 +44,13 @@ namespace Typelib
     public:
         virtual ~Type();
 
+	/** The type full name */
         std::string   getName() const;
+	/** Size in bytes of a value */
         size_t        getSize() const;
+	/** The type category */
         Category      getCategory() const;
+	/** true if this type is null */
         bool          isNull() const;
 
         bool operator == (Type const& with) const;
@@ -57,23 +63,30 @@ namespace Typelib
         NullType(std::string const& name) : Type(name, 0, Type::NullType ) {}
     };
 
+    /** Numeric values (integer, unsigned integer and floating point) */
     class Numeric : public Type
     {
     public:
         enum NumericCategory
-        { SInt = Type::ValidCategories, UInt, Float };
+        { 
+	    SInt = Type::ValidCategories, /// signed integer
+	    UInt,			  /// unsigned integer
+	    Float			  /// floating point
+	};
         static const int ValidCategories = Float + 1;
 
+	/** The category of this numeric type */
         NumericCategory getNumericCategory() const;
 
     public:
-        // Creates a basic type from \c name, \c size and \c category
+        /** Creates a basic type from \c name, \c size and \c category */
         Numeric(const std::string& name, size_t size, NumericCategory category);
 
     private:
         NumericCategory m_category;
     };
 
+    /** Enums are defined as name => integer static mappings */
     class Enum : public Type
     {
     public:
@@ -85,11 +98,18 @@ namespace Typelib
         class ValueNotFound  {};
         
         Enum(const std::string& name);
+	/** Add a new definition */
         void            add(std::string const& name, int value);
+	/** Gets the value for @name 
+	 * @throws SymbolNotFound if @name is not defined */
         integral_type   get(std::string const& name) const;
+	/** Gets the name for @value
+	 * @throws ValueNotFound if @value is not defined in this enum */
         std::string     get(integral_type value) const;
         
+	/** The list of all names */
         std::list<std::string> names() const;
+	/** The name => value map */
         ValueMap const& values() const;
 
     private:
@@ -111,12 +131,17 @@ namespace Typelib
     public:
         Field(const std::string& name, Type const& base_type);
 
+	/** The field name */
         std::string getName() const;
+	/** The field type */
         const Type& getType() const;
+	/** The offset, in bytes, of this field w.r.t. the 
+	 * begginning of the parent value */
         size_t getOffset() const;
     };
 
-    /* Compound types (struct, enums) */
+    /** Base class for types that are composed of other 
+     * types (structures and enums) */
     class Compound : public Type
     {
     public:
@@ -125,9 +150,14 @@ namespace Typelib
     public:
         Compound(std::string const& name);
 
+	/** The list of all fields */
         FieldList const&  getFields() const;
+	/** Get a field by its name
+	 * @return 0 if there is no @name field, or the Field object */
         Field const*      getField(const std::string& name) const;
+	/** Add a new field */
         void              addField(const Field& field, size_t offset);
+	/** Add a new field */
         void              addField(const std::string& name, const Type& type, size_t offset);
 
     private:
@@ -136,7 +166,7 @@ namespace Typelib
 
 
 
-    /** Type with indirection (pointer, array) */
+    /** Base class for types with indirection (pointer, array) */
     class Indirect : public Type
     {
     public:
@@ -151,6 +181,9 @@ namespace Typelib
 
     };
 
+    /** Unidimensional array types. As in C, the multi-dimensional arrays
+     * are defined as arrays-of-arrays
+     */
     class Array : public Indirect
     {
         size_t m_dimension;
@@ -158,10 +191,10 @@ namespace Typelib
     public:
         Array(Type const& of, size_t dimension);
         size_t getDimension() const;
-
         static std::string getArrayName(std::string const& base, size_t new_dim);
     };
 
+    /** Pointer types */
     class Pointer : public Indirect
     {
     public:

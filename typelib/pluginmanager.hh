@@ -13,27 +13,6 @@ namespace Typelib
     class Exporter;
     class ExportPlugin;
 
-    /** Base class for exception thrown during import */
-    class ImportError : public std::exception
-    {
-        std::string m_file;
-        int m_line, m_column;
-        std::string m_what;
-        char* m_buffer;
-
-    public:
-        ImportError(const std::string& file, const std::string& what_ = "", int line = 0, int column = 0);
-        virtual ~ImportError() throw();
-
-        void setFile(const std::string& path);
-        std::string getFile() const;
-        int getLine() const;
-        int getColumn() const;
-
-        virtual char const* what() throw();
-        virtual std::string toString () const;
-    };
-
     class Importer;
     class ImportPlugin;
     
@@ -64,11 +43,14 @@ namespace Typelib
     public:
 	/** Registers a new exporter */
         bool add(ExportPlugin* plugin);
+
 	/** Build a new import plugin from its plugin name
 	 * @throws PluginNotFound */
         Importer* importer(std::string const& name) const;
+
 	/** Registers a new importer */
         bool add(ImportPlugin* plugin);
+
 	/** Build a new export plugin from its plugin name 
 	 * @throws PluginNotFound */
         Exporter* exporter(std::string const& name) const;
@@ -80,6 +62,7 @@ namespace Typelib
 	 * @throws ExportError if an error occured during the export
 	 */
         static std::string save(std::string const& kind, Registry const& registry);
+
        	/** Exports a registry to an ostream object
 	 * @arg kind	    the output format. It has to be a valid exporter name
 	 * @arg registry    the registry to export

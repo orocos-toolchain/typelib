@@ -31,7 +31,8 @@ namespace Typelib
         { return "Undefined type " + m_name; }
     };
 
-    /** A type is already defined */
+    /** A type is already defined (duplicates definitions are
+     * not allowed in type registries) */
     class AlreadyDefined : public RegistryException
     {
         std::string m_name;
@@ -61,9 +62,15 @@ namespace Typelib
 
 
     /** Manipulation of a set of types
-     * This class is a container for types. It helps manipulating a set of types. 
-     * Any type in a Registry object can only reference types in the same
-     * registry
+     * Any complex type in a Registry object can only reference types in the same
+     * registry. No duplicates are allowed.
+     *
+     * Registry objects provide the following services:
+     * <ul>
+     *	<li> type aliases (Registry::alias)
+     *	<li> namespace management: default namespace (Registry::setDefaultNamespace, Registry::getDefaultNamespace),
+     *  namespace import (like <tt>using namespace</tt> in C++)
+     *  <li> derived types (array, pointers) automatic building (Registry::build)
      */
     class Registry
     {
@@ -115,11 +122,11 @@ namespace Typelib
        
         /** Checks for the availability of a particular type
          *
-         * If \c name is a modified version (pointer or array) of a known
-         * type, then the according object can be created
-         *
          * @arg name the type name
-         * @return true if the Type exists or can be built, false otherwise
+         * @arg build if true, the method returns true if \c name is 
+	 * a derived version (pointer or array) of a known type
+         *
+         * @return true if the Type exists, or if it is a derived type and build is true, false otherwise
          */
         bool        has(const std::string& name, bool build = true) const;
 
@@ -179,9 +186,7 @@ namespace Typelib
         };
         void dump(std::ostream& stream, int dumpmode = AllType, const std::string& source_filter = "*") const;
     };
-
-
-}; // Typelib namespace
+}
 
 #endif
 
