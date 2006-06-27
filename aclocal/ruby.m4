@@ -7,7 +7,7 @@ AC_DEFUN([CLBS_CHECK_RUBY], [
     md_ruby_support=yes
     AC_ARG_VAR(RUBY, [the Ruby interpreter])
     if test -z "$RUBY"; then
-        AC_PATH_PROG([RUBY], [ruby])
+        AC_PATH_PROGS([RUBY], [ruby ruby1.8])
     fi
     test -z "$RUBY" && md_ruby_support=no
 
