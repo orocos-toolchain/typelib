@@ -93,6 +93,12 @@ class TC_Value < Test::Unit::TestCase
 	assert( a.is_a?(/ A$/) )
     end
 
+    def test_to_s
+	int_value = Registry.new.get("/int").new
+	int_value.zero!
+	assert_equal("0", int_value.to_s)
+    end
+
     def test_import
         registry = make_registry
         assert( registry.get("/struct A") )

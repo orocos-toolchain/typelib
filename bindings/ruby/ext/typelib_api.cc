@@ -301,6 +301,7 @@ extern "C" void Init_typelib_api()
     rb_define_method(cType, "__initialize__",   RUBY_METHOD_FUNC(&value_initialize), 1);
     rb_define_method(cType, "to_ruby",      RUBY_METHOD_FUNC(&value_to_ruby), 0);
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
+    rb_define_method(cType, "to_s",	  RUBY_METHOD_FUNC(&value_to_s), 0);
 
     cPointer  = rb_define_class_under(mTypelib, "PointerType", cType);
     rb_define_singleton_method(cPointer, "deference",    RUBY_METHOD_FUNC(type_pointer_deference), 0);
