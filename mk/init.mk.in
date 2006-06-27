@@ -50,8 +50,10 @@ LTRM    = $(LIBTOOL) --mode=clean   rm -f
 
 DEP_FLAG = -MM
 
-HAVE_DOX = @HAVE_DOX@
-DOXYGEN  = @DX_CMD@
+HAS_DOXYGEN = @HAS_DOXYGEN@
+DOXYGEN  = @DOXYGEN@
+HAS_RDOC = @HAS_RDOC@
+RDOC	  = @RDOC@
 
 INSTALL         = @INSTALL@
 INSTALL_DIR     = @INSTALL@ -d
@@ -87,6 +89,7 @@ CLBS_TEST_LDFLAGS=@CLBS_TEST_LDFLAGS@
 all: build
 distclean: clean
 distclean: distclean-common
+doc:
 
 distclean-common:
 	rm -f Makefile

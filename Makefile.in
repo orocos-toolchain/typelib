@@ -26,13 +26,7 @@ pkgconfig-install:
 	$(INSTALL_DIR)  $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL_DATA) typelib.pc $(DESTDIR)$(libdir)/pkgconfig
 
-ifeq ($(HAVE_DOX), yes)
-doc: Doxyfile
-	$(DOXYGEN) Doxyfile
-else
-doc:
-endif
-
 include $(top_srcdir)/mk/recurse.mk
 include $(top_srcdir)/mk/autotools-root.mk
+include $(top_srcdir)/mk/doxygen.mk
 

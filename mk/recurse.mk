@@ -6,6 +6,7 @@ build: recurse-build
 clean: recurse-clean
 distclean: recurse-distclean
 install: recurse-install
+doc: recurse-doc
 
 recurse-%:
 	@set -e ; for dir in $(SUBDIRS) ; do \

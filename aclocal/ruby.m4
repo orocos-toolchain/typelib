@@ -34,3 +34,25 @@ AC_DEFUN([CLBS_CHECK_RUBY], [
     ])
 ])
 
+dnl CLBS_CHECK_RDOC(action-if-found, action-if-not-found)
+dnl defines: RDOC, HAS_RDOC
+AC_DEFUN([CLBS_CHECK_RDOC], [
+    md_rdoc_support=yes
+    AC_ARG_VAR(RDOC, [the RDoc utility])
+    if test -z "$RDOC"; then
+        AC_PATH_PROG([RDOC], [rdoc rdoc1.8])
+    fi
+    test -z "$RDOC" && md_rdoc_support=no
+
+    AS_IF([test "$md_rdoc_support" = "yes"], [
+        HAS_RDOC=yes
+        AC_SUBST(HAS_RDOC)
+        ifelse([$1], [], [], [$1])
+    ], [
+        AC_MSG_WARN([RDoc support disabled])
+        HAS_RDOC=no
+        AC_SUBST(HAS_RDOC)
+        ifelse([$2], [], [], [$2])
+    ])
+])
+

@@ -14,17 +14,6 @@ dnl AC_PROG_CC
 AC_PROG_CXX
 CLBS_DEBUG_OPTIONS
 
-############ Check for doxygen availability if Doxygen.in is present
-HAVE_DOX="no"
-if test -f Doxygen.in; then
-    HAVE_DOX="yes" 
-    CLBS_INIT_DOXYGEN( , , [
-      AC_MSG_NOTICE([Cannot find doxygen])
-      HAVE_DOX="no"
-    ])
-fi
-AC_SUBST([HAVE_DOX])
-
 ############ Checking for libtool
 AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
@@ -32,6 +21,7 @@ AC_SUBST(LIBTOOL_DEPS)
 AC_PROG_INSTALL
 
 ############ Dependencies
+CLBS_CHECK_DOXYGEN
 CLBS_CHECK_ANTLR
 CLBS_CHECK_RUBY([], [AC_MSG_WARN([Disabled Ruby support])])
 CLBS_CHECK_BOOST([], AC_MSG_ERROR([Unable to find the Boost library]))
