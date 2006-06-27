@@ -1,5 +1,5 @@
-dnl $Rev: 1039 $
-dnl $Id: doxygen.m4 1039 2005-10-12 09:17:32Z sjoyeux $
+dnl $Rev: 1495 $
+dnl $Id: doxygen.m4 1495 2006-06-27 07:54:04Z sjoyeux $
 
 AC_DEFUN([CLBS_CHECK_DOXYGEN], 
 [

@@ -59,11 +59,5 @@ AC_CONFIG_FILES([
     ])
 fi
     
-############ Doxygen
-dnl is present if Doxyfile.in exists AND doxygen is available
-if test "x$HAVE_DOX" = "xyes"; then
-   AC_CONFIG_FILES([Doxyfile])
-fi
-
 AC_OUTPUT
 

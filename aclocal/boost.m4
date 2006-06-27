@@ -1,5 +1,5 @@
-dnl $Rev: 1375 $
-dnl $Id: boost.m4 1375 2006-02-07 13:34:51Z sjoyeux $
+dnl $Rev: 1458 $
+dnl $Id: boost.m4 1458 2006-05-17 09:43:09Z sjoyeux $
 
 dnl Checks that boost/version.hpp is present and defines the --with-boost option
 dnl
@@ -135,7 +135,7 @@ AC_DEFUN([CLBS_BOOST_THREAD],
 
   AS_IF([test "$has_working_bthreads" != "no"], [
     $1
-    BOOST_THREAD_CXXFLAGS="$PTHREAD_CXXFLAGS"
+    BOOST_THREAD_CXXFLAGS="$PTHREAD_CFLAGS"
     BOOST_THREAD_LDFLAGS="$BOOST_THREAD_LDFLAGS $PTHREAD_LIBS"
     AC_SUBST(BOOST_THREAD_CXXFLAGS)
     AC_SUBST(BOOST_THREAD_LDFLAGS)

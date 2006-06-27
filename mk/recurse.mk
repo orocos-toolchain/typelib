@@ -1,5 +1,5 @@
-# $Revision: 1022 $
-# $Id: recurse.mk 1022 2005-10-11 12:06:01Z sjoyeux $
+# $Revision: 1495 $
+# $Id: recurse.mk 1495 2006-06-27 07:54:04Z sjoyeux $
 
 ifdef SUBDIRS 
 build: recurse-build
