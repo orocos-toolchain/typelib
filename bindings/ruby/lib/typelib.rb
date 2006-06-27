@@ -150,8 +150,7 @@ module Typelib
                 pp.breakable
                 pp.group(2, '', '') do
                     all_fields = enum_for(:each_field).
-                        collect { |name, field| [name,field] }.
-                        sort_by { |name, _| name.downcase }
+                        collect { |name, field| [name,field] }
                     
                     pp.breakable
                     pp.seplist(all_fields) do |field|
