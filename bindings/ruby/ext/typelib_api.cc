@@ -6,6 +6,7 @@ extern "C" {
 #include <typelib/registry.hh>
 #include <typelib/typevisitor.hh>
 #include <typelib/pluginmanager.hh>
+#include <typelib/importer.hh>
 #include <utilmm/configfile/configset.hh>
 
 using namespace Typelib;
