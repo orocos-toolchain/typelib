@@ -1,5 +1,5 @@
-dnl $Rev: 1495 $
-dnl $Id: doxygen.m4 1495 2006-06-27 07:54:04Z sjoyeux $
+dnl $Rev: 1498 $
+dnl $Id: doxygen.m4 1498 2006-06-27 09:29:51Z sjoyeux $
 
 AC_DEFUN([CLBS_CHECK_DOXYGEN], 
 [
@@ -13,6 +13,18 @@ AC_DEFUN([CLBS_CHECK_DOXYGEN],
 	if test -n $DOT; then
 	    HAS_DOT=yes
 	    AC_SUBST(HAS_DOT)
+	    DOT_PATH=`dirname $DOT`
+	    AC_SUBST(DOT_PATH)
+	else
+	    HAS_DOT=no
+	fi
+
+	AC_PATH_PROG(PERL, perl)
+	if test -n $PERL; then
+	    HAS_PERL=yes
+	    AC_SUBST(HAS_PERL)
+	else
+	    HAS_PERL=no
 	fi
 
 	HAS_DOXYGEN=yes
