@@ -49,6 +49,14 @@ class TC_Value < Test::Unit::TestCase
         assert_nothing_raised { type != nil }
     end
 
+    def test_to_ruby
+	int = Registry.new.get("/int").new
+	assert_equal(0, int.to_ruby)
+
+	str = Registry.new.build("/char[20]").new
+	assert( String === str.to_ruby )
+    end
+
     def test_pointer_type
         type = Registry.new.build("/int*")
         assert_not_equal(type, type.deference)
@@ -73,6 +81,7 @@ class TC_Value < Test::Unit::TestCase
     def test_string_handling
         buffer_t = Registry.new.build("/char[256]")
         buffer = buffer_t.new
+	assert( buffer.string_handler? )
 	assert( buffer.respond_to?(:to_str) )
 	assert( buffer.respond_to?(:from_str) )
 
@@ -82,7 +91,15 @@ class TC_Value < Test::Unit::TestCase
         
         # Check that .from_str.to_str is an identity
         assert_equal("first test", buffer.from_str("first test").to_str)
+	assert_equal("first test", buffer.to_ruby)
         assert_raises(ArgumentError) { buffer.from_str("a"*512) }
+    end
+
+    def test_pretty_printing
+        b = make_registry.get("/struct B").new
+	b.zero!
+	assert_nothing_raised { pp b }
+
     end
 
     def test_is_a

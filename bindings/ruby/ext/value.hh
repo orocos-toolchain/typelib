@@ -63,6 +63,8 @@ static VALUE value_field_set(VALUE self, VALUE name, VALUE newval)
     } catch(FieldNotFound) {}
     rb_raise(rb_eArgError, "no field '%s' in '%s'", StringValuePtr(name), rb_obj_classname(self));
 }
+
+
 static VALUE value_to_ruby(VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));
@@ -94,47 +96,5 @@ static VALUE value_pointer_nil_p(VALUE self)
     if ( *reinterpret_cast<void**>(value.getData()) == 0 )
         return Qtrue;
     return Qfalse;
-}
-
-namespace {
-    class ToStringVisitor : public Typelib::ValueVisitor {
-	std::string m_value;
-
-	#define LEXICAL_CAST(type) \
-	    virtual bool visit_ (type& v) { m_value = boost::lexical_cast<std::string>(v); return true; }
-
-	LEXICAL_CAST(int8_t  )
-	LEXICAL_CAST(uint8_t )
-	LEXICAL_CAST(int16_t )
-	LEXICAL_CAST(uint16_t)
-	LEXICAL_CAST(int32_t )
-	LEXICAL_CAST(uint32_t)
-	LEXICAL_CAST(int64_t )
-	LEXICAL_CAST(uint64_t)
-	LEXICAL_CAST(float   )
-	LEXICAL_CAST(double  )
-
-    public:
-	std::string apply(Value v)
-	{
-	    m_value = "";
-	    ValueVisitor::apply(v);
-	    return m_value;
-	}
-    };
-}
-
-
-static VALUE value_to_s(VALUE self)
-{
-    Value const& value(rb2cxx::object<Value>(self));
-    ToStringVisitor to_s_visitor;
-    try { 
-	std::string str = to_s_visitor.apply(value); 
-	return rb_str_new(str.c_str(), str.length());
-    }
-    catch(...) {}
-    rb_raise(rb_eRuntimeError, "invalid conversion to string");
-    return Qnil;
 }
 

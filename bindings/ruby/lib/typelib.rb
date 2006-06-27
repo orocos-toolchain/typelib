@@ -37,13 +37,6 @@ module Typelib
         end
 
 	module StringHandler
-	    def extend_object(obj)
-		super(obj)
-		class << obj
-		    alias :to_str :to_s 
-		end
-	    end
-
 	    def to_str
 		Type::to_string(self)
 	    end
@@ -68,6 +61,21 @@ module Typelib
         def to_ptr
             self.class.to_ptr.wrap(@ptr.to_ptr)
         end
+	
+	alias :__to_s__ :to_s
+	def to_s
+	    if respond_to?(:to_str)
+		to_str
+	    elsif ! (ruby_value = to_ruby).eql?(self)
+		ruby_value.to_s
+	    else
+		__to_s__
+	    end
+	end
+
+	def pretty_print(pp)
+	    pp.text to_s
+	end
 
         # Get a pointer on this value
         def to_dlptr; @ptr end
@@ -142,9 +150,7 @@ module Typelib
             def [](name); @fields.find { |n, t| n == name }.last end
             def each_field(&iter); @fields.each(&iter) end
 
-            def pretty_print(pp)
-                super
-
+	    def pretty_print_common(pp)
                 pp.breakable
                 pp.text '{'
                 pp.breakable
@@ -154,17 +160,31 @@ module Typelib
                     
                     pp.breakable
                     pp.seplist(all_fields) do |field|
-                        name, type = *field
-                        pp.text name
-                        pp.group(2, '<', '>') do
-                            type.pretty_print(pp)
-                        end
+			yield(*field)
                     end
                 end
                 pp.breakable
                 pp.text '}'
+	    end
+
+            def pretty_print(pp)
+		super
+		pretty_print_common(pp) do |name, type|
+		    pp.text name
+		    pp.group(2, '<', '>') do
+			type.pretty_print(pp)
+		    end
+		end
             end
         end
+
+	def pretty_print(pp)
+	    self.class.pretty_print_common(pp) do |name, type|
+		pp.text name
+		pp.text "="
+		self[name].pretty_print(pp)
+	    end
+	end
 
         def []=(name, value)
 	    if Hash === value
@@ -181,17 +201,32 @@ module Typelib
     class ArrayType < Type
         @writable = false
 
-        def to_ruby; self end
+	def pretty_print(pp)
+	    all_fields = enum_for(:each_with_index).to_a
+
+	    pp.group(2, '[', ']') do
+		pp.seplist(all_fields) do |element|
+		    element, index = *element 
+		    pp.text "[#{index}]="
+		    element.pretty_print(pp)
+		end
+	    end
+	end
+
+        def to_ruby
+	    if respond_to?(:to_str); to_str
+	    else self 
+	    end
+	end
         include Enumerable
     end
 
     class PointerType < Type
         @writable = false
         def to_ruby
-	    if self.null?
-		nil
-	    else
-		self
+	    if self.null?; nil
+	    elsif respond_to?(:to_str); to_str
+	    else self
 	    end
        	end
     end
