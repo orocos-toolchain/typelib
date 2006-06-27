@@ -40,6 +40,8 @@ AC_CONFIG_FILES([
     tools/Makefile
     typelib/Makefile
 
+    Doxyfile
+
     lang/Makefile
     lang/cimport/Makefile
     lang/tlb/Makefile
