@@ -100,11 +100,11 @@ namespace Typelib
         Enum(const std::string& name);
 	/** Add a new definition */
         void            add(std::string const& name, int value);
-	/** Gets the value for @name 
-	 * @throws SymbolNotFound if @name is not defined */
+	/** Gets the value for @c name 
+	 * @throws SymbolNotFound if @c name is not defined */
         integral_type   get(std::string const& name) const;
-	/** Gets the name for @value
-	 * @throws ValueNotFound if @value is not defined in this enum */
+	/** Gets the name for @c value
+	 * @throws ValueNotFound if @c value is not defined in this enum */
         std::string     get(integral_type value) const;
         
 	/** The list of all names */

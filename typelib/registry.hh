@@ -71,6 +71,7 @@ namespace Typelib
      *	<li> namespace management: default namespace (Registry::setDefaultNamespace, Registry::getDefaultNamespace),
      *  namespace import (like <tt>using namespace</tt> in C++)
      *  <li> derived types (array, pointers) automatic building (Registry::build)
+     * </ul>
      */
     class Registry
     {
