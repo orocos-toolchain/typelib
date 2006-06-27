@@ -24,6 +24,7 @@ AC_PROG_INSTALL
 CLBS_CHECK_DOXYGEN
 CLBS_CHECK_ANTLR
 CLBS_CHECK_RUBY([], [AC_MSG_WARN([Disabled Ruby support])])
+CLBS_CHECK_RDOC([], [AC_MSG_WARN([No documentation for Ruby extension])])
 CLBS_CHECK_BOOST([], AC_MSG_ERROR([Unable to find the Boost library]))
 CLBS_BOOST_FILESYSTEM([], AC_MSG_ERROR([Unable to find the Boost/Filesystem library]))
 PKG_CHECK_MODULES(LIBXML, libxml-2.0,, [AC_MSG_ERROR([libxml2 is needed])])

@@ -30,3 +30,9 @@ install:
 	$(INSTALL_DIR) $(DESTDIR)$(RBLIBDIR)
 	$(INSTALL_DATA) $(srcdir)/lib/typelib.rb $(DESTDIR)$(RBLIBDIR)
 	
+ifeq ($(HAS_RDOC),yes)
+doc: ruby-doc
+ruby-doc:
+	cd $(srcdir) && $(RDOC) -o $(CURDIR)/rdoc
+endif
+
