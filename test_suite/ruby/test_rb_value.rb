@@ -73,10 +73,16 @@ class TC_Value < Test::Unit::TestCase
     def test_string_handling
         buffer_t = Registry.new.build("/char[256]")
         buffer = buffer_t.new
+	assert( buffer.respond_to?(:to_str) )
+	assert( buffer.respond_to?(:from_str) )
+
+	int_value = Registry.new.get("/int").new
+	assert( !int_value.respond_to?(:to_str) )
+	assert( !int_value.respond_to?(:from_str) )
         
-        # Check that .from_string.to_string is an identity
-        assert_equal("first test", buffer.from_string("first test").to_string)
-        assert_raises(TypeError) { buffer.from_string("a"*512) }
+        # Check that .from_str.to_str is an identity
+        assert_equal("first test", buffer.from_str("first test").to_str)
+        assert_raises(ArgumentError) { buffer.from_str("a"*512) }
     end
 
     def test_is_a

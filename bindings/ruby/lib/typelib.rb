@@ -36,6 +36,27 @@ module Typelib
 	    end
         end
 
+	module StringHandler
+	    def extend_object(obj)
+		super(obj)
+		class << obj
+		    alias :to_str :to_s 
+		end
+	    end
+
+	    def to_str
+		Type::to_string(self)
+	    end
+	    def from_str(value)
+		Type::from_string(self, value)
+	    end
+	end
+
+	def initialize(*args)
+	    __initialize__(*args)
+	    extend StringHandler if string_handler?
+	end
+
         def ==(other)
             if Type === other
                 self.class == other.class && to_dlptr == other.to_dlptr 
