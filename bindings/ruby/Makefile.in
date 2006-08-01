@@ -26,7 +26,7 @@ RBLIBDIR = $(libdir)/$(shell $(RUBY) -rrbconfig -e "puts Config::CONFIG['sitelib
 RBEXTDIR = $(libdir)/$(shell $(RUBY) -rrbconfig -e "puts Config::CONFIG['sitearchdir'].gsub(/^.*(?>site_ruby)/, 'site_ruby')")
 install: 
 	$(INSTALL_DIR) $(DESTDIR)$(RBEXTDIR)
-	$(INSTALL_LIB) ext/typelib_api.la $(DESTDIR)$(RBEXTDIR)
+	$(INSTALL_DATA) ext/typelib_api.so $(DESTDIR)$(RBEXTDIR)
 	$(INSTALL_DIR) $(DESTDIR)$(RBLIBDIR)
 	$(INSTALL_DATA) $(srcdir)/lib/typelib.rb $(DESTDIR)$(RBLIBDIR)
 	
