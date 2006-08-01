@@ -103,7 +103,7 @@ module Typelib
 
 	    fields = self.class.fields
 	    if fields.size != init.size
-		raise ArgumentError, "wrong number of arguments (#{init.size} for #{fields.size}"
+		raise ArgumentError, "wrong number of arguments (#{init.size} for #{fields.size})"
 	    end
 	    
             # init is either an array of values (the fields in order) or a hash
@@ -332,7 +332,7 @@ module Typelib
             return_type = return_spec.shift
             return_spec = return_spec.sort # MUST be sorted for #function_call to work properly
 
-            return_type, *arg_types = Array[return_type, *arg_types].collect do |typedef|
+            return_type, *arg_types = Array[return_type, *arg_types].map do |typedef|
                 next if typedef.nil?
 
                 typedef = if typedef.respond_to?(:to_str)
