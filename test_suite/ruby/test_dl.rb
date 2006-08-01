@@ -148,8 +148,8 @@ class TC_DL < Test::Unit::TestCase
 
 	check_argument_passing ['check_opaque_value', 'int', 'OpaqueType'], [my_handler]
 
-	id = check_argument_passing ['test_id_handling', ['int', 1], 'DEFINE_ID*']
-	check_argument_passing ['check_id_value', 'int', 'DEFINE_ID'], [id]
+	# id = check_argument_passing ['test_id_handling', ['int', 1], 'DEFINE_ID*']
+	# check_argument_passing ['check_id_value', 'int', 'DEFINE_ID'], [id]
 
 	wrapper = lib.wrap('test_void_argument', 'int', 'nil*', 'int')
 	arg = lib.registry.get("int").new
