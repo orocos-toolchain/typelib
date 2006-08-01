@@ -183,8 +183,8 @@ extern "C" void Init_typelib_api()
     
     cRegistry = rb_define_class_under(mTypelib, "Registry", rb_cObject);
     rb_define_alloc_func(cRegistry, registry_alloc);
-    rb_define_method(cRegistry, "do_get", RUBY_METHOD_FUNC(registry_do_get), 1);
-    rb_define_method(cRegistry, "do_build", RUBY_METHOD_FUNC(registry_do_build), 1);
+    rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_do_get), 1);
+    rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_do_build), 1);
     // do_import is called by the Ruby-defined import, which formats the 
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 3);

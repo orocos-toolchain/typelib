@@ -7,12 +7,28 @@
 
 static 
 void registry_free(void* ptr) { delete reinterpret_cast<Registry*>(ptr); }
+static
+void wrappers_mark(void* ptr)
+{
+    using cxx2rb::WrapperMap;
+    WrapperMap const& wrappers = *reinterpret_cast<WrapperMap const*>(ptr);
+    for (WrapperMap::const_iterator it = wrappers.begin(); it != wrappers.end(); ++it)
+	rb_gc_mark(it->second);
+}
+
+static
+void wrappers_free(void* ptr) { delete reinterpret_cast<cxx2rb::WrapperMap*>(ptr); }
 
 static
 VALUE registry_alloc(VALUE klass)
 {
     Registry* registry = new Registry;
-    return Data_Wrap_Struct(klass, 0, registry_free, registry);
+    VALUE rb_registry = Data_Wrap_Struct(klass, 0, registry_free, registry);
+
+    cxx2rb::WrapperMap *wrappers = new cxx2rb::WrapperMap;
+    VALUE rb_wrappers = Data_Wrap_Struct(rb_cObject, wrappers_mark, wrappers_free, wrappers);
+    rb_iv_set(rb_registry, "@wrappers", rb_wrappers);
+    return rb_registry;
 }
 
 

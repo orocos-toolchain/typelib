@@ -10,17 +10,21 @@ namespace cxx2rb {
         }
     }
 
+    typedef std::map<Type const*, VALUE> WrapperMap;
     static VALUE type_wrap(Type const& type, VALUE registry)
     {
-        VALUE rb_typename = rb_str_new2(type.getName().c_str());
-        
         VALUE known_types = rb_iv_get(registry, "@wrappers");
         if (NIL_P(known_types))
-            rb_raise(rb_eArgError, "");
-        VALUE wrapper = rb_hash_aref(known_types, rb_typename);
-        if (! NIL_P(wrapper))
-            return wrapper;
-        
+            rb_raise(rb_eArgError, "@wrappers is uninitialized");
+
+	// Type objects are unique, we can register Ruby wrappers based
+	// on the type pointer (instead of using names)
+	WrapperMap& wrappers = rb2cxx::get_wrapped<WrapperMap>(known_types);
+
+	WrapperMap::const_iterator it = wrappers.find(&type);
+	if (it != wrappers.end())
+	    return it->second;
+
         VALUE base  = class_of(type);
         VALUE klass = rb_class_new_instance(1, &base, rb_cClass);
         VALUE rb_type = Data_Wrap_Struct(rb_cObject, 0, do_not_delete, const_cast<Type*>(&type));
@@ -32,7 +36,7 @@ namespace cxx2rb {
         if (rb_respond_to(klass, rb_intern("subclass_initialize")))
             rb_funcall(klass, rb_intern("subclass_initialize"), 0);
 
-        rb_hash_aset(known_types, rb_typename, klass);
+	wrappers.insert(std::make_pair(&type, klass));
         return klass;
     }
 }

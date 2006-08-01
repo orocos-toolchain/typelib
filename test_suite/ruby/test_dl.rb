@@ -46,6 +46,19 @@ class TC_DL < Test::Unit::TestCase
         assert_equal(40, a.d)
     end
 
+    def test_wrapper_caching
+	begin
+	    a_type_1 = registry.get("struct A").object_id
+	    a_type_2 = registry.get("struct A").object_id
+	    assert_equal(a_type_1, a_type_2)
+	end
+	# Supposed to check that the wrapper is not deleted
+	# DOES NOT WORK
+	# see the test in test_validation
+	GC.start
+	assert( ObjectSpace.enum_for(:each_object).find { |o| o.object_id == a_type_1 } )
+    end
+
     def test_ptr_changes
         # Check that parameters passed by pointer are changed
         wrapper = lib.wrap('test_ptr_argument_changes', nil, 'struct B*')
@@ -59,6 +72,9 @@ class TC_DL < Test::Unit::TestCase
         assert_raises(ArgumentError) { lib.wrap('test_simple_function_wrapping', "int", nil, "short") }
         assert_nothing_raised { lib.wrap('test_ptr_argument_changes', nil, 'struct B*') }
         GC.start
+
+	# NOTE if there is a segfault after the garbage collection, most likely it
+	# NOTE because the Ruby wrapper for Type object has been deleted
 
         # Check that plain structures aren't allowed
         assert_raises(ArgumentError) { lib.wrap('test_simple_function_wrapping', "int", "struct A") }
