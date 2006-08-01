@@ -43,6 +43,7 @@ class TC_Value < Test::Unit::TestCase
     def test_basic_behaviour
         # Check that == returns false when the two objects aren't of the same class
         # (for instance type == nil shall return false)
+	type = nil
         type = Registry.new.get("/int")
         assert_equal("/int", type.name)
         assert_nothing_raised { type == nil }
