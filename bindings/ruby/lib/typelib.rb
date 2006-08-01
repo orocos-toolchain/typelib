@@ -33,7 +33,11 @@ module Typelib
             def new; __real_new__(nil) end
 
 	    def is_a?(typename)
-		typename === self.name
+		if typename.respond_to?(:to_str) || Regexp === typename
+		    typename.to_str == self.name
+		else
+		    super
+		end
 	    end
         end
 
@@ -125,7 +129,11 @@ module Typelib
             def wrap(ptr, *init);   __real_new__(ptr, *init) end
 
 	    def is_a?(typename)
-		typename === self.name || self.fields[0].last.is_a?(typename)
+		if typename.respond_to?(:to_str) || Regexp === typename 
+		    typename === self.name || self.fields[0].last.is_a?(typename)
+		else
+		    super
+		end
 	    end
 
             def subclass_initialize
