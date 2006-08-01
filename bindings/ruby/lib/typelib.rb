@@ -137,27 +137,26 @@ module Typelib
 	    end
 
             def subclass_initialize
-                @fields = Array.new
                 singleton_class = class << self; self end
 
-                get_fields.each do |name, offset, type|
-                    @fields << [name, type]
-
-                    if !instance_methods.include?(name)
-                        define_method(name) { get_field(name) }
+                @fields = get_fields.map! do |name, offset, type|
+                    if !method_defined?(name)
+			define_method(name) { get_field(name) }
                         if type.writable? || type < CompoundType
                             define_method("#{name}=") { |value| self[name] = value }
                         end
                     end
-                    if !singleton_class.instance_methods.include?(name)
-                        singleton_class.send(:define_method, name, &lambda { || type })
+                    if !singleton_class.method_defined?(name)
+                        singleton_class.send(:define_method, name) { || type }
                     end
+
+                    [name, type]
                 end
             end
 
             attr_reader :fields
             def [](name); @fields.find { |n, t| n == name }.last end
-            def each_field(&iter); @fields.each(&iter) end
+            def each_field; @fields.each { |field| yield(field) } end
 
 	    def pretty_print_common(pp)
                 pp.breakable
@@ -420,9 +419,9 @@ module Typelib
             raise ArgumentError, "#{arg_types.size - wrapper_args_count} arguments expected, got #{user_args_count}"
         end
 
-        args.enum_for(:each_with_index).map do |arg, idx|
-	    filter_argument(arg, arg_types[idx])
-        end
+	args.each_with_index do |arg, idx|
+	    args[idx] = filter_argument(arg, arg_types[idx])
+	end
     end
 
     def self.function_call(args, wrapper, return_type, return_spec, arg_types)
