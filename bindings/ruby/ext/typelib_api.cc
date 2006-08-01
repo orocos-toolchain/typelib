@@ -193,8 +193,6 @@ extern "C" void Init_typelib_api()
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
     rb_define_alloc_func(cType, value_alloc);
-    rb_define_singleton_method(cType, "name",  RUBY_METHOD_FUNC(type_name), 0);
-    rb_define_singleton_method(cType, "null?", RUBY_METHOD_FUNC(type_is_null), 0);
     rb_define_singleton_method(cType, "==",    RUBY_METHOD_FUNC(type_equality), 1);
     rb_define_singleton_method(cType, "to_string",    RUBY_METHOD_FUNC(&value_to_string), 1);
     rb_define_singleton_method(cType, "from_string",  RUBY_METHOD_FUNC(&value_from_string), 2);

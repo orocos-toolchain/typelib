@@ -26,6 +26,8 @@ namespace cxx2rb {
         VALUE rb_type = Data_Wrap_Struct(rb_cObject, 0, do_not_delete, const_cast<Type*>(&type));
         rb_iv_set(klass, "@registry", registry);
         rb_iv_set(klass, "@type", rb_type);
+        rb_iv_set(klass, "@name", rb_str_new2(type.getName().c_str()));
+	rb_iv_set(klass, "@null", (type.getCategory() == Type::NullType) ? Qtrue : Qfalse);
 
         if (rb_respond_to(klass, rb_intern("subclass_initialize")))
             rb_funcall(klass, rb_intern("subclass_initialize"), 0);
@@ -43,17 +45,10 @@ static VALUE type_is_a(VALUE self, Type::Category category)
     Type const& type(rb2cxx::object<Type>(self));
     return (type.getCategory() == category) ? Qtrue : Qfalse;
 }
-static VALUE type_is_null(VALUE self)    { return type_is_a(self, Type::NullType); }
 static VALUE type_equality(VALUE rbself, VALUE rbwith)
 { return are_wrapped_equal<Type>(rbself, rbwith); }
 
-static VALUE type_name(VALUE self)
-{
-    Type const& type = rb2cxx::object<Type>(self);
-    return rb_str_new2(type.getName().c_str());
-}
-
-/* Only PODs are assignable, moreover pointers are followed */
+/* PODs are assignable, pointers are dereferenced */
 static VALUE type_is_assignable(Type const& type)
 {
     switch(type.getCategory())

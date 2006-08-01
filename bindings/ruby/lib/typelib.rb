@@ -16,7 +16,7 @@ module Typelib
     class Type
         @writable = true
         class << self
-            attr_reader :registry
+            attr_reader :registry, :name
             def writable?
                 if !defined?(@writable)
                     superclass.writable?
@@ -24,6 +24,7 @@ module Typelib
                     @writable
                 end
             end
+	    def null?; @null end
             def to_ptr; registry.build(name + "*") end
             def pretty_print(pp); pp.text name end
 
