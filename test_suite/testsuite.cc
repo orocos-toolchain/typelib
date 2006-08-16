@@ -4,7 +4,7 @@
 
 test_suite*
 init_unit_test_suite( int argc, char * argv[] ) {
-    set_log_threshold_level(log_successful_tests);
+    // set_log_threshold_level(log_successful_tests);
     test_suite* ts = BOOST_TEST_SUITE( "Testing Typelib" );
 
     // Check core library behaviour
