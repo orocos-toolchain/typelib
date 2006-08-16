@@ -28,8 +28,8 @@ typeLib_LIBS	= $(top_builddir)/lang/cimport/libtypeLang_c.la $(top_builddir)/lan
 HEADERS=exporter.hh importer.hh ioplugins.hh manip.hh pluginmanager.hh registry.hh registryiterator.hh typebuilder.hh typedisplay.hh typemodel.hh typename.hh typevisitor.hh value.hh csvoutput.hh
 install: header-install
 header-install:
-	$(INSTALL_DIR) $(includedir)/typelib
-	$(INSTALL_DATA) $(addprefix $(srcdir)/,$(HEADERS)) $(includedir)/typelib
+	$(INSTALL_DIR) $(DESTDIR)$(includedir)/typelib
+	$(INSTALL_DATA) $(addprefix $(srcdir)/,$(HEADERS)) $(DESTDIR)$(includedir)/typelib
 
 
 ############ end: typeLib
