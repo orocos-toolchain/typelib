@@ -4,10 +4,7 @@ dnl $Rev: 1402 $
 AC_DEFUN([CLBS_CHECK_ANTLR], [
     AC_ARG_VAR(ANTLR, [the Antlr tool])
     if test -z "$ANTLR"; then
-        AC_PATH_PROG(ANTLR, antlr, no)
-    fi
-    if test "x$ANTLR" = "xno"; then
-        AC_MSG_ERROR([cannot find the antlr tool])
+        AC_PATH_PROGS(ANTLR, [antlr cantlr], no)
     fi
 
     # Check for antlr-config
