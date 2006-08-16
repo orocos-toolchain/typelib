@@ -48,6 +48,9 @@ namespace utilmm
         
         typedef std::list<const config_set*> subsets;
 
+	/** Checks if this set is empty (no child, no attributes) */
+	bool empty() const;
+
         /** Tests for the existence of an attribute */
         bool exists (const std::string& attribute) const;
         
@@ -57,8 +60,10 @@ namespace utilmm
         const config_set* parent() const;
         config_set* parent();
 
-        /** Get the list of our children */
+        /** Get the list of children named \c name */
         std::list<const config_set*> children(const std::string& name) const;
+        /** Get the first child named \c name or an empty set */
+	config_set const& child(std::string const& name) const;
 
         /** Get a list of values from this config_set */
         template<typename T> 
