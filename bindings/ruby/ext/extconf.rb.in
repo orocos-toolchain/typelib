@@ -2,27 +2,11 @@ require 'mkmf'
 
 Config::MAKEFILE_CONFIG['prefix'] = "@prefix@"
 Config::MAKEFILE_CONFIG['exec_prefix'] = "@exec_prefix@"
+CONFIG['CC'] = 'g++'
 
-$CPPFLAGS += " -I@top_srcdir@ @UTILMM_CFLAGS@ -g3 -O0 -Wshadow"
-$LDFLAGS  += "@top_builddir@/typelib/.libs/libtypeLib.so -ldl -lstdc++ -Wl,-rpath -Wl,@libdir@"
-
-# autoconf_prefix="@prefix@"
-# autoconf_exec_prefix="@exec_prefix@"
-# 
-# suffix = Config::CONFIG['sitearchdir'].gsub(/.*site_ruby/, "site_ruby")
-# 
-# Config::MAKEFILE_CONFIG['prefix']=autoconf_prefix
-# Config::MAKEFILE_CONFIG['exec_prefix'] = autoconf_exec_prefix
-# autoconf_libdir = "@libdir@"
-# 
-# $CPPFLAGS += " -I@top_srcdir@ @UTILMM_CFLAGS@ -g3 -O0 -Wshadow"
-# $LDFLAGS  += "@top_builddir@/typelib/libtypeLib.la -ldl"
-# #CONFIG['CC'] = "@top_builddir@/libtool --mode=compile #{CONFIG['CC']}"
-# COMPILE_C   = "@top_builddir@/libtool --mode=compile #{COMPILE_C}"
-# COMPILE_CXX = "@top_builddir@/libtool --mode=compile #{COMPILE_CXX}"
-# $OBJEXT = 'lo'
-# CONFIG['LDSHARED'] = "@top_builddir@/libtool --mode=link @CXX@ -module -rpath #{autoconf_libdir}/#{suffix} -avoid-version"
-# CONFIG['DLEXT'] = 'la'
+$CPPFLAGS += " -I@top_srcdir@ @UTILMM_CFLAGS@"
+$CFLAGS += " -g3 -O0 -Wshadow"
+$LDFLAGS  += " @top_builddir@/typelib/.libs/libtypeLib.so -ldl -module -Wl,-rpath -Wl,@libdir@"
 
 create_makefile('typelib_api', "@srcdir@")
 
