@@ -19,7 +19,7 @@ namespace
 
 namespace Typelib
 {
-    TypeBuilder::TypeBuilder(Registry& registry, const list<string>& name)
+    TypeBuilder::TypeBuilder(Registry& registry, const std::list<std::string>& name)
         : m_registry(registry) 
     {
         string basename = accumulate(name.begin(), name.end(), string(), join);
@@ -84,7 +84,7 @@ namespace Typelib
         return builder.getType();
     }
 
-    TypeBuilder::TypeSpec TypeBuilder::parse(const Registry& registry, const string& full_name)
+    TypeBuilder::TypeSpec TypeBuilder::parse(const Registry& registry, const std::string& full_name)
     {
         static const char* first_chars = "*[";
 
@@ -118,7 +118,7 @@ namespace Typelib
         return spec;
     }
 
-    const Type* TypeBuilder::build(Registry& registry, const string& full_name)
+    const Type* TypeBuilder::build(Registry& registry, const std::string& full_name)
     {
         TypeSpec spec;
         try { spec = parse(registry, full_name); }
@@ -127,7 +127,7 @@ namespace Typelib
         return &build(registry, spec);
     }
 
-    const Type* TypeBuilder::getBaseType(const Registry& registry, const string& full_name)
+    const Type* TypeBuilder::getBaseType(const Registry& registry, const std::string& full_name)
     {
         TypeSpec spec;
         try { spec = parse(registry, full_name); }

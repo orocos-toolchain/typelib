@@ -12,15 +12,15 @@ using namespace std;
 
 namespace Typelib
 {
-    Type::Type(string const& name, size_t size, Category category)
+    Type::Type(std::string const& name, size_t size, Category category)
         : m_size(size)
         , m_category(category)
         { setName(name); }
 
     Type::~Type() {}
 
-    string Type::getName() const { return m_name; }
-    void Type::setName(const string& name) { m_name = name; }
+    std::string Type::getName() const { return m_name; }
+    void Type::setName(const std::string& name) { m_name = name; }
     Type::Category Type::getCategory() const { return m_category; }
 
     void   Type::setSize(size_t size) { m_size = size; }
@@ -33,12 +33,12 @@ namespace Typelib
 
 
 
-    Numeric::Numeric(string const& name, size_t size, NumericCategory category)
+    Numeric::Numeric(std::string const& name, size_t size, NumericCategory category)
         : Type(name, size, Type::Numeric), m_category(category) {}
     Numeric::NumericCategory Numeric::getNumericCategory() const { return m_category; }
 
 
-    Indirect::Indirect(string const& name, size_t size, Category category, Type const& on)
+    Indirect::Indirect(std::string const& name, size_t size, Category category, Type const& on)
         : Type(name, size, category)
         , m_indirection(on) {}
     Type const& Indirect::getIndirection() const { return m_indirection; }
@@ -48,7 +48,7 @@ namespace Typelib
         : Type(name, 0, Type::Compound) {}
 
     Compound::FieldList const&  Compound::getFields() const { return m_fields; }
-    Field const* Compound::getField(const string& name) const 
+    Field const* Compound::getField(const std::string& name) const 
     {
         for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
         {
@@ -58,7 +58,7 @@ namespace Typelib
         return 0;
     }
 
-    void Compound::addField(const string& name, Type const& type, size_t offset) 
+    void Compound::addField(const std::string& name, Type const& type, size_t offset) 
     { addField( Field(name, type), offset ); }
     void Compound::addField(Field const& field, size_t offset)
     {
@@ -152,7 +152,7 @@ namespace Typelib
         enum FindSizeOfEnum { EnumField };
         BOOST_STATIC_ASSERT(( sizeof(FindSizeOfEnum) == sizeof(Enum::integral_type) ));
     }
-    Enum::Enum(const string& name)
+    Enum::Enum(const std::string& name)
         : Type (name, sizeof(FindSizeOfEnum), Type::Enum) { }
     Enum::ValueMap const& Enum::values() const { return m_values; }
     void Enum::add(std::string const& name, int value)
@@ -194,7 +194,7 @@ namespace Typelib
         : Indirect(getArrayName(of.getName(), new_dim), new_dim * of.getSize(), Type::Array, of)
         , m_dimension(new_dim) { }
 
-    string Array::getArrayName(string const& name, size_t dim)
+    std::string Array::getArrayName(std::string const& name, size_t dim)
     { 
         std::ostringstream stream;
         stream << name << '[' << dim << ']';
@@ -207,16 +207,16 @@ namespace Typelib
     Pointer::Pointer(const Type& on)
         : Indirect( getPointerName(on.getName()), sizeof(int *), Type::Pointer, on)
     {}
-    string Pointer::getPointerName(string const& base)
+    std::string Pointer::getPointerName(std::string const& base)
     { return base + '*'; }
 
 
 
 
-    Field::Field(const string& name, const Type& type)
+    Field::Field(const std::string& name, const Type& type)
         : m_name(name), m_type(type), m_offset(0) {}
 
-    string Field::getName() const { return m_name; }
+    std::string Field::getName() const { return m_name; }
     Type const& Field::getType() const { return m_type; }
     size_t  Field::getOffset() const { return m_offset; }
     void    Field::setOffset(size_t offset) { m_offset = offset; }

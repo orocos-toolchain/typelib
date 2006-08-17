@@ -1,7 +1,8 @@
 #include "registry.hh"
-
+#include "registryiterator.hh"
 #include "typebuilder.hh"
 #include "typedisplay.hh"
+
 #include <memory>
 #include <iostream>
 #include <set>
@@ -12,9 +13,6 @@ using namespace std;
 #include <boost/static_assert.hpp>
 #include <boost/lexical_cast.hpp>
 using boost::lexical_cast;
-
-#include <iostream>
-#include "registryiterator.hh"
 
 using namespace Typelib;
 
@@ -69,7 +67,7 @@ namespace Typelib
     Registry::~Registry() { clear(); }
 
     std::string Registry::getDefaultNamespace() const { return m_namespace; }
-    bool Registry::setDefaultNamespace(const string& space)
+    bool Registry::setDefaultNamespace(const std::string& space)
     {
         if (! isValidNamespace(space, true))
             return false;
@@ -302,7 +300,7 @@ namespace Typelib
         }
     }
 
-    void Registry::dump(ostream& stream, int mode, const std::string& source_filter) const
+    void Registry::dump(std::ostream& stream, int mode, const std::string& source_filter) const
     {
         stream << "Types in registry";
         if (source_filter == "")
