@@ -1,5 +1,5 @@
-dnl $Rev: 1458 $
-dnl $Id: boost.m4 1458 2006-05-17 09:43:09Z sjoyeux $
+dnl $Rev: 1517 $
+dnl $Id: boost.m4 1517 2006-08-20 18:14:22Z sjoyeux $
 
 dnl Checks that boost/version.hpp is present and defines the --with-boost option
 dnl
@@ -149,6 +149,7 @@ AC_DEFUN([CLBS_BOOST_FILESYSTEM],
 [ CLBS_BOOST_SUBLIB(filesystem, [filesystem], [boost/filesystem/path.hpp], [boost::filesystem::path], [$1], [$2]) ])
 
 AC_DEFUN([CLBS_BOOST_TEST], [
+    AC_LANG_PUSH(C++)
     AC_CHECK_HEADER([boost/test/unit_test.hpp], [has_working_test=yes], [has_working_test=no])
     if test "$has_working_test" = "yes"; then
         AC_MSG_CHECKING([for a working boost/unit_test framework])
@@ -185,5 +186,6 @@ AC_DEFUN([CLBS_BOOST_TEST], [
            $2
         ])
     fi
+    AC_LANG_POP
 ])
 

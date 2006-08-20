@@ -1,5 +1,5 @@
-dnl $Rev: 1059 $
-dnl $Id: apr_threads.m4 1059 2005-10-13 08:41:40Z sjoyeux $
+dnl $Rev: 1519 $
+dnl $Id: apr_threads.m4 1519 2006-08-20 18:16:59Z sjoyeux $
 
 dnl -----------------------------------------------------------------
 dnl apr_threads.m4: APR's autoconf macros for testing thread support
@@ -102,7 +102,7 @@ int main() {
     return pthread_create(&thd, NULL, thread_routine, &data);
 } ], [apr_p_t_r=yes], [apr_p_t_r=no], [apr_p_t_r=no])
 
-if test $apr_p_t_r = yes; then
+if test "x$apr_p_t_r" = "xyes"; then
   $1
 fi
 
