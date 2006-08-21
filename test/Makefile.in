@@ -23,7 +23,7 @@ build: ruby/Makefile
 ifeq ($(HAS_RUBY_SUPPORT),yes)
 test: ruby-test
 ruby-test:
-	cd $(builddir)/ruby && $(TESTRB) $(top_srcdir)/test_suite/ruby
+	cd $(builddir)/ruby && $(TESTRB) $(top_srcdir)/test/ruby
 endif
 
 include $(top_srcdir)/mk/test.mk

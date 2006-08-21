@@ -2,7 +2,7 @@
    to cpp
 */
 #ifdef GOOD
-#include <test_suite/test_cimport.1>
+#include <test/test_cimport.1>
 #else
 #error "GOOD is not defined"
 #endif

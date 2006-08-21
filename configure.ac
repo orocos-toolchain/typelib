@@ -48,16 +48,16 @@ AC_CONFIG_FILES([
 
     bindings/Makefile
 
-    test_suite/Makefile
-    test_suite/testsuite.hh
-    test_suite/ruby/test_config.rb
+    test/Makefile
+    test/testsuite.hh
+    test/ruby/test_config.rb
 ])
 
 if test "x$HAS_RUBY_SUPPORT" = "xyes"; then
 AC_CONFIG_FILES([ 
     bindings/ruby/Makefile
     bindings/ruby/ext/extconf.rb
-    test_suite/ruby/extconf.rb
+    test/ruby/extconf.rb
     ])
 fi
     

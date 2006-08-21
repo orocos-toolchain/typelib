@@ -2,7 +2,7 @@
 #include <math.h>
 #include <ruby.h>
 #include <typelib/value.hh>
-#include <test_suite/test_cimport.1>
+#include <test/test_cimport.1>
 #include <math.h>
 
 using namespace Typelib;
