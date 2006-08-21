@@ -9,3 +9,10 @@ clean: pch-clean
 
 include $(top_srcdir)/mk/autotools.mk
 
+ifeq ($(HAS_TEST_SUPPORT), yes)
+SUBDIRS += test
+test: std-test
+std-test:
+	[ -f $(top_builddir)/test/Makefile ] && $(MAKE) -C $(top_builddir)/test test
+endif
+

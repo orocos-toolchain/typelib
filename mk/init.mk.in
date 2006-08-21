@@ -89,6 +89,7 @@ CLBS_TEST_LDFLAGS=@CLBS_TEST_LDFLAGS@
 all: build
 distclean: distclean-common
 doc:
+test:
 
 distclean-common: clean
 	rm -f Makefile
