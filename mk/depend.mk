@@ -1,10 +1,11 @@
-# $Revision: 1365 $
-# $Id: depend.mk 1365 2006-02-07 08:22:03Z sjoyeux $
+# $Revision: 1522 $
+# $Id: depend.mk 1522 2006-08-21 09:30:09Z sjoyeux $
 
 DEP_FILES += $(patsubst %.c,%.dep,$(DEP_SRC:.cc=.dep))
 
 ### Include dependencies only if we aren't cleaning
 ifeq ($(findstring clean,$(MAKECMDGOALS)),)
+ifeq ($(findstring doc,$(MAKECMDGOALS)),)
 ifneq ($(DEP_FILES),)
 
 Makefile: dep-gen
@@ -23,7 +24,8 @@ dep-gen: $(DEP_FILES)
 	[ -s $@ ] || rm -f $@
 
 -include $(DEP_FILES)
-endif
+endif # dep-files not empty
+endif # target is not doc
 endif
 
 clean: dep-clean
