@@ -7,5 +7,4 @@ include $(top_builddir)/mk/init.mk
 
 SUBDIRS = cimport tlb
 include $(top_srcdir)/mk/recurse.mk
-include $(top_srcdir)/mk/autotools-root.mk
 
