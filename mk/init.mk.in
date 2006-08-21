@@ -87,11 +87,10 @@ CLBS_TEST_LDFLAGS=@CLBS_TEST_LDFLAGS@
 
 ### Set up default targets
 all: build
-distclean: clean
 distclean: distclean-common
 doc:
 
-distclean-common:
+distclean-common: clean
 	rm -f Makefile
 
 ### Ensure that default target is build
