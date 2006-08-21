@@ -1,5 +1,5 @@
-dnl $Id: antlr.m4 1402 2006-02-09 13:30:56Z sjoyeux $
-dnl $Rev: 1402 $
+dnl $Id: antlr.m4 1520 2006-08-21 07:52:08Z sjoyeux $
+dnl $Rev: 1520 $
 
 AC_DEFUN([CLBS_CHECK_ANTLR], [
     AC_ARG_VAR(ANTLR, [the Antlr tool])
