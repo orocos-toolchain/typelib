@@ -43,7 +43,7 @@ static VALUE array_each(VALUE rbarray)
     int8_t* data = reinterpret_cast<int8_t*>(value.getData());
     VALUE last_value = Qnil;
     for (size_t i = 0; i < array.getDimension(); ++i, data += array_type.getSize())
-        last_value = rb_yield( typelib_to_ruby( Value(data, array_type), registry ) );
+        last_value = rb_yield_values(1, typelib_to_ruby( Value(data, array_type), registry ) );
 
     return last_value;
 }
