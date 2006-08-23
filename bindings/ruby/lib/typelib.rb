@@ -159,29 +159,29 @@ module Typelib
             def each_field; @fields.each { |field| yield(field) } end
 
 	    def pretty_print_common(pp)
-                pp.breakable
-                pp.text '{'
-                pp.breakable
-                pp.group(2, '', '') do
+                pp.group(2, '{') do
+		    pp.breakable
                     all_fields = enum_for(:each_field).
                         collect { |name, field| [name,field] }
                     
-                    pp.breakable
                     pp.seplist(all_fields) do |field|
 			yield(*field)
                     end
                 end
-                pp.breakable
-                pp.text '}'
+		pp.breakable
+		pp.text '}'
 	    end
 
             def pretty_print(pp)
 		super
+		pp.text ' '
 		pretty_print_common(pp) do |name, type|
 		    pp.text name
-		    pp.group(2, '<', '>') do
-			type.pretty_print(pp)
+		    pp.text ' <'
+		    pp.nest(2) do
+			pp.pp type
 		    end
+		    pp.text '>'
 		end
             end
         end
@@ -190,7 +190,7 @@ module Typelib
 	    self.class.pretty_print_common(pp) do |name, type|
 		pp.text name
 		pp.text "="
-		self[name].pretty_print(pp)
+		pp.pp self[name]
 	    end
 	end
 
@@ -212,13 +212,17 @@ module Typelib
 	def pretty_print(pp)
 	    all_fields = enum_for(:each_with_index).to_a
 
-	    pp.group(2, '[', ']') do
+	    pp.text '['
+	    pp.nest(2) do
+		pp.breakable
 		pp.seplist(all_fields) do |element|
 		    element, index = *element 
-		    pp.text "[#{index}]="
-		    element.pretty_print(pp)
+		    pp.text "[#{index}] = "
+		    pp.pp element
 		end
 	    end
+	    pp.breakable
+	    pp.text ']'
 	end
 
         def to_ruby
@@ -243,11 +247,15 @@ module Typelib
             attr_reader :values
             def pretty_print(pp)
                 super
-                pp.group(2, '{', '}') do
+		pp.text '{'
+                pp.nest(2) do
+		    pp.breakable
                     pp.seplist(keys) do |keydef|
                         pp.text keydef.join(" = ")
                     end
                 end
+		pp.breakable
+		pp.text '}'
             end
         end
     end
