@@ -48,6 +48,6 @@ int main(int argc, char** argv)
         usage();
 
     return 
-        ((it->second) -> main(argc - 2, argv + 2) ? 1 : 0);
+        ((it->second) -> main(argc - 2, argv + 2) ? 0 : 1);
 };
 
