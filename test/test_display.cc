@@ -41,14 +41,26 @@ public:
             {
                 ostringstream stream;
                 
-                A a = { 10, 20, 'b', 52 };
-                Type const& a_type = *registry->get("/struct A");
-                stream << csv_header(a_type, "a");
-                BOOST_CHECK_EQUAL("a.a a.b a.c a.d", stream.str());
+		DisplayTest test;
+		test.fields[0] = 0;
+		test.fields[1] = 1;
+		test.fields[2] = 2;
+		test.fields[3] = 3;
+		test.f = 1.1;
+		test.d = 2.2;
+		test.a.a = 10;
+		test.a.b = 20;
+		test.a.c = 'b';
+		test.a.d = 42;
+		test.mode = OUTPUT;
+
+                Type const& display_type = *registry->get("/struct DisplayTest");
+                stream << csv_header(display_type, "t");
+                BOOST_CHECK_EQUAL("t.fields[0] t.fields[1] t.fields[2] t.fields[3] t.f t.d t.a.a t.a.b t.a.c t.a.d t.mode", stream.str());
                 
                 stream.str("");
-                stream << csv(a_type, &a);
-                BOOST_CHECK_EQUAL("10 20 b 52", stream.str());
+                stream << csv(display_type, &test);
+                BOOST_CHECK_EQUAL("0 1 2 3 1.1 2.2 10 20 b 42 OUTPUT", stream.str());
             }
         }
     }
