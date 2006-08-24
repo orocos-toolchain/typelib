@@ -102,7 +102,7 @@ namespace Typelib
     bool ValueVisitor::visit_(Value const& v, Pointer const& t)
     { return m_dispatcher->TypeVisitor::visit_(t); }
     bool ValueVisitor::visit_(Value const& v, Array const& a) 
-    { return m_dispatcher->TypeVisitor::visit_(a); }
+    { return true; }
     bool ValueVisitor::visit_(Value const&, Compound const& c) 
     { return m_dispatcher->TypeVisitor::visit_(c); }
     bool ValueVisitor::visit_(Value const&, Compound const& c, Field const& f) 

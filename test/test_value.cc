@@ -61,11 +61,48 @@ public:
             BOOST_CHECK(a.c == value_cast<char>(value_get_field(v_b_a, "c")));
         }
     }
+
+
+    struct TestArrayVisitor : public ValueVisitor
+    {
+	size_t m_index;
+	uint8_t* m_element;
+        bool visit_(Value const& v, Array const& a)
+	{
+	    m_element = static_cast<uint8_t*>(v.getData()) + m_index * a.getIndirection().getSize();
+	    return false;
+	}
+
+    public:
+	uint8_t* apply(int index, Value v)
+	{
+	    m_element = 0;
+	    m_index = index;
+	    ValueVisitor::apply(v);
+	    return m_element;
+	}
+    };
+    // Test array handling
+    void test_array()
+    {
+        // Get the test file into repository
+        Registry registry;
+
+	float test[10];
+
+	Type const& array_type = *registry.build("/float[10]");
+	TestArrayVisitor visitor;
+	uint8_t* e_0 = visitor.apply(0, Value(test, array_type));
+	uint8_t* e_9 = visitor.apply(9, Value(test, array_type));
+	BOOST_REQUIRE_EQUAL(e_0, reinterpret_cast<uint8_t*>(&test[0]));
+	BOOST_REQUIRE_EQUAL(e_9, reinterpret_cast<uint8_t*>(&test[9]));
+    }
 };
 
 void test_value(test_suite* ts) {
     boost::shared_ptr<TC_Value> instance( new TC_Value );
     ts->add( BOOST_CLASS_TEST_CASE( &TC_Value::test_simple, instance ) );
     ts->add( BOOST_CLASS_TEST_CASE( &TC_Value::test_struct, instance ) );
+    ts->add( BOOST_CLASS_TEST_CASE( &TC_Value::test_array, instance ) );
 }
 
