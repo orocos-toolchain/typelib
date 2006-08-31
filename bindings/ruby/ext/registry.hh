@@ -105,8 +105,10 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
         
     // TODO: error checking
     try { PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, registry); }
-    catch(Typelib::ImportError e)
-    { rb_raise(rb_eRuntimeError, "cannot import %s: %s", StringValuePtr(file), e.what()); }
+    catch(Typelib::ImportError& e)
+    { rb_raise(rb_eRuntimeError, "%s", e.what()); }
+    catch(Typelib::RegistryException const& e)
+    { rb_raise(rb_eRuntimeError, "%s", e.toString().c_str()); }
 
     return Qnil;
 }
