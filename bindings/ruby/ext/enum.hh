@@ -21,11 +21,12 @@ namespace rb2cxx {
         if (TYPE(rb_value) == T_FIXNUM)
         {
             Enum::integral_type value = FIX2INT(rb_value);
-            try { e.get(value); }
-            catch(Enum::ValueNotFound)
-            { rb_raise(rb_eArgError, "%i is not a valid value for %s", value, e.getName().c_str()); }
-
-            return value;
+            try { 
+		e.get(value); 
+		return value;
+	    }
+            catch(Enum::ValueNotFound) {  }
+	    rb_raise(rb_eArgError, "%i is not a valid value for %s", value, e.getName().c_str());
         }
 
         char const* name;
@@ -35,8 +36,8 @@ namespace rb2cxx {
             name = StringValuePtr(rb_value);
 
         try { return e.get(name); }
-        catch(Enum::SymbolNotFound)
-        { rb_raise(rb_eArgError, "%s is not a valid symbol for %s", name, e.getName().c_str()); }
+        catch(Enum::SymbolNotFound) {  }
+	rb_raise(rb_eArgError, "%s is not a valid symbol for %s", name, e.getName().c_str());
     }
 }
 
