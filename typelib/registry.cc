@@ -179,6 +179,27 @@ namespace Typelib
 	    if (it.isAlias()) continue;
 	    it->merge(*this);
 	}
+
+	for (Iterator it = registry.begin(); it != registry.end(); ++it)
+	{
+	    // Either the alias already points to a concrete type, and
+	    // we must check that it is the same concrete type, or
+	    // we have to add the alias
+	    if (!it.isAlias()) continue;
+
+	    Type const* old_type = get(it.getName());
+	    if (old_type)
+	    {
+		if (!old_type->isSame(*it))
+		    throw DefinitionMismatch(it.getName());
+	    }
+	    else
+	    {
+		// we are sure the concrete type we are pointing to is 
+		// already in the target registry
+		alias(it->getName(), it.getName(), "");
+	    }
+	}
     }
 
     bool Registry::has(const std::string& name, bool build_if_missing) const
