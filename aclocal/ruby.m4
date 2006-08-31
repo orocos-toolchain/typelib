@@ -12,22 +12,30 @@ AC_DEFUN([CLBS_CHECK_RUBY], [
     test -z "$RUBY" && md_ruby_support=no
 
     if test "$md_ruby_support" = "yes"; then
-        [RUBY_EXTENSION_BASEDIR=`$RUBY -rrbconfig -e "puts Config::MAKEFILE_CONFIG['topdir']"`]
         [RUBY_VERSION=`$RUBY -rrbconfig -e "puts Config::CONFIG['ruby_version']"`]
+        [RUBY_CPPFLAGS="-I"`$RUBY -rrbconfig -e "puts Config::MAKEFILE_CONFIG['topdir']"`]
+	[RUBY_CFLAGS=`$RUBY -rrbconfig -e "puts Config::MAKEFILE_CONFIG['CFLAGS']"`]
+	[md_ruby_sitearch=`$RUBY -rrbconfig -e "puts Config::MAKEFILE_CONFIG['sitearch']"`]
+	RUBY_LIBDIR="\$(libdir)/site_ruby/$RUBY_VERSION"
+	RUBY_EXTDIR="$RUBY_LIBDIR/$md_ruby_sitearch"
         
         md_ruby_cppflags=$CPPFLAGS
-        CPPFLAGS="$CPPFLAGS -I$RUBY_EXTENSION_BASEDIR"
+        CPPFLAGS="$CPPFLAGS $RUBY_CPPFLAGS"
         AC_CHECK_HEADER([ruby.h], [], [md_ruby_support=no])
+	CPPFLAGS=$md_ruby_cppflags
     fi
 
     AS_IF([test "$md_ruby_support" = "yes"], [
         HAS_RUBY_SUPPORT=yes
-        AC_SUBST(RUBY_EXTENSION_BASEDIR)
-        AC_SUBST(RUBY_VERSION)
         AC_SUBST(HAS_RUBY_SUPPORT)
+
+        AC_SUBST(RUBY_EXTDIR)
+        AC_SUBST(RUBY_LIBDIR)
+        AC_SUBST(RUBY_VERSION)
+	AC_SUBST(RUBY_CPPFLAGS)
+	AC_SUBST(RUBY_CFLAGS)
         ifelse([$1], [], [], [$1])
     ], [
-        AC_MSG_WARN([Ruby support disabled])
         HAS_RUBY_SUPPORT=no
         AC_SUBST(HAS_RUBY_SUPPORT)
         ifelse([$2], [], [], [$2])

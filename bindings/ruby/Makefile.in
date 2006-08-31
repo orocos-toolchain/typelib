@@ -7,32 +7,18 @@ top_builddir=@top_builddir@
 srcdir=@srcdir@
 builddir=@builddir@
 
+SUBDIRS=ext
 include $(top_builddir)/mk/init.mk
 
-ext/Makefile: ext/extconf.rb
-	$(RUBY) -C ext extconf.rb
-
-build: ext/Makefile
-	$(MAKE) -C ext
-
-clean: 
-	$(MAKE) -C ext clean
-	rm -f ext/Makefile
-
-distclean: clean
-	rm -f ext/Makefile ext/extconf.rb Makefile
-
-RBLIBDIR = $(libdir)/$(shell $(RUBY) -rrbconfig -e "puts Config::CONFIG['sitelibdir'].gsub(/^.*site_ruby/, 'site_ruby')")
-RBEXTDIR = $(libdir)/$(shell $(RUBY) -rrbconfig -e "puts Config::CONFIG['sitearchdir'].gsub(/^.*(?>site_ruby)/, 'site_ruby')")
 install: 
-	$(INSTALL_DIR) $(DESTDIR)$(RBEXTDIR)
-	$(INSTALL_DATA) ext/typelib_api.so $(DESTDIR)$(RBEXTDIR)
-	$(INSTALL_DIR) $(DESTDIR)$(RBLIBDIR)
-	$(INSTALL_DATA) $(srcdir)/lib/typelib.rb $(DESTDIR)$(RBLIBDIR)
+	$(INSTALL_DIR) $(DESTDIR)$(RUBY_LIBDIR)
+	$(INSTALL_DATA) $(srcdir)/lib/typelib.rb $(DESTDIR)$(RUBY_LIBDIR)
 	
 ifeq ($(HAS_RDOC),yes)
 doc: ruby-doc
 ruby-doc:
 	cd $(srcdir) && $(RDOC) -o $(CURDIR)/rdoc
 endif
+
+include $(top_srcdir)/mk/recurse.mk
 
