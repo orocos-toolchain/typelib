@@ -44,11 +44,6 @@ namespace cxx2rb {
 /**********************************************
  * Typelib::Type
  */
-static VALUE type_is_a(VALUE self, Type::Category category)
-{ 
-    Type const& type(rb2cxx::object<Type>(self));
-    return (type.getCategory() == category) ? Qtrue : Qfalse;
-}
 static VALUE type_equality(VALUE rbself, VALUE rbwith)
 { return are_wrapped_equal<Type>(rbself, rbwith); }
 

@@ -81,22 +81,14 @@ namespace Typelib
         NameTokenizer tokens( m_namespace );
         NameTokenizer::const_iterator ns_it = tokens.begin();
 
-        //cout << "Importing " << NamespaceMarkString << endl;
         importNamespace(NamespaceMarkString);
 
         std::string cur_space = NamespaceMarkString;
         for (; ns_it != tokens.end(); ++ns_it)
         {
             cur_space += *ns_it + NamespaceMarkString;
-
-            //cout << "Importing " << cur_space << endl;
             importNamespace(cur_space);
         }
-
-        //cout << "Types available: " << endl;
-        //for (NameMap::const_iterator it = m_current.begin(); it != m_current.end(); ++it)
-        //    std::cout << it->first << std::endl;
-        
         return true;
     }
 
