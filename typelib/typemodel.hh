@@ -55,11 +55,19 @@ namespace Typelib
 
         bool operator == (Type const& with) const;
         bool operator != (Type const& with) const;
+
+	/** Deep check that \c other defines the same type than 
+	 * self. Basic checks on name, size and category are
+	 * performed by ==
+	 */
+	virtual bool isSame(Type const& other) const;
     };
 
     class NullType : public Type
     {
     public:
+	virtual bool isSame(Type const&) const { return true; }
+
         NullType(std::string const& name) : Type(name, 0, Type::NullType ) {}
     };
 
@@ -81,6 +89,8 @@ namespace Typelib
     public:
         /** Creates a basic type from \c name, \c size and \c category */
         Numeric(const std::string& name, size_t size, NumericCategory category);
+
+	bool isSame(Type const& type) const;
 
     private:
         NumericCategory m_category;
@@ -112,6 +122,8 @@ namespace Typelib
 	/** The name => value map */
         ValueMap const& values() const;
 
+	bool isSame(Type const& type) const;
+
     private:
         ValueMap m_values;
     };
@@ -138,6 +150,8 @@ namespace Typelib
 	/** The offset, in bytes, of this field w.r.t. the 
 	 * begginning of the parent value */
         size_t getOffset() const;
+
+	bool operator == (Field const& field) const;
     };
 
     /** Base class for types that are composed of other 
@@ -160,6 +174,8 @@ namespace Typelib
 	/** Add a new field */
         void              addField(const std::string& name, const Type& type, size_t offset);
 
+	virtual bool isSame(Type const& type) const;
+
     private:
         FieldList m_fields;
     };
@@ -176,6 +192,8 @@ namespace Typelib
         Type const& m_indirection;
 
     public:
+	virtual bool isSame(Type const& type) const;
+
         Indirect(std::string const& name, size_t size, Category category, Type const& on);
         Type const& getIndirection() const;
 
@@ -189,6 +207,8 @@ namespace Typelib
         size_t m_dimension;
 
     public:
+	virtual bool isSame(Type const& type) const;
+
         Array(Type const& of, size_t dimension);
         size_t getDimension() const;
         static std::string getArrayName(std::string const& base, size_t new_dim);
@@ -199,7 +219,6 @@ namespace Typelib
     {
     public:
         Pointer(Type const& on);
-
         static std::string getPointerName(std::string const& base);
     };
 

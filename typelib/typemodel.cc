@@ -26,22 +26,27 @@ namespace Typelib
     void   Type::setSize(size_t size) { m_size = size; }
     size_t Type::getSize() const { return m_size; }
     bool   Type::isNull() const { return m_category == NullType; }
-    bool   Type::operator != (Type const& with) const
-    { return !(*this == with); }
-    bool   Type::operator == (Type const& with) const
-    { return (this == &with) || (getName() == with.getName()); }
-
+    bool   Type::operator != (Type const& with) const { return (this != &with); }
+    bool   Type::operator == (Type const& with) const { return (this == &with); }
+    bool Type::isSame(Type const& with) const
+    { return (getSize() == with.getSize() && getCategory() == with.getCategory() && getName() == with.getName()); }
 
 
     Numeric::Numeric(std::string const& name, size_t size, NumericCategory category)
         : Type(name, size, Type::Numeric), m_category(category) {}
     Numeric::NumericCategory Numeric::getNumericCategory() const { return m_category; }
+    bool Numeric::isSame(Type const& type) const 
+    { return Type::isSame(type) && 
+	m_category == static_cast<Numeric const&>(type).m_category; }
 
 
     Indirect::Indirect(std::string const& name, size_t size, Category category, Type const& on)
         : Type(name, size, category)
         , m_indirection(on) {}
     Type const& Indirect::getIndirection() const { return m_indirection; }
+    bool Indirect::isSame(Type const& type) const
+    { return Type::isSame(type) && 
+	m_indirection.isSame(static_cast<Indirect const&>(type).m_indirection); }
 
 
     Compound::Compound(std::string const& name)
@@ -57,6 +62,9 @@ namespace Typelib
         }
         return 0;
     }
+    bool Compound::isSame(Type const& type) const
+    { return Type::isSame(type) &&
+	    m_fields == static_cast<Compound const&>(type).m_fields; }
 
     void Compound::addField(const std::string& name, Type const& type, size_t offset) 
     { addField( Field(name, type), offset ); }
@@ -70,22 +78,6 @@ namespace Typelib
 	    setSize(new_size);
     }
 
-    void Union::fieldsChanged()
-    {
-        size_t size = 0;
-        FieldList& fields(getFields());
-        for (FieldList::iterator it = fields.begin(); it != fields.end(); ++it)
-        {
-            const Type& field_type(it -> getType());
-            it -> setOffset(0);
-            size = std::max(size, field_type.getSize());
-        }
-        setSize(size);
-    }
-    */
-
-
-
     namespace
     {
         enum FindSizeOfEnum { EnumField };
@@ -94,6 +86,10 @@ namespace Typelib
     Enum::Enum(const std::string& name)
         : Type (name, sizeof(FindSizeOfEnum), Type::Enum) { }
     Enum::ValueMap const& Enum::values() const { return m_values; }
+    bool Enum::isSame(Type const& type) const
+    { return Type::isSame(type) &&
+	m_values == static_cast<Enum const&>(type).m_values; }
+
     void Enum::add(std::string const& name, int value)
     { 
         std::pair<ValueMap::iterator, bool> inserted;
@@ -140,8 +136,14 @@ namespace Typelib
         return stream.str();
     }
     size_t  Array::getDimension() const { return m_dimension; }
+    bool Array::isSame(Type const& type) const
+    {
+	if (!Type::isSame(type))
+	    return false;
 
-
+	Array const& array = static_cast<Array const&>(type);
+	return (m_dimension == array.m_dimension) && Indirect::isSame(type);
+    }
 
     Pointer::Pointer(const Type& on)
         : Indirect( getPointerName(on.getName()), sizeof(int *), Type::Pointer, on)
@@ -159,5 +161,7 @@ namespace Typelib
     Type const& Field::getType() const { return m_type; }
     size_t  Field::getOffset() const { return m_offset; }
     void    Field::setOffset(size_t offset) { m_offset = offset; }
+    bool Field::operator == (Field const& field) const
+    { return m_offset == field.m_offset && m_name == field.m_name && m_type == field.m_type; }
 };
 

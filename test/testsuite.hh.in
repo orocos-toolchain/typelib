@@ -27,6 +27,7 @@ void test_lang_tlb( test_suite* );
 void test_display( test_suite* );
 void test_plugins( test_suite* );
 void test_value( test_suite* );
+void test_model( test_suite* );
 
 #define TEST_DATA_PATH(x) "@abs_top_srcdir@/test/" x
 
