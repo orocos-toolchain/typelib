@@ -20,24 +20,28 @@ public:
 
         PluginManager::self manager;
         Importer* importer = manager->importer("c");
-        utilmm::config_set config;
-        
-        // Load the file in registry
-        BOOST_CHECK_THROW( importer->load("does_not_exist", config, registry), ImportError);
-        BOOST_CHECK_THROW( importer->load("test_cimport.h", config, registry), ImportError );
+
         {
             Registry temp_registry;
+	    utilmm::config_set config;
             config.set("include", "../");
             config.set("define", "GOOD");
             BOOST_CHECK_NO_THROW( importer->load("test_cimport.h", config, temp_registry) );
         }
         {
             Registry temp_registry;
+	    utilmm::config_set config;
             config.insert("rawflag", "-I../");
             config.insert("rawflag", "-DGOOD");
             BOOST_CHECK_NO_THROW( importer->load("test_cimport.h", config, temp_registry) );
         }
 
+        utilmm::config_set config;
+        // Load the file in registry
+        BOOST_CHECK_THROW( importer->load("does_not_exist", config, registry), ImportError);
+        BOOST_CHECK_THROW( importer->load("test_cimport.h", config, registry), ImportError );
+	config.set("include", "../");
+	config.set("define", "GOOD");
         BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
 
         // Check that the types are defined
