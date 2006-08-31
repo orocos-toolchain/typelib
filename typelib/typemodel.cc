@@ -64,71 +64,10 @@ namespace Typelib
     {
         m_fields.push_back(field);
         m_fields.back().setOffset(offset);
-        setSize( offset + field.getType().getSize() );
-    }
-
-    /*
-    bool Type::operator != (const Type& with) const { return ! ((*this) == with); }
-    bool Type::operator == (const Type& with) const
-    {
-        if (getCategory() != with.getCategory()) return false;
-        if (getSize() != with.getSize()) return false;
-
-        if (isSimple())
-        {
-            // simple type with same size and category
-            if (isIndirect())
-                return (*getNextType()) == (*with.getNextType());
-            return true;
-        }
-
-        if (m_fields.size() != with.m_fields.size())
-            return false;
-
-        FieldList::const_iterator differ 
-            = mismatch(m_fields.begin(), m_fields.end(), with.m_fields.begin(), field_compare_types).first;
-
-        return differ == m_fields.end();
-    }
-    */
-
-
-
-
-    /*
-    Struct::Struct(const string& name, bool deftype)
-        : Compound("", 0, Type::Struct) 
-    { 
-        if (deftype) setName(name);
-        else 
-            setName(getNamespace(name) + "struct " + getTypename(name));
-    }
-    void Struct::fieldsChanged()
-    {
-        FieldList& fields(getFields());
-        if (fields.empty()) return;
-
-        FieldList::iterator field = fields.begin();
-        field -> setOffset(0);
-
-        FieldList::const_iterator last_field = field;
-        for (++field; field != fields.end(); ++field)
-        {
-            int offset = Packing::getOffsetOf(*last_field, *field);
-            field -> setOffset(offset);
-            last_field = field;
-        }
-
-        setSize(last_field->getOffset() + last_field->getType().getSize());
-    }
-
-
-    Union::Union(const string& name, bool deftype)
-        : Compound("", 0, Type::Union) 
-    { 
-        if (deftype) setName(name);
-        else 
-            setName(getNamespace(name) + "union " + getTypename(name));
+	size_t old_size = getSize();
+	size_t new_size = offset + field.getType().getSize();
+	if (old_size < new_size)
+	    setSize(new_size);
     }
 
     void Union::fieldsChanged()
