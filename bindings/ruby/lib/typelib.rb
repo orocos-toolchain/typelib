@@ -280,14 +280,15 @@ module Typelib
         end
 
         def self.format_options(option_hash)
-            return nil if !option_hash
             option_hash.to_a.collect { |opt| [ opt[0].to_s, opt[1] ] }
         end
 
-        def import(file, kind = nil, options = nil)
-            kind = Registry.guess_type(file) if !kind
+        def import(file, kind = nil, options = {})
+            kind    = Registry.guess_type(file) if !kind
+	    do_merge = options.delete(:merge) || options.delete('merge')
             options = Registry.format_options(options)
-            do_import(file, kind, options)
+
+            do_import(file, kind, do_merge, options)
         end
     end
 

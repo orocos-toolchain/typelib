@@ -9,6 +9,8 @@
   
 namespace Typelib
 {
+    class Registry;
+
     /** Base class for all type definitions */
     class Type 
     {
@@ -61,14 +63,28 @@ namespace Typelib
 	 * performed by ==
 	 */
 	virtual bool isSame(Type const& other) const;
+
+	/** Merges this type into \c registry
+	 */
+	Type const& merge(Registry& registry) const;
+
+    protected:
+	/** Called by Type::merge when the type does not exist
+	 * in \c registry already. This is needed for types
+	 * to update their subtypes (pointed-to type, ...) to
+	 * the definitions found in \c registry
+	 */
+	virtual Type* do_merge(Registry& registry) const = 0;
     };
 
     class NullType : public Type
     {
     public:
+        NullType(std::string const& name) : Type(name, 0, Type::NullType ) {}
 	virtual bool isSame(Type const&) const { return true; }
 
-        NullType(std::string const& name) : Type(name, 0, Type::NullType ) {}
+    private:
+	virtual Type* do_merge(Registry& registry) const { return new NullType(*this); }
     };
 
     /** Numeric values (integer, unsigned integer and floating point) */
@@ -90,9 +106,10 @@ namespace Typelib
         /** Creates a basic type from \c name, \c size and \c category */
         Numeric(const std::string& name, size_t size, NumericCategory category);
 
-	bool isSame(Type const& type) const;
+	virtual bool isSame(Type const& type) const;
 
     private:
+	virtual Type* do_merge(Registry& registry) const;
         NumericCategory m_category;
     };
 
@@ -122,9 +139,10 @@ namespace Typelib
 	/** The name => value map */
         ValueMap const& values() const;
 
-	bool isSame(Type const& type) const;
+	virtual bool isSame(Type const& type) const;
 
     private:
+	virtual Type* do_merge(Registry& registry) const;
         ValueMap m_values;
     };
 
@@ -177,6 +195,7 @@ namespace Typelib
 	virtual bool isSame(Type const& type) const;
 
     private:
+	virtual Type* do_merge(Registry& registry) const;
         FieldList m_fields;
     };
 
@@ -188,15 +207,14 @@ namespace Typelib
     public:
         static const int ValidIDs = Type::Pointer | Type::Array;
 
-    private:
-        Type const& m_indirection;
-
     public:
 	virtual bool isSame(Type const& type) const;
 
         Indirect(std::string const& name, size_t size, Category category, Type const& on);
         Type const& getIndirection() const;
 
+    private:
+        Type const& m_indirection;
     };
 
     /** Unidimensional array types. As in C, the multi-dimensional arrays
@@ -204,14 +222,16 @@ namespace Typelib
      */
     class Array : public Indirect
     {
-        size_t m_dimension;
-
     public:
 	virtual bool isSame(Type const& type) const;
 
         Array(Type const& of, size_t dimension);
         size_t getDimension() const;
         static std::string getArrayName(std::string const& base, size_t new_dim);
+
+    private:
+	virtual Type* do_merge(Registry& registry) const;
+        size_t m_dimension;
     };
 
     /** Pointer types */
@@ -220,6 +240,9 @@ namespace Typelib
     public:
         Pointer(Type const& on);
         static std::string getPointerName(std::string const& base);
+
+    private:
+	virtual Type* do_merge(Registry& registry) const;
     };
 
 

@@ -11,9 +11,18 @@ namespace Typelib
     /** Base for exceptions thrown by the registry */
     class RegistryException : public std::exception 
     {
+	/// What a very ugly big hack ...
+	mutable std::string what_error;
+
     public:
+	virtual ~RegistryException() throw() {}
         virtual std::string toString() const throw() 
-        { return what(); }
+        { return std::exception::what(); }
+	char const* what() const throw()
+	{
+	    what_error = toString();
+	    return what_error.c_str();
+	}
     };
 
     /** A type has not been found while it was expected */
@@ -58,6 +67,22 @@ namespace Typelib
 
         std::string toString() const throw()
         { return "Type name " + m_name + " is invalid"; }
+    };
+
+    /** We are trying to merge two registries where two types have the same
+     * name but different definitions
+     */
+    class DefinitionMismatch : public RegistryException
+    {
+        const std::string m_name;
+
+    public:
+        DefinitionMismatch(const std::string& name)
+            : m_name(name) {}
+        ~DefinitionMismatch() throw() {}
+
+        std::string toString() const throw()
+        { return "Type definition mismatch for " + m_name; }
     };
 
 
@@ -106,6 +131,8 @@ namespace Typelib
         Type* get_(const std::string& name);
 
     public:
+	typedef RegistryIterator Iterator;
+
         Registry();
         ~Registry();
 
@@ -176,6 +203,9 @@ namespace Typelib
         
         /** Returns a null type */
         static Type const& null();
+
+	/** Merges the content of \c registry into this object */
+	void merge(Registry const& registry);
         
     public:
         enum DumpMode

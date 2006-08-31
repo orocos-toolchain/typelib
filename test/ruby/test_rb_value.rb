@@ -38,6 +38,10 @@ class TC_Value < Test::Unit::TestCase
         assert_nothing_raised {
             registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
         }
+        assert_nothing_raised {
+            registry.import(testfile, nil, :merge => true, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
+        }
+	assert_raises(RuntimeError) { registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ]) }
     end
 
     def test_basic_behaviour

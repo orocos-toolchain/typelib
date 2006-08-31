@@ -187,7 +187,7 @@ extern "C" void Init_typelib_api()
     rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_do_build), 1);
     // do_import is called by the Ruby-defined import, which formats the 
     // option hash (if there is one), and can detect the import type by extension
-    rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 3);
+    rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 4);
     rb_define_method(cRegistry, "to_xml", RUBY_METHOD_FUNC(registry_to_xml), 0);
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
 

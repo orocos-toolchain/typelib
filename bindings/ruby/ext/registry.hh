@@ -80,37 +80,43 @@ VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
  * do_import
  */
 static
-VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE options)
+VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE options)
 {
     Registry& registry = rb2cxx::object<Registry>(self);
-    
+
     config_set config;
-    if (! NIL_P(options))
+    for (int i = 0; i < RARRAY(options)->len; ++i)
     {
-        for (int i = 0; i < RARRAY(options)->len; ++i)
-        {
-            VALUE entry = RARRAY(options)->ptr[i];
-            VALUE k = RARRAY(entry)->ptr[0];
-            VALUE v = RARRAY(entry)->ptr[1];
+	VALUE entry = RARRAY(options)->ptr[i];
+	VALUE k = RARRAY(entry)->ptr[0];
+	VALUE v = RARRAY(entry)->ptr[1];
 
-            if ( TYPE(v) == T_ARRAY )
-            {
-                for (int j = 0; j < RARRAY(v)->len; ++j)
-                    config.insert(StringValuePtr(k), StringValuePtr( RARRAY(v)->ptr[j] ));
-            }
-            else
-                config.set(StringValuePtr(k), StringValuePtr(v));
-        }
+	if ( TYPE(v) == T_ARRAY )
+	{
+	    for (int j = 0; j < RARRAY(v)->len; ++j)
+		config.insert(StringValuePtr(k), StringValuePtr( RARRAY(v)->ptr[j] ));
+	}
+	else
+	    config.set(StringValuePtr(k), StringValuePtr(v));
     }
-        
-    // TODO: error checking
-    try { PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, registry); }
-    catch(Typelib::ImportError& e)
-    { rb_raise(rb_eRuntimeError, "%s", e.what()); }
-    catch(Typelib::RegistryException const& e)
-    { rb_raise(rb_eRuntimeError, "%s", e.toString().c_str()); }
+	
+    
+    std::string error_string;
+    try { 
+	if (RTEST(merge))
+	{
+	    Registry temp;
+	    PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, temp); 
+	    registry.merge(temp);
+	}
+	else
+	    PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, registry); 
+	return Qnil;
+    }
+    catch(Typelib::ImportError& e) { error_string = e.what(); }
+    catch(Typelib::RegistryException const& e) { error_string = e.toString(); }
 
-    return Qnil;
+    rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
 
 /* Export the given registry into xml

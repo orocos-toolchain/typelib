@@ -98,11 +98,51 @@ public:
 	    BOOST_REQUIRE(!str_c.isSame(str_b));
 	}
     }
+
+    void test_merge()
+    {
+	{ Registry ra, rb;
+
+	    //// Add definitions of /A and /B in rb
+	    Compound* str_a = new Compound("/A");
+	    str_a->addField("a", *rb.build("/int[16]"), 0);
+	    str_a->addField("b", *rb.build("/float*"), 1);
+	    str_a->addField("c", *rb.get("/int32_t"), 2);
+	    rb.add(str_a, "");
+
+	    Compound* str_b = new Compound("/B");
+	    str_b->addField("a", *str_a, 0);
+	    str_b->addField("b", *rb.build("/nil*"), 1);
+	    rb.add(str_b, "");
+	    ra.merge(rb);
+
+	    BOOST_REQUIRE(ra.get("/int[16]") != rb.get("/int[16]"));
+	    BOOST_REQUIRE(ra.get("/int[16]")->isSame(*rb.get("/int[16]")));
+	    BOOST_REQUIRE(ra.get("/nil*") != rb.get("/nil*"));
+	    BOOST_REQUIRE(ra.get("/nil*")->isSame(*rb.get("/nil*")));
+	    BOOST_REQUIRE(ra.get("/A") != rb.get("/A"));
+	    BOOST_REQUIRE(ra.get("/A")->isSame(*str_a));
+	    BOOST_REQUIRE(ra.get("/B") != rb.get("/B"));
+	    BOOST_REQUIRE(ra.get("/B")->isSame(*str_b));
+
+	    BOOST_REQUIRE(static_cast<Compound const*>(ra.get("/A"))->getField("a")->getType() == *ra.get("/int[16]"));
+	    BOOST_REQUIRE(static_cast<Compound const*>(ra.get("/A"))->getField("b")->getType() == *ra.get("/float*"));
+	    BOOST_REQUIRE(static_cast<Compound const*>(ra.get("/A"))->getField("c")->getType() == *ra.get("/int32_t"));
+	    BOOST_REQUIRE(static_cast<Compound const*>(ra.get("/B"))->getField("a")->getType() == *ra.get("/A"));
+	    BOOST_REQUIRE(static_cast<Compound const*>(ra.get("/B"))->getField("b")->getType() == *ra.get("/nil*"));
+	    BOOST_REQUIRE(static_cast<Compound const*>(rb.get("/A"))->getField("a")->getType() == *rb.get("/int[16]"));
+	    BOOST_REQUIRE(static_cast<Compound const*>(rb.get("/A"))->getField("b")->getType() == *rb.get("/float*"));
+	    BOOST_REQUIRE(static_cast<Compound const*>(rb.get("/A"))->getField("c")->getType() == *rb.get("/int32_t"));
+	    BOOST_REQUIRE(static_cast<Compound const*>(rb.get("/B"))->getField("a")->getType() == *rb.get("/A"));
+	    BOOST_REQUIRE(static_cast<Compound const*>(rb.get("/B"))->getField("b")->getType() == *rb.get("/nil*"));
+	}
+    }
 };
 
 void test_model(test_suite* ts) {
     boost::shared_ptr<TC_Model> instance( new TC_Model );
     ts->add( BOOST_CLASS_TEST_CASE( &TC_Model::test_compound_size, instance ) );
     ts->add( BOOST_CLASS_TEST_CASE( &TC_Model::test_equality, instance ) );
+    ts->add( BOOST_CLASS_TEST_CASE( &TC_Model::test_merge, instance ) );
 }
 

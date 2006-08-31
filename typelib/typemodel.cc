@@ -1,4 +1,5 @@
 #include "typemodel.hh"
+#include "registry.hh"
 
 #include <iostream>
 #include <sstream>
@@ -12,6 +13,15 @@ using namespace std;
 
 namespace Typelib
 {
+    class InternalError : public std::exception
+    {
+	std::string const m_message;
+    public:
+	InternalError(std::string const& message)
+	    : m_message(message) {}
+	~InternalError() throw() {}
+	char const* what() const throw() { return m_message.c_str(); }
+    };
     Type::Type(std::string const& name, size_t size, Category category)
         : m_size(size)
         , m_category(category)
@@ -28,8 +38,22 @@ namespace Typelib
     bool   Type::isNull() const { return m_category == NullType; }
     bool   Type::operator != (Type const& with) const { return (this != &with); }
     bool   Type::operator == (Type const& with) const { return (this == &with); }
-    bool Type::isSame(Type const& with) const
+    bool   Type::isSame(Type const& with) const
     { return (getSize() == with.getSize() && getCategory() == with.getCategory() && getName() == with.getName()); }
+    Type const& Type::merge(Registry& registry) const
+    {
+	Type const* old_type = registry.get(getName());
+	if (old_type)
+	{
+	    if (old_type->isSame(*this))
+		return *old_type;
+	    else
+		throw DefinitionMismatch(getName());
+	}
+	Type* new_type = do_merge(registry);
+	registry.add(new_type, "");
+	return *new_type;
+    }
 
 
     Numeric::Numeric(std::string const& name, size_t size, NumericCategory category)
@@ -38,7 +62,8 @@ namespace Typelib
     bool Numeric::isSame(Type const& type) const 
     { return Type::isSame(type) && 
 	m_category == static_cast<Numeric const&>(type).m_category; }
-
+    Type* Numeric::do_merge(Registry& registry) const
+    { return new Numeric(*this); }
 
     Indirect::Indirect(std::string const& name, size_t size, Category category, Type const& on)
         : Type(name, size, category)
@@ -76,6 +101,13 @@ namespace Typelib
 	size_t new_size = offset + field.getType().getSize();
 	if (old_size < new_size)
 	    setSize(new_size);
+    }
+    Type* Compound::do_merge(Registry& registry) const
+    {
+	auto_ptr<Compound> result(new Compound(getName()));
+	for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
+	    result->addField(it->getName(), it->getType().merge(registry), it->getOffset());
+	return result.release();
     }
 
     namespace
@@ -123,7 +155,8 @@ namespace Typelib
             ret.push_back(it->first);
         return ret;
     }
-
+    Type* Enum::do_merge(Registry& registry) const
+    { return new Enum(*this); }
 
     Array::Array(Type const& of, size_t new_dim)
         : Indirect(getArrayName(of.getName(), new_dim), new_dim * of.getSize(), Type::Array, of)
@@ -144,12 +177,15 @@ namespace Typelib
 	Array const& array = static_cast<Array const&>(type);
 	return (m_dimension == array.m_dimension) && Indirect::isSame(type);
     }
+    Type* Array::do_merge(Registry& registry) const
+    { return new Array(getIndirection().merge(registry), m_dimension); }
 
     Pointer::Pointer(const Type& on)
-        : Indirect( getPointerName(on.getName()), sizeof(int *), Type::Pointer, on)
-    {}
+        : Indirect( getPointerName(on.getName()), sizeof(int *), Type::Pointer, on) {}
     std::string Pointer::getPointerName(std::string const& base)
     { return base + '*'; }
+    Type* Pointer::do_merge(Registry& registry) const
+    { return new Pointer(getIndirection().merge(registry)); }
 
 
 
@@ -162,6 +198,6 @@ namespace Typelib
     size_t  Field::getOffset() const { return m_offset; }
     void    Field::setOffset(size_t offset) { m_offset = offset; }
     bool Field::operator == (Field const& field) const
-    { return m_offset == field.m_offset && m_name == field.m_name && m_type == field.m_type; }
+    { return m_offset == field.m_offset && m_name == field.m_name && m_type.isSame(field.m_type); }
 };
 

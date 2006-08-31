@@ -178,6 +178,17 @@ namespace Typelib
         }
     }
 
+    void Registry::merge(Registry const& registry)
+    {
+	// Merge non aliased types. Aliases are never used by type model classes
+	// so we can safely call merge()
+	for(Iterator it = registry.begin(); it != registry.end(); ++it)
+	{
+	    if (it.isAlias()) continue;
+	    it->merge(*this);
+	}
+    }
+
     bool Registry::has(const std::string& name, bool build_if_missing) const
     {
         if (m_current.find(name) != m_current.end())
