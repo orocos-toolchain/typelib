@@ -70,9 +70,9 @@ public:
 
 	// same type than str_a, to test checking on str_b
 	Compound str_a_dup("/A");
-	str_a_dup.addField("a", *ra.build("/int[16]"), 0);
-	str_a_dup.addField("b", *ra.build("/float*"), 1);
-	str_a_dup.addField("c", *ra.get("/int32_t"), 2);
+	str_a_dup.addField("a", *rb.build("/int[16]"), 0);
+	str_a_dup.addField("b", *rb.build("/float*"), 1);
+	str_a_dup.addField("c", *rb.get("/int32_t"), 2);
 
 	{ Compound str_c("/C");
 	    // type name changed
