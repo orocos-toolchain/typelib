@@ -1,3 +1,18 @@
+#include "typelib.hh"
+
+#include <typelib/pluginmanager.hh>
+#include <typelib/importer.hh>
+#include <utilmm/configfile/configset.hh>
+
+using namespace Typelib;
+using utilmm::config_set;
+using std::string;
+
+static VALUE cRegistry = Qnil;
+namespace cxx2rb {
+    template<> VALUE class_of<Registry>() { return cRegistry; }
+}
+
 /***********************************************************************************
  *
  * Wrapping of the Registry class
@@ -128,5 +143,18 @@ VALUE registry_to_xml(VALUE self)
     
     std::string as_xml = PluginManager::save("tlb", registry);
     return rb_str_new(as_xml.c_str(), as_xml.length());
+}
+
+void Typelib_init_registry(VALUE mTypelib)
+{
+    cRegistry = rb_define_class_under(mTypelib, "Registry", rb_cObject);
+    rb_define_alloc_func(cRegistry, registry_alloc);
+    rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_do_get), 1);
+    rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_do_build), 1);
+    // do_import is called by the Ruby-defined import, which formats the 
+    // option hash (if there is one), and can detect the import type by extension
+    rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 4);
+    rb_define_method(cRegistry, "to_xml", RUBY_METHOD_FUNC(registry_to_xml), 0);
+    rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
 }
 

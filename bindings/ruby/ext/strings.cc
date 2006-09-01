@@ -1,3 +1,9 @@
+#include "typelib.hh"
+#include <string>
+
+using namespace Typelib;
+using std::string;
+
 static bool is_string_handler(Type const& type, bool known_size = false)
 {
     if (type.getCategory() != Type::Array && type.getCategory() != Type::Pointer)
@@ -92,4 +98,10 @@ static VALUE value_to_string(VALUE mod, VALUE self)
     }
 }
 
+void Typelib_init_strings()
+{
+    rb_define_singleton_method(cType, "to_string",    RUBY_METHOD_FUNC(&value_to_string), 1);
+    rb_define_singleton_method(cType, "from_string",  RUBY_METHOD_FUNC(&value_from_string), 2);
+    rb_define_method(cType, "string_handler?", RUBY_METHOD_FUNC(&value_string_handler_p), 0);
+}
 

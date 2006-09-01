@@ -11,7 +11,7 @@ include $(top_builddir)/mk/init.mk
 ############ Build module typelib_api
 MODULE = typelib_api
 
-typelib_api_SRC = typelib_api.cc
+typelib_api_SRC = typelib_api.cc value.cc strings.cc convert.cc functions.cc specialized_types.cc registry.cc
 typelib_api_CPPFLAGS = $(RUBY_CPPFLAGS) -I$(top_srcdir) $(UTILMM_CXXFLAGS)
 typelib_api_CXXFLAGS = $(RUBY_CFLAGS)
 typelib_api_LDFLAGS = $(RUBY_LDFLAGS)

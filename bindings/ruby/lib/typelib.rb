@@ -1,4 +1,5 @@
 require 'enumerator'
+require 'utilrb/object/singleton_class'
 require 'delegate'
 require 'pp'
 module DL
@@ -15,8 +16,14 @@ module Typelib
     # Value objects are wrapped into instances of these classes
     class Type
         @writable = true
+
         class << self
-            attr_reader :registry, :name
+	    # the type registry we belong to
+            attr_reader :registry
+	    # the type name 
+	    attr_reader :name
+
+	    # check if this is writable
             def writable?
                 if !defined?(@writable)
                     superclass.writable?
@@ -24,23 +31,33 @@ module Typelib
                     @writable
                 end
             end
+	    # are we a null type ?
 	    def null?; @null end
+	    # returns the pointer-to-self type
             def to_ptr; registry.build(name + "*") end
-            def pretty_print(pp); pp.text name end
+
+            def pretty_print(pp) # :nodoc:
+		pp.text name 
+	    end
 
             alias :__real_new__ :new
             def wrap(ptr); __real_new__(ptr) end
             def new; __real_new__(nil) end
 
+	    # Check if this type is a +typename+. If +typename+
+	    # is a string or a regexp, we match it against the type
+	    # name. Otherwise we call Class::is_a?
 	    def is_a?(typename)
 		if typename.respond_to?(:to_str) || Regexp === typename
-		    typename.to_str == self.name
+		    typename.to_str === self.name
 		else
 		    super
 		end
 	    end
         end
 
+	# Module that gets mixed into types which can
+	# be converted to strings (char* for instance)
 	module StringHandler
 	    def to_str
 		Type::to_string(self)
@@ -55,18 +72,23 @@ module Typelib
 	    extend StringHandler if string_handler?
 	end
 
+	# Check for value equality
         def ==(other)
+	    # If other is also a type object, we first
+	    # check basic constraints before trying conversion
+	    # to Ruby objects
             if Type === other
-                self.class == other.class && to_dlptr == other.to_dlptr 
-            else
-		this_to_ruby = self.to_ruby
-		if (Type === this_to_ruby)
+		return false unless self.class.eql?(other.class)
+		return memory_eql?(other)
+	    else
+		if (ruby_value = self.to_ruby).eql?(self)
 		    return false
 		end
-                other == self.to_ruby
-            end
+		other == self.to_ruby
+	    end
         end
 
+	# Returns a pointer to self
         def to_ptr
             self.class.to_ptr.wrap(@ptr.to_ptr)
         end
@@ -82,14 +104,13 @@ module Typelib
 	    end
 	end
 
-	def pretty_print(pp)
+	def pretty_print(pp) # :nodoc:
 	    pp.text to_s
 	end
 
         # Get a pointer on this value
         def to_dlptr; @ptr end
 
-	# In case of compound types, the 
 	def is_a?(typename); self.class.is_a?(typename) end
 
         def inspect
@@ -97,8 +118,14 @@ module Typelib
         end
     end
 
+    # Base class for compound types (structs, unions)
     class CompoundType < Type
         @writable = false
+	# Initializes this object to the pointer +ptr+, and initializes it
+	# to +init+. Valid values for +init+ are:
+	# * a hash, in which case it is a { field_name => field_value } hash
+	# * an array, in which case the fields are initialized in order
+	# Note that a compound should be either fully initialized or not initialized
         def initialize(ptr, *init)
             super(ptr)
             return if init.empty?
@@ -126,23 +153,26 @@ module Typelib
             end
         end
 
-        # The extension defines a @fields array of [ name, offset, type ] arrays
-        # They define the list of available fields defined by this type
         class << self
             def new(*init);         __real_new__(nil, *init) end
             def wrap(ptr, *init);   __real_new__(ptr, *init) end
 
+	    # Check if this type can be used in place of +typename+
+	    # In case of compound types, we check that either self, or
+	    # the first element field is +typename+
 	    def is_a?(typename)
-		if typename.respond_to?(:to_str) || Regexp === typename 
+		if typename.respond_to?(:to_str) || Regexp === typename
 		    typename === self.name || self.fields[0].last.is_a?(typename)
 		else
 		    super
 		end
 	    end
 
+	    # Called by the extension to initialize the subclass
+	    # For each field, it creates getters and setters on 
+	    # the object, and a getter in the singleton class 
+	    # which returns the field type
             def subclass_initialize
-                singleton_class = class << self; self end
-
                 @fields = get_fields.map! do |name, offset, type|
                     if !method_defined?(name)
 			define_method(name) { get_field(name) }
@@ -158,11 +188,16 @@ module Typelib
                 end
             end
 
+	    # The list of fields
             attr_reader :fields
+	    # Returns the type of +name+
             def [](name); @fields.find { |n, t| n == name }.last end
-            def each_field; @fields.each { |field| yield(field) } end
+	    # Iterates on all fields
+            def each_field # :yield:name, type
+		@fields.each { |field| yield(*field) } 
+	    end
 
-	    def pretty_print_common(pp)
+	    def pretty_print_common(pp) # :nodoc:
                 pp.group(2, '{') do
 		    pp.breakable
                     all_fields = enum_for(:each_field).
@@ -176,7 +211,7 @@ module Typelib
 		pp.text '}'
 	    end
 
-            def pretty_print(pp)
+            def pretty_print(pp) # :nodoc:
 		super
 		pp.text ' '
 		pretty_print_common(pp) do |name, type|
@@ -190,7 +225,7 @@ module Typelib
             end
         end
 
-	def pretty_print(pp)
+	def pretty_print(pp) # :nodoc:
 	    self.class.pretty_print_common(pp) do |name, type|
 		pp.text name
 		pp.text "="
@@ -198,6 +233,9 @@ module Typelib
 	    end
 	end
 
+	# Sets the value of the field +name+. If +name+
+	# is a compound type and +value+ is a hash, then
+	# we use the keys of +value+ as field names
         def []=(name, value)
 	    if Hash === value
 		attribute = get_field(name)
@@ -206,14 +244,16 @@ module Typelib
 		set_field(name.to_s, value) 
 	    end
 	end
+	# Returns the value of the field +name+
         def [](name); get_field(name) end
         def to_ruby; self end
     end
 
+    # Base class for all arrays
     class ArrayType < Type
         @writable = false
 
-	def pretty_print(pp)
+	def pretty_print(pp) # :nodoc:
 	    all_fields = enum_for(:each_with_index).to_a
 
 	    pp.text '['
@@ -237,8 +277,12 @@ module Typelib
         include Enumerable
     end
 
+    # Base class for all pointers
     class PointerType < Type
         @writable = false
+
+	# Returns nil if this is a null pointer, and a string
+	# if it is a pointer to a string. 
         def to_ruby
 	    if self.null?; nil
 	    elsif respond_to?(:to_str); to_str
@@ -246,10 +290,15 @@ module Typelib
 	    end
        	end
     end
+
+    # Base class for all enumeration types. Enumerations
+    # are mappings from strings to integers
     class EnumType < Type
         class << self
+	    # a value => key hash for each enumeration values
             attr_reader :values
-            def pretty_print(pp)
+
+            def pretty_print(pp) # :nodoc:
                 super
 		pp.text '{'
                 pp.nest(2) do
@@ -266,27 +315,46 @@ module Typelib
 
     class Registry
         TYPE_BY_EXT = {
-            "c" => "c",
-            "cc" => "c",
-            "cxx" => "c",
-            "h" => "c",
-            "hh" => "c",
-            "hxx" => "c",
-            "tlb" => "tlb"
+            ".c" => "c",
+            ".cc" => "c",
+            ".cxx" => "c",
+            ".h" => "c",
+            ".hh" => "c",
+            ".hxx" => "c",
+            ".tlb" => "tlb"
         }
+	# Returns the file type as expected by Typelib from 
+	# the extension of +file+ (see TYPE_BY_EXT)
+	#
+	# Raises RuntimeError if the file extension is unknown
         def self.guess_type(file)
-            ext = File.extname(file)[1..-1]
-            if TYPE_BY_EXT.has_key?(ext)
-                return TYPE_BY_EXT[ext]
+	    ext = File.extname(file)
+            if type = TYPE_BY_EXT[ext]
+		type
             else
                 raise "Cannot guess file type for #{file}: unknown extension '#{ext}'"
             end
         end
 
-        def self.format_options(option_hash)
+	# Format +option_hash+ to the form expected by do_import
+	# (Yes, I'm lazy and don't want to handles hashes in C)
+        def self.format_options(option_hash) # :nodoc:
             option_hash.to_a.collect { |opt| [ opt[0].to_s, opt[1] ] }
         end
 
+	# Imports the +file+ into this registry. +kind+
+	# is the file format or nil, in which case the
+	# file format is guessed by extension (see TYPE_BY_EXT)
+	# 
+	# +options+ is an option hash. The Ruby bindings define
+	# the following specific options:
+	# * merge: merges +file+ into this repository. If this is
+	#	   false, an exception is raised if +file+ contains
+	#	   types already defined in +self+, event if the
+	#	   definitions are the same.
+	#
+	# See Typelib documentation for other valid options 
+	# (which are specific to the filetype).
         def import(file, kind = nil, options = {})
             kind    = Registry.guess_type(file) if !kind
 	    do_merge = options.delete(:merge) || options.delete('merge')
@@ -296,14 +364,23 @@ module Typelib
         end
     end
 
+    # Loads a library object for +lib_path+ and
+    # initializes its type registry to +registry+.
+    # If +registry+ is nil, a new registry is created
     def self.dlopen(lib_path, registry = nil)
         lib = DL.dlopen(lib_path)
         registry = Registry.new if !registry
         Library.new(lib, registry)
     end
 
+    # A C library
     class Library < DelegateClass(DL::Handle)
+	# The type registry for this library
         attr_reader :registry
+
+	# Creates a new library wrapper
+	# +lib+ is a DL::Handle object. +registry+
+	# is the type registry
         def initialize(lib, registry)
             super(lib)
             @registry = registry
@@ -371,11 +448,14 @@ module Typelib
         end
     end
 
+    # A function wrapper
     class WrappedFunction
 	attr_reader :spec
 	def initialize(*spec); @spec = spec end
+	# Calls the function with +args+ for arguments
 	def call(*args); Typelib.function_call(args, *spec) end
 	alias :[] :call
+	# Checks that +args+ is a valid set of arguments for this function
 	def filter(*args); Typelib.filter_function_args(args, *spec) end
 	alias :check :filter
     end
@@ -383,7 +463,7 @@ module Typelib
     # Implement Typelib's argument handling
     # This method filters a particular argument given the user-supplied value and 
     # the argument expected type. It raises TypeError if +arg+ is of the wrong type
-    def self.filter_argument(arg, expected_type)
+    def self.filter_argument(arg, expected_type) # :nodoc:
 	if !(expected_type < PointerType) && !Kernel.immediate?(arg)
 	    raise TypeError, "#{arg.inspect} cannot be used for #{expected_type.name} arguments"
 	end
@@ -408,7 +488,7 @@ module Typelib
     end
 
     # Creates an array of objects that can safely be passed to DL function call mechanism
-    def self.filter_function_args(args, wrapper, return_type, return_spec, arg_types)
+    def self.filter_function_args(args, wrapper, return_type, return_spec, arg_types) # :nodoc:
         user_args_count = args.size
         
         # Create a Value object to collect the data we'll get
@@ -430,7 +510,8 @@ module Typelib
 	end
     end
 
-    def self.function_call(args, wrapper, return_type, return_spec, arg_types)
+    # Do the function call, handling return types
+    def self.function_call(args, wrapper, return_type, return_spec, arg_types) # :nodoc:
 	filtered_args = filter_function_args(args, wrapper, return_type, return_spec, arg_types)
 
         # Do call the wrapper

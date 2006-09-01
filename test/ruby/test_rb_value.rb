@@ -62,6 +62,21 @@ class TC_Value < Test::Unit::TestCase
 	assert( String === str.to_ruby )
     end
 
+    def test_equality
+        type = Registry.new.build("/int")
+	v1 = type.new.zero!
+	v2 = type.new.zero!
+	assert_equal(v1, v2)
+	assert(! v1.eql?(v2))
+	
+        registry = make_registry
+        a_type = registry.get("/struct A")
+        a1 = a_type.new :a => 10, :b => 20, :c => 30, :d => 40
+        a2 = a_type.new :a => 10, :b => 20, :c => 30, :d => 40
+	assert_equal(a1, a2)
+	assert(! a1.eql?(a2))
+    end
+
     def test_pointer_type
         type = Registry.new.build("/int*")
         assert_not_equal(type, type.deference)

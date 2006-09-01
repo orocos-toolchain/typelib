@@ -1,3 +1,11 @@
+#include "typelib.hh"
+
+using namespace Typelib;
+
+/**********
+ *  Define typelib_(to|from)_ruby
+ */
+
 /* This visitor takes a Value class and a field name,
  * and returns the VALUE object which corresponds to
  * the field, or returns nil
@@ -20,17 +28,17 @@ class RubyGetter : public ValueVisitor
 
     virtual bool visit_(Value const& v, Pointer const& p)
     {
-        m_value = cxx2rb::value_wrap(v, m_registry, cValue);
+        m_value = cxx2rb::value_wrap(v, m_registry, cType);
         return false;
     }
     virtual bool visit_(Value const& v, Array const& a) 
     {
-        m_value = cxx2rb::value_wrap(v, m_registry, cValueArray);
+        m_value = cxx2rb::value_wrap(v, m_registry, cArray);
         return false;
     }
     virtual bool visit_(Value const& v, Compound const& c)
     { 
-        m_value = cxx2rb::value_wrap(v, m_registry, cValue);
+        m_value = cxx2rb::value_wrap(v, m_registry, cCompound);
         return false; 
     }
     virtual bool visit_(Enum::integral_type& v, Enum const& e)   
@@ -108,7 +116,7 @@ public:
  */
 
 /* Converts a Typelib::Value to Ruby's VALUE */
-static VALUE typelib_to_ruby(Value v, VALUE registry)
+VALUE typelib_to_ruby(Value v, VALUE registry)
 { 
     if (! v.getData())
         return Qnil;
@@ -118,7 +126,7 @@ static VALUE typelib_to_ruby(Value v, VALUE registry)
 }
 
 /* Converts a given field in +value+ */
-static VALUE typelib_to_ruby(Value value, VALUE name, VALUE registry)
+VALUE typelib_to_ruby(Value value, VALUE name, VALUE registry)
 {
     if (! value.getData())
         return Qnil;
@@ -131,14 +139,14 @@ static VALUE typelib_to_ruby(Value value, VALUE name, VALUE registry)
     rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name));
 }
 
-/* Converts a Ruby's VALUE to Typelib::Value */
-static VALUE typelib_from_ruby(Value value, VALUE new_value)
+/* Tries to initialize +value+ to +new_value+ using the type in +value+ */
+VALUE typelib_from_ruby(Value value, VALUE new_value)
 {
     std::string type_name;
     try {
         RubySetter setter;
         return setter.apply(value, new_value);
     } catch(UnsupportedType e) { type_name = e.type.getName(); }
-    rb_raise(rb_eTypeError, "cannot assign to '%s'", type_name.c_str());
+    rb_raise(rb_eTypeError, "cannot convert to '%s'", type_name.c_str());
 }
 
