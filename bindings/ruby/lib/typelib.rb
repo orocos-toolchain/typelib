@@ -59,6 +59,10 @@ module Typelib
             if Type === other
                 self.class == other.class && to_dlptr == other.to_dlptr 
             else
+		this_to_ruby = self.to_ruby
+		if (Type === this_to_ruby)
+		    return false
+		end
                 other == self.to_ruby
             end
         end
