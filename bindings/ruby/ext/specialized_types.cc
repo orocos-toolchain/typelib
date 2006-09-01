@@ -185,10 +185,9 @@ static VALUE array_size(VALUE rbarray)
 
 /*
  * call-seq:
- *  pointer.null?   => true or false
+ *  pointer.null?		=> boolean
  *
- * Checks if this is a null pointer 
- * 
+ * checks if this is a NULL pointer 
  */
 static VALUE pointer_nil_p(VALUE self)
 {

@@ -152,7 +152,11 @@ VALUE value_get_registry(VALUE self)
     return rb_iv_get(type, "@registry");
 }
 
-/* Converts +self+ to its Ruby equivalent. If no equivalent
+/* 
+ * call-seq:
+ *   value.to_ruby	=> non-Typelib object or self
+ *
+ * Converts +self+ to its Ruby equivalent. If no equivalent
  * type is available, returns self
  */
 static VALUE value_to_ruby(VALUE self)

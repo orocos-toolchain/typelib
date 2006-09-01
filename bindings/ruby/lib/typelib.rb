@@ -88,7 +88,8 @@ module Typelib
 	    end
         end
 
-	# Returns a pointer to self
+	# returns a PointerType object which points to +self+. Note that
+	# to_ptr.deference == self
         def to_ptr
             self.class.to_ptr.wrap(@ptr.to_ptr)
         end
@@ -108,7 +109,7 @@ module Typelib
 	    pp.text to_s
 	end
 
-        # Get the Ruby::DL equivalent for self
+        # get the Ruby::DL equivalent for self
         def to_dlptr; @ptr end
 
 	def is_a?(typename); self.class.is_a?(typename) end
@@ -281,8 +282,10 @@ module Typelib
     class PointerType < Type
         @writable = false
 
-	# Returns nil if this is a null pointer, and a string
-	# if it is a pointer to a string. 
+	# Returns 
+	# * nil if this is a NULL pointer, and a string
+	# * a String object if it is a pointer to a string. 
+	# * self otherwise
         def to_ruby
 	    if self.null?; nil
 	    elsif respond_to?(:to_str); to_str
