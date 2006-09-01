@@ -145,8 +145,9 @@ VALUE registry_to_xml(VALUE self)
     return rb_str_new(as_xml.c_str(), as_xml.length());
 }
 
-void Typelib_init_registry(VALUE mTypelib)
+void Typelib_init_registry()
 {
+    VALUE mTypelib  = rb_define_module("Typelib");
     cRegistry = rb_define_class_under(mTypelib, "Registry", rb_cObject);
     rb_define_alloc_func(cRegistry, registry_alloc);
     rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_do_get), 1);

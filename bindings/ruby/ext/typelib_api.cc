@@ -34,10 +34,10 @@ static VALUE dl_ptr_to_ptr(VALUE ptr)
 extern "C" void Init_typelib_api()
 {
     mTypelib  = rb_define_module("Typelib");
-    Typelib_init_functions(mTypelib);
-    Typelib_init_values(mTypelib);
+    Typelib_init_functions();
+    Typelib_init_values();
     Typelib_init_strings();
-    Typelib_init_registry(mTypelib);
+    Typelib_init_registry();
     
     rb_define_method(rb_mKernel, "immediate?", RUBY_METHOD_FUNC(kernel_is_immediate), 1);
     rb_define_method(rb_cDLPtrData, "to_ptr", RUBY_METHOD_FUNC(dl_ptr_to_ptr), 0);

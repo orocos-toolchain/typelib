@@ -199,8 +199,9 @@ static VALUE pointer_nil_p(VALUE self)
 }
 
 
-void Typelib_init_specialized_types(VALUE mTypelib)
+void Typelib_init_specialized_types()
 {
+    VALUE mTypelib  = rb_define_module("Typelib");
     cPointer  = rb_define_class_under(mTypelib, "PointerType", cType);
     rb_define_singleton_method(cPointer, "deference",    RUBY_METHOD_FUNC(pointer_type_deference), 0);
     rb_define_method(cPointer, "deference", RUBY_METHOD_FUNC(pointer_deference), 0);

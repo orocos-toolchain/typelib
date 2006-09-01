@@ -171,8 +171,10 @@ static VALUE value_zero(VALUE self)
 }
 
 
-void Typelib_init_values(VALUE mTypelib)
+void Typelib_init_values()
 {
+    VALUE mTypelib  = rb_define_module("Typelib");
+
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
     rb_define_alloc_func(cType, value_alloc);
     rb_define_singleton_method(cType, "==",	    RUBY_METHOD_FUNC(type_equal_operator), 1);
@@ -181,6 +183,6 @@ void Typelib_init_values(VALUE mTypelib)
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
     rb_define_method(cType, "memory_eql?",      RUBY_METHOD_FUNC(&value_memory_eql_p), 1);
 
-    Typelib_init_specialized_types(mTypelib);
+    Typelib_init_specialized_types();
 }
 

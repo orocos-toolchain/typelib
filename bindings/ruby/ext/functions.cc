@@ -187,8 +187,9 @@ VALUE library_do_wrap(int argc, VALUE* argv, VALUE self)
     return rb_funcall(self, rb_intern("[]"), 2, argv[0], rb_dlspec);
 }
 
-void Typelib_init_functions(VALUE mTypelib)
+void Typelib_init_functions()
 {
+    VALUE mTypelib  = rb_define_module("Typelib");
     rb_define_singleton_method(mTypelib, "do_call_function", RUBY_METHOD_FUNC(typelib_call_function), 4);
     rb_define_singleton_method(mTypelib, "filter_immediate_arg", RUBY_METHOD_FUNC(filter_immediate_arg), 2);
     rb_define_singleton_method(mTypelib, "filter_value_arg", RUBY_METHOD_FUNC(filter_value_arg), 2);
