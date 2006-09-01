@@ -108,7 +108,7 @@ module Typelib
 	    pp.text to_s
 	end
 
-        # Get a pointer on this value
+        # Get the Ruby::DL equivalent for self
         def to_dlptr; @ptr end
 
 	def is_a?(typename); self.class.is_a?(typename) end
