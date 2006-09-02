@@ -31,7 +31,7 @@ static VALUE dl_ptr_to_ptr(VALUE ptr)
     return newptr;
 }
 
-extern "C" void Init_typelib_api()
+extern "C" void Init_typelib_ruby()
 {
     mTypelib  = rb_define_module("Typelib");
     Typelib_init_functions();

@@ -544,5 +544,5 @@ module Typelib
 end
 
 require 'dl'
-require 'typelib_api'
+require 'typelib_ruby'
 
