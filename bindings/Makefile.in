@@ -8,7 +8,11 @@ srcdir=@srcdir@
 builddir=@builddir@
 
 include $(top_builddir)/mk/init.mk
+SUBDIRS =
 
+ifneq ($(HAS_RUBY_SUPPORT),no)
 SUBDIRS = ruby
+endif
+
 include $(top_srcdir)/mk/recurse.mk
 
