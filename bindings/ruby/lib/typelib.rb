@@ -244,6 +244,11 @@ module Typelib
 	    else
 		set_field(name.to_s, value) 
 	    end
+
+	rescue ArgumentError => e
+	    raise e, "no field #{name} in #{self.class.name}"
+	rescue TypeError => e
+	    raise e, "#{e.message} for #{self.class.name}.#{name}"
 	end
 	# Returns the value of the field +name+
         def [](name); get_field(name) end
