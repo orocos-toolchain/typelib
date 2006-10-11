@@ -1,5 +1,5 @@
-# $Revision: 1381 $
-# $Id: lib.mk 1381 2006-02-07 13:46:29Z sjoyeux $
+# $Revision: 1535 $
+# $Id: ruby.mk 1535 2006-10-11 14:07:32Z sjoyeux $
 
 ################ Build
 build: $(MODULE)-build-rubyext
