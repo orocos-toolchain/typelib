@@ -3,9 +3,11 @@ extern "C" {
 #include <dl.h>
 }
 
+#include <sstream>
 #include <typelib/value.hh>
 #include <typelib/registry.hh>
 #include <typelib/typevisitor.hh>
+#include <typelib/csvoutput.hh>
 
 using namespace Typelib;
 
@@ -76,6 +78,39 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
 /**********************************************
  * Typelib::Type
  */
+
+/** 
+ * call-seq:
+ *   type.to_csv([basename [, separator]])	    => string
+ *
+ * Returns a one-line representation of this type, using +separator+ 
+ * to separate each fields. If +basename+ is given, use it as a 
+ * 'variable name'. For instance, calling this method on an array
+ * with a basename of 'array' will return
+ *  
+ *   array[0] array[1]
+ *
+ * without basename, it would be 
+ *
+ *   [0] [1]
+ *
+ */
+static VALUE type_to_csv(int argc, VALUE* argv, VALUE rbself)
+{
+    VALUE basename = Qnil;
+    VALUE separator = Qnil;
+    rb_scan_args(argc, argv, "02", &basename, &separator);
+
+    std::string bname = "", sep = " ";
+    if (!NIL_P(basename)) bname = StringValuePtr(basename);
+    if (!NIL_P(separator)) sep = StringValuePtr(separator);
+
+    Type const& self(rb2cxx::object<Type>(rbself));
+    std::ostringstream stream;
+    stream << csv_header(self, bname, sep);
+    std::string str = stream.str();
+    return rb_str_new(str.c_str(), str.length());
+}
 
 static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 { 
@@ -166,6 +201,28 @@ static VALUE value_to_ruby(VALUE self)
     return typelib_to_ruby(value, registry);
 }
 
+/** 
+ * call-seq:
+ *   value.to_csv([separator])	    => string
+ *
+ * Returns a one-line representation of this value, using +separator+ 
+ * to separate each fields
+ */
+static VALUE value_to_csv(int argc, VALUE* argv, VALUE self)
+{
+    VALUE separator = Qnil;
+    rb_scan_args(argc, argv, "01", &separator);
+
+    Value const& value(rb2cxx::object<Value>(self));
+    std::string sep = " ";
+    if (!NIL_P(separator)) sep = StringValuePtr(separator);
+
+    std::ostringstream stream;
+    stream << csv(value.getType(), value.getData(), sep);
+    std::string str = stream.str();
+    return rb_str_new(str.c_str(), str.length());
+}
+
 /* Initializes the memory to 0 */
 static VALUE value_zero(VALUE self)
 {
@@ -186,6 +243,9 @@ void Typelib_init_values()
     rb_define_method(cType, "to_ruby",      RUBY_METHOD_FUNC(&value_to_ruby), 0);
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
     rb_define_method(cType, "memory_eql?",      RUBY_METHOD_FUNC(&value_memory_eql_p), 1);
+
+    rb_define_singleton_method(cType, "to_csv", RUBY_METHOD_FUNC(type_to_csv), -1);
+    rb_define_method(cType, "to_csv", RUBY_METHOD_FUNC(value_to_csv), -1);
 
     Typelib_init_specialized_types();
 }
