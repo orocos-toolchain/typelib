@@ -175,6 +175,26 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 	end
     end
 
+    def test_array_multi_dim
+	mdarray = make_registry.get('TestMultiDimArray').new.fields
+
+	fill_multi_dim_array(mdarray)
+	mdarray.each_with_index do |line, y|
+	    assert_equal('/int[10]', line.class.name, y)
+	    line.each_with_index do |v, x|
+		assert_equal(10 * y + x, v)
+	    end
+	end
+
+	(0..9).each do |y|
+	    assert_equal(y * 10 + 1, mdarray[y][1])
+
+	    (0..9).each do |x|
+		assert_equal(10 * y + x, mdarray[y][x])
+	    end
+	end
+    end
+
     def test_enum
         e_type = make_registry.get("EContainer")
         assert(e_type.respond_to?(:value))

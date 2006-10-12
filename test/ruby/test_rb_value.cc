@@ -76,6 +76,19 @@ static VALUE set_B_c_value(VALUE self, VALUE rb)
     return Qnil;
 }
 
+static VALUE fill_multi_dim_array(VALUE self, VALUE rb)
+{
+    Value* value = 0;
+    Data_Get_Struct(rb, Value, value);
+
+    TestMultiDimArray& b(*reinterpret_cast<TestMultiDimArray*>(value->getData()));
+    for (int y = 0; y < 10; ++y)
+	for (int x = 0; x < 10; ++x)
+	    b.fields[y][x] = x + y * 10;
+
+    return Qnil;
+}
+
 extern "C" {
 
     void Init_test_rb_value()
@@ -84,6 +97,7 @@ extern "C" {
         rb_define_method(rb_mKernel, "set_B_c_value",           RUBY_METHOD_FUNC(set_B_c_value), 1);
         rb_define_method(rb_mKernel, "check_struct_A_value",    RUBY_METHOD_FUNC(check_struct_A_value), 1);
         rb_define_method(rb_mKernel, "set_struct_A_value",      RUBY_METHOD_FUNC(set_struct_A_value), 1);
+        rb_define_method(rb_mKernel, "fill_multi_dim_array",      RUBY_METHOD_FUNC(fill_multi_dim_array), 1);
     }
 
     /* Testing function wrapped by Typelib::wrap (using Ruby::DL)
