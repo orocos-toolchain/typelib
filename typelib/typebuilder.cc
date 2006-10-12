@@ -51,7 +51,25 @@ namespace Typelib
         }
     }
 
-    void TypeBuilder::addArray(int new_dim)
+    void TypeBuilder::addArrayMinor(int new_dim)
+    {
+	// build the list of array dimensions
+	std::vector<int> dims;
+
+	while(m_type->getCategory() == Type::Array)
+	{
+	    Array const* array = dynamic_cast<Array const*>(m_type);
+	    dims.push_back(array->getDimension());
+	    m_type = const_cast<Type*>(&array->getIndirection());
+	}
+
+	addArrayMajor(new_dim);
+	for (std::vector<int>::reverse_iterator it = dims.rbegin();
+		it != dims.rend(); ++it)
+	    addArrayMajor(*it);
+    }
+
+    void TypeBuilder::addArrayMajor(int new_dim)
     {
         const Type* base_type = m_registry.get(Array::getArrayName(m_type->getName(), new_dim));
         if (base_type)
@@ -78,7 +96,7 @@ namespace Typelib
             if (category == Type::Pointer)
                 builder.addPointer(size);
             else if (category == Type::Array)
-                builder.addArray(size);
+                builder.addArrayMajor(size);
         }
 
         return builder.getType();

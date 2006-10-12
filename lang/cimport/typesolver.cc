@@ -184,7 +184,11 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
 void TypeSolver::declaratorArray(int size)
 {
     if (m_class && !m_fields.empty())
-        m_fields.back().second.addArray(size);
+    {
+	// C orders dimensions from the outermost
+	// at the left to the innermost at the right
+        m_fields.back().second.addArrayMinor(size);
+    }
         
     CPPParser::declaratorArray(size);
 }

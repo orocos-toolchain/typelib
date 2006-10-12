@@ -71,7 +71,13 @@ public:
         Field const* b_g = b->getField("g");
         BOOST_CHECK_EQUAL( &(b_g->getType()), registry.get("/float[2]") );
         Field const* b_h = b->getField("h");
-        BOOST_CHECK_EQUAL( &(b_h->getType()), registry.get("/float[4]") );
+        BOOST_CHECK_EQUAL( &(b_h->getType()), registry.get("/struct A[4]") );
+        Field const* b_i = b->getField("i");
+	// order of indexes of multi-dimensional arrays are reverse than the 
+	// ones in C because we always read dimensions from right to left
+	// (i.e. b.i is supposed to be a (array of 10 elements of (array of 
+	// 20 elements of floats))
+        BOOST_CHECK_EQUAL( &(b_i->getType()), registry.get("/float[20][10]") );
 
         // Check the array indirection
         Array const& b_c_array(dynamic_cast<Array const&>(b_c->getType()));

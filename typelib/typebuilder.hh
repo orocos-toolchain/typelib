@@ -48,8 +48,12 @@ namespace Typelib
 
         /** Builds a level-deferenced pointer of the current type */
         void addPointer(int level);
-        /** Builds an array of @c size element of the current type */
-        void addArray(int size);
+        /** Add an outermost dimension to the current type (if it is not
+	 * an array, builds an array */
+        void addArrayMajor(int size);
+        /** Add an innermost dimension to the current type (if it is not
+	 * an array, builds an array */
+        void addArrayMinor(int size);
 
         /** Get the current type */
         const Type& getType() const;
