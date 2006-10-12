@@ -234,9 +234,10 @@ module Typelib
 	    end
 	end
 
-	# Sets the value of the field +name+. If +name+
-	# is a compound type and +value+ is a hash, then
-	# we use the keys of +value+ as field names
+	# Sets the value of the field +name+. If +value+
+	# is a hash, we expect that the field is a
+	# compound type and initialize it using the
+	# keys of +value+ as field names
         def []=(name, value)
 	    if Hash === value
 		attribute = get_field(name)
