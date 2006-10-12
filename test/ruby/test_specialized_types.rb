@@ -155,6 +155,13 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 	registry = make_registry
         b = registry.get("/struct B").new
         set_B_c_value(b)
+	
+	# Test arrays of arrays
+	array = registry.build('float[10][20]').new
+	assert_kind_of(Typelib::ArrayType, array)
+	array.each do |el|
+	    assert_kind_of(registry.get('float[10]'), el)
+	end
 
 	# Test arrays of Ruby types
         b.c.each_with_index do |v, i|
@@ -162,15 +169,9 @@ class TC_SpecializedTypes < Test::Unit::TestCase
             assert( ( v - Float(i)/10.0 ).abs < 0.01 )
         end
 
-	# Test arrays of Type types
+	## Test arrays of Type types
 	b.h.each do |el|
 	    assert_kind_of(registry.get('struct A'), el)
-	end
-
-	# Test arrays of arrays
-	array = registry.build('float[10][20]').new
-	array.each do |el|
-	    assert_kind_of(registry.get('float[10]'), el)
 	end
     end
 

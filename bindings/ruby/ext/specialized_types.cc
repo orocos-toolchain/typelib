@@ -170,7 +170,7 @@ static VALUE array_each(VALUE rbarray)
 
     int8_t* data = reinterpret_cast<int8_t*>(value.getData());
     for (size_t i = 0; i < array.getDimension(); ++i, data += array_type.getSize())
-        rb_yield_values(1, typelib_to_ruby( Value(data, array_type), registry ) );
+	rb_yield(typelib_to_ruby( Value(data, array_type), registry ));
 
     return rbarray;
 }

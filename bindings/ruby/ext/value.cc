@@ -61,7 +61,7 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
 	return it->second;
 
     VALUE base  = class_of(type);
-    VALUE klass = rb_class_new_instance(1, &base, rb_cClass);
+    VALUE klass = rb_funcall(rb_cClass, rb_intern("new"), 1, base);
     VALUE rb_type = Data_Wrap_Struct(rb_cObject, 0, do_not_delete, const_cast<Type*>(&type));
     rb_iv_set(klass, "@registry", registry);
     rb_iv_set(klass, "@type", rb_type);
