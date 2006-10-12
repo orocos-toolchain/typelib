@@ -5,10 +5,9 @@
 build: $(MODULE)-build-rubyext
 $(MODULE)_OBJS=	$(patsubst %.cc,%.lo,$($(MODULE)_SRC:%.c=%.lo))
 
-$(MODULE)_CPPFLAGS += $(RUBY_CPPFLAGS)
-$(MODULE)_CFLAGS += $(RUBY_CFLAGS)
-$(MODULE)_CXXFLAGS += $(RUBY_CFLAGS)
-
+CPPFLAGS := $(RUBY_CPPFLAGS) $(CPPFLAGS)
+CFLAGS   := $(RUBY_CFLAGS) $(CFLAGS)
+CXXFLAGS := $(RUBY_CFLAGS) $(CXXFLAGS)
 ################ Check if it is a convenience library or a plain one
 build_lib = $(MODULE).la
 
