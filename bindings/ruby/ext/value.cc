@@ -159,14 +159,26 @@ VALUE value_initialize(VALUE self, VALUE ptr)
     Value& value = rb2cxx::object<Value>(self);
     Type const& t(rb2cxx::object<Type>(rb_class_of(self)));
 
-    if(NIL_P(ptr))
-        ptr = rb_dlptr_malloc(t.getSize(), free);
+    if (NIL_P(ptr) || TYPE(ptr) == T_STRING)
+    {
+        VALUE buffer = rb_dlptr_malloc(t.getSize(), free);
+	if (! NIL_P(ptr))
+	    memcpy(rb_dlptr2cptr(buffer), RSTRING(ptr)->ptr, t.getSize());
+	ptr = buffer;
+    }
 
     // Protect 'ptr' against the GC
     rb_iv_set(self, "@ptr", ptr);
 
     value = Value(rb_dlptr2cptr(ptr), t);
     return self;
+}
+
+static
+VALUE value_to_byte_array(VALUE self)
+{
+    Value& value = rb2cxx::object<Value>(self);
+    return rb_str_new(reinterpret_cast<const char*>(value.getData()), value.getType().getSize());
 }
 
 VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)
@@ -246,6 +258,7 @@ void Typelib_init_values()
 
     rb_define_singleton_method(cType, "to_csv", RUBY_METHOD_FUNC(type_to_csv), -1);
     rb_define_method(cType, "to_csv", RUBY_METHOD_FUNC(value_to_csv), -1);
+    rb_define_method(cType, "to_byte_array", RUBY_METHOD_FUNC(value_to_byte_array), 0);
 
     Typelib_init_specialized_types();
 }

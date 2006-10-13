@@ -77,6 +77,17 @@ class TC_Value < Test::Unit::TestCase
 	assert(! a1.eql?(a2))
     end
 
+    def test_byte_array
+	as_string = [5].pack('L')
+	rb_value = Registry.new.build("/long").wrap as_string
+	as_string = rb_value.to_byte_array
+	assert_equal(4, as_string.size)
+	assert_equal(5, rb_value.to_byte_array.unpack('L').first)
+
+        a = make_registry.get('ADef').new :a => 10, :b => 20, :c => 30, :d => 40
+	assert_equal([10, 20, 30, 40], a.to_byte_array.unpack('llcxs'))
+    end
+
     def test_pointer_type
         type = Registry.new.build("/int*")
         assert_not_equal(type, type.deference)
