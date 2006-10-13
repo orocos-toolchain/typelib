@@ -25,7 +25,7 @@ typeLib_CPPFLAGS = $(LIBXML_CFLAGS) $(BOOST_CXXFLAGS) $(UTILMM_CXXFLAGS) -I$(top
 typeLib_LDFLAGS = $(LIBXML_LIBS) $(BOOST_LDFLAGS) $(UTILMM_LDFLAGS)
 typeLib_LIBS	= $(top_builddir)/lang/cimport/libtypeLang_c.la $(top_builddir)/lang/tlb/libtypeLang_tlb.la
 
-HEADERS=exporter.hh importer.hh ioplugins.hh manip.hh pluginmanager.hh registry.hh registryiterator.hh typebuilder.hh typedisplay.hh typemodel.hh typename.hh typevisitor.hh value.hh csvoutput.hh
+HEADERS=exporter.hh importer.hh ioplugins.hh manip.hh pluginmanager.hh registry.hh registryiterator.hh typebuilder.hh typedisplay.hh typemodel.hh typename.hh typevisitor.hh value.hh csvoutput.hh endianness.hh
 install: header-install
 header-install:
 	$(INSTALL_DIR) $(DESTDIR)$(includedir)/typelib

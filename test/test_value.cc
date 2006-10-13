@@ -5,6 +5,7 @@
 #include <typelib/typemodel.hh>
 #include <typelib/registry.hh>
 #include <typelib/value.hh>
+#include <typelib/endianness.hh>
 using namespace Typelib;
 
 #include "test_cimport.1"
@@ -48,6 +49,7 @@ public:
             BOOST_CHECK(a.a == value_cast<long>(value_get_field(v_a, "a")));
             BOOST_CHECK(a.b == value_cast<long>(value_get_field(v_a, "b")));
             BOOST_CHECK(a.c == value_cast<char>(value_get_field(v_a, "c")));
+            BOOST_CHECK(a.d == value_cast<short>(value_get_field(v_a, "d")));
 
             B b;
             b.a = a;
@@ -59,6 +61,7 @@ public:
             BOOST_CHECK(a.a == value_cast<long>(value_get_field(v_b_a, "a")));
             BOOST_CHECK(a.b == value_cast<long>(value_get_field(v_b_a, "b")));
             BOOST_CHECK(a.c == value_cast<char>(value_get_field(v_b_a, "c")));
+            BOOST_CHECK(a.d == value_cast<short>(value_get_field(v_b_a, "d")));
         }
     }
 
@@ -97,6 +100,32 @@ public:
 	BOOST_REQUIRE_EQUAL(e_0, reinterpret_cast<uint8_t*>(&test[0]));
 	BOOST_REQUIRE_EQUAL(e_9, reinterpret_cast<uint8_t*>(&test[9]));
     }
+
+    void test_endian_swap()
+    {
+        // Get the test file into repository
+        Registry registry;
+        PluginManager::self manager;
+        Importer* importer = manager->importer("c");
+        utilmm::config_set config;
+        BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+
+	A a = { utilmm::endian_swap((long)10), utilmm::endian_swap((long)20), utilmm::endian_swap('b'), utilmm::endian_swap((short)52) };
+	B b;
+	b.a = a;
+	for (int i = 0; i < 10; ++i)
+	    b.c[i] = utilmm::endian_swap(static_cast<float>(i) / 10.0f);
+
+	Value v_b(&b, *registry.get("/B"));
+	Typelib::endian_swap(v_b);
+
+	BOOST_REQUIRE_EQUAL(10, b.a.a);
+	BOOST_REQUIRE_EQUAL(20, b.a.b);
+	BOOST_REQUIRE_EQUAL('b', b.a.c);
+	BOOST_REQUIRE_EQUAL(52, b.a.d);
+	for (int i = 0; i < 10; ++i)
+	    BOOST_REQUIRE_EQUAL(static_cast<float>(i) / 10.0f, b.c[i]);
+    }
 };
 
 void test_value(test_suite* ts) {
@@ -104,5 +133,6 @@ void test_value(test_suite* ts) {
     ts->add( BOOST_CLASS_TEST_CASE( &TC_Value::test_simple, instance ) );
     ts->add( BOOST_CLASS_TEST_CASE( &TC_Value::test_struct, instance ) );
     ts->add( BOOST_CLASS_TEST_CASE( &TC_Value::test_array, instance ) );
+    ts->add( BOOST_CLASS_TEST_CASE( &TC_Value::test_endian_swap, instance ) );
 }
 
