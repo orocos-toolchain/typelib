@@ -8,6 +8,7 @@ extern "C" {
 #include <typelib/registry.hh>
 #include <typelib/typevisitor.hh>
 #include <typelib/csvoutput.hh>
+#include <typelib/endianness.hh>
 
 using namespace Typelib;
 
@@ -175,6 +176,14 @@ VALUE value_initialize(VALUE self, VALUE ptr)
 }
 
 static
+VALUE value_endian_swap_b(VALUE self)
+{
+    Value& value = rb2cxx::object<Value>(self);
+    endian_swap(value);
+    return self;
+}
+
+static
 VALUE value_to_byte_array(VALUE self)
 {
     Value& value = rb2cxx::object<Value>(self);
@@ -255,6 +264,7 @@ void Typelib_init_values()
     rb_define_method(cType, "to_ruby",      RUBY_METHOD_FUNC(&value_to_ruby), 0);
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
     rb_define_method(cType, "memory_eql?",      RUBY_METHOD_FUNC(&value_memory_eql_p), 1);
+    rb_define_method(cType, "endian_swap_b",      RUBY_METHOD_FUNC(&value_endian_swap_b), 1);
 
     rb_define_singleton_method(cType, "to_csv", RUBY_METHOD_FUNC(type_to_csv), -1);
     rb_define_method(cType, "to_csv", RUBY_METHOD_FUNC(value_to_csv), -1);
