@@ -108,19 +108,6 @@ namespace
             return true;
         }
 
-        bool visit_ (Value const& v, Array const& a)
-        {
-	    LineVisitor visitor;
-            for (size_t i = 0; i < a.getDimension(); ++i)
-	    {
-		uint8_t* element = static_cast<uint8_t*>(v.getData()) + a.getIndirection().getSize() * i; 
-		stringlist result = visitor.apply(Value(element, a.getIndirection()));
-                m_output.splice(m_output.end(), result);
-	    }
-            return true;
-        }
-
-
     public:
         stringlist apply(Value const& value)
         {

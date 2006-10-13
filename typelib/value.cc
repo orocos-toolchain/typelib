@@ -98,7 +98,22 @@ namespace Typelib
     bool ValueVisitor::visit_(Value const& v, Pointer const& t)
     { return m_dispatcher->TypeVisitor::visit_(t); }
     bool ValueVisitor::visit_(Value const& v, Array const& a) 
-    { return true; }
+    {
+	uint8_t*  base = static_cast<uint8_t*>(v.getData());
+	m_dispatcher->m_stack.push_back(base);
+	uint8_t*& element = m_dispatcher->m_stack.back();
+
+	Type const& array_type(a.getIndirection());
+	for (size_t i = 0; i < a.getDimension(); ++i)
+	{
+	    element = base + array_type.getSize() * i;
+	    if (! m_dispatcher->TypeVisitor::visit_(array_type))
+		break;
+	}
+
+	m_dispatcher->m_stack.pop_back();
+	return true;
+    }
     bool ValueVisitor::visit_(Value const&, Compound const& c) 
     { return m_dispatcher->TypeVisitor::visit_(c); }
     bool ValueVisitor::visit_(Value const&, Compound const& c, Field const& f) 
