@@ -169,6 +169,19 @@ class TC_DL < Test::Unit::TestCase
         buffer = lib.registry.build("char[256]").new
         wrapper[buffer, 256]
         assert_equal("string_return", buffer.to_str)
+
+	wrapper = lib.wrap('test_string_as_array', ['void', -1], 'char[256]')
+        buffer = lib.registry.build("char[256]").new
+	ret = wrapper[buffer]
+	assert_kind_of(ArrayType, ret)
+        assert_equal("string_return", ret.to_str)
+	buffer = " " * 256
+	ret = wrapper[buffer]
+	assert_kind_of(ArrayType, ret)
+        assert_equal("string_return", ret.to_str)
+
+	wrapper = lib.wrap('test_string_as_array', ['void', 1], 'char[256]')
+        assert_equal("string_return", wrapper[].to_str)
     end
 
 end

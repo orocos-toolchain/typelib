@@ -117,12 +117,12 @@ VALUE enum_keys(VALUE self)
  * Typelib::Pointer
  */
 
-static VALUE pointer_type_deference(VALUE self)
+static VALUE indirect_type_deference(VALUE self)
 {
     VALUE registry = rb_iv_get(self, "@registry");
     Type const& type(rb2cxx::object<Type>(self));
-    Pointer const& pointer(static_cast<Pointer const&>(type));
-    return cxx2rb::type_wrap(pointer.getIndirection(), registry);
+    Indirect const& indirect(static_cast<Indirect const&>(type));
+    return cxx2rb::type_wrap(indirect.getIndirection(), registry);
 }
 
 
@@ -200,8 +200,10 @@ static VALUE pointer_nil_p(VALUE self)
 void Typelib_init_specialized_types()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
-    cPointer  = rb_define_class_under(mTypelib, "PointerType", cType);
-    rb_define_singleton_method(cPointer, "deference",    RUBY_METHOD_FUNC(pointer_type_deference), 0);
+    cIndirect  = rb_define_class_under(mTypelib, "IndirectType", cType);
+    rb_define_singleton_method(cIndirect, "deference",    RUBY_METHOD_FUNC(indirect_type_deference), 0);
+
+    cPointer  = rb_define_class_under(mTypelib, "PointerType", cIndirect);
     rb_define_method(cPointer, "deference", RUBY_METHOD_FUNC(pointer_deference), 0);
     rb_define_method(cPointer, "null?", RUBY_METHOD_FUNC(pointer_nil_p), 0);
     
@@ -213,7 +215,8 @@ void Typelib_init_specialized_types()
 
     cEnum = rb_define_class_under(mTypelib, "EnumType", cType);
     rb_define_singleton_method(cEnum, "keys", RUBY_METHOD_FUNC(enum_keys), 0);
-    cArray    = rb_define_class_under(mTypelib, "ArrayType", cType);
+
+    cArray    = rb_define_class_under(mTypelib, "ArrayType", cIndirect);
     rb_define_method(cArray, "[]",      RUBY_METHOD_FUNC(array_get), 1);
     rb_define_method(cArray, "[]=",     RUBY_METHOD_FUNC(array_set), 2);
     rb_define_method(cArray, "each",    RUBY_METHOD_FUNC(array_each), 0);

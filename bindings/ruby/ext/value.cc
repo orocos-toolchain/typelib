@@ -32,6 +32,7 @@ namespace cxx2rb {
 }
 
 VALUE cType	 = Qnil;
+VALUE cIndirect  = Qnil;
 VALUE cPointer   = Qnil;
 VALUE cArray     = Qnil;
 VALUE cCompound  = Qnil;

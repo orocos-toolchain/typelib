@@ -172,6 +172,8 @@ extern "C" {
     { return static_string; }
     void test_string_argument_modification(char* str, int buffer_length)
     { strcpy(str, static_string); }
+    void test_string_as_array(char str[256])
+    { strcpy(str, static_string); }
 
     DEFINE_STR id;
     int test_id_handling(DEFINE_ID* new_id, int check)

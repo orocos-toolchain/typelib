@@ -11,6 +11,7 @@ VALUE typelib_to_ruby(Typelib::Value value, VALUE name, VALUE registry);
 VALUE typelib_from_ruby(Typelib::Value value, VALUE new_value);
 
 extern VALUE cType;
+extern VALUE cIndirect;
 extern VALUE cPointer;
 extern VALUE cArray;
 extern VALUE cCompound;

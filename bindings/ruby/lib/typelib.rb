@@ -261,8 +261,12 @@ module Typelib
         def to_ruby; self end
     end
 
+    class IndirectType < Type
+        @writable = false
+    end
+
     # Base class for all arrays
-    class ArrayType < Type
+    class ArrayType < IndirectType
         @writable = false
 
 	def pretty_print(pp) # :nodoc:
@@ -290,7 +294,7 @@ module Typelib
     end
 
     # Base class for all pointers
-    class PointerType < Type
+    class PointerType < IndirectType
         @writable = false
 
 	# Returns 
@@ -452,7 +456,7 @@ module Typelib
                 ary_idx = index.abs - 1
                 if index == 0 || ary_idx >= arg_types.size
                     raise ArgumentError, "Index out of bound: there is no positional parameter #{index.abs}"
-                elsif !(arg_types[ary_idx] < PointerType)
+                elsif !(arg_types[ary_idx] < IndirectType)
                     raise ArgumentError, "Parameter #{index.abs} is supposed to be an output value, but it is not a pointer (#{arg_types[ary_idx].name})"
                 end
             end
@@ -478,17 +482,17 @@ module Typelib
     # This method filters a particular argument given the user-supplied value and 
     # the argument expected type. It raises TypeError if +arg+ is of the wrong type
     def self.filter_argument(arg, expected_type) # :nodoc:
-	if !(expected_type < PointerType) && !Kernel.immediate?(arg)
+	if !(expected_type < IndirectType) && !Kernel.immediate?(arg)
 	    raise TypeError, "#{arg.inspect} cannot be used for #{expected_type.name} arguments"
 	end
 
-	filtered =  if DL::PtrData === arg
+	filtered =  if DL::PtrData === arg && (expected_type < IndirectType)
 			arg
 		    elsif Kernel.immediate?(arg)
 			filter_immediate_arg(arg, expected_type)
 		    elsif Type === arg
 			filter_value_arg(arg, expected_type)
-		    elsif expected_type.deference.name == "/char" && arg.respond_to?(:to_str)
+		    elsif expected_type < IndirectType && expected_type.deference.name == "/char" && arg.respond_to?(:to_str)
 			# Ruby strings ARE null-terminated
 			# The thing which is not checked here is that there is no NULL bytes
 			# inside the string.
@@ -526,6 +530,13 @@ module Typelib
 
     # Do the function call, handling return types
     def self.function_call(args, wrapper, return_type, return_spec, arg_types) # :nodoc:
+	# Keep track of String objects for return values
+	strings = return_spec.inject([]) do |strings, index|
+	    ary_idx = index.abs - 1
+	    strings[ary_idx] = true if String === args[ary_idx]
+	    strings
+	end
+	
 	filtered_args = filter_function_args(args, wrapper, return_type, return_spec, arg_types)
 
         # Do call the wrapper
@@ -547,7 +558,12 @@ module Typelib
 
             value = retargs[ary_idx]
             type  = arg_types[ary_idx]
-            ruby_returns << type.deference.wrap(value).to_ruby
+
+	    if type < ArrayType
+		ruby_returns << type.wrap(value)
+	    else
+		ruby_returns << type.deference.wrap(value).to_ruby
+	    end
         end
 
         return *ruby_returns

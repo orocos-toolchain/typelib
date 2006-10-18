@@ -55,7 +55,10 @@ class DLSpec : public TypeVisitor
         return false;
     }
     virtual bool visit_ (Array const& type)
-    { throw UnsupportedType(type); }
+    { 
+	m_spec = "P";
+	return false;
+    }
 
     virtual bool visit_ (Compound const& type)
     { throw UnsupportedType(type); }
@@ -128,32 +131,50 @@ VALUE filter_value_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
     {
         if (arg_type.getCategory() == Type::Pointer)
             return rb_dlptr_new(*reinterpret_cast<void**>(arg_value.getData()), arg_type.getSize(), do_not_delete);
+	else if (arg_type.getCategory() == Type::Array)
+	    return rb_funcall(arg, rb_intern("to_dlptr"), 0);
         else if (arg_type.getCategory() == Type::Numeric)
             return rb_funcall(arg, rb_intern("to_ruby"), 0);
         else
             return Qnil;
     }
 
-    // There is only pointers left to handle
-    if (expected_type.getCategory() != Type::Pointer)
+    if (expected_type.getCategory() != Type::Pointer && expected_type.getCategory() != Type::Array)
         return Qnil;
 
-    Pointer const& expected_ptr_type   = static_cast<Pointer const&>(expected_type);
-    Type const& expected_pointed_type  = expected_ptr_type.getIndirection();
+    Indirect const& expected_indirect_type   = static_cast<Indirect const&>(expected_type);
+    Type const& expected_pointed_type  = expected_indirect_type.getIndirection();
 
     // /void == /nil, so that if expected_type is null, then 
     // it is because the argument can hold any kind of pointers
     if (expected_pointed_type.isNull() || expected_pointed_type == arg_type)
         return rb_funcall(arg, rb_intern("to_dlptr"), 0);
     
-    // One thing left: array -> pointer convertion
-    if (! arg_type.getCategory() == Type::Array)
-        return Qnil;
+    // There is only array <-> pointer conversion left to handle
+    Indirect const& arg_indirect = static_cast<Indirect const&>(arg_type);
+    if (arg_indirect.getIndirection() != expected_pointed_type)
+	return Qnil;
 
-    Array const& array_type = static_cast<Array const&>(arg_type);
-    if (array_type.getIndirection() != expected_pointed_type)
-        return Qnil;
-    return rb_funcall(arg, rb_intern("to_dlptr"), 0);
+    if (expected_type.getCategory() == Type::Pointer)
+    {
+	if (arg_type.getCategory() == Type::Pointer)
+	{
+	    // if it was OK, then arg_type == expected_type which is already handled
+	    return Qnil;
+	}
+	return rb_funcall(arg, rb_intern("to_dlptr"), 0);
+    }
+    else
+    {
+	if (arg_type.getCategory() == Type::Pointer)
+            return rb_dlptr_new(*reinterpret_cast<void**>(arg_value.getData()), arg_type.getSize(), do_not_delete);
+	// check sizes
+	Array const& expected_array = static_cast<Array const&>(expected_type);
+	Array const& arg_array = static_cast<Array const&>(arg_type);
+	if (expected_array.getDimension() < arg_array.getDimension())
+	    return Qnil;
+	return rb_funcall(arg, rb_intern("to_dlptr"), 0);
+    }
 }
 
 static
