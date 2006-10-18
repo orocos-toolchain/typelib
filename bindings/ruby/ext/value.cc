@@ -4,6 +4,7 @@ extern "C" {
 }
 
 #include <sstream>
+#include <limits>
 #include <typelib/value.hh>
 #include <typelib/registry.hh>
 #include <typelib/typevisitor.hh>
@@ -11,6 +12,7 @@ extern "C" {
 #include <typelib/endianness.hh>
 
 using namespace Typelib;
+using std::numeric_limits;
 
 // NOP deleter, for Type objects and some Ptr objects
 static void do_not_delete(void*) {}
@@ -252,10 +254,54 @@ static VALUE value_zero(VALUE self)
     return self;
 }
 
+static void typelib_validate_value_arg(VALUE arg, void*& data, size_t& size)
+{
+    Value const& value(rb2cxx::object<Value>(arg));
+    Type  const& type = value.getType();
+    if (type.getCategory() == Type::Pointer)
+	size = numeric_limits<size_t>::max();
+    else if (type.getCategory() == Type::Array)
+	size = static_cast<Array const&>(type).getSize();
+    else
+	rb_raise(rb_eArgError, "invalid argument for memcpy: only pointers, arrays or strings are allowed");
+
+    data = value.getData();
+}
+static VALUE typelib_memcpy(VALUE, VALUE to, VALUE from, VALUE size)
+{
+    void * p_to, * p_from;
+    size_t size_to, size_from;
+    if (TYPE(to) == T_STRING)
+    {
+	to = StringValue(to);
+	rb_str_modify(to);
+
+	p_to    = RSTRING(to)->ptr;
+	size_to = RSTRING(to)->len;
+    }
+    else typelib_validate_value_arg(to, p_to, size_to);
+
+    if (TYPE(from) == T_STRING)
+    {
+	p_from = RSTRING(from)->ptr;
+	size_from = RSTRING(from)->len;
+    }
+    else typelib_validate_value_arg(from, p_from, size_from);
+
+    size_t copy_size = NUM2UINT(size);
+    if (size_to < copy_size)
+	rb_raise(rb_eArgError, "destination buffer too small");
+    else if (size_from < copy_size)
+	rb_raise(rb_eArgError, "source buffer too small");
+
+    memcpy(p_to, p_from, copy_size);
+    return to;
+}
 
 void Typelib_init_values()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
+    rb_define_singleton_method(mTypelib, "memcpy", RUBY_METHOD_FUNC(typelib_memcpy), 3);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
     rb_define_alloc_func(cType, value_alloc);

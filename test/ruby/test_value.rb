@@ -169,5 +169,23 @@ class TC_Value < Test::Unit::TestCase
 	assert_equal("0", int_value.to_s)
     end
 
+    def test_memcpy
+	registry = Registry.new
+	buffer = registry.build('char[6]').new
+	buffer.zero!
+	buffer = Typelib.memcpy(buffer, "test", 4);
+	assert_equal("test", buffer.to_str)
+
+	str = " " * 4
+	str = Typelib.memcpy(str, buffer, 4);
+	assert_equal("test", str)
+
+	assert_raises(ArgumentError) { Typelib.memcpy(str, buffer, 5) }
+	assert_raises(ArgumentError) { Typelib.memcpy(buffer, str, 5) }
+	str = " " * 10
+	assert_raises(ArgumentError) { Typelib.memcpy(str, buffer, 8) }
+	assert_raises(ArgumentError) { Typelib.memcpy(buffer, str, 8) }
+    end
+
 end
 
