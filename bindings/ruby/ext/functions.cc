@@ -182,9 +182,14 @@ VALUE typelib_call_function(VALUE klass, VALUE wrapper, VALUE args, VALUE return
 static
 VALUE library_do_wrap(int argc, VALUE* argv, VALUE self)
 {
-    std::string dlspec = typelib_get_dl_spec(argc - 1, argv + 1);
-    VALUE rb_dlspec = rb_str_new2(dlspec.c_str());
-    return rb_funcall(self, rb_intern("[]"), 2, argv[0], rb_dlspec);
+    std::string bad_type;
+    try {
+	std::string dlspec = typelib_get_dl_spec(argc - 1, argv + 1);
+	VALUE rb_dlspec = rb_str_new2(dlspec.c_str());
+	return rb_funcall(self, rb_intern("[]"), 2, argv[0], rb_dlspec);
+    }
+    catch(Typelib::UnsupportedType e) { bad_type = e.type.getName(); }
+    rb_raise(rb_eArgError, "unsupported type %s", bad_type.c_str());
 }
 
 void Typelib_init_functions()
