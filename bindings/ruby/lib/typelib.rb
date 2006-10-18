@@ -20,8 +20,13 @@ module Typelib
         class << self
 	    # the type registry we belong to
             attr_reader :registry
-	    # the type name 
-	    attr_reader :name
+	    def name
+		if defined? @name
+		    @name
+		else
+		    super
+		end
+	    end
 
 	    # check if this is writable
             def writable?
