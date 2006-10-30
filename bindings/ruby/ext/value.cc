@@ -118,7 +118,7 @@ static VALUE type_to_csv(int argc, VALUE* argv, VALUE rbself)
 
 static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 { 
-    if (rb_obj_class(rbself) != rb_obj_class(rbwith))
+    if (rb_funcall(rbself, rb_intern("superclass"), 0) != rb_funcall(rbwith, rb_intern("superclass"), 0))
         return Qfalse;
 
     Type const& self(rb2cxx::object<Type>(rbself));
