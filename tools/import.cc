@@ -54,13 +54,18 @@ bool Import::apply(int argc, char* const argv[])
     config_set config;
 
     std::list<string> options = plugin->getOptions();
-    options.push_back(":nspace=string|Namespace to import types into");
-    options.push_back(":output=string|Output file");
+    options.push_back(":nspace=string,/:Namespace to import types into");
+    options.push_back(":output=string:Output file");
     command_line commandline(options);
-    if (!commandline.parse(argc - 1, argv + 1, config))
-        return false;
+    try { commandline.parse(argc - 1, argv + 1, config); }
+    catch(utilmm::commandline_error e)
+    {
+	cerr << "error: " << e.error << "\n";
+	help(cerr);
+	return false;
+    }
 
-    std::string nspace = config.get<string>("nspace", "/");
+    std::string nspace = config.get<string>("nspace");
     if (!registry.setDefaultNamespace( nspace ))
     {
         cerr << "Invalid namespace option " << nspace << endl;
@@ -147,7 +152,6 @@ void Import::help(std::ostream& out) const
         "and allowed options are :\n"
         "\t--nspace=NAME           namespace to import new types into\n"
         "\t--output=FILE           save the resulting database in FILE instead of using base\n"
-        "\t                        use --output=- to get the result on standard output\n"
-        "\t--dry-run               only display new types, do not save them" << endl;
+        "\t                        use --output=- to get the result on standard output" << endl;
 }
 

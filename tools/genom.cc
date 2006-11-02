@@ -19,7 +19,7 @@ GenomPlugin::GenomPlugin()
 list<string> GenomPlugin::getOptions() const
 {
     static const char* arguments[] = 
-    { ":include,I=string|include search path" };
+    { ":include,I=string:include search path" };
     return list<string>(arguments, arguments + 1);
 }
 
