@@ -2,6 +2,7 @@
 * added registry merging support
 * bugfixes
   - multi-dimensional arrays work fine
+  - [ruby] handle array arguments in functions
 
 == Version 0.2
 
