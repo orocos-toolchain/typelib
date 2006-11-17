@@ -33,6 +33,7 @@
 \.cvsignore$
 (^|/)Thumbs\.db$
 (^|/)i386-linux($|/)
+(^|/)powerpc-linux($|/)
 (^|/)autom4te.cache($|/)
 ^configure
 ^aclocal.m4
