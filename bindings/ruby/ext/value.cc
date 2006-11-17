@@ -118,6 +118,8 @@ static VALUE type_to_csv(int argc, VALUE* argv, VALUE rbself)
 
 static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 { 
+    if (! rb_respond_to(rbwith, rb_intern("superclass")))
+	return Qfalse;
     if (rb_funcall(rbself, rb_intern("superclass"), 0) != rb_funcall(rbwith, rb_intern("superclass"), 0))
         return Qfalse;
 
