@@ -171,7 +171,7 @@ VALUE filter_value_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
 	// check sizes
 	Array const& expected_array = static_cast<Array const&>(expected_type);
 	Array const& arg_array = static_cast<Array const&>(arg_type);
-	if (expected_array.getDimension() < arg_array.getDimension())
+	if (expected_array.getDimension() > arg_array.getDimension())
 	    return Qnil;
 	return rb_funcall(arg, rb_intern("to_dlptr"), 0);
     }

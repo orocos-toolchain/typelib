@@ -171,7 +171,7 @@ class TC_DL < Test::Unit::TestCase
         assert_equal("string_return", buffer.to_str)
 
 	wrapper = lib.wrap('test_string_as_array', ['void', -1], 'char[256]')
-        buffer = lib.registry.build("char[256]").new
+        buffer = lib.registry.build("char[512]").new
 	ret = wrapper[buffer]
 	assert_kind_of(ArrayType, ret)
         assert_equal("string_return", ret.to_str)
