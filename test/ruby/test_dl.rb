@@ -181,7 +181,9 @@ class TC_DL < Test::Unit::TestCase
         assert_equal("string_return", ret.to_str)
 
 	wrapper = lib.wrap('test_string_as_array', ['void', 1], 'char[256]')
-        assert_equal("string_return", wrapper[].to_str)
+	retval = wrapper[]
+	assert_kind_of(lib.registry.get("char[256]"), retval)
+        assert_equal("string_return", retval.to_str)
     end
 
 end

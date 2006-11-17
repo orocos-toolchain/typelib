@@ -514,7 +514,15 @@ module Typelib
         return_spec.each do |index|
             next unless index > 0
             ary_idx = index - 1
-            args.insert(ary_idx, arg_types[ary_idx].deference.new) # works because return_spec is sorted
+
+	    type = arg_types[ary_idx]
+	    buffer = if type < ArrayType then type.new
+		     elsif type < PointerType then type.deference.new
+		     else
+			 raise ArgumentError, "unexpected output type #{type.name}"
+		     end
+
+            args.insert(ary_idx, buffer) # works because return_spec is sorted
         end
 
         # Check we have the right count of arguments
