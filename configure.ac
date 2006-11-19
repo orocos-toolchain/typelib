@@ -1,6 +1,6 @@
 dnl configure.in template for common projects
 
-AC_INIT(typeLib, 0.2, sylvain.joyeux@laas.fr)
+AC_INIT(typeLib, 0.3, sylvain.joyeux@laas.fr)
 dnl AC_CONFIG_SRCDIR([add unique file to check source dir])
 AC_CONFIG_HEADER([typelib-config.h])
 
