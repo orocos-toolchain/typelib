@@ -1,8 +1,25 @@
 == Version 0.3
-* added registry merging support
-* bugfixes
-  - multi-dimensional arrays work fine
-  - [ruby] handle array arguments in functions
+=== API
+* new functionalities:
+  - EndianSwapVisitor: endianness swapping
+  - Registry#merge: merging one registry in another (taking care of
+    duplicates)
+* bugfixes. Among them:
+  - Fixed multiple problems with array handling. In particular,
+    multi-dimensional arrays now work fine.
+
+=== Ruby
+* new functionalities:
+  - Typelib::memcpy
+  - Type#to_byte_array, Type#initialize: use of String objects as buffers.
+    This allows to interact with #pack or I/O
+  - Type#endian_swap: swapping endianness of values
+  - Type#to_csv and Type::to_csv: CSV output
+
+* bugfixes. Among them:
+  - handle array arguments in functions
+  - fix Type#== for types that do double-dispatch
+  - documentation fixups
 
 == Version 0.2
 
