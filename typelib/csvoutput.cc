@@ -1,7 +1,7 @@
 #include "csvoutput.hh"
 #include "value.hh"
 #include "typevisitor.hh"
-#include <utilmm/stringlist.hh>
+#include <utilmm/stringtools.hh>
 #include <boost/lexical_cast.hpp>
 
 using namespace Typelib;
