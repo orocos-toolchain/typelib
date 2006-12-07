@@ -127,6 +127,8 @@ extern "C" {
         return &a;
     }
 
+    int test_immediate_to_pointer(double* value) { return *value == 0.5; }
+
     void test_ptr_argument_changes(struct B* b)
     { do_set_B_c_value(*b); }
 

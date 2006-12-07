@@ -482,22 +482,26 @@ module Typelib
     # This method filters a particular argument given the user-supplied value and 
     # the argument expected type. It raises TypeError if +arg+ is of the wrong type
     def self.filter_argument(arg, expected_type) # :nodoc:
-	if !(expected_type < IndirectType) && !Kernel.immediate?(arg)
+	if !(expected_type < IndirectType) && !(Kernel.immediate?(arg) || Kernel.numeric?(arg))
 	    raise TypeError, "#{arg.inspect} cannot be used for #{expected_type.name} arguments"
 	end
 
-	filtered =  if DL::PtrData === arg && (expected_type < IndirectType)
-			arg
-		    elsif Kernel.immediate?(arg)
-			filter_immediate_arg(arg, expected_type)
-		    elsif Type === arg
-			filter_value_arg(arg, expected_type)
-		    elsif expected_type < IndirectType && expected_type.deference.name == "/char" && arg.respond_to?(:to_str)
-			# Ruby strings ARE null-terminated
-			# The thing which is not checked here is that there is no NULL bytes
-			# inside the string.
-			arg.to_str.to_ptr
+	filtered =  if expected_type < IndirectType
+			if DL::PtrData === arg
+			    arg
+			elsif Type === arg
+			    filter_value_arg(arg, expected_type)
+			elsif expected_type.deference.name == "/char" && arg.respond_to?(:to_str)
+			    # Ruby strings ARE null-terminated
+			    # The thing which is not checked here is that there is no NULL bytes
+			    # inside the string.
+			    arg.to_str.to_ptr
+			end
 		    end
+
+	if !filtered && (Kernel.immediate?(arg) || Kernel.numeric?(arg))
+	    filtered = filter_numeric_arg(arg, expected_type)
+	end
 
 	if !filtered
 	    raise TypeError, "cannot use #{arg.inspect} for a #{expected_type.name} argument"

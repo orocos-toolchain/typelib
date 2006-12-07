@@ -97,7 +97,7 @@ static std::string typelib_get_dl_spec(int argc, VALUE* argv)
 }
 
 static
-VALUE filter_immediate_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
+VALUE filter_numeric_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
 {
     Type const& expected_type = rb2cxx::object<Type>(rb_expected_type);
 
@@ -217,7 +217,7 @@ void Typelib_init_functions()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     rb_define_singleton_method(mTypelib, "do_call_function", RUBY_METHOD_FUNC(typelib_call_function), 4);
-    rb_define_singleton_method(mTypelib, "filter_immediate_arg", RUBY_METHOD_FUNC(filter_immediate_arg), 2);
+    rb_define_singleton_method(mTypelib, "filter_numeric_arg", RUBY_METHOD_FUNC(filter_numeric_arg), 2);
     rb_define_singleton_method(mTypelib, "filter_value_arg", RUBY_METHOD_FUNC(filter_value_arg), 2);
 
     cLibrary  = rb_const_get(mTypelib, rb_intern("Library"));

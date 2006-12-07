@@ -91,6 +91,11 @@ class TC_DL < Test::Unit::TestCase
         assert_raises(ArgumentError) { wrapper[b] }
     end
 
+    def test_immediate_to_pointer
+        wrapper = lib.wrap('test_immediate_to_pointer', 'int', 'double*')
+	assert_equal(1, wrapper.call(0.5))
+    end
+
     def test_argument_output
         wrapper = lib.wrap('test_ptr_argument_changes', [nil, 1], 'struct B*')
         b = wrapper.call

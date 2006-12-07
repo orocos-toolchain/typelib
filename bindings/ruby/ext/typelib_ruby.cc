@@ -22,6 +22,10 @@ static VALUE mTypelib   = Qnil;
 
 static VALUE kernel_is_immediate(VALUE klass, VALUE object)
 { return IMMEDIATE_P(object) ? Qtrue : Qfalse; }
+static VALUE kernel_is_numeric(VALUE klass, VALUE object)
+{ 
+    return (FIXNUM_P(object) || TYPE(object) == T_FLOAT) ? Qtrue : Qfalse;
+}
 static VALUE dl_ptr_to_ptr(VALUE ptr)
 {
     VALUE newptr = rb_dlptr_malloc(sizeof(void*), free);
@@ -39,7 +43,8 @@ extern "C" void Init_typelib_ruby()
     Typelib_init_strings();
     Typelib_init_registry();
     
-    rb_define_method(rb_mKernel, "immediate?", RUBY_METHOD_FUNC(kernel_is_immediate), 1);
+    rb_define_singleton_method(rb_mKernel, "immediate?", RUBY_METHOD_FUNC(kernel_is_immediate), 1);
+    rb_define_singleton_method(rb_mKernel, "numeric?", RUBY_METHOD_FUNC(kernel_is_numeric), 1);
     rb_define_method(rb_cDLPtrData, "to_ptr", RUBY_METHOD_FUNC(dl_ptr_to_ptr), 0);
 }
 
