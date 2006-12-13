@@ -17,6 +17,18 @@ $(DESTDIR)$(RUBY_EXTDIR)/$(build_lib): $(build_lib)
 	$(INSTALL_DIR) $(DESTDIR)$(RUBY_EXTDIR)
 	$(COMMAND_PREFIX)$(INSTALL_LIB) $(build_lib) $(DESTDIR)$(RUBY_EXTDIR)
 
+install: $(addprefix $(DESTDIR)$(RUBY_EXTDIR)/,$($(MODULE)_HEADERS))
+$(addprefix $(DESTDIR)$(RUBY_EXTDIR)/,$($(MODULE)_HEADERS)): DESCRIPTION='Installing extension headers in Ruby extension dir'
+$(addprefix $(DESTDIR)$(RUBY_EXTDIR)/,$($(MODULE)_HEADERS)): $(DESTDIR)$(RUBY_EXTDIR)/%: $(srcdir)/%
+	@$(INSTALL_DIR) $(DESTDIR)$(RUBY_EXTDIR)
+	$(COMMAND_PREFIX)$(INSTALL_DATA) $(build_lib) $< $(DESTDIR)$(RUBY_EXTDIR)
+
+install: $(addprefix $(DESTDIR)$(includedir)/,$($(MODULE)_HEADERS))
+$(addprefix $(DESTDIR)$(includedir)/,$($(MODULE)_HEADERS)): DESCRIPTION='Installing extension headers in Typelib include dir'
+$(addprefix $(DESTDIR)$(includedir)/,$($(MODULE)_HEADERS)): $(DESTDIR)$(includedir)/%: $(srcdir)/%
+	@$(INSTALL_DIR) $(DESTDIR)$(includedir)
+	$(COMMAND_PREFIX)$(INSTALL_DATA) $(build_lib) $< $(DESTDIR)$(includedir)
+
 $(MODULE)_LIB_DEPENDS=$(filter %.la,$($(MODULE)_LIBS))
 ifneq ($($(MODULE)_LIB_DEPENDS),)
 $($(MODULE)_LIB_DEPENDS): | recurse-build

@@ -16,6 +16,7 @@ typelib_ruby_CPPFLAGS = -I$(top_srcdir) $(UTILMM_CXXFLAGS)
 typelib_ruby_CXXFLAGS =
 typelib_ruby_LDFLAGS =
 typelib_ruby_LIBS = $(top_builddir)/typelib/libtypeLib.la
+typelib_ruby_HEADERS = typelib_ruby.hh
 ############ end: name
 
 ## Build the library

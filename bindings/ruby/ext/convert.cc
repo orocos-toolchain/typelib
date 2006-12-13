@@ -139,6 +139,14 @@ VALUE typelib_to_ruby(Value value, VALUE name, VALUE registry)
     rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name));
 }
 
+/* Returns the Value object wrapped into +value+ */
+Value typelib_get(VALUE value)
+{
+    void* object = 0;
+    Data_Get_Struct(value, void, object);
+    return *reinterpret_cast<Value*>(object);
+}
+
 /* Tries to initialize +value+ to +new_value+ using the type in +value+ */
 VALUE typelib_from_ruby(Value value, VALUE new_value)
 {

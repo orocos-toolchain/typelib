@@ -6,9 +6,7 @@
 #include <typelib/value.hh>
 #include <typelib/registry.hh>
 
-VALUE typelib_to_ruby(Typelib::Value v, VALUE registry);
-VALUE typelib_to_ruby(Typelib::Value value, VALUE name, VALUE registry);
-VALUE typelib_from_ruby(Typelib::Value value, VALUE new_value);
+#include "typelib_ruby.hh"
 
 extern VALUE cType;
 extern VALUE cIndirect;
