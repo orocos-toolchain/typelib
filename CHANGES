@@ -4,6 +4,7 @@
   - EndianSwapVisitor: endianness swapping
   - Registry#merge: merging one registry in another (taking care of
     duplicates)
+  - export a (still minimal) public API for the Ruby extension
 * bugfixes. Among them:
   - Fixed multiple problems with array handling. In particular,
     multi-dimensional arrays now work fine.
