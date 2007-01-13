@@ -2,14 +2,6 @@ dnl $Id: antlr.m4 1520 2006-08-21 07:52:08Z sjoyeux $
 dnl $Rev: 1520 $
 
 AC_DEFUN([CLBS_CHECK_ANTLR], [
-    AC_ARG_VAR(ANTLR, [the Antlr tool])
-    if test -z "$ANTLR"; then
-        AC_PATH_PROGS(ANTLR, [antlr cantlr], no)
-    fi
-    if test "x$ANTLR" = "xno"; then
-        AC_MSG_ERROR([cannot find the antlr tool])
-    fi
-
     # Check for antlr-config
     AC_ARG_VAR(ANTLR_CONFIG, [the antlr-config development script])
     if test -z "$ANTLR_CONFIG"; then
@@ -18,6 +10,18 @@ AC_DEFUN([CLBS_CHECK_ANTLR], [
     if test "x$ANTLR_CONFIG" = "xno"; then
         AC_MSG_ERROR([cannot find the antlr-config tool])
     fi
+
+    ac_antlr_exec_prefix=`$ANTLR_CONFIG --exec-prefix`/
+    ac_antlr_bindir="$ac_antlr_prefix/bin"
+
+    AC_ARG_VAR(ANTLR, [the Antlr tool])
+    if test -z "$ANTLR"; then
+        AC_PATH_PROGS(ANTLR, [antlr cantlr], $ac_antlr_bindir)
+    fi
+    if test "x$ANTLR" = "xno"; then
+        AC_MSG_ERROR([cannot find the antlr tool])
+    fi
+
 
     ANTLR_CFLAGS=`$ANTLR_CONFIG --cflags`
     ANTLR_LIBS=`$ANTLR_CONFIG --libs`
