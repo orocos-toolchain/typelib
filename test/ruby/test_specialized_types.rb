@@ -7,6 +7,9 @@ require 'pp'
 
 class TC_SpecializedTypes < Test::Unit::TestCase
     include Typelib
+    def teardown
+	GC.start
+    end
 
     # Not in setup() since we want to make sure
     # that the registry is not destroyed by the GC
