@@ -285,6 +285,9 @@ module Typelib
 	    pp.text ']'
 	end
 
+	# Returns the pointed-to type (defined for consistency reasons)
+	def self.[](index); deference end
+
         def to_ruby
 	    if respond_to?(:to_str); to_str
 	    else self 
