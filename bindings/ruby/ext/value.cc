@@ -23,11 +23,13 @@ namespace cxx2rb {
      * This function does the work
      * It needs the registry v type is from
      */
-    VALUE value_wrap(Value v, VALUE registry, VALUE klass)
+    VALUE value_wrap(Value v, VALUE registry, VALUE klass, VALUE dlptr)
     {
         VALUE type      = type_wrap(v.getType(), registry);
-        VALUE ptr       = rb_dlptr_new(v.getData(), v.getType().getSize(), do_not_delete);
-        return rb_funcall(type, rb_intern("wrap"), 1, ptr);
+	if (NIL_P(dlptr))
+	    dlptr = rb_dlptr_new(v.getData(), v.getType().getSize(), do_not_delete);
+
+        return rb_funcall(type, rb_intern("wrap"), 1, dlptr);
     }
 }
 

@@ -36,7 +36,9 @@ static VALUE compound_field_get(VALUE value, VALUE name)
 { 
     // Get the registry
     VALUE registry = value_get_registry(value);
-    return typelib_to_ruby(rb2cxx::object<Value>(value), name, registry); 
+    VALUE field = typelib_to_ruby(value, name, registry); 
+    rb_iv_set(field, "@parent_value", value);
+    return field;
 }
 /* :nodoc:
  * Helper function for CompoundType#[]= */
