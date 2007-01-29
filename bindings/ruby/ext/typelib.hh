@@ -39,8 +39,10 @@ namespace cxx2rb {
      */
     inline VALUE enum_symbol(Enum::integral_type value, Enum const& e)
     {
-        std::string symbol = e.get(value);
-        try { return ID2SYM(rb_intern(symbol.c_str())); }
+        try { 
+	    std::string symbol = e.get(value);
+	    return ID2SYM(rb_intern(symbol.c_str())); 
+	}
         catch(Enum::ValueNotFound) { return Qnil; }
     }
 
