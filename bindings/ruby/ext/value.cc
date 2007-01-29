@@ -11,11 +11,10 @@ extern "C" {
 #include <typelib/csvoutput.hh>
 #include <typelib/endianness.hh>
 
+#include <iostream>
+
 using namespace Typelib;
 using std::numeric_limits;
-
-// NOP deleter, for Type objects and some Ptr objects
-static void do_not_delete(void*) {}
 
 namespace cxx2rb {
     /* There are constraints when creating a Ruby wrapper for a Type,
@@ -23,13 +22,21 @@ namespace cxx2rb {
      * This function does the work
      * It needs the registry v type is from
      */
-    VALUE value_wrap(Value v, VALUE registry, VALUE klass, VALUE dlptr)
+    VALUE value_wrap(Value v, VALUE registry, VALUE klass, VALUE parent, VALUE dlptr)
     {
         VALUE type      = type_wrap(v.getType(), registry);
-	if (NIL_P(dlptr))
-	    dlptr = rb_dlptr_new(v.getData(), v.getType().getSize(), do_not_delete);
 
-        return rb_funcall(type, rb_intern("wrap"), 1, dlptr);
+	if (NIL_P(dlptr))
+	{
+	    freefunc_t free_func = NIL_P(parent) ? ::free : 0;
+	    dlptr = rb_dlptr_new(v.getData(), v.getType().getSize(), free_func);
+	}
+        VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, dlptr);
+
+	if (!NIL_P(parent))
+	    rb_iv_set(wrapper, "@parent_value", parent);
+
+	return wrapper;
     }
 }
 
@@ -68,7 +75,7 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
 
     VALUE base  = class_of(type);
     VALUE klass = rb_funcall(rb_cClass, rb_intern("new"), 1, base);
-    VALUE rb_type = Data_Wrap_Struct(rb_cObject, 0, do_not_delete, const_cast<Type*>(&type));
+    VALUE rb_type = Data_Wrap_Struct(rb_cObject, 0, 0, const_cast<Type*>(&type));
     rb_iv_set(klass, "@registry", registry);
     rb_iv_set(klass, "@type", rb_type);
     rb_iv_set(klass, "@name", rb_str_new2(type.getName().c_str()));
@@ -177,7 +184,6 @@ VALUE value_initialize(VALUE self, VALUE ptr)
 
     // Protect 'ptr' against the GC
     rb_iv_set(self, "@ptr", ptr);
-
     value = Value(rb_dlptr2cptr(ptr), t);
     return self;
 }
@@ -226,7 +232,7 @@ static VALUE value_to_ruby(VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));
     VALUE registry = value_get_registry(self);
-    return typelib_to_ruby(value, registry);
+    return typelib_to_ruby(value, registry, Qnil, rb_iv_get(self, "@ptr"));
 }
 
 /** 

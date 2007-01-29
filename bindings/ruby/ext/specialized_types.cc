@@ -1,4 +1,7 @@
 #include "typelib.hh"
+extern "C" {
+#include <dl.h>
+}
 
 using namespace Typelib;
 
@@ -32,13 +35,22 @@ static VALUE compound_get_fields(VALUE self)
 
 /* :nodoc:
  * Helper function for CompoundType#[] */
-static VALUE compound_field_get(VALUE value, VALUE name)
+static VALUE compound_field_get(VALUE rbvalue, VALUE name)
 { 
-    // Get the registry
-    VALUE registry = value_get_registry(value);
-    VALUE field = typelib_to_ruby(value, name, registry); 
-    rb_iv_set(field, "@parent_value", value);
-    return field;
+    VALUE registry = value_get_registry(rbvalue);
+    Value value = rb2cxx::object<Value>(rbvalue);
+    if (! value.getData())
+        return Qnil;
+
+    try { 
+        Value field_value = value_get_field(value, StringValuePtr(name));
+	if (value.getData() == field_value.getData())
+	    return typelib_to_ruby(field_value, registry, Qnil, rb_iv_get(rbvalue, "@ptr"));
+	else
+	    return typelib_to_ruby(field_value, registry, rbvalue, Qnil);
+    } 
+    catch(FieldNotFound)   {} 
+    rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name));
 }
 /* :nodoc:
  * Helper function for CompoundType#[]= */
@@ -57,13 +69,18 @@ static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
 /* Returns the value pointed to by +self+ */
 static VALUE pointer_deference(VALUE self)
 {
+    VALUE pointed_to = rb_iv_get(self, "@pointed_object");
+    if (!NIL_P(pointed_to))
+	return pointed_to;
+
     Value const& value(rb2cxx::object<Value>(self));
     Indirect const& indirect(static_cast<Indirect const&>(value.getType()));
     
     VALUE registry = value_get_registry(self);
 
     Value new_value( *reinterpret_cast<void**>(value.getData()), indirect.getIndirection() );
-    return typelib_to_ruby(new_value, registry);
+    VALUE dlptr = rb_dlptr_new(new_value.getData(), new_value.getType().getSize(), 0);
+    return typelib_to_ruby(new_value, registry, Qnil, dlptr);
 }
 
 
@@ -154,7 +171,11 @@ static VALUE array_get(VALUE self, VALUE rbindex)
 { 
     Value element = cxx2rb::array_element(self, rbindex);
     VALUE registry = value_get_registry(self);
-    return typelib_to_ruby(element, registry); 
+
+    if (FIX2INT(rbindex))
+	return typelib_to_ruby(element, registry, self, Qnil); 
+    else
+	return typelib_to_ruby(element, registry, Qnil, rb_iv_get(self, "@ptr")); 
 }
 
 static VALUE array_set(VALUE self, VALUE rbindex, VALUE newvalue)
@@ -167,12 +188,18 @@ static VALUE array_each(VALUE rbarray)
 {
     Value& value            = rb2cxx::object<Value>(rbarray);
     Array const& array      = static_cast<Array const&>(value.getType());
+    if (array.getDimension() == 0)
+	return rbarray;
+
     Type  const& array_type = array.getIndirection();
     VALUE registry          = value_get_registry(rbarray);
 
     int8_t* data = reinterpret_cast<int8_t*>(value.getData());
-    for (size_t i = 0; i < array.getDimension(); ++i, data += array_type.getSize())
-	rb_yield(typelib_to_ruby( Value(data, array_type), registry ));
+
+    rb_yield(typelib_to_ruby( Value(data, array_type), registry, Qnil, rb_iv_get(rbarray, "@ptr") ));
+    data += array_type.getSize();
+    for (size_t i = 1; i < array.getDimension(); ++i, data += array_type.getSize())
+	rb_yield(typelib_to_ruby( Value(data, array_type), registry, rbarray, Qnil ));
 
     return rbarray;
 }

@@ -27,6 +27,7 @@ module Typelib
 		    super
 		end
 	    end
+	    def to_s; "#<#{superclass.name}: #{name}>" end
 
 	    # check if this is writable
             def writable?
@@ -96,7 +97,12 @@ module Typelib
 	# returns a PointerType object which points to +self+. Note that
 	# to_ptr.deference == self
         def to_ptr
-            self.class.to_ptr.wrap(@ptr.to_ptr)
+	    pointed = self
+            pointer = self.class.to_ptr.wrap(@ptr.to_ptr)
+	    pointer.instance_eval do
+		@pointed_to = pointed
+	    end
+	    pointer
         end
 	
 	alias :__to_s__ :to_s
@@ -120,7 +126,7 @@ module Typelib
 	def is_a?(typename); self.class.is_a?(typename) end
 
         def inspect
-            sprintf("<%s @%s (%s)>", self.class, to_dlptr.inspect, self.class.name)
+            sprintf("#<%s:%s @%s>", self.class.superclass.name, self.class.name, to_dlptr.inspect)
         end
     end
 

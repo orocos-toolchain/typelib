@@ -117,9 +117,6 @@ VALUE filter_numeric_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
     return arg;
 }
 
-// NOP deleter, for Type objects and some Ptr objects
-inline void do_not_delete(void*) {}
-
 static 
 VALUE filter_value_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
 {
@@ -130,7 +127,7 @@ VALUE filter_value_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
     if (arg_type == expected_type)
     {
         if (arg_type.getCategory() == Type::Pointer)
-            return rb_dlptr_new(*reinterpret_cast<void**>(arg_value.getData()), arg_type.getSize(), do_not_delete);
+            return rb_dlptr_new(*reinterpret_cast<void**>(arg_value.getData()), arg_type.getSize(), 0);
 	else if (arg_type.getCategory() == Type::Array)
 	    return rb_funcall(arg, rb_intern("to_dlptr"), 0);
         else if (arg_type.getCategory() == Type::Numeric)
@@ -167,7 +164,7 @@ VALUE filter_value_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
     else
     {
 	if (arg_type.getCategory() == Type::Pointer)
-            return rb_dlptr_new(*reinterpret_cast<void**>(arg_value.getData()), arg_type.getSize(), do_not_delete);
+            return rb_dlptr_new(*reinterpret_cast<void**>(arg_value.getData()), arg_type.getSize(), 0);
 	// check sizes
 	Array const& expected_array = static_cast<Array const&>(expected_type);
 	Array const& arg_array = static_cast<Array const&>(arg_type);

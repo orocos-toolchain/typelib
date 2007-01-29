@@ -46,7 +46,7 @@ namespace cxx2rb {
         catch(Enum::ValueNotFound) { return Qnil; }
     }
 
-    VALUE value_wrap(Value v, VALUE registry, VALUE klass, VALUE dlptr);
+    VALUE value_wrap(Value v, VALUE registry, VALUE klass, VALUE parent, VALUE dlptr);
 }
 
 namespace rb2cxx {

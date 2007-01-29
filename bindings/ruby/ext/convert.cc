@@ -14,7 +14,7 @@ class RubyGetter : public ValueVisitor
 {
     VALUE m_value;
     VALUE m_registry;
-    VALUE m_dlptr;
+    VALUE m_parent, m_dlptr;
 
     virtual bool visit_ (int8_t  & value) { m_value = CHR2FIX(value); return false; }
     virtual bool visit_ (uint8_t & value) { m_value = CHR2FIX(value); return false; }
@@ -29,17 +29,17 @@ class RubyGetter : public ValueVisitor
 
     virtual bool visit_(Value const& v, Pointer const& p)
     {
-        m_value = cxx2rb::value_wrap(v, m_registry, cType, m_dlptr);
+        m_value = cxx2rb::value_wrap(v, m_registry, cType, m_parent, m_dlptr);
         return false;
     }
     virtual bool visit_(Value const& v, Array const& a) 
     {
-        m_value = cxx2rb::value_wrap(v, m_registry, cArray, m_dlptr);
+        m_value = cxx2rb::value_wrap(v, m_registry, cArray, m_parent, m_dlptr);
         return false;
     }
     virtual bool visit_(Value const& v, Compound const& c)
     { 
-        m_value = cxx2rb::value_wrap(v, m_registry, cCompound, m_dlptr);
+        m_value = cxx2rb::value_wrap(v, m_registry, cCompound, m_parent, m_dlptr);
         return false; 
     }
     virtual bool visit_(Enum::integral_type& v, Enum const& e)   
@@ -52,10 +52,11 @@ public:
     RubyGetter() : ValueVisitor(false) {}
     ~RubyGetter() { m_value = Qnil; m_registry = Qnil; }
 
-    VALUE apply(Typelib::Value value, VALUE registry, VALUE dlptr)
+    VALUE apply(Typelib::Value value, VALUE registry, VALUE parent, VALUE dlptr)
     {
         m_registry = registry;
         m_value    = Qnil;
+	m_parent   = parent;
 	m_dlptr    = dlptr;
 
         ValueVisitor::apply(value);
@@ -119,35 +120,13 @@ public:
  */
 
 /* Converts a Typelib::Value to Ruby's VALUE */
-VALUE typelib_to_ruby(Value v, VALUE registry, VALUE dlptr = Qnil)
+VALUE typelib_to_ruby(Value v, VALUE registry, VALUE parent, VALUE dlptr)
 { 
     if (! v.getData())
         return Qnil;
 
     RubyGetter getter;
-    return getter.apply(v, registry, dlptr);
-}
-
-/* Converts a given field in +value+ */
-VALUE typelib_to_ruby(VALUE rbvalue, VALUE name, VALUE registry)
-{
-    Value value = rb2cxx::object<Value>(rbvalue);
-    if (! value.getData())
-        return Qnil;
-
-    try { 
-        Value field_value = value_get_field(value, StringValuePtr(name));
-
-	// This is NOT an optimization. rb_dlptr_new shares the underlying
-	// objects if two DLPtr objects point to the same memory. Because of
-	// that, we have to share the DLPtr objects, or have problem with GC
-	if (value.getData() == field_value.getData())
-	    return typelib_to_ruby(field_value, registry, rb_iv_get(rbvalue, "@ptr"));
-	else
-	    return typelib_to_ruby(field_value, registry, Qnil);
-    } 
-    catch(FieldNotFound)   {} 
-    rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name));
+    return getter.apply(v, registry, parent, dlptr);
 }
 
 /* Returns the Value object wrapped into +value+ */
