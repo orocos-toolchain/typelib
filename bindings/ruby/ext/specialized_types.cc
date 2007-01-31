@@ -114,6 +114,11 @@ namespace rb2cxx {
     }
 }
 
+/* call-seq:
+ *  enum.keys => array of keys
+ *
+ * Returns a string array of all the keys defined for this enumeration
+ */
 VALUE enum_keys(VALUE self)
 {
     Enum const& type = static_cast<Enum const&>(rb2cxx::object<Type>(self));

@@ -125,6 +125,11 @@ static VALUE type_to_csv(int argc, VALUE* argv, VALUE rbself)
     return rb_str_new(str.c_str(), str.length());
 }
 
+/* call-seq:
+ *  t1 == t2 => true or false
+ *
+ * Returns true if +t1+ and +t2+ are the same type definition.
+ */
 static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 { 
     if (! rb_respond_to(rbwith, rb_intern("superclass")))
