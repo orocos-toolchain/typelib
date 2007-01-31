@@ -68,6 +68,12 @@ VALUE registry_do_build(VALUE self, VALUE name)
     return cxx2rb::type_wrap(*type, self);
 }
 
+
+/* call-seq:
+ *  alias(new_name, name)	    => self
+ *
+ * Make +new_name+ refer to the type named +name+
+ */
 static
 VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
 {

@@ -22,6 +22,11 @@ static VALUE mTypelib   = Qnil;
 
 static VALUE kernel_is_immediate(VALUE klass, VALUE object)
 { return IMMEDIATE_P(object) ? Qtrue : Qfalse; }
+/* call-seq:
+ *  numeric?	=> true or false
+ *
+ * Returns true if the receiver is either a Fixnum or a Float
+ */
 static VALUE kernel_is_numeric(VALUE klass, VALUE object)
 { 
     return (FIXNUM_P(object) || TYPE(object) == T_FLOAT) ? Qtrue : Qfalse;

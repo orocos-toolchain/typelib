@@ -167,6 +167,13 @@ namespace cxx2rb
     }
 }
 
+/* call-seq:
+ *  array[index]    => value
+ *
+ * Returns the value at +index+ in the array. Since Typelib arrays are *not*
+ * dynamically extensible, trying to set a non-existent index will raise an
+ * IndexError exception.
+ */
 static VALUE array_get(VALUE self, VALUE rbindex)
 { 
     Value element = cxx2rb::array_element(self, rbindex);
@@ -178,12 +185,24 @@ static VALUE array_get(VALUE self, VALUE rbindex)
 	return typelib_to_ruby(element, registry, Qnil, rb_iv_get(self, "@ptr")); 
 }
 
+/* call-seq:
+ *  array[index] = new_value    => new_value
+ *
+ * Sets the value at +index+ to +new_value+. Since Typelib arrays are *not*
+ * dynamically extensible, trying to set a non-existent index will raise an
+ * IndexError exception.
+ */
 static VALUE array_set(VALUE self, VALUE rbindex, VALUE newvalue)
 { 
     Value element = cxx2rb::array_element(self, rbindex);
     return typelib_from_ruby(element, newvalue); 
 }
 
+/* call-seq:
+ *  array.each { |v| ... }	=> array
+ *
+ * Iterates on all elements of the array
+ */
 static VALUE array_each(VALUE rbarray)
 {
     Value& value            = rb2cxx::object<Value>(rbarray);
@@ -204,6 +223,11 @@ static VALUE array_each(VALUE rbarray)
     return rbarray;
 }
 
+/* call-seq:
+ *  array.size		    => size
+ *
+ * Returns the array size
+ */
 static VALUE array_size(VALUE rbarray)
 {
     Value& value(rb2cxx::object<Value>(rbarray));

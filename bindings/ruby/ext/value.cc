@@ -196,6 +196,11 @@ VALUE value_endian_swap_b(VALUE self)
     return self;
 }
 
+/* call-seq:
+ *  obj.to_byte_array => a_string
+ *
+ * Returns a string whose content is a copy of the memory hold by +obj+
+ */
 static
 VALUE value_to_byte_array(VALUE self)
 {
@@ -278,6 +283,13 @@ static void typelib_validate_value_arg(VALUE arg, void*& data, size_t& size)
 
     data = value.getData();
 }
+
+/* call-seq:
+ *  Typelib.memcpy(to, from, size) => to
+ *
+ * Copies +size+ bytes from the memory in +to+ to the memory in +from+.  +to+
+ * and +from+ can be either a Typelib::Type instance or a String.
+ */
 static VALUE typelib_memcpy(VALUE, VALUE to, VALUE from, VALUE size)
 {
     void * p_to, * p_from;
