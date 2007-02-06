@@ -143,6 +143,16 @@ static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
     return result ? Qtrue : Qfalse;
 }
 
+/* call-seq:
+ *  type.size	=> size
+ *
+ * Returns the size in bytes of instances of +type+
+ */
+static VALUE type_size(VALUE self)
+{
+    Type const& type(rb2cxx::object<Type>(self));
+    return INT2FIX(type.getSize());
+}
 
 /* PODs are assignable, pointers are dereferenced */
 static VALUE type_is_assignable(Type const& type)
@@ -334,6 +344,7 @@ void Typelib_init_values()
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
     rb_define_alloc_func(cType, value_alloc);
     rb_define_singleton_method(cType, "==",	    RUBY_METHOD_FUNC(type_equal_operator), 1);
+    rb_define_singleton_method(cType, "size", RUBY_METHOD_FUNC(&type_size), 0);
     rb_define_method(cType, "__initialize__",   RUBY_METHOD_FUNC(&value_initialize), 1);
     rb_define_method(cType, "to_ruby",      RUBY_METHOD_FUNC(&value_to_ruby), 0);
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
