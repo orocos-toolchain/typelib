@@ -110,11 +110,11 @@ public:
         utilmm::config_set config;
         BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
-	A a = { utilmm::endian_swap((long)10), utilmm::endian_swap((long)20), utilmm::endian_swap('b'), utilmm::endian_swap((short)52) };
+	A a = { utilmm::endian::swap((long)10), utilmm::endian::swap((long)20), utilmm::endian::swap('b'), utilmm::endian::swap((short)52) };
 	B b;
 	b.a = a;
 	for (int i = 0; i < 10; ++i)
-	    b.c[i] = utilmm::endian_swap(static_cast<float>(i) / 10.0f);
+	    b.c[i] = utilmm::endian::swap(static_cast<float>(i) / 10.0f);
 
 	Value v_b(&b, *registry.get("/B"));
 	Typelib::endian_swap(v_b);
