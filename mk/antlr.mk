@@ -58,12 +58,12 @@ $($(GRAMMAR)_OUTPUT): $($(GRAMMAR)_SRC)
 	@$(ANTLR) $($(GRAMMAR)_FLAGS) $<
 
 	@for i in $($(GRAMMAR)_CC); do \
-	    mv $${i/cc/cpp} $$i; \
+	    mv `echo $$i | sed 's/\.cc/.cpp/'` $$i; \
 	    sed -i 's/\.hpp"/.hh"/' $$i; \
 	done
 
 	@for i in $($(GRAMMAR)_HH); do \
-	    mv $${i/hh/hpp} $$i ; \
+	    mv `echo $$i | sed 's/\.hh/.hpp/'` $$i; \
 	    sed -i 's/\.hpp"/.hh"/' $$i; \
 	done
 		
