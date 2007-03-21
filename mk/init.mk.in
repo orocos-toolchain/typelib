@@ -1,5 +1,5 @@
-# $Revision: 1535 $
-# $Id: init.mk.in 1535 2006-10-11 14:07:32Z sjoyeux $
+# $Revision: 1573 $
+# $Id: init.mk.in 1573 2007-02-06 15:30:33Z sjoyeux $
 
 prefix       = @prefix@
 exec_prefix  = @exec_prefix@
@@ -23,13 +23,13 @@ LIBS     = @LIBS@
 
 CC       = @CC@
 ifeq ($(findstring gcc,$(CC)),gcc)
-GNU_CC_EXTRA_FLAGS=-Wall -Wshadow
+GNU_CC_EXTRA_FLAGS=-Wall
 endif
 CFLAGS   = @CFLAGS@ $(GNU_CC_EXTRA_FLAGS)
 
 CXX      = @CXX@
 ifeq ($(findstring g++,$(CXX)),g++)
-GNU_CXX_EXTRA_FLAGS=-Wall -Wshadow
+GNU_CXX_EXTRA_FLAGS=-Wall
 endif
 CXXFLAGS = @CXXFLAGS@ $(GNU_CXX_EXTRA_FLAGS)
 
@@ -55,13 +55,14 @@ DOXYGEN  = @DOXYGEN@
 HAS_RDOC = @HAS_RDOC@
 RDOC	  = @RDOC@
 
-INSTALL         = @INSTALL@
-INSTALL_DIR     = @INSTALL@ -d
-INSTALL_DATA    = @INSTALL_DATA@
-INSTALL_HEADER  = $(INSTALL_DATA)
-INSTALL_PROGRAM = $(LIBTOOL) --mode=install cp 
-INSTALL_LIB     = $(LIBTOOL) --mode=install cp
-INSTALL_SCRIPT  = @INSTALL_PROGRAM@
+INSTALL                 = @INSTALL@
+INSTALL_DIR             = @INSTALL@ -d
+INSTALL_DATA            = @INSTALL_DATA@
+INSTALL_HEADER          = $(INSTALL_DATA)
+INSTALL_PROGRAM         = $(LIBTOOL) --mode=install cp
+INSTALL_LIB             = $(LIBTOOL) --mode=install cp
+INSTALL_SCRIPT          = @INSTALL_PROGRAM@
+INSTALL_PKG_CONFIG_FILE = $(INSTALL_HEADER)
 
 ### Variables for Tcl support
 HAS_TCL_SUPPORT=@HAS_TCL_SUPPORT@
@@ -86,6 +87,18 @@ RUBY_CPPFLAGS = @RUBY_CPPFLAGS@
 RUBY_CFLAGS = @RUBY_CFLAGS@
 RUBY_LIBDIR = @RUBY_LIBDIR@
 RUBY_EXTDIR = @RUBY_EXTDIR@
+
+# For ANTLR support
+ANTLR= @ANTLR@
+ANTLR_CFLAGS= @ANTLR_CFLAGS@
+ANTLR_LDFLAGS= @ANTLR_LIBS@
+
+# Boost libraries
+BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
+BOOST_LDFLAGS  = @BOOST_LDFLAGS@
+BOOST_FILESYSTEM_CPPFLAGS = @BOOST_FILESYSTEM_CPPFLAGS@
+BOOST_FILESYSTEM_LDFLAGS = @BOOST_FILESYSTEM_LDFLAGS@
+
 
 ### Variables for test support
 HAS_TEST_SUPPORT=@HAS_TEST_SUPPORT@

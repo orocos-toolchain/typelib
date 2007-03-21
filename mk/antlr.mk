@@ -1,5 +1,5 @@
-# $Revision: 1022 $
-# $Id: antlr.mk 1022 2005-10-11 12:06:01Z sjoyeux $
+# $Revision: 1589 $
+# $Id: antlr.mk 1589 2007-03-21 09:44:36Z sjoyeux $
 
 #################################################################
 #       ANTLR grammar generator support for clbs

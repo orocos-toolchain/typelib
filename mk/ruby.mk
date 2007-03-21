@@ -1,5 +1,5 @@
-# $Revision: 1535 $
-# $Id: ruby.mk 1535 2006-10-11 14:07:32Z sjoyeux $
+# $Revision: 1591 $
+# $Id: ruby.mk 1591 2007-03-21 09:45:48Z sjoyeux $
 
 ################ Build
 build: $(MODULE)-build-rubyext
@@ -22,12 +22,6 @@ $(addprefix $(DESTDIR)$(RUBY_EXTDIR)/,$($(MODULE)_HEADERS)): DESCRIPTION='Instal
 $(addprefix $(DESTDIR)$(RUBY_EXTDIR)/,$($(MODULE)_HEADERS)): $(DESTDIR)$(RUBY_EXTDIR)/%: $(srcdir)/%
 	@$(INSTALL_DIR) $(DESTDIR)$(RUBY_EXTDIR)
 	$(COMMAND_PREFIX)$(INSTALL_DATA) $(build_lib) $< $(DESTDIR)$(RUBY_EXTDIR)
-
-install: $(addprefix $(DESTDIR)$(includedir)/,$($(MODULE)_HEADERS))
-$(addprefix $(DESTDIR)$(includedir)/,$($(MODULE)_HEADERS)): DESCRIPTION='Installing extension headers in Typelib include dir'
-$(addprefix $(DESTDIR)$(includedir)/,$($(MODULE)_HEADERS)): $(DESTDIR)$(includedir)/%: $(srcdir)/%
-	@$(INSTALL_DIR) $(DESTDIR)$(includedir)
-	$(COMMAND_PREFIX)$(INSTALL_DATA) $(build_lib) $< $(DESTDIR)$(includedir)
 
 $(MODULE)_LIB_DEPENDS=$(filter %.la,$($(MODULE)_LIBS))
 ifneq ($($(MODULE)_LIB_DEPENDS),)
