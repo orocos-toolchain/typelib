@@ -1,2 +1,4 @@
 * remove recursive semantics of the visitors. It sucks badly. Add instead
   a set of standard visitors to visit arrays and compound types
+* fix packing of structures-in-arrays. each array element is aligned as the
+  first element of the structure should be.
