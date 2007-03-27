@@ -9,8 +9,12 @@ namespace Typelib
     {
     public:
         Type const& type;
+	std::string const reason;
         UnsupportedType(Type const& type_) 
             : type(type_) {}
+        UnsupportedType(Type const& type_, std::string const& reason_) 
+            : type(type_), reason(reason_) {}
+	~UnsupportedType() throw() { }
     };
     
     /** Base class for type visitors 

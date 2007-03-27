@@ -24,7 +24,7 @@ namespace Typelib
                 case 4: return m_visitor.visit_(*reinterpret_cast<T32*>(value));
                 case 8: return m_visitor.visit_(*reinterpret_cast<T64*>(value));
                 default:
-                         throw UnsupportedType(t);
+                         throw UnsupportedType(t, "unsupported integer size");
             };
         }
 
@@ -45,7 +45,7 @@ namespace Typelib
                         case sizeof(double): return m_visitor.visit_(*reinterpret_cast<double*>(value));
                     }
             }
-	    throw UnsupportedType(type);
+	    throw UnsupportedType(type, "unsupported numeric category");
         }
 
         virtual bool visit_ (Enum const& type)

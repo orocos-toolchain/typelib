@@ -90,12 +90,13 @@ class RubySetter : public ValueVisitor
                 memcpy(v.getData(), value, length + 1);
                 return false;
             }
+	    throw UnsupportedType(v.getType(), "string too long"); 
         }
-        throw UnsupportedType(v.getType()); 
+        throw UnsupportedType(v.getType(), "not a string"); 
     }
     virtual bool visit_(Value const& v, Compound const& c)
     { 
-        throw UnsupportedType(v.getType()); 
+        throw UnsupportedType(v.getType(), "no conversion to compound"); 
     }
     virtual bool visit_(Enum::integral_type& v, Enum const& e)
     { 
@@ -141,10 +142,19 @@ Value typelib_get(VALUE value)
 VALUE typelib_from_ruby(Value value, VALUE new_value)
 {
     std::string type_name;
+    std::string reason;
     try {
         RubySetter setter;
         return setter.apply(value, new_value);
-    } catch(UnsupportedType e) { type_name = e.type.getName(); }
-    rb_raise(rb_eTypeError, "cannot convert to '%s'", type_name.c_str());
+    } catch(UnsupportedType e) { 
+	// Avoid calling rb_raise in exception context
+	type_name = e.type.getName(); 
+	reason    = e.reason;
+    }
+
+    if (reason.length() == 0)
+	rb_raise(rb_eTypeError, "cannot convert to '%s'", type_name.c_str());
+    else
+	rb_raise(rb_eTypeError, "cannot convert to '%s' (%s)", type_name.c_str(), reason.c_str());
 }
 
