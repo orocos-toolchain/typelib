@@ -161,6 +161,13 @@ class TC_DL < Test::Unit::TestCase
 	check = rand(100)
 	wrapper[arg, check]
 	assert_equal(check, arg.to_ruby)
+
+    end
+
+    def test_void_to_ruby
+	type = lib.registry.build('void*')
+	int  = lib.registry.get("int").new
+	assert_raises(TypeError) { type.deference.wrap(int.to_dlptr).to_ruby }
     end
 
     def test_string_handling

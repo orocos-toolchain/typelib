@@ -252,7 +252,10 @@ static VALUE value_to_ruby(VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));
     VALUE registry = value_get_registry(self);
-    return typelib_to_ruby(value, registry, Qnil, rb_iv_get(self, "@ptr"));
+    try {
+	return typelib_to_ruby(value, registry, Qnil, rb_iv_get(self, "@ptr"));
+    } catch(Typelib::NullTypeFound) { }
+    rb_raise(rb_eTypeError, "trying to convert 'void'");
 }
 
 /** 
