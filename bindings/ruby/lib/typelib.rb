@@ -383,6 +383,7 @@ module Typelib
 	# See Typelib documentation for other valid options 
 	# (which are specific to the filetype).
         def import(file, kind = nil, options = {})
+	    file = File.expand_path(file)
             kind    = Registry.guess_type(file) if !kind
 	    do_merge = options.delete(:merge) || options.delete('merge')
             options = Registry.format_options(options)
