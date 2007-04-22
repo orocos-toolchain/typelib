@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <utilmm/stringtools.hh>
 
 #include <utilmm/configfile/configset.hh>
 #include <utilmm/system/process.hh>
@@ -99,7 +100,7 @@ void CImport::load
     path temp;
     try
     {
-        temp = runcpp(file, config);
+        temp = runcpp(utilmm::clean_path(file), config);
         if (temp.empty())
             throw ImportError("", "error running the preprocessor");
 
