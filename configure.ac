@@ -56,6 +56,7 @@ AC_CONFIG_FILES([
 if test "x$HAS_RUBY_SUPPORT" = "xyes"; then
 AC_CONFIG_FILES([ 
     bindings/ruby/Makefile
+    bindings/ruby/typelib_ruby.pc
     bindings/ruby/ext/Makefile
     test/ruby/Makefile
     ])

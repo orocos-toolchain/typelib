@@ -6,6 +6,7 @@ top_srcdir=@top_srcdir@
 top_builddir=@top_builddir@
 srcdir=@srcdir@
 builddir=@builddir@
+libdir=@libdir@
 
 SUBDIRS=ext
 include $(top_builddir)/mk/init.mk
@@ -13,6 +14,8 @@ include $(top_builddir)/mk/init.mk
 install: 
 	$(INSTALL_DIR) $(DESTDIR)$(RUBY_LIBDIR)
 	$(INSTALL_DATA) $(srcdir)/lib/typelib.rb $(DESTDIR)$(RUBY_LIBDIR)
+	$(INSTALL_DIR) $(DESTDIR)$(libdir)/pkgconfig
+	$(INSTALL_DATA) $(builddir)/typelib_ruby.pc $(DESTDIR)$(libdir)/pkgconfig
 	
 ifeq ($(HAS_RDOC),yes)
 doc: ruby-doc
