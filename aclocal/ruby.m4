@@ -16,7 +16,7 @@ AC_DEFUN([CLBS_CHECK_RUBY], [
         [RUBY_CPPFLAGS="-I"`$RUBY -rrbconfig -e "puts Config::MAKEFILE_CONFIG['topdir']"`]
 	[RUBY_CFLAGS=`$RUBY -rrbconfig -e "puts Config::MAKEFILE_CONFIG['CFLAGS']"`]
 	[md_ruby_sitearch=`$RUBY -rrbconfig -e "puts Config::MAKEFILE_CONFIG['sitearch']"`]
-	RUBY_LIBDIR="\$(libdir)/site_ruby/$RUBY_VERSION"
+	RUBY_LIBDIR="\${libdir}/site_ruby/$RUBY_VERSION"
 	RUBY_EXTDIR="$RUBY_LIBDIR/$md_ruby_sitearch"
         
         md_ruby_cppflags=$CPPFLAGS
