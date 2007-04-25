@@ -12,11 +12,11 @@ AC_DEFUN([CLBS_CHECK_ANTLR], [
     fi
 
     ac_antlr_exec_prefix=`$ANTLR_CONFIG --exec-prefix`/
-    ac_antlr_bindir="$ac_antlr_prefix/bin"
+    ac_antlr_bindir="$ac_antlr_exec_prefix/bin"
 
     AC_ARG_VAR(ANTLR, [the Antlr tool])
     if test -z "$ANTLR"; then
-        AC_PATH_PROGS(ANTLR, [antlr cantlr], $ac_antlr_bindir)
+        AC_PATH_PROGS(ANTLR, [antlr cantlr], no, $ac_antlr_bindir)
     fi
     if test "x$ANTLR" = "xno"; then
         AC_MSG_ERROR([cannot find the antlr tool])
