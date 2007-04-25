@@ -31,6 +31,11 @@ PKG_CHECK_MODULES(LIBXML, libxml-2.0,, [AC_MSG_ERROR([libxml2 is needed])])
 PKG_CHECK_MODULES(UTILMM, utilmm,, [AC_MSG_ERROR([UtilMM is needed])])
 CLBS_TEST_SUPPORT
 
+AC_ARG_ENABLE(programs,
+	AC_HELP_STRING([--disable-programs], [do not build the typelib tool]),
+	[BUILD_PROGRAMS=$enableval], [BUILD_PROGRAMS=yes])
+AC_SUBST(PROGRAMS)
+
 ############ Output files
 AC_CONFIG_FILES([
     typelib.pc

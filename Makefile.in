@@ -9,7 +9,10 @@ builddir=@builddir@
 
 include $(top_builddir)/mk/init.mk
 
-SUBDIRS = lang typelib tools bindings
+SUBDIRS = lang typelib bindings
+ifeq (@BUILD_PROGRAMS@,yes)
+SUBDIRS += tools
+endif
 
 .PHONY: build doc
 
