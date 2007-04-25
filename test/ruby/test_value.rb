@@ -166,6 +166,21 @@ class TC_Value < Test::Unit::TestCase
 	assert( a.is_a?(/ A$/) )
     end
 
+    def test_dup
+        registry = make_registry
+        a = registry.get("/struct A").new
+	a.a = 20
+	b = a.dup
+
+	assert_kind_of(a.class, b)
+
+	assert_equal(20, b.a)
+	b.a = 10
+	assert_equal(20, a.a)
+	assert_equal(10, b.a)
+    end
+
+
     def test_to_s
 	int_value = Registry.new.get("/int").new
 	int_value.zero!

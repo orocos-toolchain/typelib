@@ -339,6 +339,16 @@ static VALUE typelib_memcpy(VALUE, VALUE to, VALUE from, VALUE size)
     return to;
 }
 
+VALUE value_dup(VALUE self)
+{
+    Value const& value(rb2cxx::object<Value>(self));
+    VALUE registry = rb_iv_get(rb_class_of(self), "@registry");
+    size_t size = value.getType().getSize();
+    void* new_value = malloc(size);
+    memcpy(new_value, value.getData(), size);
+    return cxx2rb::value_wrap(Value(new_value, value.getType()), registry, Qnil, Qnil, Qnil);
+}
+
 void Typelib_init_values()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
@@ -353,6 +363,7 @@ void Typelib_init_values()
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
     rb_define_method(cType, "memory_eql?",      RUBY_METHOD_FUNC(&value_memory_eql_p), 1);
     rb_define_method(cType, "endian_swap!",      RUBY_METHOD_FUNC(&value_endian_swap_b), 0);
+    rb_define_method(cType, "dup", RUBY_METHOD_FUNC(&value_dup), 0);
 
     rb_define_singleton_method(cType, "to_csv", RUBY_METHOD_FUNC(type_to_csv), -1);
     rb_define_method(cType, "to_csv", RUBY_METHOD_FUNC(value_to_csv), -1);
