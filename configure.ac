@@ -34,7 +34,7 @@ CLBS_TEST_SUPPORT
 AC_ARG_ENABLE(programs,
 	AC_HELP_STRING([--disable-programs], [do not build the typelib tool]),
 	[BUILD_PROGRAMS=$enableval], [BUILD_PROGRAMS=yes])
-AC_SUBST(PROGRAMS)
+AC_SUBST(BUILD_PROGRAMS)
 
 ############ Output files
 AC_CONFIG_FILES([
