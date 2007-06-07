@@ -22,10 +22,12 @@ typedef struct B
 } B;
 
 typedef enum E {
-    FIRST,
-    SECOND,
-    THIRD = -1,
-    FOURTH = (-2),
+    E_FIRST,
+    E_SECOND,
+    E_SET = -1,
+    E_PARENS = (-2),
+    E_HEX = 0xFF,
+    E_OCT = 07,
     LAST
 } E;
 

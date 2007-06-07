@@ -108,9 +108,12 @@ public:
             int         value;
         };
         ExpectedValue expected[] = {
-            { "FIRST", FIRST },
-            { "SECOND", SECOND },
-            { "THIRD", THIRD },
+            { "E_FIRST",  E_FIRST },
+            { "E_SECOND", E_SECOND },
+            { "E_SET",    E_SET },
+	    { "E_PARENS", E_PARENS },
+	    { "E_HEX",    E_HEX },
+	    { "E_OCT",    E_OCT },
             { "LAST", LAST },
             { 0, 0 }
         };

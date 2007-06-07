@@ -1148,9 +1148,9 @@ int_constant_unary_expression returns [ int value ]
 
 int_constant returns [ int value ]
         :       
-                oct:OCTALINT { value = atoi(oct->getText().data()); }
-        |       dec:DECIMALINT { value = atoi(dec->getText().data()); }
-        |       hex:HEXADECIMALINT { value = atoi(hex->getText().data()); }
+                oct:OCTALINT       { value = strtol(oct->getText().data(), NULL, 0); }
+        |       dec:DECIMALINT     { value = strtol(dec->getText().data(), NULL, 0); }
+        |       hex:HEXADECIMALINT { value = strtol(hex->getText().data(), NULL, 0); }
          
         ;
 
