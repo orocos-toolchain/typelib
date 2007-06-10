@@ -79,21 +79,24 @@ AC_DEFUN([CLBS_BOOST_SUBLIB],
   CPPFLAGS="$BOOST_CPPFLAGS $CPPFLAGS"
   AC_CHECK_HEADER([$3], [has_working_$1=yes], [has_working_$1=no])
     
-  if test "$has_working_$1" = "yes"; then
+  if test "$has_working_$1" = "yes" && test -n "$2"; then
     AC_MSG_CHECKING([for the Boost/$1 library])
-    LDFLAGS="$BOOST_LDFLAGS ifelse([$2], [], [], -lboost_$2) $PTHREAD_LIBS $LDFLAGS"
-    AC_LINK_IFELSE(
-    [
-      #include <$3>
+    for libname in $2 $2-mt; do
+	LDFLAGS="$BOOST_LDFLAGS ifelse([$2], [], [], -lboost_$libname) $PTHREAD_LIBS $clbs_sv_$1_LDFLAGS"
+	AC_LINK_IFELSE(
+	[
+	  #include <$3>
 
-      int main()
-      {
-        $4 test;
-      }
-    ], 
-    [AC_MSG_RESULT([yes])], 
-    [has_working_$1=no
-     AC_MSG_RESULT([no])])
+	  int main()
+	  {
+	    $4 test;
+	  }
+	], 
+	[has_working_$1=yes
+	AC_MSG_RESULT([yes])
+	break], 
+	[has_working_$1=no])
+    done
   fi
 
   CPPFLAGS="$clbs_sv_$1_CPPFLAGS"
@@ -101,7 +104,7 @@ AC_DEFUN([CLBS_BOOST_SUBLIB],
  
   if test "$has_working_$1" != "no"; then
     ifelse([$5], , , $5)
-    CLBS_BOOST_SUBLIB_DEFINE($1, translit($1, 'a-z', 'A-Z'), [$2])
+    CLBS_BOOST_SUBLIB_DEFINE($1, translit($1, 'a-z', 'A-Z'), [$libname])
   ifelse([$6], [], [], [
   else 
     $6
@@ -147,6 +150,8 @@ AC_DEFUN([CLBS_BOOST_REGEX],
 [ CLBS_BOOST_SUBLIB(regex, [regex], [boost/regex.hpp], [boost::regex], [$1], [$2]) ])
 AC_DEFUN([CLBS_BOOST_FILESYSTEM], 
 [ CLBS_BOOST_SUBLIB(filesystem, [filesystem], [boost/filesystem/path.hpp], [boost::filesystem::path], [$1], [$2]) ])
+AC_DEFUN([CLBS_BOOST_GRAPH], 
+[ CLBS_BOOST_SUBLIB(graph, [], [boost/graph/adjacency_list.hpp], [boost::adjacency_list], [$1], [$2]) ])
 
 AC_DEFUN([CLBS_BOOST_TEST], [
     AC_LANG_PUSH(C++)
