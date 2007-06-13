@@ -40,9 +40,17 @@ void TypeSolver::endClassDefinition()
 
 void TypeSolver::beginEnumDefinition(const std::string& name)
 {
-    m_class = true;
-    m_class_name = name;
-    m_class_type = tsENUM;
+    if (m_class)
+    {
+	m_fieldtype.push_back("enum");
+	m_fieldtype.push_back(name);
+    }
+    else
+    {
+	m_class = true;
+	m_class_name = name;
+	m_class_type = tsENUM;
+    }
     CPPParser::beginEnumDefinition(name);
 }
 
@@ -62,10 +70,13 @@ void TypeSolver::enumElement(const std::string& name, bool has_value, int value)
 
 void TypeSolver::endEnumDefinition()
 {
+    CPPParser::endEnumDefinition();
+
+    if (m_class_type != tsENUM)
+	return;
+
     if (! m_class_name.empty())
         buildClassObject(false);
-
-    CPPParser::endEnumDefinition();
 }
 
 void TypeSolver::buildClassObject(bool define_type)

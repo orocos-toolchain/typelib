@@ -49,6 +49,12 @@ typedef struct {
     float value;
 } DEFINE_STR, *DEFINE_ID;
 
+typedef struct TEST_ENUM_FIELDS {
+    INPUT_OUTPUT_MODE mode;
+    enum INPUT_OUTPUT_MODE mode_enum;
+} TEST_ENUM_FIELDS;
+
+
 typedef struct DisplayTest {
     int fields[4];
     float f;
