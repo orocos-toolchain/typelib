@@ -87,7 +87,7 @@ void TypeSolver::buildClassObject(bool define_type)
     {
         assert(!define_type);
 
-        auto_ptr<Enum> enum_def(new Enum(m_registry.getFullName(m_class_name)));
+        auto_ptr<Enum> enum_def(new Enum(m_registry.getFullName("enum " + m_class_name)));
         ValueMap::iterator it;
         for (it = m_enum_values.begin(); it != m_enum_values.end(); ++it)
             enum_def->add(it->first, it->second);
