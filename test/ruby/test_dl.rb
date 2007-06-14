@@ -1,8 +1,6 @@
 require 'test_config'
 require 'typelib'
 require 'test/unit'
-require '.libs/test_rb_value'
-require 'pp'
 
 class TC_DL < Test::Unit::TestCase
     include Typelib
