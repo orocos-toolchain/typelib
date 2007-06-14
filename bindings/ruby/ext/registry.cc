@@ -151,6 +151,19 @@ VALUE registry_to_xml(VALUE self)
     return rb_str_new(as_xml.c_str(), as_xml.length());
 }
 
+static
+VALUE registry_from_xml(VALUE mod, VALUE xml)
+{
+    VALUE rb_registry = rb_funcall(cRegistry, rb_intern("new"), 0);
+    Registry& registry = rb2cxx::object<Registry>(rb_registry);
+
+    std::istringstream istream(StringValuePtr(xml));
+    config_set config;
+    PluginManager::load("tlb", istream, config, registry);
+
+    return rb_registry;
+}
+
 void Typelib_init_registry()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
@@ -162,6 +175,7 @@ void Typelib_init_registry()
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 4);
     rb_define_method(cRegistry, "to_xml", RUBY_METHOD_FUNC(registry_to_xml), 0);
+    rb_define_singleton_method(cRegistry, "from_xml", RUBY_METHOD_FUNC(registry_from_xml), 1);
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
 }
 
