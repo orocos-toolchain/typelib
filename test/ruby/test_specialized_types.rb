@@ -202,17 +202,17 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         e_type = make_registry.get("EContainer")
         assert(e_type.respond_to?(:value))
         enum = e_type.value
-        assert_equal([["FIRST", 0], ["SECOND", 1], ["THIRD", -1], ["FOURTH", -2], ["LAST", -1]].to_set, enum.keys.to_set)
+        assert_equal([["E_FIRST", 0], ["E_SECOND", 1], ["E_SET", -1], ["E_PARENS", -2], ["E_OCT", 7], ["E_HEX", 255], ["LAST", 8]].to_set, enum.keys.to_set)
 
         e = e_type.new
         assert(e.respond_to?(:value))
         assert(e.respond_to?(:value=))
         e.value = 0
-        assert_equal(:FIRST, e.value)
-        e.value = "FIRST"
-        assert_equal(:FIRST, e.value)
-        e.value = :SECOND
-        assert_equal(:SECOND, e.value)
+        assert_equal(:E_FIRST, e.value)
+        e.value = "E_FIRST"
+        assert_equal(:E_FIRST, e.value)
+        e.value = :E_SECOND
+        assert_equal(:E_SECOND, e.value)
     end
 
 end
