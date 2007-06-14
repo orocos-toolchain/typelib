@@ -85,8 +85,6 @@ void TypeSolver::buildClassObject(bool define_type)
 
     if (m_class_type == tsENUM)
     {
-        assert(!define_type);
-
         auto_ptr<Enum> enum_def(new Enum(m_registry.getFullName("enum " + m_class_name)));
         ValueMap::iterator it;
         for (it = m_enum_values.begin(); it != m_enum_values.end(); ++it)
@@ -170,7 +168,7 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
         if (name != "anonymous")
         {
             m_class_name = name;
-            buildClassObject(m_class_type != tsENUM);
+            buildClassObject(true);
         }
     }
     else if (m_class)

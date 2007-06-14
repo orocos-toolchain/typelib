@@ -40,6 +40,10 @@ typedef enum INPUT_OUTPUT_MODE {
     OUTPUT, BOTH
 } INPUT_OUTPUT_MODE;
 
+typedef enum {
+    ANONYMOUS_ENUM_OK
+} ANONYMOUS_ENUM;
+
 typedef void* OpaqueType;
 
 void ignore_functions();
@@ -52,6 +56,7 @@ typedef struct {
 typedef struct TEST_ENUM_FIELDS {
     INPUT_OUTPUT_MODE mode;
     enum INPUT_OUTPUT_MODE mode_enum;
+    ANONYMOUS_ENUM anonymous_enum;
 } TEST_ENUM_FIELDS;
 
 
