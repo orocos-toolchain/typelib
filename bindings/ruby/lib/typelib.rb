@@ -8,7 +8,45 @@ module DL
     end
 end
 
+class Class
+    if method_defined?(:_load)
+	alias :__typelib_load__ :_load
+    end
+
+    def _load(str)
+	data = Marshal.load(str)
+	if data.kind_of?(Array) && data[0] == :typelib
+	    reg, name = *data
+	    if reg.kind_of?(DRbObject)
+		reg  = remote_registry(reg)
+	    end
+	    reg.get(name)
+	else
+	    if respond_to?(:__typelib_load__)
+		__typelib_load__(str)
+	    end
+	end
+    end
+end
+
+
 module Typelib
+
+    @remote_registries = Hash.new
+    class << self
+	attr_reader :remote_registries
+
+	def remote_registry(drb_object)
+	    if reg = remote_registries[drb_object]
+		return reg
+	    else
+		reg = Registry.new
+		reg.import 
+		remote_registries[drb_object] = Registry.from_xml(drb_object.to_xml)
+	    end
+	end
+    end
+
     # Base class for all types
     # Registry types are wrapped into subclasses of Type
     # or other Type-derived classes (Array, Pointer, ...)
@@ -16,6 +54,20 @@ module Typelib
     # Value objects are wrapped into instances of these classes
     class Type
         @writable = true
+	
+	# Marshals this value for communication in a DRb context. It is not
+	# suitable for use to save in a file.
+	def _dump(lvl)
+	    Marshal.dump([to_byte_array, DRbObject.new(self.class.registry), self.class.name])
+	end
+
+	# Reloads a value saved by _dump
+	def self._load(str)
+	    data, reg, name = Marshal.load(str)
+
+	    type.wrap(data)
+	end
+
 
         class << self
 	    # the type registry we belong to
@@ -28,6 +80,10 @@ module Typelib
 		end
 	    end
 	    def to_s; "#<#{superclass.name}: #{name}>" end
+
+	    def _dump(lvl)
+		Marshal.dump([:typelib, DRbObject.new(registry), name])
+	    end
 
 	    # check if this is writable
             def writable?
