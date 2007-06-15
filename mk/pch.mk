@@ -1,7 +1,7 @@
 # $Revision: 1255 $
 # $Id: pch.mk 1255 2006-01-18 10:58:25Z sjoyeux $
 
-ifeq ($(USE_PCH),1)
+ifeq ($(USE_PCH),yes)
   PCH_DIR=     $(abs_top_builddir)/$(PCH_HEADER).gch
   PCH_CFLAGS=   -include $(top_builddir)/$(PCH_HEADER)
   

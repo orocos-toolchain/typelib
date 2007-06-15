@@ -41,7 +41,7 @@ AC_DEFUN([CLBS_CHECK_BOOST],
     $1
     BOOST_CPPFLAGS="$BOOST_TMP_CPPFLAGS"
     BOOST_LDFLAGS=$BOOST_TMP_LDFLAGS
-    HAVE_BOOST=1
+    HAVE_BOOST=yes
     AC_DEFINE(HAVE_BOOST)
    ], [$2])
 ])
@@ -50,7 +50,7 @@ dnl Helper macro for CLBS_BOOST_SUBLIB
 AC_DEFUN([CLBS_BOOST_SUBLIB_DEFINE],
 [
     AC_DEFINE(HAVE_BOOST_$2, [], [If the boost/$1 library is available])
-    HAVE_BOOST_$2=1
+    HAVE_BOOST_$2=yes
     BOOST_$2_CPPFLAGS="$BOOST_CPPFLAGS"
     BOOST_$2_LDFLAGS="$BOOST_LDFLAGS ifelse([$3], [], [], -lboost_$3)"
 
