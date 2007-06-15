@@ -7,7 +7,6 @@ endif
 
 ifneq (,$(UNIT_TEST))
     TEST_SUITE=$(UNIT_TEST)
-    TEST_LIB=boost_unit_test_framework
 else
     $(error Unknown test mode)
 endif

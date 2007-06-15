@@ -29,17 +29,18 @@ AC_DEFUN([CLBS_TEST_SUPPORT], [
      AC_REQUIRE([CLBS_BOOST_TEST])
      AC_ARG_ENABLE(test, 
 	AC_HELP_STRING([--disable-test], [enable test suite (default=yes if boost/test is present)]),
-	[HAS_TEST_SUPPORT=$enableval],[HAS_TEST_SUPPORT=$HAS_BOOST_TEST])
+	[HAS_TEST_SUPPORT=$enableval],[HAS_TEST_SUPPORT=$HAVE_BOOST_TEST])
 
      AC_SUBST(HAS_TEST_SUPPORT)
      AS_IF([test "x$HAS_TEST_SUPPORT" = "xyes"],
-        [AC_MSG_NOTICE([Enabling test support])
+        [AC_MSG_NOTICE([test support enabled])
          CLBS_TEST_CPPFLAGS=$BOOST_TEST_CPPFLAGS
          CLBS_TEST_LDFLAGS=$BOOST_TEST_LDFLAGS
          AC_SUBST(CLBS_TEST_CPPFLAGS)
          AC_SUBST(CLBS_TEST_LDFLAGS)
          $1],
-         [$2])
+         [AC_MSG_NOTICE([test support disabled])
+	 $2])
 ])
 
 AC_DEFUN([CLBS_PCH_SUPPORT], [

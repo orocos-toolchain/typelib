@@ -67,7 +67,7 @@ dnl     CLBS_BOOST_REGEX
 dnl     CLBS_BOOST_FILESYSTEM
 dnl     CLBS_BOOST_TEST
 dnl all of these use 
-dnl CLBS_BOOST_SUBLIB(libname, library, header, class, [if found], [if not found])
+dnl CLBS_BOOST_SUBLIB(libname, library, test_header, test_class, test_code, [if found], [if not found])
 AC_DEFUN([CLBS_BOOST_SUBLIB],
 [
   AC_REQUIRE([CLBS_CHECK_BOOST])
@@ -80,38 +80,41 @@ AC_DEFUN([CLBS_BOOST_SUBLIB],
   AC_CHECK_HEADER([$3], [has_working_$1=yes], [has_working_$1=no])
     
   if test "$has_working_$1" = "yes" && test -n "$2"; then
-    AC_MSG_CHECKING([for the Boost/$1 library])
+    AC_MSG_CHECKING([for libboost_$2])
     for libname in $2 $2-mt; do
-	LDFLAGS="$BOOST_LDFLAGS ifelse([$2], [], [], -lboost_$libname) $PTHREAD_LIBS $clbs_sv_$1_LDFLAGS"
+	LDFLAGS="$BOOST_LDFLAGS -lboost_$libname $PTHREAD_LIBS $clbs_sv_$1_LDFLAGS"
 	AC_LINK_IFELSE(
 	[
 	  #include <$3>
 
+	  $5
+
 	  int main()
 	  {
-	    $4 test;
+	    ifelse([$4], [], [], [$4 test]);
 	  }
 	], 
 	[has_working_$1=yes
 	AC_MSG_RESULT([yes])
 	break], 
-	[has_working_$1=no])
+	[
+	has_working_$1=no])
     done
   fi
+
 
   CPPFLAGS="$clbs_sv_$1_CPPFLAGS"
   LDFLAGS="$clbs_sv_$1_LDFLAGS"
  
-  if test "$has_working_$1" != "no"; then
-    ifelse([$5], , , $5)
-    CLBS_BOOST_SUBLIB_DEFINE($1, translit($1, 'a-z', 'A-Z'), [$libname])
-  ifelse([$6], [], [], [
-  else 
-    $6
-  ])
-  fi
-
   AC_LANG_POP
+
+  AS_IF([test "$has_working_$1" != "no"],
+    [$6
+    CLBS_BOOST_SUBLIB_DEFINE($1, translit($1, 'a-z', 'A-Z'), [$libname])],
+    [if test "x$2" != "x"; then
+	AC_MSG_RESULT([no])
+     fi
+     $7])
 ])
 
 dnl CLBS_BOOST_THREADS([if-found], [if-not-found])
@@ -131,7 +134,7 @@ AC_DEFUN([CLBS_BOOST_THREAD],
     clbs_sv_LDFLAGS="$LDFLAGS"
     CPPFLAGS="$PTHREAD_CFLAGS $CPPFLAGS"
     LDFLAGS="$PTHREAD_LIBS $LDFLAGS"
-    CLBS_BOOST_SUBLIB(thread, [thread], [boost/thread/mutex.hpp], [boost::mutex], [], [has_working_bthreads=no])
+    CLBS_BOOST_SUBLIB(thread, [thread], [boost/thread/mutex.hpp], [boost::mutex], [], [], [has_working_bthreads=no])
     CPPFLAGS=$clbs_sv_CPPFLAGS
     LDFLAGS=$clbs_sv_LDFLAGS
   fi
@@ -147,50 +150,16 @@ AC_DEFUN([CLBS_BOOST_THREAD],
 
 dnl CLBS_BOOST_REGEX(if-found, if-not-found)
 AC_DEFUN([CLBS_BOOST_REGEX], 
-[ CLBS_BOOST_SUBLIB(regex, [regex], [boost/regex.hpp], [boost::regex], [$1], [$2]) ])
+[ CLBS_BOOST_SUBLIB(regex, [regex], [boost/regex.hpp], [boost::regex], [], [$1], [$2]) ])
 AC_DEFUN([CLBS_BOOST_FILESYSTEM], 
-[ CLBS_BOOST_SUBLIB(filesystem, [filesystem], [boost/filesystem/path.hpp], [boost::filesystem::path], [$1], [$2]) ])
+[ CLBS_BOOST_SUBLIB(filesystem, [filesystem], [boost/filesystem/path.hpp], [boost::filesystem::path], [], [$1], [$2]) ])
 AC_DEFUN([CLBS_BOOST_GRAPH], 
-[ CLBS_BOOST_SUBLIB(graph, [], [boost/graph/adjacency_list.hpp], [boost::adjacency_list], [$1], [$2]) ])
+[ CLBS_BOOST_SUBLIB(graph, [], [boost/graph/adjacency_list.hpp], [boost::adjacency_list], [], [$1], [$2]) ])
 
-AC_DEFUN([CLBS_BOOST_TEST], [
-    AC_LANG_PUSH(C++)
-    AC_CHECK_HEADER([boost/test/unit_test.hpp], [has_working_test=yes], [has_working_test=no])
-    if test "$has_working_test" = "yes"; then
-        AC_MSG_CHECKING([for a working boost/unit_test framework])
-        clbs_sv_CPPFLAGS=$CPPFLAGS
-        clbs_sv_LDFLAGS=$LDFLAGS
-        
-        CPPFLAGS="$BOOST_TEST_CPPFLAGS $CPPFLAGS"
-        LDFLAGS="$BOOST_TEST_LDFLAGS -lboost_unit_test_framework $LDFLAGS"
-
-        AC_LANG_PUSH(C++)
-        AC_LINK_IFELSE([
-          #include <boost/test/unit_test.hpp>
-
+AC_DEFUN([CLBS_BOOST_TEST], 
+[ CLBS_BOOST_SUBLIB(test, [unit_test_framework], [boost/test/unit_test.hpp], [], [
           boost::unit_test::test_suite*
           init_unit_test_suite(int, char**) { return 0; }
-
-          int main()
-          {
-            boost::unit_test::test_suite* ts_check = BOOST_TEST_SUITE( "" );
-          }
-        ], [has_working_test=yes], [has_working_test=no])
-
-        CPPFLAGS=$clbs_sv_CPPFLAGS
-        LDFLAGS=$clbs_sv_LDFLAGS
-        AC_LANG_POP
-
-        HAS_BOOST_TEST=$has_working_test
-        AS_IF([test "$has_working_test" = "yes"], [
-           AC_MSG_RESULT([yes])
-           CLBS_BOOST_SUBLIB_DEFINE(test, TEST)
-           $1
-        ], [
-           AC_MSG_RESULT([no])
-           $2
-        ])
-    fi
-    AC_LANG_POP
-])
+	  boost::unit_test::test_suite* suite = BOOST_TEST_SUITE("bla");
+    ], [$1], [$2]) ])
 
