@@ -9,6 +9,10 @@ AC_DEFUN([CLBS_CHECK_RUBY], [
     if test -z "$RUBY"; then
         AC_PATH_PROGS([RUBY], [ruby ruby1.8])
     fi
+    AC_ARG_VAR(TESTRB, [the Ruby test launcher])
+    if test -z "$TESTRB"; then
+        AC_PATH_PROGS([TESTRB], [testrb testrb1.8])
+    fi
     test -z "$RUBY" && md_ruby_support=no
 
     if test "$md_ruby_support" = "yes"; then
