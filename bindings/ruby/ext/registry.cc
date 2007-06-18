@@ -142,6 +142,29 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE opt
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
 
+/*
+ * call-seq:
+ *   merge(other_registry) => self
+ *
+ * Move all types found in +other_registry+ into +self+
+ */
+static
+VALUE registry_merge(VALUE self, VALUE rb_merged)
+{
+    std::string error_string;
+
+    Registry& registry = rb2cxx::object<Registry>(self);
+    Registry& merged   = rb2cxx::object<Registry>(rb_merged);
+    try { 
+	registry.merge(merged);
+	return self;
+    }
+    catch(Typelib::ImportError& e) { error_string = e.what(); }
+    catch(Typelib::RegistryException const& e) { error_string = e.toString(); }
+
+    rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
+}
+
 /* Export the given registry into xml
  */
 static
@@ -179,5 +202,6 @@ void Typelib_init_registry()
     rb_define_method(cRegistry, "to_xml", RUBY_METHOD_FUNC(registry_to_xml), 0);
     rb_define_singleton_method(cRegistry, "from_xml", RUBY_METHOD_FUNC(registry_from_xml), 1);
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
+    rb_define_method(cRegistry, "merge", RUBY_METHOD_FUNC(registry_merge), 1);
 }
 
