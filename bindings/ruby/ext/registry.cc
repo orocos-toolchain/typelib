@@ -117,6 +117,8 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE opt
 	    for (int j = 0; j < RARRAY(v)->len; ++j)
 		config.insert(StringValuePtr(k), StringValuePtr( RARRAY(v)->ptr[j] ));
 	}
+	else if (TYPE(v) == T_TRUE || TYPE(v) == T_FALSE)
+	    config.set(StringValuePtr(k), RTEST(v) ? "true" : "false");
 	else
 	    config.set(StringValuePtr(k), StringValuePtr(v));
     }
