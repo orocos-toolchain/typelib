@@ -1,5 +1,5 @@
-dnl $Id: antlr.m4 1573 2007-02-06 15:30:33Z sjoyeux $
-dnl $Rev: 1573 $
+dnl $Id: antlr.m4 1613 2007-06-20 20:44:04Z sjoyeux $
+dnl $Rev: 1613 $
 
 AC_DEFUN([CLBS_CHECK_ANTLR], [
     # Check for antlr-config

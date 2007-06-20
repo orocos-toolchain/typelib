@@ -1,5 +1,5 @@
-# $Revision: 1573 $
-# $Id: init.mk.in 1573 2007-02-06 15:30:33Z sjoyeux $
+# $Revision: 1616 $
+# $Id: init.mk.in 1616 2007-06-20 20:46:12Z sjoyeux $
 
 prefix       = @prefix@
 exec_prefix  = @exec_prefix@

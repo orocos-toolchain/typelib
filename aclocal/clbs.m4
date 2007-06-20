@@ -1,5 +1,5 @@
-dnl $Rev: 1401 $
-dnl $Id: clbs.m4 1401 2006-02-09 13:22:04Z sjoyeux $
+dnl $Rev: 1616 $
+dnl $Id: clbs.m4 1616 2007-06-20 20:46:12Z sjoyeux $
 
 AC_DEFUN([FPY_DIRNAME_EXPR],
          [[expr ".$1" : '\(\.\)[^/]*$' \| "x$1" : 'x\(.*\)/[^/]*$']])
