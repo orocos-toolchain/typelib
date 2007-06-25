@@ -20,14 +20,16 @@ class TC_Marshalling  < Test::Unit::TestCase
 
 	DRb.start_service
         t = registry.get("/struct A")
+	m_t = nil
         assert_nothing_raised { m_t = Marshal.dump(t) }
         um_t = Marshal.load(StringIO.new(m_t))
     end
 
-    def test_marshalling
+    def test_marshal_value
         registry = Registry.new
         registry.import( File.join(SRCDIR, "test_cimport.1"), "c" )
 
+	DRb.start_service
         t = registry.get("/struct A")
         v = t.new :a => 10, :b => 20, :c => 30, :d => 40
         assert_nothing_raised { m_v = Marshal.dump(v) }

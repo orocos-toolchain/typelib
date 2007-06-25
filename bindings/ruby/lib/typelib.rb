@@ -16,7 +16,7 @@ class Class
     def _load(str)
 	data = Marshal.load(str)
 	if data.kind_of?(Array) && data[0] == :typelib
-	    reg, name = *data
+	    _, reg, name = *data
 	    if reg.kind_of?(DRbObject)
 		reg  = remote_registry(reg)
 	    end
