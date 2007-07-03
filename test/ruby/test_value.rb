@@ -164,6 +164,9 @@ class TC_Value < Test::Unit::TestCase
 	assert( a.is_a?("/struct A") )
 	assert( a.is_a?("/long") )
 	assert( a.is_a?(/ A$/) )
+
+	assert( a.is_a?(registry.get("/struct A")) )
+	assert( a.is_a?(registry.get("long")) )
     end
 
     def test_dup

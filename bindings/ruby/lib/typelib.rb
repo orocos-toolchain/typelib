@@ -108,12 +108,14 @@ module Typelib
 
 	    # Check if this type is a +typename+. If +typename+
 	    # is a string or a regexp, we match it against the type
-	    # name. Otherwise we call Class::is_a?
+	    # name. Otherwise we call Class#<
 	    def is_a?(typename)
-		if typename.respond_to?(:to_str) || Regexp === typename
+		if typename.respond_to?(:to_str)
 		    typename.to_str === self.name
+		elsif Regexp === typename
+		    typename === self.name
 		else
-		    super
+		    self <= typename
 		end
 	    end
         end
@@ -229,11 +231,7 @@ module Typelib
 	    # In case of compound types, we check that either self, or
 	    # the first element field is +typename+
 	    def is_a?(typename)
-		if typename.respond_to?(:to_str) || Regexp === typename
-		    typename === self.name || self.fields[0].last.is_a?(typename)
-		else
-		    super
-		end
+		super || self.fields[0].last.is_a?(typename)
 	    end
 
 	    # Called by the extension to initialize the subclass
