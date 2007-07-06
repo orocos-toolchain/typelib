@@ -158,7 +158,7 @@ namespace cxx2rb
         Array const& array(static_cast<Array const&>(value.getType()));
         size_t index = NUM2INT(rbindex);
         
-        if (array.getDimension() < index)
+        if (index >= array.getDimension())
         {
             rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index, array.getDimension());
             return Value();
