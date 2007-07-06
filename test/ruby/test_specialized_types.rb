@@ -147,13 +147,32 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         end
         check_B_c_value(b)
     end
+
     def test_array_get
         b = make_registry.get("/struct B").new
         set_B_c_value(b)
         (0..(b.c.size - 1)).each do |i|
-            assert( ( b.c[i] - Float(i)/10.0 ).abs < 0.01 )
+	    assert_in_delta(Float(i) / 10.0, b.c[i], 0.01)
+        end
+	assert_raises(ArgumentError) { b.c[0, 10, 15] }
+	assert_raises(IndexError) { b.c[b.c.size + 1] }
+
+	v = b.c[0, 10]
+	assert_kind_of(Array, v)
+        (0..(v.size - 1)).each do |i|
+	    assert_in_delta(Float(i) / 10.0, v[i], 0.01)
+        end
+
+	assert_nothing_raised { b.c[b.c.size - 1] }
+	assert_raises(IndexError) { b.c[b.c.size - 1, 2] }
+
+	v = b.c[1, 10]
+	assert_kind_of(Array, v)
+        (0..(v.size - 1)).each do |i|
+	    assert_in_delta(Float(i + 1) / 10.0, v[i], 0.01)
         end
     end
+
     def test_array_each
 	registry = make_registry
         b = registry.get("/struct B").new

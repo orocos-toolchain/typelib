@@ -179,15 +179,56 @@ namespace cxx2rb
  * dynamically extensible, trying to set a non-existent index will raise an
  * IndexError exception.
  */
-static VALUE array_get(VALUE self, VALUE rbindex)
+static VALUE array_get(int argc, VALUE* argv, VALUE self)
 { 
-    Value element = cxx2rb::array_element(self, rbindex);
-    VALUE registry = value_get_registry(self);
+    Value& value            = rb2cxx::object<Value>(self);
+    Array const& array      = static_cast<Array const&>(value.getType());
+    if (array.getDimension() == 0)
+	return self;
 
-    if (FIX2INT(rbindex))
-	return typelib_to_ruby(element, registry, self, Qnil); 
+    Type  const& array_type = array.getIndirection();
+    VALUE registry          = value_get_registry(self);
+
+    int8_t* data = reinterpret_cast<int8_t*>(value.getData());
+    size_t index = NUM2INT(argv[0]);
+    if (index >= array.getDimension())
+	rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index, array.getDimension());
+
+    if (argc == 1)
+    {
+	Value v = Value(data + array_type.getSize() * index, array_type);
+	if (index == 0)
+	    return typelib_to_ruby( v, registry, Qnil, rb_iv_get(self, "@ptr") );
+	else
+	    return typelib_to_ruby( v, registry, self, Qnil );
+    }
+    else if (argc == 2)
+    {
+	VALUE ret = rb_ary_new();
+	size_t size = NUM2INT(argv[1]);
+	if (index + size >= array.getDimension())
+	    rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index, array.getDimension());
+
+	if (index == 0)
+	{
+	    VALUE rb_v = typelib_to_ruby( Value(data, array_type), registry, Qnil, rb_iv_get(self, "@ptr") );
+	    rb_ary_push(ret, rb_v);
+	    index += 1;
+	    size  -= 1;
+	}
+
+	for (size_t i = index; i < index + size; ++i)
+	{
+	    Value v = Value(data + array_type.getSize() * i, array_type);
+	    VALUE rb_v = typelib_to_ruby( v, registry, self, Qnil );
+
+	    rb_ary_push(ret, rb_v);
+	}
+
+	return ret;
+    }
     else
-	return typelib_to_ruby(element, registry, Qnil, rb_iv_get(self, "@ptr")); 
+	rb_raise(rb_eArgError, "invalid argument count (%i for 1 or 2)", argc);
 }
 
 /* call-seq:
@@ -287,7 +328,7 @@ void Typelib_init_specialized_types()
 
     cArray    = rb_define_class_under(mTypelib, "ArrayType", cIndirect);
     rb_define_singleton_method(cArray, "length", RUBY_METHOD_FUNC(array_class_length), 0);
-    rb_define_method(cArray, "[]",      RUBY_METHOD_FUNC(array_get), 1);
+    rb_define_method(cArray, "[]",      RUBY_METHOD_FUNC(array_get), -1);
     rb_define_method(cArray, "[]=",     RUBY_METHOD_FUNC(array_set), 2);
     rb_define_method(cArray, "each",    RUBY_METHOD_FUNC(array_each), 0);
     rb_define_method(cArray, "size",    RUBY_METHOD_FUNC(array_size), 0);
