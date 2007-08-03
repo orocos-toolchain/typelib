@@ -14,5 +14,11 @@ recurse-%:
 	@set -e ; for dir in $(SUBDIRS) ; do \
 	  $(MAKE) -C $$dir $*; \
 	 done 
+else
+build:
+clean:
+distclean:
+install:
+doc:
 endif
 
