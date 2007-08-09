@@ -206,8 +206,8 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
     {
 	VALUE ret = rb_ary_new();
 	size_t size = NUM2INT(argv[1]);
-	if (index + size >= array.getDimension())
-	    rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index, array.getDimension());
+	if (index + size > array.getDimension())
+	    rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index + size - 1, array.getDimension());
 
 	if (index == 0)
 	{
