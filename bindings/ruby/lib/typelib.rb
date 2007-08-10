@@ -312,7 +312,11 @@ module Typelib
 	    end
 
 	rescue ArgumentError => e
-	    raise e, "no field #{name} in #{self.class.name}"
+	    if e.message =~ /^no field \w+ in /
+		raise e, (e.message + " in #{name}(#{self.class.name})")
+	    else
+		raise e, "no field #{name} in #{self.class.name}"
+	    end
 	rescue TypeError => e
 	    raise e, "#{e.message} for #{self.class.name}.#{name}"
 	end
