@@ -33,8 +33,7 @@ static VALUE compound_get_fields(VALUE self)
     return fieldlist;
 }
 
-/* :nodoc:
- * Helper function for CompoundType#[] */
+/* Helper function for CompoundType#[] */
 static VALUE compound_field_get(VALUE rbvalue, VALUE name)
 { 
     VALUE registry = value_get_registry(rbvalue);
@@ -52,8 +51,7 @@ static VALUE compound_field_get(VALUE rbvalue, VALUE name)
     catch(FieldNotFound)   {} 
     rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name));
 }
-/* :nodoc:
- * Helper function for CompoundType#[]= */
+/* Helper function for CompoundType#[]= */
 static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
 { 
     Value& tlib_value(rb2cxx::object<Value>(self));
@@ -66,7 +64,11 @@ static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
     rb_raise(rb_eArgError, "no field '%s' in '%s'", StringValuePtr(name), rb_obj_classname(self));
 }
 
-/* Returns the value pointed to by +self+ */
+/* call-seq:
+ *  pointer.deference => pointed-to type
+ *
+ * Returns the value pointed to by +self+ 
+ */
 static VALUE pointer_deference(VALUE self)
 {
     VALUE pointed_to = rb_iv_get(self, "@pointed_object");
@@ -141,6 +143,11 @@ VALUE enum_keys(VALUE self)
  * Typelib::Pointer
  */
 
+/* call-seq:
+ *  type.deference => other_type
+ *
+ * Returns the type referenced by this one
+ */
 static VALUE indirect_type_deference(VALUE self)
 {
     VALUE registry = rb_iv_get(self, "@registry");
@@ -350,6 +357,30 @@ static VALUE numeric_type_unsigned_p(VALUE self)
     }
     return Qnil; // never reached
 }
+
+/* Document-class: Typelib::NumericType
+ *
+ * Wrapper for numeric types (int, float, ...)
+ */
+
+/* Document-class: Typelib::IndirectType
+ *
+ * Base class for types which deference other objects, like pointers or arrays
+ * See also ArrayType and PointerType
+ */
+
+/* Document-class: Typelib::PointerType
+ *
+ * Base class for pointers (references to other values)
+ */
+
+/* Document-class: Typelib::CompoundType
+ *
+ * Base class for types composed by other types (structures and unions in C).
+ * Each field is assigned its type and its offset inside the structure. So
+ * unions are represented with all fields having an offset of zero, while
+ * structures have consecutive offsets.
+ */
 
 void Typelib_init_specialized_types()
 {
