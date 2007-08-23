@@ -288,7 +288,7 @@ static VALUE array_size(VALUE rbarray)
  */
 static VALUE array_class_length(VALUE rbarray)
 {
-    Array& array(rb2cxx::object<Array>(rbarray));
+    Array const& array(dynamic_cast<Array const&>(rb2cxx::object<Type>(rbarray)));
     return INT2FIX(array.getDimension());
 }
 

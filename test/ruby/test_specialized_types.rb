@@ -123,6 +123,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     def test_array_def
         b = make_registry.get("/struct B").new
 
+	assert_equal(100, b.c.class.length)
         assert_equal('/float[100]', b.c.class.name)
         assert_equal('/float[1]', b.d.class.name)
         assert_equal('/float[1]', b.e.class.name)
