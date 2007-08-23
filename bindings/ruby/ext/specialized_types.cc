@@ -307,9 +307,58 @@ static VALUE pointer_nil_p(VALUE self)
 }
 
 
+/*
+ * call-seq:
+ *  numeric.integer?	    => true or false
+ *
+ * Returns true if the type is an integral type and false if it is a floating-point type
+ */
+static VALUE numeric_type_integer_p(VALUE self)
+{
+    Numeric const& type(dynamic_cast<Numeric const&>(rb2cxx::object<Type>(self)));
+    return type.getNumericCategory() == Numeric::Float ? Qfalse : Qtrue;
+}
+
+/*
+ * call-seq:
+ *  numeric.size	    => value
+ *
+ * The size of this type in bytes
+ */
+static VALUE numeric_type_size(VALUE self)
+{
+    Numeric const& type(dynamic_cast<Numeric const&>(rb2cxx::object<Type>(self)));
+    return INT2FIX(type.getSize());
+}
+
+/*
+ * call-seq:
+ *  numeric.unsigned?	    => value
+ *
+ * If integer? returns true, returns whether this type is an unsigned or signed
+ * integral type.
+ */
+static VALUE numeric_type_unsigned_p(VALUE self)
+{
+    Numeric const& type(dynamic_cast<Numeric const&>(rb2cxx::object<Type>(self)));
+    switch(type.getNumericCategory())
+    {
+	case Numeric::SInt: return Qfalse;
+	case Numeric::UInt: return Qtrue;
+	case Numeric::Float:
+	    rb_raise(rb_eArgError, "not an integral type");
+    }
+    return Qnil; // never reached
+}
+
 void Typelib_init_specialized_types()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
+    cNumeric   = rb_define_class_under(mTypelib, "NumericType", cType);
+    rb_define_singleton_method(cNumeric, "integer?", RUBY_METHOD_FUNC(numeric_type_integer_p), 0);
+    rb_define_singleton_method(cNumeric, "unsigned?", RUBY_METHOD_FUNC(numeric_type_unsigned_p), 0);
+    rb_define_singleton_method(cNumeric, "size", RUBY_METHOD_FUNC(numeric_type_size), 0);
+
     cIndirect  = rb_define_class_under(mTypelib, "IndirectType", cType);
     rb_define_singleton_method(cIndirect, "deference",    RUBY_METHOD_FUNC(indirect_type_deference), 0);
 

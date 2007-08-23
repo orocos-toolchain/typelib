@@ -41,6 +41,7 @@ namespace cxx2rb {
 }
 
 VALUE cType	 = Qnil;
+VALUE cNumeric	 = Qnil;
 VALUE cIndirect  = Qnil;
 VALUE cPointer   = Qnil;
 VALUE cArray     = Qnil;
@@ -51,6 +52,7 @@ VALUE cxx2rb::class_of(Typelib::Type const& type)
 {
     using Typelib::Type;
     switch(type.getCategory()) {
+	case Type::Numeric:	return cNumeric;
 	case Type::Compound:    return cCompound;
 	case Type::Pointer:     return cPointer;
 	case Type::Array:       return cArray;

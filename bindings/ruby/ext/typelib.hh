@@ -13,6 +13,7 @@ extern VALUE cIndirect;
 extern VALUE cPointer;
 extern VALUE cArray;
 extern VALUE cCompound;
+extern VALUE cNumeric;
 extern VALUE cEnum;
 
 /** Initialization routines */

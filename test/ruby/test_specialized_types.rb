@@ -235,5 +235,26 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal(:E_SECOND, e.value)
     end
 
+    def test_numeric
+	long = make_registry.get("/long")
+	assert(long < NumericType)
+	assert(long.integer?)
+	assert(!long.unsigned?)
+	assert_equal(4, long.size)
+
+	ulong = make_registry.get("/unsigned long")
+	assert(ulong < NumericType)
+	assert_equal(4, ulong.size)
+	assert(ulong.integer?)
+	assert(ulong.unsigned?)
+
+	double = make_registry.get("/double")
+	assert(double < NumericType)
+	assert_equal(8, double.size)
+	assert(!double.integer?)
+	assert_raises(ArgumentError) { double.unsigned? }
+
+    end
+
 end
 
