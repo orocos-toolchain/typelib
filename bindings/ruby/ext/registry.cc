@@ -2,6 +2,7 @@
 
 #include <typelib/pluginmanager.hh>
 #include <typelib/importer.hh>
+#include <typelib/registryiterator.hh>
 #include <utilmm/configfile/configset.hh>
 
 using namespace Typelib;
@@ -165,6 +166,50 @@ VALUE registry_merge(VALUE self, VALUE rb_merged)
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
 
+/*
+ * each_type(include_alias = false) { |type| ... }
+ *
+ * Iterates on the types found in this registry. If include_alias is true, also
+ * yield the aliased types.
+ */
+static
+VALUE registry_each_type(int argc, VALUE* argv, VALUE self)
+{
+    VALUE rb_include_alias;
+    rb_scan_args(argc, argv, "01", &rb_include_alias);
+    bool include_alias = RTEST(rb_include_alias);
+
+    Registry& registry = rb2cxx::object<Registry>(self);
+    std::string error_string;
+
+    try 
+    {
+	RegistryIterator it = registry.begin();
+	RegistryIterator end = registry.end();
+	if (include_alias)
+	{
+	    for (; it != end; ++it)
+	    {
+		std::string const& type_name = it.getName();
+		VALUE rb_type_name = rb_str_new(type_name.c_str(), type_name.length());
+		rb_yield_values(2, rb_type_name, cxx2rb::type_wrap(*it, self));
+	    }
+	}
+	else
+	{
+	    for (; it != end; ++it)
+	    {
+		if (!it.isAlias())
+		    rb_yield(cxx2rb::type_wrap(*it, self));
+	    }
+	}
+
+	return self;
+    }
+    catch(Typelib::RegistryException const& e) { error_string = e.toString(); }
+    rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
+}
+
 /* Export the given registry into xml
  */
 static
@@ -196,6 +241,7 @@ void Typelib_init_registry()
     rb_define_alloc_func(cRegistry, registry_alloc);
     rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_do_get), 1);
     rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_do_build), 1);
+    rb_define_method(cRegistry, "each_type", RUBY_METHOD_FUNC(registry_each_type), -1);
     // do_import is called by the Ruby-defined import, which formats the 
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 4);
