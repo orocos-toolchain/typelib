@@ -22,41 +22,6 @@ class TC_Value < Test::Unit::TestCase
         registry
     end
 
-    def test_registry
-        assert_raises(RuntimeError) { Registry.guess_type("bla.1") }
-        assert_equal("c", Registry.guess_type("blo.c"))
-        assert_equal("c", Registry.guess_type("blo.h"))
-        assert_equal("tlb", Registry.guess_type("blo.tlb"))
-
-        assert_raises(RuntimeError) { Registry.new.import("bla.c") }
-
-        registry = Registry.new
-        testfile = File.join(SRCDIR, "test_cimport.h")
-        assert_raises(RuntimeError) { registry.import(testfile) }
-        assert_nothing_raised {
-            registry.import(testfile, nil, :include => [ File.join(SRCDIR, '..') ], :define => [ 'GOOD' ])
-        }
-
-        registry = Registry.new
-        assert_nothing_raised {
-            registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
-        }
-        assert_nothing_raised {
-            registry.import(testfile, nil, :merge => true, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
-        }
-	assert_raises(RuntimeError) { registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ]) }
-    end
-
-    def test_type_inequality
-        # Check that == returns false when the two objects aren't of the same class
-        # (for instance type == nil shall return false)
-	type = nil
-        type = Registry.new.get("/int")
-        assert_equal("/int", type.name)
-        assert_nothing_raised { type == nil }
-        assert(type != nil)
-    end
-
     def test_to_ruby
 	int = Registry.new.get("/int").new
 	assert_equal(0, int.to_ruby)
@@ -91,20 +56,13 @@ class TC_Value < Test::Unit::TestCase
 	assert_equal([10, 20, 30, 40], a.to_byte_array.unpack('llcxs'))
     end
 
-    def test_pointer_type
+    def test_pointer
         type = Registry.new.build("/int*")
-        assert_not_equal(type, type.deference)
-        assert_not_equal(type, type.to_ptr)
-        assert_not_equal(type.to_ptr, type.deference)
-        assert_equal(type, type.deference.to_ptr)
-        assert_equal(type, type.to_ptr.deference)
-
 	value = type.new
 	value.zero!
 	assert(value.null?)
 	assert_equal(nil, value.to_ruby)
-    end
-    def test_pointer_value
+
         type  = Registry.new.build("/int")
         value = type.new
         assert_equal(value.class, type)
