@@ -10,12 +10,16 @@ The C++ library depends on the following:
      darcs get http://www.laas.fr/~sjoyeux/darcs/utilmm
    (check the INSTALL file)
  * the antlr parser generator
- * autoconf and automake
+ * autoconf, automake, pkg-config and libtool
+ * doxygen for the documentation (optional)
+ * libxml2
 
 When all these dependencies are installed, run
   ./autogen
   ./configure
-  make
+  make.sh
+
+and as root,
   make install
 
 === Ruby bindings
@@ -23,7 +27,8 @@ The installation of the Ruby bindings require the following:
  * the ruby interpreter version 1.8 and the associated
    development files.
    Under Debian, these are named ruby1.8 and libruby1.8-dev
- * testrb1.8 for the test suite
+ * testrb for the test suite
+ * rdoc for generating the documentation (optional)
 
 At runtime, the bindings require the following:
  * utilrb, which is best downloaded as a gem. See
@@ -44,7 +49,7 @@ At runtime, the bindings require the following:
 === Quick Debian installation guide
 
 Run as root
-  apt-get install libboost-dev libboost-filesystem-dev antlr autoconf automake ruby1.8-dev libtest-unit-ruby rubygems cantlr libantlr-dev
+  apt-get install libboost-dev libboost-filesystem-dev antlr autoconf automake ruby1.8-dev libtest-unit-ruby rubygems cantlr libantlr-dev pkg-config doxygen rdoc1.8 libxml2-dev
   gem install utilrb
 
 Run as a normal user
@@ -54,7 +59,7 @@ Run as a normal user
   utilmm/INSTALL>
 
   <go into Typelib source directory>
-  ./autogen
+  ./autogen.sh
   ./configure
   make
 
