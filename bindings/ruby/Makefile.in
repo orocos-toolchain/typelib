@@ -20,7 +20,8 @@ install:
 ifeq ($(HAS_RDOC),yes)
 doc: ruby-doc
 ruby-doc:
-	cd $(srcdir) && $(RDOC) -U -o $(CURDIR)/rdoc
+	rm -fR $(CURDIR)/rdoc
+	cd $(srcdir) && $(RDOC) -o $(CURDIR)/rdoc
 endif
 
 include $(top_srcdir)/mk/recurse.mk
