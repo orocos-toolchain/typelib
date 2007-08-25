@@ -1,10 +1,6 @@
 # $Revision: 1615 $
 # $Id: test.mk 1615 2007-06-20 20:45:18Z sjoyeux $
 
-ifneq (yes,$(HAS_TEST_SUPPORT))
-    $(error Test support not enabled)
-endif
-
 ifneq (,$(UNIT_TEST))
     TEST_SUITE=$(UNIT_TEST)
 else
@@ -22,9 +18,14 @@ APP_INSTALL = no
 
 TEST_RUN_DIR ?= $(builddir)
 
+ifneq (yes,$(HAS_TEST_SUPPORT))
+    $(warning Boost/Test support not enabled)
+else
 test: boost-test
 boost-test:
 	test_abs_path=$(CURDIR)/$(builddir)/$(APP_NAME) && cd $(TEST_RUN_DIR) && $$test_abs_path
 
 include $(top_srcdir)/mk/app.mk
+
+endif
 
