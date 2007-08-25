@@ -52,7 +52,7 @@ AC_DEFUN([CLBS_CHECK_RDOC], [
     md_rdoc_support=yes
     AC_ARG_VAR(RDOC, [the RDoc utility])
     if test -z "$RDOC"; then
-        AC_PATH_PROG([RDOC], [rdoc rdoc1.8])
+        AC_PATH_PROGS([RDOC], [rdoc rdoc1.8])
     fi
     test -z "$RDOC" && md_rdoc_support=no
 
