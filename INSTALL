@@ -1,0 +1,60 @@
+== Installing Typelib ==
+
+=== C++ library
+The C++ library depends on the following:
+ * the boost library, including boost/filesystem
+ * utilmm which can be downloaded using Darcs with
+     darcs get http://www.laas.fr/~sjoyeux/darcs/utilmm
+   (check the INSTALL file)
+ * the antlr parser generator
+ * autoconf and automake
+
+When all these dependencies are installed, run
+  ./autogen
+  ./configure
+  make
+  make install
+
+=== Ruby bindings
+The installation of the Ruby bindings require the following:
+ * the ruby interpreter version 1.8 and the associated
+   development files.
+   Under Debian, these are named ruby1.8 and libruby1.8-dev
+ * testrb1.8 for the test suite
+
+At runtime, the bindings require the following:
+ * utilrb, which is best downloaded as a gem. See
+     http://www.rubygems.org for information about the RubyGems
+     system. This system can be installed by the rubygems
+     package on Debian.
+ 
+   When you have installed rubygems, run
+     gem install utilrb
+
+   You may have to run it as root if RubyGems is installed
+   globally (this is the case for Debian's rubygems package)
+
+   You can also find the sources at
+     darcs get http://www.laas.fr/~sjoyeux/darcs/utilrb
+   read the INSTALL.txt file
+
+=== Quick Debian installation guide
+
+Run as root
+  apt-get install libboost-dev libboost-filesystem-dev antlr autoconf automake ruby1.8-dev testrb1.8 rubygems cantlr libantlr-dev
+  gem install utilrb
+
+Run as a normal user
+  <go into a source directory>
+  darcs get http://www.laas.fr/~sjoyeux/darcs/utilmm
+  <install the utilmm library by following instructions in
+  utilmm/INSTALL>
+
+  <go into Typelib source directory>
+  ./autogen
+  ./configure
+  make
+
+Run as root
+  make install
+
