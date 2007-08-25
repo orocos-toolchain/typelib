@@ -1,5 +1,8 @@
 == Installing Typelib ==
 
+Note for Debian users: a quick install guide is included at the
+bottom of this file
+
 === C++ library
 The C++ library depends on the following:
  * the boost library, including boost/filesystem
@@ -41,7 +44,7 @@ At runtime, the bindings require the following:
 === Quick Debian installation guide
 
 Run as root
-  apt-get install libboost-dev libboost-filesystem-dev antlr autoconf automake ruby1.8-dev testrb1.8 rubygems cantlr libantlr-dev
+  apt-get install libboost-dev libboost-filesystem-dev antlr autoconf automake ruby1.8-dev libtest-unit-ruby rubygems cantlr libantlr-dev
   gem install utilrb
 
 Run as a normal user
