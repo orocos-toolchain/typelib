@@ -106,7 +106,12 @@ BOOST_AUTO_TEST_CASE( test_value_endian_swap )
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
-    A a = { utilmm::endian::swap((long)10), utilmm::endian::swap((long)20), utilmm::endian::swap('b'), utilmm::endian::swap((short)52) };
+    A a = { 
+	utilmm::endian::swap((long)10), 
+	utilmm::endian::swap((long)20), 
+	utilmm::endian::swap('b'), 
+	utilmm::endian::swap((short)52) 
+    };
     B b;
     b.a = a;
     for (int i = 0; i < 10; ++i)
@@ -121,5 +126,138 @@ BOOST_AUTO_TEST_CASE( test_value_endian_swap )
     BOOST_REQUIRE_EQUAL(52, b.a.d);
     for (int i = 0; i < 10; ++i)
 	BOOST_REQUIRE_EQUAL(static_cast<float>(i) / 10.0f, b.c[i]);
+}
+
+BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
+{
+    // Get the test file into repository
+    Registry registry;
+    PluginManager::self manager;
+    Importer* importer = manager->importer("c");
+    utilmm::config_set config;
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+
+    size_t expected_a[]  = {
+	3, 2, 1, 0, // long a
+	7, 6, 5, 4, // long b
+	CompileEndianSwapVisitor::FLAG_SKIP, 2, // char c plus one alignment byte
+	11, 10
+    };
+
+    /* Check a simple structure with alignment issues */
+    {
+	Type const& a_t = *registry.get("/struct A");
+	CompileEndianSwapVisitor compiled_a;
+	compiled_a.apply(a_t);
+
+	size_t expected_size = sizeof(expected_a) / sizeof(size_t);
+
+	BOOST_REQUIRE_EQUAL(expected_size, compiled_a.m_compiled.size());
+	for (size_t i = 0; i < sizeof(expected_a) / sizeof(size_t); ++i)
+	    BOOST_REQUIRE_EQUAL(expected_a[i], compiled_a.m_compiled[i]);
+    }
+
+    /* Check handling of byte arrays */
+    {
+	Type const& type = *registry.build("/char[100]");
+	CompileEndianSwapVisitor compiled;
+	compiled.apply(type);
+
+	BOOST_REQUIRE_EQUAL(2U, compiled.m_compiled.size());
+	BOOST_REQUIRE_EQUAL(CompileEndianSwapVisitor::FLAG_SKIP, compiled.m_compiled[0]);
+	BOOST_REQUIRE_EQUAL(100U, compiled.m_compiled[1]);
+    }
+
+    /* Check a structure with arrays */
+    {
+	Type const& type = *registry.get("/struct B");
+	CompileEndianSwapVisitor compiled;
+	compiled.apply(type);
+
+	// Check the first field, it should be equal to expected_a
+	size_t offset = sizeof(expected_a) / sizeof(size_t);
+	for (size_t i = 0; i < offset; ++i)
+	    BOOST_REQUIRE_EQUAL(expected_a[i], compiled.m_compiled[i]);
+
+	// The second field is an array of floats, check it
+	size_t expected[] = {
+	    CompileEndianSwapVisitor::FLAG_ARRAY, 100, 4,
+	    offset + 3, offset + 2, offset + 1, offset,
+	    CompileEndianSwapVisitor::FLAG_END
+	};
+
+	size_t expected_array_size = sizeof(expected) / sizeof(size_t);
+	for (size_t i = 0; i < expected_array_size; ++i)
+	    BOOST_REQUIRE_EQUAL(expected[i], compiled.m_compiled[i + offset]);
+
+	compiled.display();
+
+    }
+
+    /* Check a multidimensional array */
+    {
+	Type const& type = *registry.get("TestMultiDimArray");
+	CompileEndianSwapVisitor compiled;
+	compiled.apply(type);
+
+	size_t expected[] = {
+	    CompileEndianSwapVisitor::FLAG_ARRAY, 10, 40,
+	    CompileEndianSwapVisitor::FLAG_ARRAY, 10, 4,
+	    3, 2, 1, 0,
+	    CompileEndianSwapVisitor::FLAG_END,
+	    CompileEndianSwapVisitor::FLAG_END
+	};
+	size_t expected_size = sizeof(expected) / sizeof(size_t);
+	BOOST_REQUIRE_EQUAL(expected_size, compiled.m_compiled.size());
+
+	for (size_t i = 0; i < expected_size; ++i)
+	    BOOST_REQUIRE_EQUAL(expected[i], compiled.m_compiled[i]);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( test_apply_endian_swap )
+{
+    // Get the test file into repository
+    Registry registry;
+    PluginManager::self manager;
+    Importer* importer = manager->importer("c");
+    utilmm::config_set config;
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+
+    A a = { 
+	utilmm::endian::swap((long)10), 
+	utilmm::endian::swap((long)20), 
+	utilmm::endian::swap('b'), 
+	utilmm::endian::swap((short)52) 
+    };
+    B b;
+    b.a = a;
+    for (int i = 0; i < 10; ++i)
+	b.c[i] = utilmm::endian::swap(static_cast<float>(i) / 10.0f);
+
+    b.d[0] = utilmm::endian::swap<float>(42);
+
+    for (int i = 0; i < 10; ++i)
+	for (int j = 0; j < 10; ++j)
+	    b.i[i][j] = utilmm::endian::swap<float>(i * 100 + j);
+
+    Value v_b(&b, *registry.get("/B"));
+    B swapped_b;
+    Value v_swapped_b(&swapped_b, *registry.get("/B"));
+
+    CompileEndianSwapVisitor compiled;
+    compiled.apply(v_b.getType());
+    compiled.swap(v_b, v_swapped_b);
+
+    BOOST_REQUIRE_EQUAL(10, swapped_b.a.a);
+    BOOST_REQUIRE_EQUAL(20, swapped_b.a.b);
+    BOOST_REQUIRE_EQUAL('b', swapped_b.a.c);
+    BOOST_REQUIRE_EQUAL(52, swapped_b.a.d);
+    for (int i = 0; i < 10; ++i)
+	BOOST_REQUIRE_EQUAL(static_cast<float>(i) / 10.0f, swapped_b.c[i]);
+    BOOST_REQUIRE_EQUAL(42, swapped_b.d[0]);
+    for (int i = 0; i < 10; ++i)
+	for (int j = 0; j < 10; ++j)
+	    BOOST_REQUIRE_EQUAL(i * 100 + j, swapped_b.i[i][j]);
 }
 

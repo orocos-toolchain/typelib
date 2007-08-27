@@ -26,9 +26,9 @@ namespace Typelib
      */
     class TypeVisitor
     {
+    protected:
         bool dispatch(Type const& type);
 
-    protected:
         virtual bool visit_ (Numeric const& type);
         virtual bool visit_ (Enum const& type);
 

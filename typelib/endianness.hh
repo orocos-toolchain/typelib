@@ -3,6 +3,7 @@
 
 #include <typelib/value.hh>
 #include <utilmm/system/endian.hh>
+#include <limits>
 
 namespace Typelib
 {
@@ -29,6 +30,64 @@ namespace Typelib
 	EndianSwapVisitor swapper;
 	swapper.apply(v);
     }
+
+    class CompileEndianSwapVisitor : public TypeVisitor 
+    {
+	// The current place into the output: the next element which are to be
+	// byte-swapped will be written at this index in the output data
+	// buffer.
+	size_t m_output_index;
+
+    public:
+	// The compiled-in description of the byte-swap operation
+	//
+	// Given an output index, an element of compiled is the absolute
+	// index of the input byte which should be written at this output index:
+	//   output_buffer[output_index] = input_buffer[*it_compiled]
+	//
+	// After a "normal" operation (i.e. neither a skip nor an array),
+	// output index is incremented and we handle the next operation
+	// found in compiled
+	std::vector<size_t> m_compiled;
+
+	static size_t const FLAG_SKIP  = ((size_t) -1);
+	static size_t const FLAG_ARRAY = ((size_t) -2);
+	static size_t const FLAG_END   = ((size_t) -3);
+	static const size_t SizeOfEnum = sizeof(int);;
+
+    protected:
+	struct UnsupportedEndianSwap : public std::exception { };
+	void skip(int skip_size);
+        bool visit_ (Numeric const& type);
+        bool visit_ (Enum const& type);
+        bool visit_ (Pointer const& type);
+        bool visit_ (Array const& type);
+	bool visit_ (Compound const& type);
+
+    public:
+	~CompileEndianSwapVisitor() { }
+	void apply(Type const& type)
+	{
+	    m_output_index = 0;
+	    m_compiled.clear();
+	    TypeVisitor::apply(type);
+	}
+
+	void swap(Value in, Value out)
+	{
+	    CompileEndianSwapVisitor::swap(0, 0,
+		    m_compiled.begin(), m_compiled.end(),
+		    in, out);
+	}
+
+	std::pair<size_t, std::vector<size_t>::const_iterator> 
+	    swap(size_t output_offset, size_t input_offset,
+		std::vector<size_t>::const_iterator it,
+		std::vector<size_t>::const_iterator end,
+		Value in, Value out);
+
+	void display();
+    };
 }
 
 #endif

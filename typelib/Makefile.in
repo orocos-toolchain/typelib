@@ -14,7 +14,7 @@ LIB_NAME = typeLib
 
 typeLib_SRC = registry.cc typebuilder.cc typemodel.cc typename.cc typevisitor.cc typedisplay.cc exporter.cc \
 	      pluginmanager.cc ioplugins.cc value.cc importer.cc \
-	      csvoutput.cc
+	      csvoutput.cc endianness.cc
 
 # read info libtool about these variables
 typeLib_VERSION = 0
