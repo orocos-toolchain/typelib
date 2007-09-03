@@ -433,13 +433,31 @@ module Typelib
 	# 
 	# +options+ is an option hash. The Ruby bindings define
 	# the following specific options:
-	# * merge: merges +file+ into this repository. If this is
-	#	   false, an exception is raised if +file+ contains
-	#	   types already defined in +self+, event if the
-	#	   definitions are the same.
+	# merge:: 
+	#   merges +file+ into this repository. If this is
+	#   false, an exception is raised if +file+ contains
+	#   types already defined in +self+, event if the
+	#   definitions are the same.
 	#
-	# See Typelib documentation for other valid options 
-	# (which are specific to the filetype).
+	#     registry.import(my_path, :merge => true)
+	#
+	# The Tlb importer has no options
+	#
+	# The C importer defines the following options:
+	# preprocessor:
+	# define:: a list of VAR=VALUE or VAR options for cpp
+	#              registry.import(my_path, :define => ['PATH=/usr', 'NDEBUG'])
+	# include:: a list of path to add to cpp's search path
+	#              registry.import(my_path, :include => ['/usr', '/home/blabla/prefix/include'])
+	# rawflags:: flags to be passed as-is to cpp. For instance, the two
+	#            previous examples can be written
+	#
+	#              registry.import(my_path, 
+	#		    :rawflags => ['-I/usr', '-I/home/blabla/prefix/include', 
+	#				  -DPATH=/usr', -DNDEBUG])
+	#
+	# keep_cpp_output:: if true, the output of cpp is kept
+	#
         def import(file, kind = nil, options = {})
 	    file = File.expand_path(file)
             kind    = Registry.guess_type(file) if !kind
