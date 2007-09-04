@@ -138,8 +138,8 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
     size_t expected_a[]  = {
-	3, 2, 1, 0, // long a
-	7, 6, 5, 4, // long b
+	CompileEndianSwapVisitor::FLAG_SWAP_4,
+	CompileEndianSwapVisitor::FLAG_SWAP_4,
 	CompileEndianSwapVisitor::FLAG_SKIP, 2, // char c plus one alignment byte
 	11, 10
     };
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
 	// The second field is an array of floats, check it
 	size_t expected[] = {
 	    CompileEndianSwapVisitor::FLAG_ARRAY, 100, 4,
-	    offset + 3, offset + 2, offset + 1, offset,
+	    CompileEndianSwapVisitor::FLAG_SWAP_4,
 	    CompileEndianSwapVisitor::FLAG_END
 	};
 
@@ -201,10 +201,8 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
 	compiled.apply(type);
 
 	size_t expected[] = {
-	    CompileEndianSwapVisitor::FLAG_ARRAY, 10, 40,
-	    CompileEndianSwapVisitor::FLAG_ARRAY, 10, 4,
-	    3, 2, 1, 0,
-	    CompileEndianSwapVisitor::FLAG_END,
+	    CompileEndianSwapVisitor::FLAG_ARRAY, 100, 4,
+	    CompileEndianSwapVisitor::FLAG_SWAP_4,
 	    CompileEndianSwapVisitor::FLAG_END
 	};
 	size_t expected_size = sizeof(expected) / sizeof(size_t);

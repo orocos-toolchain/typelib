@@ -11,17 +11,17 @@ namespace Typelib
     class EndianSwapVisitor : public ValueVisitor
     {
     protected:
-        bool visit_ (int8_t  & value) { utilmm::endian::swap(value, value); return true; }
-        bool visit_ (uint8_t & value) { utilmm::endian::swap(value, value); return true; }
-        bool visit_ (int16_t & value) { utilmm::endian::swap(value, value); return true; }
-        bool visit_ (uint16_t& value) { utilmm::endian::swap(value, value); return true; }
-        bool visit_ (int32_t & value) { utilmm::endian::swap(value, value); return true; }
-        bool visit_ (uint32_t& value) { utilmm::endian::swap(value, value); return true; }
-        bool visit_ (int64_t & value) { utilmm::endian::swap(value, value); return true; }
-        bool visit_ (uint64_t& value) { utilmm::endian::swap(value, value); return true; }
-        bool visit_ (float   & value) { utilmm::endian::swap(value, value); return true; }
-        bool visit_ (double  & value) { utilmm::endian::swap(value, value); return true; }
-        bool visit_ (Enum::integral_type& v, Enum const& e) { utilmm::endian::swap(v, v); return true; }
+        bool visit_ (int8_t  & value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (uint8_t & value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (int16_t & value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (uint16_t& value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (int32_t & value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (uint32_t& value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (int64_t & value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (uint64_t& value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (float   & value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (double  & value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (Enum::integral_type& v, Enum const& e) { v = utilmm::endian::swap(v); return true; }
     };
 
     /** Swaps the endianness of +v+ by using a EndianSwapVisitor */
@@ -53,6 +53,8 @@ namespace Typelib
 	static size_t const FLAG_SKIP  = ((size_t) -1);
 	static size_t const FLAG_ARRAY = ((size_t) -2);
 	static size_t const FLAG_END   = ((size_t) -3);
+	static size_t const FLAG_SWAP_4 = ((size_t) -4);
+	static size_t const FLAG_SWAP_8 = ((size_t) -5);
 	static const size_t SizeOfEnum = sizeof(int);;
 
     protected:
@@ -66,12 +68,7 @@ namespace Typelib
 
     public:
 	~CompileEndianSwapVisitor() { }
-	void apply(Type const& type)
-	{
-	    m_output_index = 0;
-	    m_compiled.clear();
-	    TypeVisitor::apply(type);
-	}
+	void apply(Type const& type);
 
 	void swap(Value in, Value out)
 	{

@@ -206,7 +206,22 @@ VALUE value_initialize(VALUE self, VALUE ptr)
 }
 
 static
-VALUE value_endian_swap_b(VALUE self)
+VALUE value_endian_swap(VALUE self)
+{
+    Value& value = rb2cxx::object<Value>(self);
+    CompileEndianSwapVisitor compiled;
+    compiled.apply(value.getType());
+
+    void* new_data = malloc(value.getType().getSize());
+    Value new_value(new_data, value.getType());
+    compiled.swap(value, new_value);
+
+    VALUE registry = rb_iv_get(rb_class_of(self), "@registry");
+    return cxx2rb::value_wrap(new_value, registry, Qnil, Qnil, Qnil);
+}
+
+static
+VALUE value_endian_swap_b(VALUE self, VALUE rb_compile)
 {
     Value& value = rb2cxx::object<Value>(self);
     endian_swap(value);
@@ -348,6 +363,7 @@ VALUE value_dup(VALUE self)
     size_t size = value.getType().getSize();
     void* new_value = malloc(size);
     memcpy(new_value, value.getData(), size);
+
     return cxx2rb::value_wrap(Value(new_value, value.getType()), registry, Qnil, Qnil, Qnil);
 }
 
@@ -364,6 +380,7 @@ void Typelib_init_values()
     rb_define_method(cType, "to_ruby",      RUBY_METHOD_FUNC(&value_to_ruby), 0);
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
     rb_define_method(cType, "memory_eql?",      RUBY_METHOD_FUNC(&value_memory_eql_p), 1);
+    rb_define_method(cType, "endian_swap",      RUBY_METHOD_FUNC(&value_endian_swap), 0);
     rb_define_method(cType, "endian_swap!",      RUBY_METHOD_FUNC(&value_endian_swap_b), 0);
     rb_define_method(cType, "dup", RUBY_METHOD_FUNC(&value_dup), 0);
 
