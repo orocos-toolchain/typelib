@@ -22,6 +22,7 @@ typeLib_AGE = 0
 typeLib_REVISION = 1
 
 typeLib_CPPFLAGS = $(LIBXML_CFLAGS) $(BOOST_CXXFLAGS) $(UTILMM_CXXFLAGS) -I$(top_srcdir) -I$(srcdir)
+typeLib_CXXFLAGS = -fno-strict-aliasing
 typeLib_LDFLAGS = $(LIBXML_LIBS) $(BOOST_LDFLAGS) $(UTILMM_LDFLAGS)
 typeLib_LIBS	= $(top_builddir)/lang/cimport/libtypeLang_c.la $(top_builddir)/lang/tlb/libtypeLang_tlb.la
 

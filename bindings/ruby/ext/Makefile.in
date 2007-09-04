@@ -13,7 +13,7 @@ MODULE = typelib_ruby
 
 typelib_ruby_SRC = typelib_ruby.cc value.cc strings.cc convert.cc functions.cc specialized_types.cc registry.cc
 typelib_ruby_CPPFLAGS = -I$(top_srcdir) $(UTILMM_CXXFLAGS)
-typelib_ruby_CXXFLAGS =
+typelib_ruby_CXXFLAGS = -fno-strict-aliasing
 typelib_ruby_LDFLAGS =
 typelib_ruby_LIBS = $(top_builddir)/typelib/libtypeLib.la
 typelib_ruby_HEADERS = typelib_ruby.hh

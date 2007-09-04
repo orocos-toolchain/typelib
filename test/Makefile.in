@@ -13,7 +13,7 @@ include $(top_builddir)/mk/init.mk
 TEST_RUN_DIR=$(srcdir)
 UNIT_TEST=typelib
 typelib_CPPFLAGS = -I$(top_srcdir) -I$(builddir) $(UTILMM_CXXFLAGS)
-typelib_CXXFLAGS = 
+typelib_CXXFLAGS = -fno-strict-aliasing
 typelib_LDFLAGS = $(top_builddir)/typelib/libtypeLib.la $(top_builddir)/lang/cimport/libtypeLang_c.la $(top_builddir)/lang/tlb/libtypeLang_tlb.la $(ANTLR_LDFLAGS) $(UTILMM_LDFLAGS)
 
 ifeq ($(HAS_RUBY_SUPPORT),yes)
