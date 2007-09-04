@@ -40,9 +40,10 @@ bool TypeDisplayVisitor::visit_(Compound const& type, Field const& field)
     m_stream << "\n";
     return true;
 }
+
 bool TypeDisplayVisitor::visit_(Numeric const& type)
 {
-    char const* name;
+    char const* name = "";
     switch (type.getNumericCategory())
     {
     case Numeric::SInt:

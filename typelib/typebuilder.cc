@@ -102,6 +102,8 @@ namespace Typelib
         return builder.getType();
     }
 
+    class InvalidIndirectName : public std::exception { };
+
     TypeBuilder::TypeSpec TypeBuilder::parse(const Registry& registry, const std::string& full_name)
     {
         static const char* first_chars = "*[";
@@ -130,6 +132,8 @@ namespace Typelib
                 new_mod.size = 1;
                 ++end;
             } 
+	    else
+		throw InvalidIndirectName();
             modlist.push_back(new_mod);
         }
 

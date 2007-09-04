@@ -47,6 +47,7 @@ namespace Typelib
         }
         // Never reached
         assert(false);
+	return false; // to shut up gcc
     }
 
     void TypeVisitor::apply(Type const& type)

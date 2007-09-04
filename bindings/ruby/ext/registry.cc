@@ -95,6 +95,7 @@ VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
 
     // never reached
     assert(false);
+    return Qnil;
 }
 
 /* Private method to import a given file in the registry
