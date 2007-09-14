@@ -2,6 +2,7 @@
 extern "C" {
 #include <dl.h>
 }
+#include <ruby.h>
 
 #include <sstream>
 #include <limits>
@@ -17,10 +18,19 @@ using namespace Typelib;
 using std::numeric_limits;
 
 namespace cxx2rb {
-    /* There are constraints when creating a Ruby wrapper for a Type,
-     * mainly for avoiding GC issues
-     * This function does the work
-     * It needs the registry v type is from
+    /* There are constraints when creating a Ruby wrapper for a Type, mainly
+     * for avoiding GC issues. This function does the work.
+     *
+     * The main issue is that Ruby/DL does not keep refcounters on memory.
+     * Instead, it returns always the same DLPtr object for a given memory
+     * pointer. Problems arise when one of the two following situations are met:
+     * * we reference a memory zone inside another memory zone (for instance,
+     *   an array element or a structure field). In that case, the DLPtr object
+     *   must not free the allocated zone. 
+     * * two Typelib objects reference the same memory zone (first array
+     *   element or first field of a structure). In that case, we must reuse the
+     *   same DLPtr object, or DL will override the free function of the other
+     *   DLPtr object -- which is obviously wrong, but nevertheless done.
      */
     VALUE value_wrap(Value v, VALUE registry, VALUE klass, VALUE parent, VALUE dlptr)
     {
@@ -32,9 +42,7 @@ namespace cxx2rb {
 	    dlptr = rb_dlptr_new(v.getData(), v.getType().getSize(), free_func);
 	}
         VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, dlptr);
-
-	if (!NIL_P(parent))
-	    rb_iv_set(wrapper, "@parent_value", parent);
+	rb_iv_set(wrapper, "@parent_value", parent);
 
 	return wrapper;
     }
@@ -191,7 +199,7 @@ VALUE value_initialize(VALUE self, VALUE ptr)
     Value& value = rb2cxx::object<Value>(self);
     Type const& t(rb2cxx::object<Type>(rb_class_of(self)));
 
-    if (NIL_P(ptr) || TYPE(ptr) == T_STRING)
+    if (NIL_P(ptr) || rb_obj_is_kind_of(ptr, rb_cString))
     {
         VALUE buffer = rb_dlptr_malloc(t.getSize(), free);
 	if (! NIL_P(ptr))
@@ -212,7 +220,7 @@ VALUE value_endian_swap(VALUE self)
     CompileEndianSwapVisitor compiled;
     compiled.apply(value.getType());
 
-    void* new_data = malloc(value.getType().getSize());
+    void* new_data = xmalloc(value.getType().getSize());
     Value new_value(new_data, value.getType());
     compiled.swap(value, new_value);
 
@@ -361,7 +369,7 @@ VALUE value_dup(VALUE self)
     Value const& value(rb2cxx::object<Value>(self));
     VALUE registry = rb_iv_get(rb_class_of(self), "@registry");
     size_t size = value.getType().getSize();
-    void* new_value = malloc(size);
+    void* new_value = xmalloc(size);
     memcpy(new_value, value.getData(), size);
 
     return cxx2rb::value_wrap(Value(new_value, value.getType()), registry, Qnil, Qnil, Qnil);

@@ -36,7 +36,7 @@ static VALUE dl_ptr_to_ptr(VALUE ptr)
     VALUE newptr = rb_dlptr_malloc(sizeof(void*), free);
     *reinterpret_cast<void**>(rb_dlptr2cptr(newptr)) = rb_dlptr2cptr(ptr);
     // Protect ptr against GC
-    rb_iv_set(newptr, "@points_on", newptr);
+    rb_iv_set(newptr, "@points_to", ptr);
     return newptr;
 }
 

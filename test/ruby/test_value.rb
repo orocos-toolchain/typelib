@@ -67,7 +67,7 @@ class TC_Value < Test::Unit::TestCase
         value = type.new
         assert_equal(value.class, type)
         ptr   = value.to_ptr
-        assert_equal(value, ptr.deference)
+        assert_same(value, ptr.deference)
     end
 
     def test_string_handling

@@ -44,7 +44,7 @@ static VALUE compound_field_get(VALUE rbvalue, VALUE name)
     try { 
         Value field_value = value_get_field(value, StringValuePtr(name));
 	if (value.getData() == field_value.getData())
-	    return typelib_to_ruby(field_value, registry, Qnil, rb_iv_get(rbvalue, "@ptr"));
+	    return typelib_to_ruby(field_value, registry, rbvalue, rb_iv_get(rbvalue, "@ptr"));
 	else
 	    return typelib_to_ruby(field_value, registry, rbvalue, Qnil);
     } 
@@ -71,7 +71,7 @@ static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
  */
 static VALUE pointer_deference(VALUE self)
 {
-    VALUE pointed_to = rb_iv_get(self, "@pointed_object");
+    VALUE pointed_to = rb_iv_get(self, "@points_to");
     if (!NIL_P(pointed_to))
 	return pointed_to;
 
@@ -205,7 +205,7 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
     {
 	Value v = Value(data + array_type.getSize() * index, array_type);
 	if (index == 0)
-	    return typelib_to_ruby( v, registry, Qnil, rb_iv_get(self, "@ptr") );
+	    return typelib_to_ruby( v, registry, self, rb_iv_get(self, "@ptr") );
 	else
 	    return typelib_to_ruby( v, registry, self, Qnil );
     }
@@ -218,7 +218,7 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
 
 	if (index == 0)
 	{
-	    VALUE rb_v = typelib_to_ruby( Value(data, array_type), registry, Qnil, rb_iv_get(self, "@ptr") );
+	    VALUE rb_v = typelib_to_ruby( Value(data, array_type), registry, self, rb_iv_get(self, "@ptr") );
 	    rb_ary_push(ret, rb_v);
 	    index += 1;
 	    size  -= 1;

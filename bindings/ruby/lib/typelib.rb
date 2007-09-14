@@ -155,11 +155,8 @@ module Typelib
 	# returns a PointerType object which points to +self+. Note that
 	# to_ptr.deference == self
         def to_ptr
-	    pointed = self
             pointer = self.class.to_ptr.wrap(@ptr.to_ptr)
-	    pointer.instance_eval do
-		@pointed_to = pointed
-	    end
+	    pointer.instance_variable_set(:@points_to, self)
 	    pointer
         end
 	
