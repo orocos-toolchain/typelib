@@ -275,5 +275,21 @@ class TC_MemoryManagement < Test::Unit::TestCase
 	    check_finalization(deep, true)
 	end
     end
+
+    def test_dl_to_ptr
+	registry = make_registry
+	dlptr = nil
+	assert_finalization do
+	    value = registry.get("/TestMemoryManagement").new
+	    dl = value.instance_variable_get("@ptr")
+	    assert(dl)
+	    dlptr = dl.to_ptr
+	    assert(dlptr)
+
+	    check_finalization(value, true)
+	    check_finalization(dl, false)
+	    check_finalization(dlptr, false)
+	end
+    end
 end
 
