@@ -203,7 +203,13 @@ VALUE value_initialize(VALUE self, VALUE ptr)
     {
         VALUE buffer = rb_dlptr_malloc(t.getSize(), free);
 	if (! NIL_P(ptr))
+	{
+	    if (static_cast<size_t>(RSTRING(ptr)->len) < t.getSize())
+		rb_raise(rb_eArgError, "given buffer is too short: got %d, but %s has size %d",
+			RSTRING(ptr)->len, t.getName().c_str(), t.getSize());
+
 	    memcpy(rb_dlptr2cptr(buffer), StringValuePtr(ptr), t.getSize());
+	}
 	ptr = buffer;
     }
 

@@ -47,10 +47,13 @@ class TC_Value < Test::Unit::TestCase
 
     def test_byte_array
 	as_string = [5].pack('L')
-	rb_value = Registry.new.build("/long").wrap as_string
+	long_t = Registry.new.build("/long")
+
+	assert_raises(ArgumentError) { long_t.wrap "" }
+	rb_value = long_t.wrap as_string
 	as_string = rb_value.to_byte_array
 	assert_equal(4, as_string.size)
-	assert_equal(5, rb_value.to_byte_array.unpack('L').first)
+	assert_equal(5, as_string.unpack('L').first)
 
         a = make_registry.get('ADef').new :a => 10, :b => 20, :c => 30, :d => 40
 	assert_equal([10, 20, 30, 40], a.to_byte_array.unpack('llcxs'))
