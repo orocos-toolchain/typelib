@@ -31,7 +31,7 @@ lang_c_SRC = import.cc Dictionary.cc Support.cc \
 # lang_c_AGE = 0
 # lang_c_REVISION = 1
 
-lang_c_CPPFLAGS = $(TYPELIB_CXXFLAGS) $(ANTLR_CFLAGS) $(UTILMM_CXXFLAGS) -I$(builddir) -I$(srcdir)
+lang_c_CPPFLAGS = -I$(builddir) -I$(srcdir) $(TYPELIB_CXXFLAGS) $(ANTLR_CFLAGS) $(UTILMM_CXXFLAGS)
 lang_c_LDFLAGS = $(UTILMM_LDFLAGS) $(BOOST_FILESYSTEM_LDFLAGS) $(ANTLR_LDFLAGS)
 
 ############ end: lang_c
