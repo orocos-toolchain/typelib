@@ -194,6 +194,9 @@ module Typelib
 	# * an array, in which case the fields are initialized in order
 	# Note that a compound should be either fully initialized or not initialized
         def initialize(ptr, *init)
+	    # A hash in which we cache Type objects for each of the structure fields
+	    @fields = Hash.new
+
             super(ptr)
             return if init.empty?
 
@@ -238,7 +241,7 @@ module Typelib
             def subclass_initialize
                 @fields = get_fields.map! do |name, offset, type|
                     if !method_defined?(name)
-			define_method(name) { get_field(name) }
+			define_method(name) { self[name] }
                         if type.writable? || type < CompoundType
                             define_method("#{name}=") { |value| self[name] = value }
                         end
@@ -318,7 +321,15 @@ module Typelib
 	    raise e, "#{e.message} for #{self.class.name}.#{name}"
 	end
 	# Returns the value of the field +name+
-        def [](name); get_field(name) end
+        def [](name)
+	    if !(value = @fields[name])
+		value = get_field(name)
+		if value.kind_of?(Type)
+		    @fields[name] = value
+		end
+	    end
+	    value
+	end
         def to_ruby; self end
     end
 

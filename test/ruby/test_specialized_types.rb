@@ -97,7 +97,10 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         a.c = 30;
         a.d = 40;
         assert( check_struct_A_value(a) )
-	
+        assert_equal(10, a.a)
+        assert_equal(20, a.b)
+        assert_equal(30, a.c)
+        assert_equal(40, a.d)
     end
 
     def test_compound_recursive
@@ -105,6 +108,9 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         GC.start
         assert(b.respond_to?(:a))
         check_respond_to_fields(b.a)
+
+	a = b.a
+	assert_same(a, b.a)
 
         set_struct_A_value(b.a)
         assert_equal(10, b.a.a)

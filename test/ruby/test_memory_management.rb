@@ -176,7 +176,8 @@ class TC_MemoryManagement < Test::Unit::TestCase
 		check_finalization(struct, true, 1)
 		check_finalization(struct.instance_variable_get(:@ptr), false)
 		check_finalization(struct.instance_variable_get(:@ptr), true, 1)
-		check_finalization(first_el, true)
+		check_finalization(first_el, false)
+		check_finalization(first_el, true, 1)
 		check_finalization(other_el, false)
 	    end
 
