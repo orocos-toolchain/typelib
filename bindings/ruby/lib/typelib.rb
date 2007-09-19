@@ -565,11 +565,28 @@ module Typelib
 	attr_reader :spec
 	def initialize(*spec); @spec = spec end
 	# Calls the function with +args+ for arguments
-	def call(*args); Typelib.function_call(args, *spec) end
+	def call(*args)
+	    filtered_args = Typelib.filter_function_args(args, *spec)
+	    Typelib.function_call(filtered_args, *spec) 
+	end
 	alias :[] :call
 	# Checks that +args+ is a valid set of arguments for this function
 	def filter(*args); Typelib.filter_function_args(args, *spec) end
 	alias :check :filter
+
+	def compile(*args)
+	    CompiledCall.new(@spec, args)
+	end
+    end
+
+    class CompiledCall
+	def initialize(spec, args)
+	    @spec, @args = spec, Typelib.filter_function_args(args, *spec)
+	end
+
+	def call
+	    Typelib.function_call(@args, *@spec)
+	end
     end
 
     # Implement Typelib's argument handling
@@ -636,17 +653,8 @@ module Typelib
 
     # Do the function call, handling return types
     def self.function_call(args, wrapper, return_type, return_spec, arg_types) # :nodoc:
-	# Keep track of String objects for return values
-	strings = return_spec.inject([]) do |strings, index|
-	    ary_idx = index.abs - 1
-	    strings[ary_idx] = true if String === args[ary_idx]
-	    strings
-	end
-	
-	filtered_args = filter_function_args(args, wrapper, return_type, return_spec, arg_types)
-
         # Do call the wrapper
-        retval, retargs = do_call_function(wrapper, filtered_args, return_type, arg_types) 
+        retval, retargs = do_call_function(wrapper, args, return_type, arg_types) 
         return if return_type.nil? && return_spec.empty?
 
         # Get the return array
@@ -659,7 +667,7 @@ module Typelib
             end
         end
 
-        return_spec.each do |index|
+        for index in return_spec
             ary_idx = index.abs - 1
 
             value = retargs[ary_idx]

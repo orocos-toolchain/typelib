@@ -192,5 +192,14 @@ class TC_DL < Test::Unit::TestCase
         assert_equal("string_return", retval.to_str)
     end
 
+    def test_compile
+        wrapper = lib.wrap('test_string_argument', 'int', 'char*')
+	one = wrapper.compile("test")
+	zero = wrapper.compile("bla")
+	assert_equal(1, wrapper["test"])
+        assert_equal(1, one.call)
+	assert_equal(0, zero.call)
+    end
+
 end
 
