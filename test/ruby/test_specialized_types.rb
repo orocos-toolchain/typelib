@@ -216,6 +216,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 	end
 
 	(0..9).each do |y|
+	    assert_equal(y * 10, mdarray[y][0])
 	    assert_equal(y * 10 + 1, mdarray[y][1])
 
 	    (0..9).each do |x|
