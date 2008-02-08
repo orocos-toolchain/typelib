@@ -10,17 +10,16 @@ The C++ library depends on the following:
      darcs get http://www.laas.fr/~sjoyeux/darcs/utilmm
    (check the INSTALL file)
  * the antlr parser generator
- * autoconf, automake, pkg-config and libtool
+ * cmake and pkg-config
  * doxygen for the documentation (optional)
  * libxml2
 
 When all these dependencies are installed, run
-  ./autogen
-  ./configure
-  make.sh
+    cmake .
+    make
 
 and as root,
-  make install
+    make install
 
 === Ruby bindings
 The installation of the Ruby bindings require the following:

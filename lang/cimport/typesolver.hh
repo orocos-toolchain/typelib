@@ -1,7 +1,7 @@
 #ifndef __TYPESOLVER_H__
 #define __TYPESOLVER_H__
 
-#include "CPPParser.hh"
+#include <CPPParser.hpp>
 
 #include "typemodel.hh"
 #include "typebuilder.hh"

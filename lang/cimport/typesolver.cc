@@ -1,5 +1,5 @@
-#include "CPPParser.hh"
-#include "CPPLexer.hh"
+#include "CPPParser.hpp"
+#include "CPPLexer.hpp"
 #include "typesolver.hh"
 #include "registry.hh"
 #include "packing.hh"

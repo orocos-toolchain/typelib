@@ -1,7 +1,7 @@
 #include "import.hh"
 #include "registry.hh"
 
-#include "CPPLexer.hh"
+#include <CPPLexer.hpp>
 #include "typesolver.hh"
 
 #include <fstream>

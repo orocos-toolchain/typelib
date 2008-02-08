@@ -39,3 +39,4 @@
 ^aclocal.m4
 -stamp$
 ^doc($|/)
+^build

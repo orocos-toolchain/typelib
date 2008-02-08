@@ -20,23 +20,23 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     {
 	Registry temp_registry;
 	utilmm::config_set config;
-	config.set("include", "../");
+	config.set("include", TEST_DATA_PATH(".."));
 	config.set("define", "GOOD");
-	BOOST_CHECK_NO_THROW( importer->load("test_cimport.h", config, temp_registry) );
+	BOOST_CHECK_NO_THROW( importer->load(test_file, config, temp_registry) );
     }
     {
 	Registry temp_registry;
 	utilmm::config_set config;
-	config.insert("rawflag", "-I../");
+	config.insert("rawflag", "-I" TEST_DATA_PATH(".."));
 	config.insert("rawflag", "-DGOOD");
-	BOOST_CHECK_NO_THROW( importer->load("test_cimport.h", config, temp_registry) );
+	BOOST_CHECK_NO_THROW( importer->load(test_file, config, temp_registry) );
     }
 
     utilmm::config_set config;
     // Load the file in registry
     BOOST_CHECK_THROW( importer->load("does_not_exist", config, registry), ImportError);
-    BOOST_CHECK_THROW( importer->load("test_cimport.h", config, registry), ImportError );
-    config.set("include", "../");
+    BOOST_CHECK_THROW( importer->load(test_file, config, registry), ImportError );
+    config.set("include", TEST_DATA_PATH(".."));
     config.set("define", "GOOD");
     BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
 

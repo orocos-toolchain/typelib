@@ -22,7 +22,7 @@ inline void set_log_threshold_level(log_level lev)
 { unit_test_log.set_threshold_level(lev); }
 #endif
 
-#define TEST_DATA_PATH(x) "@abs_top_srcdir@/test/" x
+#define TEST_DATA_PATH(x) "@CMAKE_SOURCE_DIR@/test/" x
 
 #endif
 
