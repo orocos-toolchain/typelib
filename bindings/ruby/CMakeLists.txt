@@ -6,6 +6,8 @@ ADD_RUBY_EXTENSION(typelib_ruby
     ext/convert.cc ext/functions.cc ext/specialized_types.cc 
     ext/registry.cc)
 
+TARGET_LINK_LIBRARIES(typelib_ruby typeLib)
+
 INSTALL(TARGETS typelib_ruby
     LIBRARY DESTINATION ${RUBY_EXTENSIONS_INSTALL_DIR})
 INSTALL(FILES lib/typelib.rb
