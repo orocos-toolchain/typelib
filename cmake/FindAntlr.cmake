@@ -1,10 +1,28 @@
-# - Try to find Boost include dirs and libraries
-# Usage of this module as follows:
+# This scripts finds the Antlr parser generator and language-specific configuration
+# files as specified by the components field of FIND_PACKAGE. If antlr is available,
+# a ADD_ANTLR_GRAMMAR macro is also defined which helps adding Antlr grammars to 
+# the build (see below)
 #
-#     FIND_PACKAGE( Antlr )
+#   FIND_PACKAGE(Antlr COMPONENTS lang1 lang2 ...)
+# If Antlr is found, sets Antlr_FOUND to true and defines Antlr_EXECUTABLE as
+# the parser generator (the script searches for antlr, cantlr and runantlr)
+#
+# The following language packages are supported:
+#   CPP: C++ language support. It searches for the antlr-config script
+#        and defines the related compiler flags, include directories
+#        and libraries:
+#      Antlr_ANTLR_CONFIG_EXECUTABLE is set to the full path of antlr-config
+#      Antlr_CFLAGS is set to the compiler flags and
+#      Antlr_LIBRARIES to the runtime library.
+#      If a PIC version of the runtime library (suitable to build shared
+#      libraries on some Unices) is found, Antlr_PIC_LIBRARIES is set as well.
+#
+# ADD_ANTLR_GRAMMAR is to be used as follows:
+#    ADD_ANTLR_GRAMMAR(mygrammar.g mygrammar_output_files)
+#    ADD_EXECUTABLE(${mygrammar_output_files} other_source.c)
 
 SET(Antlr_FOUND FALSE)
-FIND_PROGRAM(ANTLR NAMES cantlr antlr runantlr)
+FIND_PROGRAM(Antlr_EXECUTABLE NAMES cantlr antlr runantlr)
 
 MACRO(ADD_ANTLR_GRAMMAR grammar_file output_var)
     IF (NOT Antlr_FOUND)
@@ -25,7 +43,7 @@ MACRO(ADD_ANTLR_GRAMMAR grammar_file output_var)
     # the source file keeps an update time > than the output files.
     # Fix it by using touch
     ADD_CUSTOM_COMMAND(OUTPUT ${_antlr_generated_files}
-	COMMAND ${ANTLR} ${CMAKE_CURRENT_SOURCE_DIR}/${grammar_file}
+	COMMAND ${Antlr_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${grammar_file}
 	COMMAND touch ${_antlr_generated_files}
 	DEPENDS ${grammar_file})
     SET(${output_var} "${_antlr_generated_files}")
@@ -34,7 +52,7 @@ MACRO(ADD_ANTLR_GRAMMAR grammar_file output_var)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 ENDMACRO(ADD_ANTLR_GRAMMAR)
 
-IF(ANTLR)
+IF(Antlr_EXECUTABLE)
     SET(Antlr_FOUND TRUE)
 
     FOREACH(lang ${Antlr_FIND_COMPONENTS})
@@ -45,29 +63,29 @@ IF(ANTLR)
 
 	IF(Antlr_SEARCH_CPP)
 	    SET(Antlr_FOUND FALSE)
-	    FIND_PROGRAM(ANTLR_CONFIG NAMES antlr-config)
+	    FIND_PROGRAM(Antlr_ANTLR_CONFIG_EXECUTABLE NAMES antlr-config)
 
-	    IF(ANTLR_CONFIG)
+	    IF(Antlr_ANTLR_CONFIG_EXECUTABLE)
 		SET(Antlr_FOUND TRUE)
 
-		EXECUTE_PROCESS(COMMAND ${ANTLR_CONFIG} --cflags
+		EXECUTE_PROCESS(COMMAND ${Antlr_ANTLR_CONFIG_EXECUTABLE} --cflags
 		    OUTPUT_VARIABLE Antlr_CFLAGS)
 		STRING(REPLACE "\n" "" Antlr_CFLAGS ${Antlr_CFLAGS})
 
-		EXECUTE_PROCESS(COMMAND ${ANTLR_CONFIG} --libs
+		EXECUTE_PROCESS(COMMAND ${Antlr_ANTLR_CONFIG_EXECUTABLE} --libs
 		    OUTPUT_VARIABLE Antlr_LIBRARIES)
 		STRING(REPLACE "\n" "" Antlr_LIBRARIES ${Antlr_LIBRARIES})
 		STRING(REPLACE ".a" "-pic.a" Antlr_PIC_LIBRARIES "${Antlr_LIBRARIES}")
 
 		MARK_AS_ADVANCED(Antlr_CFLAGS Antlr_LIBRARIES Antlr_PIC_LIBRARIES)
-	    ENDIF(ANTLR_CONFIG)
+	    ENDIF(Antlr_ANTLR_CONFIG_EXECUTABLE)
 	ENDIF(Antlr_SEARCH_CPP)
     ENDFOREACH(lang)
-ENDIF(ANTLR)
+ENDIF(Antlr_EXECUTABLE)
 
 IF (Antlr_FOUND)
     IF (NOT Antlr_FIND_QUIETLY)
-	MESSAGE(STATUS "Found the Antlr executable: ${ANTLR}")
+	MESSAGE(STATUS "Found the Antlr executable: ${Antlr_EXECUTABLE}")
     ENDIF(NOT Antlr_FIND_QUIETLY)
 ELSE (Antlr_FOUND)
     IF (Antlr_FIND_REQUIRED)
