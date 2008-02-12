@@ -46,17 +46,17 @@ class TC_Value < Test::Unit::TestCase
     end
 
     def test_byte_array
-	as_string = [5].pack('L')
-	long_t = Registry.new.build("/long")
+	as_string = [5].pack('S')
+	long_t = Registry.new.build("/short")
 
 	assert_raises(ArgumentError) { long_t.wrap "" }
 	rb_value = long_t.wrap as_string
 	as_string = rb_value.to_byte_array
-	assert_equal(4, as_string.size)
-	assert_equal(5, as_string.unpack('L').first)
+	assert_equal(2, as_string.size)
+	assert_equal(5, as_string.unpack('S').first)
 
         a = make_registry.get('ADef').new :a => 10, :b => 20, :c => 30, :d => 40
-	assert_equal([10, 20, 30, 40], a.to_byte_array.unpack('llcxs'))
+	assert_equal([10, 20, 30, 40], a.to_byte_array.unpack('Qicxs'))
     end
 
     def test_pointer
@@ -123,11 +123,11 @@ class TC_Value < Test::Unit::TestCase
         registry = make_registry
         a = registry.get("/struct A").new
 	assert( a.is_a?("/struct A") )
-	assert( a.is_a?("/long") )
+	assert( a.is_a?("/long long") )
 	assert( a.is_a?(/ A$/) )
 
 	assert( a.is_a?(registry.get("/struct A")) )
-	assert( a.is_a?(registry.get("long")) )
+	assert( a.is_a?(registry.get("long long")) )
     end
 
     def test_dup
