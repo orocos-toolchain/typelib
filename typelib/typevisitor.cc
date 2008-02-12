@@ -2,6 +2,8 @@
 
 namespace Typelib
 {
+    bool visit_ ( NullType const& type )
+    { throw NullTypeFound(); }
     bool TypeVisitor::visit_  (Numeric const& type)
     { return true; }
     bool TypeVisitor::visit_  (Enum const& type)
@@ -33,7 +35,7 @@ namespace Typelib
         switch(type.getCategory())
         {
             case Type::NullType:
-                throw NullTypeFound();
+                return visit_ ( dynamic_cast<NullType const&>(type) );
             case Type::Numeric:
                 return visit_( dynamic_cast<Numeric const&>(type) );
             case Type::Enum:
