@@ -2,7 +2,7 @@ require 'set'
 require 'test_config'
 require 'typelib'
 require 'test/unit'
-require '.libs/test_rb_value'
+require BUILDDIR + '/ruby/libtest_ruby'
 require 'pp'
 
 class TC_SpecializedTypes < Test::Unit::TestCase

@@ -1,7 +1,7 @@
 require 'test_config'
 require 'typelib'
 require 'test/unit'
-require '.libs/test_rb_value'
+require BUILDDIR + '/ruby/libtest_ruby'
 require 'pp'
 
 require 'drb'
