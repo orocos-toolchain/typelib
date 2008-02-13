@@ -1,12 +1,7 @@
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@
-extdir=@RUBY_EXTDIR@
+extdir=@CMAKE_INSTALL_PREFIX@/@RUBY_EXTENSIONS_INSTALL_DIR@
 
 Name: typelib
-Description: Type model and manipulation library
-Version: @PACKAGE_VERSION@
+Description: Manipulating in-memory C-types structures and typed function call library
 Libs: -L${extdir}
 Cflags: -I${extdir}
 
