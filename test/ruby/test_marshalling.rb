@@ -1,3 +1,9 @@
+# WARNING: this test case does not pass. Ruby -- as of now -- does not support
+# a straightforward way to marshall Type classes and values even though Matz agreed
+# that the current behaviour is a bug.
+#
+# Yes, the Ruby development process sucks ...
+
 require 'test_config'
 require 'typelib'
 require 'test/unit'
@@ -29,7 +35,7 @@ class TC_Marshalling  < Test::Unit::TestCase
         registry = Registry.new
         registry.import( File.join(SRCDIR, "test_cimport.1"), "c" )
 
-	DRb.start_service
+        DRb.start_service
         t = registry.get("/struct A")
         v = t.new :a => 10, :b => 20, :c => 30, :d => 40
         assert_nothing_raised { m_v = Marshal.dump(v) }
@@ -42,32 +48,32 @@ class TC_Marshalling  < Test::Unit::TestCase
     end
 
     def test_drb
-	pid = fork do
-	    registry = Registry.new
-	    registry.import( File.join(SRCDIR, "test_cimport.1"), "c" )
+        pid = fork do
+            registry = Registry.new
+            registry.import( File.join(SRCDIR, "test_cimport.1"), "c" )
 
-	    front = Class.new do
-		define_method(:get) do
-		    t = registry.get("/struct A")
-		    t.new :a => 10, :b => 20, :c => 30, :d => 40
-		end
-	    end.new
+            front = Class.new do
+        	define_method(:get) do
+        	    t = registry.get("/struct A")
+        	    t.new :a => 10, :b => 20, :c => 30, :d => 40
+        	end
+            end.new
 
-	    DRb.start_service 'druby://localhost:4765', front
-	    DRb.thread.join
-	end
+            DRb.start_service 'druby://localhost:4765', front
+            DRb.thread.join
+        end
 
-	sleep 1
-	DRb.start_service 'druby://localhost:4766'
-	remote = DRbObject.new_with_uri('druby://localhost:4765')
-	v = remote.get
-	assert_equal(10, v.a)
-	assert_equal(20, v.b)
-	assert_equal(30, v.c)
-	assert_equal(40, v.d)
+        sleep 1
+        DRb.start_service 'druby://localhost:4766'
+        remote = DRbObject.new_with_uri('druby://localhost:4765')
+        v = remote.get
+        assert_equal(10, v.a)
+        assert_equal(20, v.b)
+        assert_equal(30, v.c)
+        assert_equal(40, v.d)
 
     ensure
-	Process.kill 'KILL', pid
+        Process.kill 'KILL', pid
     end
 end
 
