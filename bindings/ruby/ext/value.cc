@@ -1,7 +1,4 @@
 #include "typelib.hh"
-extern "C" {
-#include <dl.h>
-}
 #include <ruby.h>
 
 #include <sstream>
@@ -32,18 +29,20 @@ namespace cxx2rb {
      *   same DLPtr object, or DL will override the free function of the other
      *   DLPtr object -- which is obviously wrong, but nevertheless done.
      */
-    VALUE value_wrap(Value v, VALUE registry, VALUE klass, VALUE parent, VALUE dlptr)
+    VALUE value_wrap(Value v, VALUE registry, VALUE parent)
     {
-        VALUE type      = type_wrap(v.getType(), registry);
+        VALUE type = type_wrap(v.getType(), registry);
+	VALUE ptr  = memory_wrap(v.getData());
+        VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, ptr);
+	rb_iv_set(wrapper, "@parent", parent);
+	return wrapper;
+    }
 
-	if (NIL_P(dlptr))
-	{
-	    freefunc_t free_func = NIL_P(parent) ? ::free : 0;
-	    dlptr = rb_dlptr_new(v.getData(), v.getType().getSize(), free_func);
-	}
-        VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, dlptr);
-	rb_iv_set(wrapper, "@parent_value", parent);
-
+    VALUE value_allocate(Type const& type, VALUE registry)
+    {
+        VALUE rb_type = type_wrap(type, registry);
+	VALUE ptr     = memory_allocate(type.getSize());
+        VALUE wrapper = rb_funcall(rb_type, rb_intern("wrap"), 1, ptr);
 	return wrapper;
     }
 }
@@ -181,6 +180,11 @@ static VALUE type_is_assignable(Type const& type)
     // never reached
 }
 
+VALUE type_get_registry(VALUE self)
+{
+    return rb_iv_get(self, "@registry");
+}
+
 
 /***********************************************************************************
  *
@@ -201,22 +205,29 @@ VALUE value_initialize(VALUE self, VALUE ptr)
 
     if (NIL_P(ptr) || rb_obj_is_kind_of(ptr, rb_cString))
     {
-        VALUE buffer = rb_dlptr_malloc(t.getSize(), free);
+        VALUE buffer = memory_allocate(t.getSize());
 	if (! NIL_P(ptr))
 	{
 	    if (static_cast<size_t>(RSTRING(ptr)->len) < t.getSize())
 		rb_raise(rb_eArgError, "given buffer is too short: got %d, but %s has size %d",
 			RSTRING(ptr)->len, t.getName().c_str(), t.getSize());
 
-	    memcpy(rb_dlptr2cptr(buffer), StringValuePtr(ptr), t.getSize());
+	    memcpy(memory_cptr(buffer), StringValuePtr(ptr), t.getSize());
 	}
 	ptr = buffer;
     }
 
     // Protect 'ptr' against the GC
     rb_iv_set(self, "@ptr", ptr);
-    value = Value(rb_dlptr2cptr(ptr), t);
+    value = Value(memory_cptr(ptr), t);
     return self;
+}
+
+static
+VALUE value_address(VALUE self)
+{
+    Value value = rb2cxx::object<Value>(self);
+    return LONG2NUM((long)value.getData());
 }
 
 static
@@ -226,12 +237,10 @@ VALUE value_endian_swap(VALUE self)
     CompileEndianSwapVisitor compiled;
     compiled.apply(value.getType());
 
-    void* new_data = xmalloc(value.getType().getSize());
-    Value new_value(new_data, value.getType());
-    compiled.swap(value, new_value);
-
     VALUE registry = rb_iv_get(rb_class_of(self), "@registry");
-    return cxx2rb::value_wrap(new_value, registry, Qnil, Qnil, Qnil);
+    VALUE result   = cxx2rb::value_allocate(value.getType(), registry);
+    compiled.swap(value, rb2cxx::object<Value>(result));
+    return result;
 }
 
 static
@@ -258,6 +267,7 @@ VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)
 {
     Value& self = rb2cxx::object<Value>(rbself);
     Value& with = rb2cxx::object<Value>(rbwith);
+	
     if (self.getData() == with.getData())
 	return Qtrue;
     
@@ -284,7 +294,7 @@ static VALUE value_to_ruby(VALUE self)
     Value const& value(rb2cxx::object<Value>(self));
     VALUE registry = value_get_registry(self);
     try {
-	return typelib_to_ruby(value, registry, Qnil, rb_iv_get(self, "@ptr"));
+	return typelib_to_ruby(value, registry, Qnil);
     } catch(Typelib::NullTypeFound) { }
     rb_raise(rb_eTypeError, "trying to convert 'void'");
 }
@@ -315,7 +325,7 @@ static VALUE value_to_csv(int argc, VALUE* argv, VALUE self)
 static VALUE value_zero(VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));
-    memset(value.getData(), value.getType().getSize(), 0);
+    memset(value.getData(), 0, value.getType().getSize());
     return self;
 }
 
@@ -325,10 +335,8 @@ static void typelib_validate_value_arg(VALUE arg, void*& data, size_t& size)
     Type  const& type = value.getType();
     if (type.getCategory() == Type::Pointer)
 	size = numeric_limits<size_t>::max();
-    else if (type.getCategory() == Type::Array)
-	size = static_cast<Array const&>(type).getSize();
     else
-	rb_raise(rb_eArgError, "invalid argument for memcpy: only pointers, arrays or strings are allowed");
+	size = type.getSize();
 
     data = value.getData();
 }
@@ -370,17 +378,6 @@ static VALUE typelib_memcpy(VALUE, VALUE to, VALUE from, VALUE size)
     return to;
 }
 
-VALUE value_dup(VALUE self)
-{
-    Value const& value(rb2cxx::object<Value>(self));
-    VALUE registry = rb_iv_get(rb_class_of(self), "@registry");
-    size_t size = value.getType().getSize();
-    void* new_value = xmalloc(size);
-    memcpy(new_value, value.getData(), size);
-
-    return cxx2rb::value_wrap(Value(new_value, value.getType()), registry, Qnil, Qnil, Qnil);
-}
-
 void Typelib_init_values()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
@@ -396,7 +393,7 @@ void Typelib_init_values()
     rb_define_method(cType, "memory_eql?",      RUBY_METHOD_FUNC(&value_memory_eql_p), 1);
     rb_define_method(cType, "endian_swap",      RUBY_METHOD_FUNC(&value_endian_swap), 0);
     rb_define_method(cType, "endian_swap!",      RUBY_METHOD_FUNC(&value_endian_swap_b), 0);
-    rb_define_method(cType, "dup", RUBY_METHOD_FUNC(&value_dup), 0);
+    rb_define_method(cType, "zone_address", RUBY_METHOD_FUNC(&value_address), 0);
 
     rb_define_singleton_method(cType, "to_csv", RUBY_METHOD_FUNC(type_to_csv), -1);
     rb_define_method(cType, "to_csv", RUBY_METHOD_FUNC(value_to_csv), -1);

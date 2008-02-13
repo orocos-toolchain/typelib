@@ -17,6 +17,7 @@ extern VALUE cNumeric;
 extern VALUE cEnum;
 
 /** Initialization routines */
+extern void Typelib_init_memory();
 extern void Typelib_init_values();
 extern void Typelib_init_strings();
 extern void Typelib_init_functions();
@@ -47,7 +48,7 @@ namespace cxx2rb {
         catch(Enum::ValueNotFound) { return Qnil; }
     }
 
-    VALUE value_wrap(Value v, VALUE registry, VALUE klass, VALUE parent, VALUE dlptr);
+    VALUE value_wrap(Value v, VALUE registry, VALUE parent = Qnil);
 }
 
 namespace rb2cxx {
@@ -85,7 +86,11 @@ namespace rb2cxx {
     Enum::integral_type enum_value(VALUE rb_value, Enum const& e);
 }
 
-VALUE value_get_registry(VALUE self);
+extern VALUE value_get_registry(VALUE self);
+extern VALUE type_get_registry(VALUE self);
+extern VALUE memory_wrap(void* ptr);
+extern VALUE memory_allocate(size_t size);
+extern void* memory_cptr(VALUE ptr);
 
 #endif
 

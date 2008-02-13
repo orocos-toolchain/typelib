@@ -1,12 +1,34 @@
 INCLUDE(RubyExtensions)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
 
+SET(DYNCALL_SOURCE_DIR  "${CMAKE_CURRENT_BINARY_DIR}/dyncall-0.1")
+SET(DYNCALL_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/dyncall")
+SET(DYNCALL_INCLUDE_DIR ${DYNCALL_INSTALL_DIR}/include)
+SET(DYNCALL_LIBRARIES ${DYNCALL_INSTALL_DIR}/lib/libdyncall_s.a ${DYNCALL_INSTALL_DIR}/lib/libdynload_s.a)
+INCLUDE_DIRECTORIES("${DYNCALL_INSTALL_DIR}/include")
+LINK_DIRECTORIES("${DYNCALL_INSTALL_DIR}/lib")
+
+ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_SOURCE_DIR}/ConfigVars
+    COMMAND tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/dyncall-0.1.tar.gz
+    COMMAND cd ${DYNCALL_SOURCE_DIR} && ./configure --prefix ${DYNCALL_INSTALL_DIR}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dyncall-0.1.tar.gz)
+
+ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_LIBRARIES}
+    COMMAND make "CFLAGS=-O3 -fPIC"
+    COMMAND make install
+    DEPENDS ${DYNCALL_SOURCE_DIR}/ConfigVars
+    WORKING_DIRECTORY ${DYNCALL_SOURCE_DIR})
+
+ADD_CUSTOM_TARGET(dyncall DEPENDS ${DYNCALL_LIBRARIES})
+
 ADD_RUBY_EXTENSION(typelib_ruby 
     ext/typelib_ruby.cc ext/value.cc ext/strings.cc
     ext/convert.cc ext/functions.cc ext/specialized_types.cc 
-    ext/registry.cc)
+    ext/registry.cc ext/memory.cc)
 
 TARGET_LINK_LIBRARIES(typelib_ruby typeLib)
+ADD_DEPENDENCIES(typelib_ruby dyncall)
+TARGET_LINK_LIBRARIES(typelib_ruby dyncall_s dynload_s)
 
 INSTALL(TARGETS typelib_ruby
     LIBRARY DESTINATION ${RUBY_EXTENSIONS_INSTALL_DIR})

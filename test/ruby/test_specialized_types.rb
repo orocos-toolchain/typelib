@@ -39,7 +39,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         registry = make_registry
         a_type = registry.get("/struct A")
         assert(a_type.respond_to?(:b))
-        assert(a_type.b == registry.get("/long"))
+        assert_same(registry.get("/int"), a_type.b)
 
         # Then, the same on values
         a = a_type.new
@@ -243,13 +243,13 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     end
 
     def test_numeric
-	long = make_registry.get("/long")
+	long = make_registry.get("/int")
 	assert(long < NumericType)
 	assert(long.integer?)
 	assert(!long.unsigned?)
 	assert_equal(4, long.size)
 
-	ulong = make_registry.get("/unsigned long")
+	ulong = make_registry.get("/unsigned int")
 	assert(ulong < NumericType)
 	assert_equal(4, ulong.size)
 	assert(ulong.integer?)
@@ -260,7 +260,12 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 	assert_equal(8, double.size)
 	assert(!double.integer?)
 	assert_raises(ArgumentError) { double.unsigned? }
+    end
 
+    def test_string_handling
+	char_pointer  = make_registry.build("char*").new
+	assert(char_pointer.string_handler?)
+	assert(char_pointer.respond_to?(:to_str))
     end
 
 end

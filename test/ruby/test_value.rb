@@ -24,25 +24,48 @@ class TC_Value < Test::Unit::TestCase
 
     def test_to_ruby
 	int = Registry.new.get("/int").new
+	int.zero!
 	assert_equal(0, int.to_ruby)
 
 	str = Registry.new.build("/char[20]").new
 	assert( String === str.to_ruby )
     end
 
+    def test_value_init
+        type = Registry.new.build("/int")
+	value = type.new
+
+	assert(ptr = value.instance_variable_get(:@ptr))
+	assert_equal(value.zone_address, ptr.zone_address)
+    end
+
     def test_value_equality
         type = Registry.new.build("/int")
 	v1 = type.new.zero!
 	v2 = type.new.zero!
+	assert_equal(0, v1)
 	assert_equal(v1, v2)
 	assert(! v1.eql?(v2))
 	
+	# This one is tricky: we want to have == return true if the fields of a
+	# compounds are equal, regardless of padding bytes. So we prepare a
+	# pattern which will be used as "blank" memory and then fill the fields
         registry = make_registry
-        a_type = registry.get("/struct A")
-        a1 = a_type.new :a => 10, :b => 20, :c => 30, :d => 40
-        a2 = a_type.new :a => 10, :b => 20, :c => 30, :d => 40
+        a_type    = registry.get("/struct A")
+	a_pattern = (1..a_type.size).to_a.pack("c*")
+	a1 = a_type.wrap a_pattern
+	a2 = a_type.wrap a_pattern.reverse
+	a1.a = a2.a = 10
+	a1.b = a2.b = 20
+	a1.c = a2.c = 30
+	a1.d = a2.d = 40
 	assert_equal(a1, a2)
 	assert(! a1.eql?(a2))
+
+	a2.d = 50
+	assert_not_equal(a1, a2)
+
+	assert_not_equal(a1, v1)
     end
 
     def test_byte_array
@@ -90,33 +113,32 @@ class TC_Value < Test::Unit::TestCase
         assert_raises(ArgumentError) { buffer.from_str("a"*512) }
     end
 
-    def test_pretty_printing
-        b = make_registry.get("/struct B").new
-	b.zero!
-	assert_nothing_raised { pp b }
+    # def test_pretty_printing
+    #     b = make_registry.get("/struct B").new
+    #     b.zero!
+    #     assert_nothing_raised { pp b }
+    # end
 
-    end
+    # def test_to_csv
+    #     klass = make_registry.get("/struct DisplayTest")
+    #     assert_equal("t.fields[0] t.fields[1] t.fields[2] t.fields[3] t.f t.d t.a.a t.a.b t.a.c t.a.d t.mode", klass.to_csv('t'));
+    #     assert_equal(".fields[0] .fields[1] .fields[2] .fields[3] .f .d .a.a .a.b .a.c .a.d .mode", klass.to_csv);
+    #     assert_equal(".fields[0],.fields[1],.fields[2],.fields[3],.f,.d,.a.a,.a.b,.a.c,.a.d,.mode", klass.to_csv('', ','));
 
-    def test_to_csv
-	klass = make_registry.get("/struct DisplayTest")
-	assert_equal("t.fields[0] t.fields[1] t.fields[2] t.fields[3] t.f t.d t.a.a t.a.b t.a.c t.a.d t.mode", klass.to_csv('t'));
-	assert_equal(".fields[0] .fields[1] .fields[2] .fields[3] .f .d .a.a .a.b .a.c .a.d .mode", klass.to_csv);
-	assert_equal(".fields[0],.fields[1],.fields[2],.fields[3],.f,.d,.a.a,.a.b,.a.c,.a.d,.mode", klass.to_csv('', ','));
-
-	value = klass.new
-	value.fields[0] = 0;
-	value.fields[1] = 1;
-	value.fields[2] = 2;
-	value.fields[3] = 3;
-	value.f = 1.1;
-	value.d = 2.2;
-	value.a.a = 10;
-	value.a.b = 20;
-	value.a.c = 'b';
-	value.a.d = 42;
-	assert_equal("0 1 2 3 1.1 2.2 10 20 b 42 OUTPUT", value.to_csv)
-	assert_equal("0,1,2,3,1.1,2.2,10,20,b,42,OUTPUT", value.to_csv(','))
-    end
+    #     value = klass.new
+    #     value.fields[0] = 0;
+    #     value.fields[1] = 1;
+    #     value.fields[2] = 2;
+    #     value.fields[3] = 3;
+    #     value.f = 1.1;
+    #     value.d = 2.2;
+    #     value.a.a = 10;
+    #     value.a.b = 20;
+    #     value.a.c = 'b';
+    #     value.a.d = 42;
+    #     assert_equal("0 1 2 3 1.1 2.2 10 20 b 42 OUTPUT", value.to_csv)
+    #     assert_equal("0,1,2,3,1.1,2.2,10,20,b,42,OUTPUT", value.to_csv(','))
+    # end
 	
 
     def test_is_a

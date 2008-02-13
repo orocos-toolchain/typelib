@@ -150,6 +150,17 @@ class TC_MemoryManagement < Test::Unit::TestCase
 	end
     end
 
+    def test_memory_handling
+	registry = make_registry
+	type   = registry.build("/struct B")
+	struct = type.new
+
+	test = type.wrap(struct.instance_variable_get(:@ptr))
+	assert_same(struct.instance_variable_get(:@ptr), test.instance_variable_get(:@ptr))
+
+	struct.a
+    end
+
     def test_structure_handling
 	registry = make_registry
 	type = registry.build("/struct B")
@@ -158,30 +169,33 @@ class TC_MemoryManagement < Test::Unit::TestCase
 	    other_el = nil
 
 	    assert_finalization do
-		struct = type.new
-		first_el = struct.a
-		check_finalization(struct, true)
-		check_finalization(struct.instance_variable_get(:@ptr), true)
-		check_finalization(first_el, true)
+	         struct = type.new
+	         first_el = struct.a
+
+		 assert_same(struct.instance_variable_get(:@ptr), first_el.instance_variable_get(:@ptr))
+
+	         check_finalization(struct, true)
+	         check_finalization(struct.instance_variable_get(:@ptr), true)
+	         check_finalization(first_el, true)
 	    end
 
-	    assert_finalization do
-		struct = type.new
-		first_el = struct.a
-		other_el = struct.c
-		assert_same(first_el.instance_variable_get(:@ptr), struct.instance_variable_get(:@ptr))
-		assert_not_same(other_el.instance_variable_get(:@ptr), struct.instance_variable_get(:@ptr))
+	    # assert_finalization do
+	    #     struct = type.new
+	    #     first_el = struct.a
+	    #     other_el = struct.c
+	    #     assert_same(first_el.instance_variable_get(:@ptr), struct.instance_variable_get(:@ptr))
+	    #     assert_not_same(other_el.instance_variable_get(:@ptr), struct.instance_variable_get(:@ptr))
 
-		check_finalization(struct, false)
-		check_finalization(struct, true, 1)
-		check_finalization(struct.instance_variable_get(:@ptr), false)
-		check_finalization(struct.instance_variable_get(:@ptr), true, 1)
-		check_finalization(first_el, false)
-		check_finalization(first_el, true, 1)
-		check_finalization(other_el, false)
-	    end
+	    #     check_finalization(struct, false)
+	    #     check_finalization(struct, true, 1)
+	    #     check_finalization(struct.instance_variable_get(:@ptr), false)
+	    #     check_finalization(struct.instance_variable_get(:@ptr), true, 1)
+	    #     check_finalization(first_el, false)
+	    #     check_finalization(first_el, true, 1)
+	    #     check_finalization(other_el, false)
+	    # end
 
-	    check_finalization(other_el, true)
+	    # check_finalization(other_el, true)
 	end
     end
 
@@ -192,7 +206,7 @@ class TC_MemoryManagement < Test::Unit::TestCase
 	assert_finalization do
 	    assert_finalization do
 		value = type.new
-		ptr = value.to_ptr
+		ptr   = value.to_ptr
 		assert_same(ptr.deference, value)
 
 		check_finalization(value, true)
@@ -276,7 +290,7 @@ class TC_MemoryManagement < Test::Unit::TestCase
 	end
     end
 
-    def test_dl_to_ptr
+    def test_memory_to_ptr
 	registry = make_registry
 	dlptr = nil
 	assert_finalization do

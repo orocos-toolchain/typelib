@@ -2,11 +2,6 @@ require 'enumerator'
 require 'utilrb/object/singleton_class'
 require 'delegate'
 require 'pp'
-module DL
-    class Handle
-        def registry; @typelib_registry end
-    end
-end
 
 class Class
     if method_defined?(:_load)
@@ -31,7 +26,6 @@ end
 
 
 module Typelib
-
     @remote_registries = Hash.new
     class << self
 	attr_reader :remote_registries
@@ -68,6 +62,10 @@ module Typelib
 	    type.wrap(data)
 	end
 
+	def dup
+	    new = self.class.new
+	    Typelib.memcpy(new, self, self.class.size)
+	end
 
         class << self
 	    # the type registry we belong to
@@ -103,7 +101,12 @@ module Typelib
 	    end
 
             alias :__real_new__ :new
-            def wrap(ptr); __real_new__(ptr) end
+            def wrap(ptr)
+		if null?
+		    raise TypeError, "this is a null type"
+		end
+	       	__real_new__(ptr) 
+	    end
             def new; __real_new__(nil) end
 
 	    # Check if this type is a +typename+. If +typename+
@@ -175,13 +178,13 @@ module Typelib
 	    pp.text to_s
 	end
 
-        # get the Ruby::DL equivalent for self
-        def to_dlptr; @ptr end
+        # get the memory pointer for self
+        def to_memory_ptr; @ptr end
 
 	def is_a?(typename); self.class.is_a?(typename) end
 
         def inspect
-            sprintf("#<%s:%s @%s>", self.class.superclass.name, self.class.name, to_dlptr.inspect)
+            sprintf("#<%s:%s @%s>", self.class.superclass.name, self.class.name, to_memory_ptr.inspect)
         end
     end
 
@@ -296,6 +299,23 @@ module Typelib
 		pp.text name
 		pp.text "="
 		pp.pp self[name]
+	    end
+	end
+
+	def ==(other)
+	    # If other is also a type object, we first
+	    # check basic constraints before trying conversion
+	    # to Ruby objects
+            if Type === other
+		return false unless self.class.eql?(other.class)
+		self.class.each_field do |name, _|
+		    if self[name] != other[name]
+			return false
+		    end
+		end
+		true
+	    else
+		false
 	    end
 	end
 
@@ -476,116 +496,141 @@ module Typelib
         end
     end
 
-    # Loads a library object for +lib_path+ and
-    # initializes its type registry to +registry+.
-    # If +registry+ is nil, a new registry is created
-    def self.dlopen(lib_path, registry = nil)
-        lib = DL.dlopen(lib_path)
-        registry = Registry.new if !registry
-        Library.new(lib, registry)
-    end
-
-    # A C library
-    class Library < DelegateClass(DL::Handle)
+    # A C library opened in dyncall
+    class Library
+	# The file name of this library
+	attr_reader :name
 	# The type registry for this library
         attr_reader :registry
 
-	# Creates a new library wrapper
-	# +lib+ is a DL::Handle object. +registry+
-	# is the type registry
-        def initialize(lib, registry)
-            super(lib)
-            @registry = registry
-        end
+	class << self
+	    private :new
+	end
 
-        # Wraps a function defined in +self+
-        #
-        # +return_spec+ defines what the function returns. It can be either
-        # an object or an array
-        #   - if it is an object, then this object is the name of the type returned
-        #     by the function, or nil if the function returns nothing. If +return_spec+
-        #     is an array, the first element of this array defines this return type
-        #   - the other elements of the array are *positional parameters*. They define
-        #     what arguments of the function are either return values or both
-        #     argument and return value.
-        #     Use positive indexes to use an argument as a return value only and 
-        #     negative indexes to use an argument as both input and output. Arguments
-        #     are indexed starting from 1
-        #
-        # The wrapped function will behave as:
-        #   output_values = wrapper.call(*input_values)
-        #   
-        # where output_values is the array of values specified by return_spec and
-        # input_values the function arguments /without the arguments that are out-only
-        # values/
-        # 
-        def wrap(name, return_spec = nil, *arg_types)
-            if arg_types.include?(nil)
-                raise ArgumentError, '"nil" is only allowed as return type'
-            end
-            return_spec = Array[*return_spec]
-            return_type = return_spec.shift
-            return_spec = return_spec.sort # MUST be sorted for #function_call to work properly
-
-            return_type, *arg_types = Array[return_type, *arg_types].map do |typedef|
-                next if typedef.nil?
-
-                typedef = if typedef.respond_to?(:to_str)
-                              registry.build(typedef.to_str)
-                          elsif Class === typedef && typedef < Type
-                              typedef
-                          else
-                              raise ArgumentError, "expected a Typelib::Type or a string, got #{typedef.inspect}"
-                          end
-
-                if typedef < CompoundType
-                    raise ArgumentError, "Structs aren't allowed directly in a function call, use pointers instead"
-                end
-
-                typedef
-            end
-            return_type = nil if return_type && return_type.null?
-
-            return_spec.each do |index|
-                ary_idx = index.abs - 1
-                if index == 0 || ary_idx >= arg_types.size
-                    raise ArgumentError, "Index out of bound: there is no positional parameter #{index.abs}"
-                elsif !(arg_types[ary_idx] < IndirectType)
-                    raise ArgumentError, "Parameter #{index.abs} is supposed to be an output value, but it is not a pointer (#{arg_types[ary_idx].name})"
-                end
-            end
-
-            dl_wrapper = do_wrap(name, return_type, *arg_types)
-            return WrappedFunction.new(dl_wrapper, return_type, return_spec, arg_types)
-        end
+	def self.open(libname, registry)
+	    libname = File.expand_path(libname)
+	    lib = wrap(libname)
+	    lib.instance_variable_set("@name", libname)
+	    lib.instance_variable_set("@registry", registry)
+	    lib
+	end
     end
 
     # A function wrapper
-    class WrappedFunction
-	attr_reader :spec
-	def initialize(*spec); @spec = spec end
+    class Function
+	attr_reader :library
+	attr_reader :name
+
+	attr_reader :return_type
+	attr_reader :arguments
+	attr_reader :returned_arguments
+
+	def initialize(library, name)
+	    @library = library
+	    @name = name
+	    @arguments = []
+	    @returned_arguments = []
+	    @arity = 0
+	end
+
+	def returns(typename)
+	    if typename
+		type = library.registry.build(typename)
+		if type.null?
+		    type = nil
+		end
+	    end
+
+	    if defined? @return_type
+		if !type
+		    raise ArgumentError, "null type specified as argument"
+		end
+
+		@arguments << type
+		@returned_arguments << @arguments.size
+	    elsif typename
+		@return_type = type
+	    else
+		@return_type = nil
+	    end
+	    self
+	end
+	def with_arguments(*typenames)
+	    types = typenames.map { |n| library.registry.build(n) }
+	    @arguments.concat(types)
+	    @arity += typenames.size
+	    self
+	end
+	def modifies(typename)
+	    @arguments << library.registry.build(typename)
+	    @returned_arguments << -@arguments.size
+	    @arity += 1
+	    self
+	end
+
+	def returns_something?; @return_type || !@returned_arguments.empty? end
+	attr_reader :arity
+
 	# Calls the function with +args+ for arguments
 	def call(*args)
-	    filtered_args = Typelib.filter_function_args(args, *spec)
-	    Typelib.function_call(filtered_args, *spec) 
+	    filtered_args, vm = prepare_call(args)
+	    perform_call(filtered_args, vm)
 	end
-	alias :[] :call
-	# Checks that +args+ is a valid set of arguments for this function
-	def filter(*args); Typelib.filter_function_args(args, *spec) end
-	alias :check :filter
+
+	def prepare_call(args)
+	    filtered_args = Typelib.filter_function_args(args, self)
+	    vm = prepare_vm(filtered_args)
+	    return filtered_args, vm
+	end
 
 	def compile(*args)
-	    CompiledCall.new(@spec, args)
+	    filtered_args, vm = prepare_call(args)
+	    CompiledCall.new(self, filtered_args, vm)
 	end
+
+	def perform_call(filtered_args, vm)
+	    retval = vm.call(self)
+	    return unless returns_something?
+
+	    # Get the return array
+	    ruby_returns = []
+	    if return_type
+		if MemoryZone === retval
+		    ruby_returns << return_type.wrap(retval.to_ptr)
+		else
+		    ruby_returns << retval
+		end
+	    end
+
+	    for index in returned_arguments
+		ary_idx = index.abs - 1
+
+		value = filtered_args[ary_idx]
+		type  = arguments[ary_idx]
+
+		if type < ArrayType
+		    ruby_returns << type.wrap(value)
+		else
+		    ruby_returns << type.deference.wrap(value).to_ruby
+		end
+	    end
+
+	    return *ruby_returns
+	end
+
+	alias :[] :call
+	# Checks that +args+ is a valid set of arguments for this function
+	def filter(*args); Typelib.filter_function_args(args, self) end
+	alias :check :filter
     end
 
     class CompiledCall
-	def initialize(spec, args)
-	    @spec, @args = spec, Typelib.filter_function_args(args, *spec)
+	def initialize(function, filtered_args, vm)
+	    @function, @filtered_args, @vm = function, filtered_args, vm
 	end
 
 	def call
-	    Typelib.function_call(@args, *@spec)
+	    @function.perform_call(@filtered_args, @vm)
 	end
     end
 
@@ -598,7 +643,7 @@ module Typelib
 	end
 
 	filtered =  if expected_type < IndirectType
-			if DL::PtrData === arg
+			if MemoryZone === arg
 			    arg
 			elsif Type === arg
 			    filter_value_arg(arg, expected_type)
@@ -606,7 +651,7 @@ module Typelib
 			    # Ruby strings ARE null-terminated
 			    # The thing which is not checked here is that there is no NULL bytes
 			    # inside the string.
-			    arg.to_str.to_ptr
+			    arg.to_str.to_memory_ptr
 			end
 		    end
 
@@ -620,17 +665,20 @@ module Typelib
 	filtered
     end
 
-    # Creates an array of objects that can safely be passed to DL function call mechanism
-    def self.filter_function_args(args, wrapper, return_type, return_spec, arg_types) # :nodoc:
-        user_args_count = args.size
+    # Creates an array of objects that can safely be passed to function call mechanism
+    def self.filter_function_args(args, function) # :nodoc:
+        # Check we have the right count of arguments
+        if args.size != function.arity
+            raise ArgumentError, "#{function.arity} arguments expected, got #{args.size}"
+        end
         
         # Create a Value object to collect the data we'll get
         # from output-only arguments
-        return_spec.each do |index|
+        function.returned_arguments.each do |index|
             next unless index > 0
             ary_idx = index - 1
 
-	    type = arg_types[ary_idx]
+	    type = function.arguments[ary_idx]
 	    buffer = if type < ArrayType then type.new
 		     elsif type < PointerType then type.deference.new
 		     else
@@ -640,50 +688,17 @@ module Typelib
             args.insert(ary_idx, buffer) # works because return_spec is sorted
         end
 
-        # Check we have the right count of arguments
-        if args.size != arg_types.size
-            wrapper_args_count = args.size - user_args_count
-            raise ArgumentError, "#{arg_types.size - wrapper_args_count} arguments expected, got #{user_args_count}"
-        end
-
 	args.each_with_index do |arg, idx|
-	    args[idx] = filter_argument(arg, arg_types[idx])
+	    args[idx] = filter_argument(arg, function.arguments[idx])
 	end
     end
 
-    # Do the function call, handling return types
-    def self.function_call(args, wrapper, return_type, return_spec, arg_types) # :nodoc:
-        # Do call the wrapper
-        retval, retargs = do_call_function(wrapper, args, return_type, arg_types) 
-        return if return_type.nil? && return_spec.empty?
-
-        # Get the return array
-        ruby_returns = []
-        if return_type
-            if DL::PtrData === retval
-                ruby_returns << return_type.wrap(retval.to_ptr)
-            else
-                ruby_returns << retval
-            end
-        end
-
-        for index in return_spec
-            ary_idx = index.abs - 1
-
-            value = retargs[ary_idx]
-            type  = arg_types[ary_idx]
-
-	    if type < ArrayType
-		ruby_returns << type.wrap(value)
-	    else
-		ruby_returns << type.deference.wrap(value).to_ruby
-	    end
-        end
-
-        return *ruby_returns
+    class MemoryZone
+	def to_s
+	    "#<MemoryZone:#{object_id} ptr=0x#{address.to_s(16)}>"
+	end
     end
 end
 
-require 'dl'
 require 'typelib_ruby'
 

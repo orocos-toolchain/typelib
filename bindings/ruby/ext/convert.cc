@@ -1,4 +1,5 @@
 #include "typelib.hh"
+#include <iostream>
 
 using namespace Typelib;
 
@@ -14,7 +15,7 @@ class RubyGetter : public ValueVisitor
 {
     VALUE m_value;
     VALUE m_registry;
-    VALUE m_parent, m_dlptr;
+    VALUE m_parent;
 
     virtual bool visit_ (int8_t  & value) { m_value = CHR2FIX(value); return false; }
     virtual bool visit_ (uint8_t & value) { m_value = CHR2FIX(value); return false; }
@@ -29,17 +30,17 @@ class RubyGetter : public ValueVisitor
 
     virtual bool visit_(Value const& v, Pointer const& p)
     {
-        m_value = cxx2rb::value_wrap(v, m_registry, cType, m_parent, m_dlptr);
+        m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
         return false;
     }
     virtual bool visit_(Value const& v, Array const& a) 
     {
-        m_value = cxx2rb::value_wrap(v, m_registry, cArray, m_parent, m_dlptr);
+        m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
         return false;
     }
     virtual bool visit_(Value const& v, Compound const& c)
     { 
-        m_value = cxx2rb::value_wrap(v, m_registry, cCompound, m_parent, m_dlptr);
+        m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
         return false; 
     }
     virtual bool visit_(Enum::integral_type& v, Enum const& e)   
@@ -52,12 +53,11 @@ public:
     RubyGetter() : ValueVisitor(false) {}
     ~RubyGetter() { m_value = Qnil; m_registry = Qnil; }
 
-    VALUE apply(Typelib::Value value, VALUE registry, VALUE parent, VALUE dlptr)
+    VALUE apply(Typelib::Value value, VALUE registry, VALUE parent)
     {
         m_registry = registry;
         m_value    = Qnil;
 	m_parent   = parent;
-	m_dlptr    = dlptr;
 
         ValueVisitor::apply(value);
         return m_value;
@@ -121,13 +121,13 @@ public:
  */
 
 /* Converts a Typelib::Value to Ruby's VALUE */
-VALUE typelib_to_ruby(Value v, VALUE registry, VALUE parent, VALUE dlptr)
+VALUE typelib_to_ruby(Value v, VALUE registry, VALUE parent)
 { 
     if (! v.getData())
         return Qnil;
 
     RubyGetter getter;
-    return getter.apply(v, registry, parent, dlptr);
+    return getter.apply(v, registry, parent);
 }
 
 /* Returns the Value object wrapped into +value+ */

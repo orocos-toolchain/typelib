@@ -1,7 +1,5 @@
 #include "typelib.hh"
-extern "C" {
-#include <dl.h>
-}
+#include <iostream>
 
 using namespace Typelib;
 
@@ -43,10 +41,7 @@ static VALUE compound_field_get(VALUE rbvalue, VALUE name)
 
     try { 
         Value field_value = value_get_field(value, StringValuePtr(name));
-	if (value.getData() == field_value.getData())
-	    return typelib_to_ruby(field_value, registry, rbvalue, rb_iv_get(rbvalue, "@ptr"));
-	else
-	    return typelib_to_ruby(field_value, registry, rbvalue, Qnil);
+	return typelib_to_ruby(field_value, registry, rbvalue);
     } 
     catch(FieldNotFound)   {} 
     rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name));
@@ -81,8 +76,8 @@ static VALUE pointer_deference(VALUE self)
     VALUE registry = value_get_registry(self);
 
     Value new_value( *reinterpret_cast<void**>(value.getData()), indirect.getIndirection() );
-    VALUE dlptr = rb_dlptr_new(new_value.getData(), new_value.getType().getSize(), 0);
-    return typelib_to_ruby(new_value, registry, Qnil, dlptr);
+    VALUE ptr = memory_wrap(new_value.getData());
+    return typelib_to_ruby(new_value, registry, Qnil);
 }
 
 
@@ -204,10 +199,7 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
     if (argc == 1)
     {
 	Value v = Value(data + array_type.getSize() * index, array_type);
-	if (index == 0)
-	    return typelib_to_ruby( v, registry, self, rb_iv_get(self, "@ptr") );
-	else
-	    return typelib_to_ruby( v, registry, self, Qnil );
+	return typelib_to_ruby( v, registry, self );
     }
     else if (argc == 2)
     {
@@ -216,18 +208,10 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
 	if (index + size > array.getDimension())
 	    rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index + size - 1, array.getDimension());
 
-	if (index == 0)
-	{
-	    VALUE rb_v = typelib_to_ruby( Value(data, array_type), registry, self, rb_iv_get(self, "@ptr") );
-	    rb_ary_push(ret, rb_v);
-	    index += 1;
-	    size  -= 1;
-	}
-
 	for (size_t i = index; i < index + size; ++i)
 	{
 	    Value v = Value(data + array_type.getSize() * i, array_type);
-	    VALUE rb_v = typelib_to_ruby( v, registry, self, Qnil );
+	    VALUE rb_v = typelib_to_ruby( v, registry, self );
 
 	    rb_ary_push(ret, rb_v);
 	}
@@ -268,10 +252,8 @@ static VALUE array_each(VALUE rbarray)
 
     int8_t* data = reinterpret_cast<int8_t*>(value.getData());
 
-    rb_yield(typelib_to_ruby( Value(data, array_type), registry, Qnil, rb_iv_get(rbarray, "@ptr") ));
-    data += array_type.getSize();
-    for (size_t i = 1; i < array.getDimension(); ++i, data += array_type.getSize())
-	rb_yield(typelib_to_ruby( Value(data, array_type), registry, rbarray, Qnil ));
+    for (size_t i = 0; i < array.getDimension(); ++i, data += array_type.getSize())
+	rb_yield(typelib_to_ruby( Value(data, array_type), registry, rbarray ));
 
     return rbarray;
 }

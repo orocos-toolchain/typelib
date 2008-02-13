@@ -100,32 +100,43 @@ extern "C" {
         rb_define_method(rb_mKernel, "fill_multi_dim_array",      RUBY_METHOD_FUNC(fill_multi_dim_array), 1);
     }
 
-    /* Testing function wrapped by Typelib::wrap (using Ruby::DL)
-     * The function is supposed to return 1 if the arguments have these values:
-     *   first  == 1
-     *   second == 0.02
-     */
-    int test_simple_function_wrapping(int first, short second)
+    void test_simple_function_call() { }
+
+    void test_numeric_argument_passing(char a, short b, int c, long d, long long e, float f, double g)
     {
-        if (first == 1 && second == 2)
-            return 1;
-        printf("test_simple_function_wrapping failed: first=%i second=%i\n", first, second);
-        return 0;
+	if (a != 1 || b != 2 || c != 3 || d != 4 || e != 5 || f != 6 || g != 7)
+	    rb_raise(rb_eArgError, "failed to pass numeric arguments");
+    }
+    char test_returns_numeric_argument_char(char value) { return value; }
+    short test_returns_numeric_argument_short(short value) { return value; }
+    int test_returns_numeric_argument_int(int value) { return value; }
+    long test_returns_numeric_argument_long(long value) { return value; }
+    int64_t test_returns_numeric_argument_int64_t(int64_t value) { return value; }
+    float test_returns_numeric_argument_float(float value) { return value; }
+    double test_returns_numeric_argument_double(double value) { return value; }
+    void test_returns_argument(int* holder) { *holder = 42; }
+
+
+    void test_pointer_argument(A* a)
+    {
+        if (!do_check_struct_A_value(*a))
+            rb_raise(rb_eArgError, "error in passing structure as pointer");
     }
 
-    int test_ptr_passing(A* a)
-    {
-        if (do_check_struct_A_value(*a))
-            return 1;
-        return 0;
-    }
-
-    struct A* test_ptr_return()
+    struct A* test_returns_pointer()
     {
         static A a;
         do_set_struct_A_value(a);
         return &a;
     }
+
+    void test_modifies_argument(int* value) 
+    { 
+	if (*value != 0)
+	    rb_raise(rb_eArgError, "invalid argument value");
+	*value = 42; 
+    }
+
 
     int test_immediate_to_pointer(double* value) { return *value == 0.5; }
 
@@ -162,11 +173,10 @@ extern "C" {
     int check_opaque_value(OpaqueType handler, int check)
     { return (handler == test_opaque_handling()) ? check : 0; }
 
-    int test_string_argument(char const* value)
+    void test_string_argument(char const* value)
     {
         if (strcmp(value, "test"))
-            return 0;
-        return 1;
+            rb_raise(rb_eArgError, "bad string argument");
     }
 
     static const char* static_string = "string_return";
