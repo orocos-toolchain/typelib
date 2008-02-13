@@ -42,8 +42,8 @@ BOOST_AUTO_TEST_CASE( test_value_struct )
 	Value v_a(&a, *registry.get("/struct A"));
 
 	BOOST_CHECK_THROW( value_get_field(v_a, "does_not_exists"), FieldNotFound );
-	BOOST_CHECK(a.a == value_cast<long>(value_get_field(v_a, "a")));
-	BOOST_CHECK(a.b == value_cast<long>(value_get_field(v_a, "b")));
+	BOOST_CHECK(a.a == value_cast<long long>(value_get_field(v_a, "a")));
+	BOOST_CHECK(a.b == value_cast<int>(value_get_field(v_a, "b")));
 	BOOST_CHECK(a.c == value_cast<char>(value_get_field(v_a, "c")));
 	BOOST_CHECK(a.d == value_cast<short>(value_get_field(v_a, "d")));
 
@@ -54,8 +54,8 @@ BOOST_AUTO_TEST_CASE( test_value_struct )
 
 	Value v_b(&b, *registry.get("/B"));
 	Value v_b_a(value_get_field(v_b, "a"));
-	BOOST_CHECK(a.a == value_cast<long>(value_get_field(v_b_a, "a")));
-	BOOST_CHECK(a.b == value_cast<long>(value_get_field(v_b_a, "b")));
+	BOOST_CHECK(a.a == value_cast<long long>(value_get_field(v_b_a, "a")));
+	BOOST_CHECK(a.b == value_cast<int>(value_get_field(v_b_a, "b")));
 	BOOST_CHECK(a.c == value_cast<char>(value_get_field(v_b_a, "c")));
 	BOOST_CHECK(a.d == value_cast<short>(value_get_field(v_b_a, "d")));
     }
@@ -107,8 +107,8 @@ BOOST_AUTO_TEST_CASE( test_value_endian_swap )
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
     A a = { 
-	utilmm::endian::swap((long)10), 
-	utilmm::endian::swap((long)20), 
+	utilmm::endian::swap((long long)10), 
+	utilmm::endian::swap((int)20), 
 	utilmm::endian::swap('b'), 
 	utilmm::endian::swap((short)52) 
     };
@@ -138,10 +138,10 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
     size_t expected_a[]  = {
-	CompileEndianSwapVisitor::FLAG_SWAP_4,
+	CompileEndianSwapVisitor::FLAG_SWAP_8,
 	CompileEndianSwapVisitor::FLAG_SWAP_4,
 	CompileEndianSwapVisitor::FLAG_SKIP, 2, // char c plus one alignment byte
-	11, 10
+	15, 14
     };
 
     /* Check a simple structure with alignment issues */
@@ -223,8 +223,8 @@ BOOST_AUTO_TEST_CASE( test_apply_endian_swap )
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
     A a = { 
-	utilmm::endian::swap((long)10), 
-	utilmm::endian::swap((long)20), 
+	utilmm::endian::swap((long long)10), 
+	utilmm::endian::swap((int)20), 
 	utilmm::endian::swap('b'), 
 	utilmm::endian::swap((short)52) 
     };
