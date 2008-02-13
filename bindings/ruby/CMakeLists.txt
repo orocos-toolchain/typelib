@@ -21,6 +21,10 @@ ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_LIBRARIES}
 
 ADD_CUSTOM_TARGET(dyncall DEPENDS ${DYNCALL_LIBRARIES})
 
+if(RDOC_EXECUTABLE)
+    ADD_CUSTOM_TARGET(doc rdoc ${CMAKE_CURRENT_SOURCE_DIR})
+endif(RDOC_EXECUTABLE)
+
 ADD_RUBY_EXTENSION(typelib_ruby 
     ext/typelib_ruby.cc ext/value.cc ext/strings.cc
     ext/convert.cc ext/functions.cc ext/specialized_types.cc 
