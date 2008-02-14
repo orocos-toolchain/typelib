@@ -20,6 +20,13 @@ library_wrap(VALUE self, VALUE name)
 
 }
 
+/* call-seq:
+ *   lib.find(function_name) => function object
+ *
+ * Searches for the function named +function_name+ in +lib+ and returns
+ * the corresponding Function object. If the symbol is not available in
+ * the library, raises ArgumentError.
+ */
 static VALUE
 library_find(VALUE self, VALUE name)
 {
@@ -316,7 +323,7 @@ void Typelib_init_functions()
     rb_define_method(cLibrary, "find", RUBY_METHOD_FUNC(library_find), 1);
 
     cFunction = rb_const_get(mTypelib, rb_intern("Function"));
-    rb_define_method(cFunction, "prepare_vm", RUBY_METHOD_FUNC(function_compile), 1);
+    rb_define_private_method(cFunction, "prepare_vm", RUBY_METHOD_FUNC(function_compile), 1);
 
     cCallVM  = rb_define_class_under(mTypelib, "CallVM", rb_cObject);
     rb_define_method(cCallVM, "call", RUBY_METHOD_FUNC(vm_call), 1);

@@ -303,9 +303,8 @@ module Typelib
 	end
 
 	def ==(other)
-	    # If other is also a type object, we first
-	    # check basic constraints before trying conversion
-	    # to Ruby objects
+	    # If other is also a type object, we first check basic constraints
+	    # before trying conversion to Ruby objects
             if Type === other
 		return false unless self.class.eql?(other.class)
 		self.class.each_field do |name, _|
@@ -496,7 +495,7 @@ module Typelib
         end
     end
 
-    # A C library opened in dyncall
+    # An opened C library
     class Library
 	# The file name of this library
 	attr_reader :name
@@ -507,6 +506,8 @@ module Typelib
 	    private :new
 	end
 
+	# Open the library at +libname+, associated with the type registry
+	# +registry+. This returns a Library object.
 	def self.open(libname, registry)
 	    libname = File.expand_path(libname)
 	    lib = wrap(libname)
@@ -516,13 +517,18 @@ module Typelib
 	end
     end
 
-    # A function wrapper
+    # A function found in a Typelib::Library. See Library#find
     class Function
+	# The library in which this function is defined
 	attr_reader :library
+	# The function name
 	attr_reader :name
 
+	# The return type of this function, or nil if there is no return value
 	attr_reader :return_type
+	# The set of argument types.
 	attr_reader :arguments
+	# The set of argument indexes which contain returned data. See #modifies and #returns.
 	attr_reader :returned_arguments
 
 	def initialize(library, name)
@@ -533,6 +539,34 @@ module Typelib
 	    @arity = 0
 	end
 
+	# Specifies that this function returns a value of type +typename+. The
+	# first call to +returns+ specifies the return value of the function
+	# (in the C sense).  Subsequent calls specify that the following
+	# argument is of type +typename+, and that the argument is a buffer
+	# whose sole purpose is to be filled by the function call. In this case,
+	# the buffer does not have to be given to #call: the Function object will create
+	# one on the fly and #call will return it.
+	#
+	# For instance, the following standard C function:
+	#
+	#   int gettimeofday(struct timeval* tv, struct timezone* tz);
+	#
+	# Is wrapped using
+	#
+	#   gettimeofday = libc.find('gettimeofday').
+	#	returns('int').
+	#	returns('struct timeval*').
+	#	with_arguments('struct timezone*')
+	#
+	# And called using
+	#
+	#   status, time = gettimeofday.call(nil)
+	#
+	# If the function does not have a return type but *has* a returned argument,
+	# the return type must be explicitely specified as 'nil':
+	#
+	#   my_function.returns(nil).returns('int*')
+	#
 	def returns(typename)
 	    if typename
 		type = library.registry.build(typename)
@@ -555,12 +589,45 @@ module Typelib
 	    end
 	    self
 	end
+
+	# Specify the type of the following arguments
 	def with_arguments(*typenames)
 	    types = typenames.map { |n| library.registry.build(n) }
 	    @arguments.concat(types)
 	    @arity += typenames.size
 	    self
 	end
+
+	# Specify that the following argument is a buffer which both provides
+	# an argument to the function *and* will be modified by the function.
+	# For instance, the select standard C function would be wrapped as
+	# follows:
+	#
+	#   select = libc.find('select').
+	#	returns('int').modifies('fd_set*').
+	#	modifies('fd_set*').modifies('fd_set*').
+	#	modifies('struct timeval*')
+	#
+	# and can then be used with:
+	#
+	#   status, read, write, except, timeout = 
+	#	select.call(read, write, except, timeout)
+	#
+	# A feature of this library is the possibility to automatically build
+	# memory buffers from Ruby values. So, for instance, the following C
+	# function
+	#
+	#   void my_function(int* value);
+	#
+	# can be used as follows:
+	#
+	#   my_function = lib.wrap('my_function').modifies('int*')
+	#
+	#   new_value = my_function.call(5)
+	#
+	# The library will then automatically convert the Ruby integer '5' into
+	# a C memory buffer of type 'int' and return the new Ruby value from
+	# this buffer (new_value is a Ruby integer).
 	def modifies(typename)
 	    @arguments << library.registry.build(typename)
 	    @returned_arguments << -@arguments.size
@@ -568,7 +635,11 @@ module Typelib
 	    self
 	end
 
+	# True if this function returns some value (either a return type or
+	# some arguments which are also output values)
 	def returns_something?; @return_type || !@returned_arguments.empty? end
+
+	# How many arguments #call expects
 	attr_reader :arity
 
 	# Calls the function with +args+ for arguments
@@ -577,18 +648,25 @@ module Typelib
 	    perform_call(filtered_args, vm)
 	end
 
-	def prepare_call(args)
-	    filtered_args = Typelib.filter_function_args(args, self)
-	    vm = prepare_vm(filtered_args)
-	    return filtered_args, vm
-	end
+	alias :[] :call
+	# Checks that +args+ is a valid set of arguments for this function
+	def filter(*args); Typelib.filter_function_args(args, self) end
+	alias :check :filter
 
+	# Returns a CompiledCall object which binds this function to the
+	# given argument. See CompiledCall#call
 	def compile(*args)
 	    filtered_args, vm = prepare_call(args)
 	    CompiledCall.new(self, filtered_args, vm)
 	end
 
-	def perform_call(filtered_args, vm)
+	def prepare_call(args) # :nodoc:
+	    filtered_args = Typelib.filter_function_args(args, self)
+	    vm = prepare_vm(filtered_args)
+	    return filtered_args, vm
+	end
+
+	def perform_call(filtered_args, vm) # :nodoc:
 	    retval = vm.call(self)
 	    return unless returns_something?
 
@@ -618,12 +696,10 @@ module Typelib
 	    return *ruby_returns
 	end
 
-	alias :[] :call
-	# Checks that +args+ is a valid set of arguments for this function
-	def filter(*args); Typelib.filter_function_args(args, self) end
-	alias :check :filter
     end
 
+    # A CompiledCall object is a Function on which some arguments have already
+    # been bound
     class CompiledCall
 	def initialize(function, filtered_args, vm)
 	    @function, @filtered_args, @vm = function, filtered_args, vm
@@ -693,6 +769,7 @@ module Typelib
 	end
     end
 
+    # A raw, untyped, memory zone
     class MemoryZone
 	def to_s
 	    "#<MemoryZone:#{object_id} ptr=0x#{address.to_s(16)}>"
