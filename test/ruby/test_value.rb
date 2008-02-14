@@ -113,32 +113,33 @@ class TC_Value < Test::Unit::TestCase
         assert_raises(ArgumentError) { buffer.from_str("a"*512) }
     end
 
-    # def test_pretty_printing
-    #     b = make_registry.get("/struct B").new
-    #     b.zero!
-    #     assert_nothing_raised { pp b }
-    # end
+    def test_pretty_printing
+        b = make_registry.get("/struct B").new
+        b.zero!
+        assert_nothing_raised { pp b }
+    end
 
-    # def test_to_csv
-    #     klass = make_registry.get("/struct DisplayTest")
-    #     assert_equal("t.fields[0] t.fields[1] t.fields[2] t.fields[3] t.f t.d t.a.a t.a.b t.a.c t.a.d t.mode", klass.to_csv('t'));
-    #     assert_equal(".fields[0] .fields[1] .fields[2] .fields[3] .f .d .a.a .a.b .a.c .a.d .mode", klass.to_csv);
-    #     assert_equal(".fields[0],.fields[1],.fields[2],.fields[3],.f,.d,.a.a,.a.b,.a.c,.a.d,.mode", klass.to_csv('', ','));
+    def test_to_csv
+        klass = make_registry.get("/struct DisplayTest")
+        assert_equal("t.fields[0] t.fields[1] t.fields[2] t.fields[3] t.f t.d t.a.a t.a.b t.a.c t.a.d t.mode", klass.to_csv('t'));
+        assert_equal(".fields[0] .fields[1] .fields[2] .fields[3] .f .d .a.a .a.b .a.c .a.d .mode", klass.to_csv);
+        assert_equal(".fields[0],.fields[1],.fields[2],.fields[3],.f,.d,.a.a,.a.b,.a.c,.a.d,.mode", klass.to_csv('', ','));
 
-    #     value = klass.new
-    #     value.fields[0] = 0;
-    #     value.fields[1] = 1;
-    #     value.fields[2] = 2;
-    #     value.fields[3] = 3;
-    #     value.f = 1.1;
-    #     value.d = 2.2;
-    #     value.a.a = 10;
-    #     value.a.b = 20;
-    #     value.a.c = 'b';
-    #     value.a.d = 42;
-    #     assert_equal("0 1 2 3 1.1 2.2 10 20 b 42 OUTPUT", value.to_csv)
-    #     assert_equal("0,1,2,3,1.1,2.2,10,20,b,42,OUTPUT", value.to_csv(','))
-    # end
+        value = klass.new
+	value.zero!
+        value.fields[0] = 0;
+        value.fields[1] = 1;
+        value.fields[2] = 2;
+        value.fields[3] = 3;
+        value.f = 1.1;
+        value.d = 2.2;
+        value.a.a = 10;
+        value.a.b = 20;
+        value.a.c = 'b';
+        value.a.d = 42;
+        assert_equal("0 1 2 3 1.1 2.2 10 20 b 42 OUTPUT", value.to_csv)
+        assert_equal("0,1,2,3,1.1,2.2,10,20,b,42,OUTPUT", value.to_csv(','))
+    end
 	
 
     def test_is_a
