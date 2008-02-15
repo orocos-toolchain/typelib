@@ -1,8 +1,24 @@
-== Installing Typelib ==
+Typelib is a C++ library which allows for introspection on data types and data
+values. Its value model is based on the C type model. The library allows to
+load definition from various type description files (including plain C), build
+types programmatically, create and manipulate values from these types.
 
-Note for Debian users: a quick install guide is included at the
-bottom of this file
+A binding to the Ruby language is provided, which allows to very easily interface
+a dynamic library from within Ruby code. This Ruby binding is based on the dyncall
+library, whose full source code is provided in this release.
 
+Typelib has been written by
+  Sylvain Joyeux <sylvain.joyeux@m4x.org>
+
+Copyright 2004-2008
+  LAAS/CNRS <openrobots@laas.fr>
+  DGA <arnaud.paronian@dga.gouv.fr>
+
+This software is provided under the CeCILL B License, which gives comparable terms
+of use than the BSD license. See LICENSE.txt or LICENSE.fr.txt for the full license
+texts.
+
+== Installation
 === C++ library
 The C++ library depends on the following:
  * the boost library, including boost/filesystem
@@ -15,8 +31,11 @@ The C++ library depends on the following:
  * libxml2
 
 When all these dependencies are installed, run
-    cmake .
+    mkdir build
+    cd build
+    cmake ..
     make
+    make doc # to build the documentation, only if doxygen is available
 
 and as root,
     make install
@@ -42,13 +61,13 @@ At runtime, the bindings require the following:
    globally (this is the case for Debian's rubygems package)
 
    You can also find the sources at
-     darcs get http://www.laas.fr/~sjoyeux/darcs/utilrb
+     git clone http://www.laas.fr/~sjoyeux/git/utilrb.git
    read the INSTALL.txt file
 
 === Quick Debian installation guide
 
 Run as root
-  apt-get install libboost-dev libboost-filesystem-dev antlr autoconf automake ruby1.8-dev libtest-unit-ruby rubygems cantlr libantlr-dev pkg-config doxygen rdoc1.8 libxml2-dev
+  apt-get install build-essential cmake pkg-config libboost-dev libboost-filesystem-dev ruby1.8-dev libtest-unit-ruby rubygems cantlr libantlr-dev doxygen rdoc1.8 libxml2-dev
   gem install utilrb
 
 Run as a normal user
@@ -58,9 +77,11 @@ Run as a normal user
   utilmm/INSTALL>
 
   <go into Typelib source directory>
-  ./autogen.sh
-  ./configure
+  mkdir build
+  cd build
+  cmake ..
   make
+  make doc
 
 Run as root
   make install
