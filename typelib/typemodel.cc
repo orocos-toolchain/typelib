@@ -60,7 +60,7 @@ namespace Typelib
         : Type(name, size, Type::Numeric), m_category(category) {}
     Numeric::NumericCategory Numeric::getNumericCategory() const { return m_category; }
     bool Numeric::isSame(Type const& type) const 
-    { return Type::isSame(type) && 
+    { return getSize() == type.getSize() && getCategory() == type.getCategory() && 
 	m_category == static_cast<Numeric const&>(type).m_category; }
     Type* Numeric::do_merge(Registry& registry) const
     { return new Numeric(*this); }
