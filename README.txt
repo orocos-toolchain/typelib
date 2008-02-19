@@ -18,7 +18,7 @@ terms of use than the BSD license. See LICENSE.txt or LICENSE.fr.txt provided
 with the source code for the full license texts.
 
 These pages document only the C++ part of the library. The Ruby bindings documentation
-are available <a href="ruby/index.html">here</a>.
+is available <a href="ruby/index.html">here</a>.
 
 \section Installation
 
