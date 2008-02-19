@@ -77,6 +77,12 @@ module Typelib
 		    super
 		end
 	    end
+	    def basename
+		full_name = name
+		full_name =~ /(\w+)$/
+		$1
+	    end
+
 	    def to_s; "#<#{superclass.name}: #{name}>" end
 
 	    def _dump(lvl)
