@@ -1,3 +1,5 @@
+/*! \mainpage Typelib: a C++ type and value introspection library
+
 Typelib is a C++ library which allows for introspection on data types and data
 values. Its value model is based on the C type model. The library allows to
 load definition from various type description files (including plain C), build
@@ -7,40 +9,60 @@ A binding to the Ruby language is provided, which allows to very easily interfac
 a dynamic library from within Ruby code. This Ruby binding is based on the dyncall
 library, whose full source code is provided in this release.
 
-Typelib has been written by
-  Sylvain Joyeux <sylvain.joyeux@m4x.org>
+Typelib has been written by Sylvain Joyeux <sylvain.joyeux@m4x.org>
 
-Copyright 2004-2008
-  LAAS/CNRS <openrobots@laas.fr>
-  DGA <arnaud.paronian@dga.gouv.fr>
+Copyright 2004-2008 LAAS/CNRS <openrobots@laas.fr> and DGA <arnaud.paronian@dga.gouv.fr>
 
-This software is provided under the CeCILL B License, which gives comparable terms
-of use than the BSD license. See LICENSE.txt or LICENSE.fr.txt for the full license
-texts.
+This software is provided under the CeCILL B License, which gives comparable
+terms of use than the BSD license. See LICENSE.txt or LICENSE.fr.txt provided
+with the source code for the full license texts.
 
-== Installation
-=== C++ library
+These pages document only the C++ part of the library. The Ruby bindings documentation
+are available <a href="ruby/index.html">here</a>.
+
+\section Installation
+
+\subsection source Getting the source code
+Releases are available on SourceForge: <a
+href="http://sourceforge.net/projects/typelib/">http://sourceforge.net/projects/typelib/</a>.
+You can access this project page from anywhere in the documentation by clicking
+on the SourceForge.net logo at the bottom of documentation pages.
+
+The development repository is managed by git and is (for now) publicly available in GitHub:
+
+<pre>
+  git clone git://github.com/doudou/typelib.git
+</pre>
+
+(see <a href="http://github.com/doudou/">this page</a> for more information)
+
+\subsection cpp Building and installing the C++ library
 The C++ library depends on the following:
- * the boost library, including boost/filesystem
- * utilmm which can be downloaded using Darcs with
-     darcs get http://www.laas.fr/~sjoyeux/darcs/utilmm
-   (check the INSTALL file)
- * the antlr parser generator
- * cmake and pkg-config
- * doxygen for the documentation (optional)
- * libxml2
+  - the boost library, including boost/filesystem
+  - utilmm (utilmm.sf.net)
+  - the antlr parser generator
+  - cmake and pkg-config
+  - doxygen for the documentation (optional)
+  - libxml2
 
 When all these dependencies are installed, run
+<pre>
     mkdir build
     cd build
     cmake ..
     make
     make doc # to build the documentation, only if doxygen is available
+</pre>
 
 and as root,
+<pre>
     make install
+</pre>
 
-=== Ruby bindings
+Alternatively, you can add the \c -DCMAKE_INSTALL_PREFIX=path/to/the/installation/target option to cmake
+to install the files in a custom directory
+
+\subsection ruby Building and installing Ruby bindings
 The installation of the Ruby bindings require the following:
  * the ruby interpreter version 1.8 and the associated
    development files.
@@ -63,26 +85,4 @@ At runtime, the bindings require the following:
    You can also find the sources at
      git clone http://www.laas.fr/~sjoyeux/git/utilrb.git
    read the INSTALL.txt file
-
-=== Quick Debian installation guide
-
-Run as root
-  apt-get install build-essential cmake pkg-config libboost-dev libboost-filesystem-dev ruby1.8-dev libtest-unit-ruby rubygems cantlr libantlr-dev doxygen rdoc1.8 libxml2-dev
-  gem install utilrb
-
-Run as a normal user
-  <go into a source directory>
-  darcs get http://www.laas.fr/~sjoyeux/darcs/utilmm
-  <install the utilmm library by following instructions in
-  utilmm/INSTALL>
-
-  <go into Typelib source directory>
-  mkdir build
-  cd build
-  cmake ..
-  make
-  make doc
-
-Run as root
-  make install
-
+*/
