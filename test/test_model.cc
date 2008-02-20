@@ -30,10 +30,15 @@ BOOST_AUTO_TEST_CASE( test_equality )
 
     //// Test numerics
     BOOST_REQUIRE(*ra.get("/int32_t") == *ra.get("/int32_t"));
-    BOOST_REQUIRE(*ra.get("/int32_t") != *rb.get("/int32_t")); // not the same repository
-    BOOST_REQUIRE(ra.get("/int32_t")->isSame(*rb.get("/int32_t"))); // different repositories, same type
-    BOOST_REQUIRE(!ra.get("/int32_t")->isSame(*ra.get("/float"))); // category differs
-    BOOST_REQUIRE(!ra.get("/int32_t")->isSame(*ra.get("/uint32_t"))); // category differs
+    // same repository, same type, different names
+    BOOST_REQUIRE(*ra.get("/int16_t") != *ra.get("/short"));
+    // different repositories, same type
+    BOOST_REQUIRE(*ra.get("/int32_t") != *rb.get("/int32_t"));
+    BOOST_REQUIRE(ra.get("/int32_t")->isSame(*rb.get("/int32_t"))); 
+    // same type but different names
+    BOOST_REQUIRE(ra.get("/int16_t")->isSame(*rb.get("/short")));
+    BOOST_REQUIRE(!ra.get("/int32_t")->isSame(*ra.get("/float"))); // numeric category differs
+    BOOST_REQUIRE(!ra.get("/int32_t")->isSame(*ra.get("/uint32_t"))); // numeric category differs
     BOOST_REQUIRE(!ra.get("/int16_t")->isSame(*ra.get("/int32_t"))); // size differs
 
     //// Test arrays
