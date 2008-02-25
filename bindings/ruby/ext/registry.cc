@@ -211,7 +211,40 @@ VALUE registry_each_type(int argc, VALUE* argv, VALUE self)
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
 
-/* Export the given registry into xml
+/* call-seq:
+ *  registry.export(format) => string
+ *
+ * Exports the registry in the provided format, into a Ruby string. The following
+ * formats are allowed as +format+:
+ *
+ * +tlb+:: Typelib's own XML format
+ * +idl+:: CORBA IDL
+ */
+static
+VALUE registry_export(VALUE self, VALUE kind)
+{
+    Registry& registry = rb2cxx::object<Registry>(self);
+    
+    string error_type;
+    string error_message;
+    try {
+	std::string exported = PluginManager::save(StringValuePtr(kind), registry);
+	return rb_str_new(exported.c_str(), exported.length());
+    } catch (Typelib::UnsupportedType e)
+    { error_type = e.type.getName();
+      error_message = e.reason; }
+
+    rb_raise(rb_eTypeError, "type %s cannot be exported to %s: %s",
+	    error_type.c_str(),
+	    StringValuePtr(kind),
+	    error_message.c_str());
+}
+
+/* call-seq:
+ *  registry.to_xml => string
+ *
+ * Export the given registry into xml. The returned string can be imported back
+ * into a Registry object through Registry#from_xml
  */
 static
 VALUE registry_to_xml(VALUE self)
@@ -222,6 +255,12 @@ VALUE registry_to_xml(VALUE self)
     return rb_str_new(as_xml.c_str(), as_xml.length());
 }
 
+/* call-seq:
+ *  Registry.from_xml => string
+ * 
+ * Build a registry from a string, which is formatted as Typelib's own XML
+ * format.  See also #export, #import and #to_xml
+ */
 static
 VALUE registry_from_xml(VALUE mod, VALUE xml)
 {
@@ -246,6 +285,7 @@ void Typelib_init_registry()
     // do_import is called by the Ruby-defined import, which formats the 
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 4);
+    rb_define_method(cRegistry, "export", RUBY_METHOD_FUNC(registry_export), 1);
     rb_define_method(cRegistry, "to_xml", RUBY_METHOD_FUNC(registry_to_xml), 0);
     rb_define_singleton_method(cRegistry, "from_xml", RUBY_METHOD_FUNC(registry_from_xml), 1);
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
