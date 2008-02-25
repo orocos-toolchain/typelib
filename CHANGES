@@ -1,3 +1,11 @@
+== Version 1.0rc2
+* added a limited CORBA IDL export plugin
+* namespace support in the C importer. In the meantime, fixed
+  the (badly broken) namespace support of Typelib::Registry
+* added a "cxx" mode to the C importer (enabled by default), 
+  where definitions of "struct Bla" and "enum Blo" automatically
+  define the corresponding "Bla" and "Blo" types
+
 == Version 0.3
 === API
 * new functionalities:
