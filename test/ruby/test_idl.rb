@@ -16,6 +16,9 @@ class TC_IDL < Test::Unit::TestCase
 	value = nil
 	assert_nothing_raised { value = registry.export("idl") }
 	expected = File.read(File.join(SRCDIR, "idl_export.idl"))
+	File.open("/home/joyeux/tmp/idl/idl_export.idl", "w") do |io|
+	    io.write value
+	end
 	assert_equal(expected, value)
 
         registry = Registry.new
@@ -29,6 +32,6 @@ class TC_IDL < Test::Unit::TestCase
         registry = Registry.new
         registry.import( test_file, "c", :define => 'IDL_MULTI_ARRAY' )
 	assert_raises(TypeError) { registry.export("idl") }
-
     end
 end
+

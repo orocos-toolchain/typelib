@@ -8,6 +8,9 @@ class IDLExport : public Typelib::Exporter
     std::string m_namespace;
     std::string m_indent;
 
+    void closeNamespaces(std::ostream& stream, int levels);
+    void adaptNamespace(std::ostream& stream, std::string const& ns);
+
 protected:
     /** Called by save to add a prelude before saving all registry types */
     virtual bool begin(std::ostream& stream, Typelib::Registry const& registry);

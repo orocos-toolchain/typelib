@@ -10,9 +10,26 @@ struct CompoundInCompound {
     Compound test[10];
 };
 
-typedef enum Enum { A, B, C } Enum;
+typedef enum TestEnum { A, B, C } EnumAlias;
 
-typedef Enum OtherEnum;
+typedef TestEnum OtherEnum;
+
+namespace NS1 {
+    namespace NS1_1 {
+	struct Test {
+	    int a;
+	    short b;
+	};
+    }
+
+    namespace NS1_2 {
+	typedef NS1_1::Test Test;
+    }
+
+    struct Test {
+	NS1_1::Test test2;
+    };
+}
 
 #ifdef IDL_POINTER_ALIAS
 typedef int* Pointer;

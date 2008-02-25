@@ -100,3 +100,21 @@ namespace NS1 {
     };
 }
 
+#ifndef VALID_STRICT_C
+namespace NS1 {
+    namespace NS1_1 {
+	struct Foo {
+	    int a;
+	    short b;
+	};
+    }
+
+    namespace NS1_2 {
+	typedef NS1_1::Foo Foo;
+    }
+
+    struct Foo {
+	NS1_1::Foo test;
+    };
+}
+#endif
