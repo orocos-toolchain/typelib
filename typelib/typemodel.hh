@@ -46,8 +46,12 @@ namespace Typelib
     public:
         virtual ~Type();
 
-	/** The type full name */
+	/** The type full name (including namespace) */
         std::string   getName() const;
+	/** The type name without the namespace */
+	std::string   getBasename() const;
+	/** The type namespace */
+	std::string   getNamespace() const;
 	/** Size in bytes of a value */
         size_t        getSize() const;
 	/** The type category */

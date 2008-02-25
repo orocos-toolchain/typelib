@@ -23,8 +23,12 @@ namespace Typelib
     bool isValidTypename(const std::string& name, bool absolute);
     bool isInNamespace(const std::string& type, const std::string& nspace, bool recursive = false);
     
+    /** Returns +name+ as a namespace name, valid to build
+     * an absolute type name by simple concatenation */
     std::string getNormalizedNamespace(const std::string& name);
+    /** Removes the namespace part of \c full_name and returns it */
     std::string getTypename (const std::string& full_name);
+    /** Returns the namespace part of \c full_name */
     std::string getNamespace(const std::string& full_name);
 };
 

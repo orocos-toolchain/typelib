@@ -30,6 +30,8 @@ namespace Typelib
     Type::~Type() {}
 
     std::string Type::getName() const { return m_name; }
+    std::string Type::getBasename() const { return getTypename(m_name); }
+    std::string Type::getNamespace() const { return Typelib::getNamespace(m_name); }
     void Type::setName(const std::string& name) { m_name = name; }
     Type::Category Type::getCategory() const { return m_category; }
 

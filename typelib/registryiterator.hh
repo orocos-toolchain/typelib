@@ -3,6 +3,7 @@
 
 #include "registry.hh"
 #include "typemodel.hh"
+#include "typename.hh"
 #include <boost/iterator/iterator_facade.hpp>
 
 namespace Typelib
@@ -24,6 +25,10 @@ namespace Typelib
 
 	/** The type name */
         std::string getName() const { return m_iter->first; }
+	/** The type name without the namespace */
+	std::string getBasename() const { return getTypename(m_iter->first); }
+	/** The type namespace */
+	std::string getNamespace() const { return Typelib::getNamespace(m_iter->first); }
 	/** The source ID for this type */
         std::string getSource() const { return m_iter->second.source_id; }
 	/** Returns true if the type is an alias for another type */
