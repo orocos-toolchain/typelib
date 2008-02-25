@@ -1,0 +1,11 @@
+typedef enum Enum OtherEnum;
+enum Enum { A, B, C };
+struct Compound {
+    long a;
+    short b;
+    octet c;
+    long array[10];
+};
+struct CompoundInCompound {
+    Compound test[10];
+};
