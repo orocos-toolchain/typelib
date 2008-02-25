@@ -18,6 +18,10 @@ using namespace Typelib;
 
 namespace 
 {   
+    /* Returns true if \c name1 is either in a more in-depth namespace than
+     * name2 (i.e. name2 == /A/B/class and name1 == /A/B/C/class2 or if 
+     * name2 < name1 (lexicographic sort). Otherwise, returns false
+     */
     bool sort_names ( const std::string& name1, const std::string& name2 )
     {
         NameTokenizer tok1(name1);
@@ -72,36 +76,36 @@ namespace Typelib
         if (! isValidNamespace(space, true))
             return false;
 
+	m_current.clear();
         m_namespace = getNormalizedNamespace(space);
-        //cout << "Setting default namespace to " << m_namespace << endl;
 
         for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
             m_current.insert( make_pair(it->first, it->second) );
 
+        importNamespace(NamespaceMarkString);
+        std::string cur_space = NamespaceMarkString;
         NameTokenizer tokens( m_namespace );
         NameTokenizer::const_iterator ns_it = tokens.begin();
-
-        importNamespace(NamespaceMarkString);
-
-        std::string cur_space = NamespaceMarkString;
         for (; ns_it != tokens.end(); ++ns_it)
         {
             cur_space += *ns_it + NamespaceMarkString;
-            importNamespace(cur_space);
+            importNamespace(cur_space, true);
         }
         return true;
     }
 
-    void Registry::importNamespace(const std::string& name)
+    void Registry::importNamespace(const std::string& name, bool erase_existing)
     {
         const std::string norm_name(getNormalizedNamespace(name));
         const int         norm_length(norm_name.length());
             
         TypeMap::const_iterator it = m_global.lower_bound(norm_name);
 
-        while ( it != m_global.end() && isInNamespace(it->first, norm_name, false) )
+        while ( it != m_global.end() && isInNamespace(it->first, norm_name, true) )
         {
             const std::string rel_name(it->first, norm_length, string::npos);
+	    if (erase_existing)
+		m_current.erase(rel_name);
             m_current.insert( make_pair(rel_name, it->second) );
             ++it;
         }
@@ -265,6 +269,9 @@ namespace Typelib
 
     void Registry::add(std::string const& name, Type* new_type, std::string const& source_id)
     {
+        if (! isValidTypename(name, true))
+            throw BadName(name);
+
         const Type* old_type = get(name);
         if (old_type == new_type) 
             return; 
@@ -278,19 +285,31 @@ namespace Typelib
             
         m_global.insert (make_pair(name, regtype));
         m_current.insert(make_pair(name, regtype));
-        std::string current_name = getTypename(name);
-        if (current_name != name)
-            m_current.insert(make_pair(current_name, regtype));
+
+        NameTokenizer tokens( m_namespace );
+        NameTokenizer::const_iterator ns_it = tokens.begin();
+        std::string cur_space = NamespaceMarkString;
+	while(true)
+        {
+	    string cur_name  = getRelativeName(name, cur_space);
+
+	    // Check if there is already a type with the same relative name
+	    TypeMap::iterator it = m_current.find(cur_name);
+	    if (it == m_current.end() || !sort_names(it->second.type->getName(), name))
+	    {
+		m_current.erase(cur_name);
+		m_current.insert(make_pair(cur_name, regtype));
+	    }
+
+	    if (ns_it == tokens.end())
+		break;
+            cur_space += *ns_it + NamespaceMarkString;
+	    ++ns_it;
+        }
     }
 
     void Registry::add(Type* new_type, const std::string& source_id)
-    {
-        std::string name(new_type -> getName());
-        if (! isValidTypename(name, true))
-            throw BadName(name);
-            
-        add(name, new_type, source_id);
-    }
+    { add(new_type->getName(), new_type, source_id); }
 
     void Registry::alias(std::string const& base, std::string const& newname, std::string const& source_id)
     {

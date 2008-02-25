@@ -110,6 +110,14 @@ namespace Typelib
         return string(name, position + 1, string::npos);
     }
 
+    std::string getRelativeName(std::string const& name, std::string const& ns)
+    {
+	size_t size = ns.length();
+	if (*ns.rbegin() != '/')
+	    size += 1;
+	return std::string(name, size, string::npos);
+    }
+
     std::string getNamespace(const std::string& name)
     {
         size_t position = name.rfind(NamespaceMark);

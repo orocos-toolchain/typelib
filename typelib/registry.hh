@@ -136,8 +136,12 @@ namespace Typelib
         Registry();
         ~Registry();
 
-        /** Import the \c name namespace into the current namespace */
-        void importNamespace(const std::string& name);
+        /** Import the \c name namespace into the current namespace.
+	 * @arg erase_existing controls the behaviour in case of name collision. If true,
+	 * the type from the namespace being imported will have priority. If false, 
+	 * an already imported type will have priority.
+	 */
+        void importNamespace(const std::string& name, bool erase_existing = false);
 
         /** Sets the default namespace. This removes all namespace import and
          * imports \c name in the current namespace

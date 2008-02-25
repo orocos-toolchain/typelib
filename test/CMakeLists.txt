@@ -1,8 +1,9 @@
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+INCLUDE_DIRECTORIES(BEFORE ${CMAKE_SOURCE_DIR})
+INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
 CONFIGURE_FILE(testsuite.hh.in test/testsuite.hh @ONLY)
-ADD_EXECUTABLE(typelib_testsuite
+ADD_EXECUTABLE(typelib_testsuite testsuite.cc
+    test_registry.cc
     test_display.cc test_lang_c.cc test_lang_tlb.cc test_model.cc
     test_plugin.cc testsuite.cc test_value.cc)
 

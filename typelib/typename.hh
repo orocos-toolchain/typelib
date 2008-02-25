@@ -30,6 +30,8 @@ namespace Typelib
     std::string getTypename (const std::string& full_name);
     /** Returns the namespace part of \c full_name */
     std::string getNamespace(const std::string& full_name);
+    /** Returns the relative part of +name+, relative to the given namespace */
+    std::string getRelativeName(std::string const& full_name, std::string const& ns);
 };
 
 #endif
