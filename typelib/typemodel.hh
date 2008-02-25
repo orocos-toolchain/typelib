@@ -4,6 +4,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <set>
 
 #include "typename.hh"
   
@@ -59,6 +60,9 @@ namespace Typelib
 	/** true if this type is null */
         bool          isNull() const;
 
+	/** The set of types this type depends upon */
+	virtual std::set<Type const*> dependsOn() const = 0;
+
         bool operator == (Type const& with) const;
         bool operator != (Type const& with) const;
 
@@ -86,6 +90,7 @@ namespace Typelib
     public:
         NullType(std::string const& name) : Type(name, 0, Type::NullType ) {}
 	virtual bool isSame(Type const&) const { return true; }
+	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
 
     private:
 	virtual Type* do_merge(Registry& registry) const { return new NullType(*this); }
@@ -111,6 +116,7 @@ namespace Typelib
         Numeric(const std::string& name, size_t size, NumericCategory category);
 
 	virtual bool isSame(Type const& type) const;
+	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
 
     private:
 	virtual Type* do_merge(Registry& registry) const;
@@ -144,6 +150,7 @@ namespace Typelib
         ValueMap const& values() const;
 
 	virtual bool isSame(Type const& type) const;
+	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
 
     private:
 	virtual Type* do_merge(Registry& registry) const;
@@ -197,13 +204,12 @@ namespace Typelib
         void              addField(const std::string& name, const Type& type, size_t offset);
 
 	virtual bool isSame(Type const& type) const;
+	virtual std::set<Type const*> dependsOn() const;
 
     private:
 	virtual Type* do_merge(Registry& registry) const;
         FieldList m_fields;
     };
-
-
 
     /** Base class for types with indirection (pointer, array) */
     class Indirect : public Type
@@ -216,6 +222,7 @@ namespace Typelib
 
         Indirect(std::string const& name, size_t size, Category category, Type const& on);
         Type const& getIndirection() const;
+	virtual std::set<Type const*> dependsOn() const;
 
     private:
         Type const& m_indirection;

@@ -74,7 +74,12 @@ namespace Typelib
     bool Indirect::isSame(Type const& type) const
     { return Type::isSame(type) && 
 	m_indirection.isSame(static_cast<Indirect const&>(type).m_indirection); }
-
+    std::set<Type const*> Indirect::dependsOn() const
+    {
+	std::set<Type const*> result;
+	result.insert(&getIndirection());
+	return result;
+    }
 
     Compound::Compound(std::string const& name)
         : Type(name, 0, Type::Compound) {}
@@ -110,6 +115,13 @@ namespace Typelib
 	for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
 	    result->addField(it->getName(), it->getType().merge(registry), it->getOffset());
 	return result.release();
+    }
+    std::set<Type const*> Compound::dependsOn() const
+    {
+	std::set<Type const*> result;
+        for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
+	    result.insert(&(it->getType()));
+	return result;
     }
 
     namespace
