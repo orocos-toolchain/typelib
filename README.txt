@@ -5,6 +5,11 @@ values. Its value model is based on the C type model. The library allows to
 load definition from various type description files (including plain C), build
 types programmatically, create and manipulate values from these types.
 
+The following import/export plugins are available:
+  - import plain C plus C++-compatible namespace support
+  - import/export into Typelib's own XML format
+  - export IDL files (CORBA definition language)
+
 A binding to the Ruby language is provided, which allows to very easily interface
 a dynamic library from within Ruby code. This Ruby binding is based on the dyncall
 library, whose full source code is provided in this release.
