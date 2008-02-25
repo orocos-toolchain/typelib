@@ -76,3 +76,27 @@ typedef struct TestMemoryManagement {
     struct B b[10][10];
 } TestMemoryManagement;
 
+
+namespace NS1 {
+    namespace NS2 {
+	struct Test {
+	    int a;
+	};
+    }
+}
+
+namespace NS1 {
+    namespace Bla {
+	struct Test { 
+	    char a;
+	};
+    }
+
+    struct Test { 
+	short a;
+#ifndef VALID_STRICT_C
+	NS1::Bla::Test b;
+#endif
+    };
+}
+

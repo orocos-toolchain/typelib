@@ -195,6 +195,8 @@ protected:
     virtual void exitLocalScope();
     virtual void enterExternalScope();
     virtual void exitExternalScope();
+    virtual void enterNamespace(std::string const& name);
+    virtual void exitNamespace();
 
     // Aggregate stuff
     virtual void classForwardDeclaration(TypeSpecifier, CPPParser::DeclSpecifier,const std::string&);
@@ -245,6 +247,8 @@ external_declaration
 |     // Enum definition (don't want to backtrack over this in other alts)
         ("enum" (ID)? LCURLY)=>
         enum_specifier (init_declarator_list)? SEMICOLON {end_of_stmt();}
+|
+	"namespace" id:ID { enterNamespace(id->getText()); } LCURLY fragment RCURLY { exitNamespace(); } 
 |     // Function declaration
         (declaration_specifiers function_declarator[0] SEMICOLON)=> 
                 declaration
@@ -373,14 +377,18 @@ simple_type_specifier returns [CPPParser::TypeSpecifier ts]
 	;
 
 qualified_type returns [std::string qitem]
+{ std::string remains; }
 		// JEL 3/29/96 removed this predicate and moved it upwards to
 		// simple_type_specifier.  This was done to allow parsing of ~ID to 
 		// be a unary_expression, which was never reached with this 
 		// predicate on
 		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
         :
-		id:ID 
-		{ qitem = id->getText(); }
+		id1:ID SCOPE remains = qualified_type
+		{ qitem = id1->getText() + "/" + remains; }
+	|
+		id2:ID
+		{ qitem = id2->getText(); }
 	;
 
 member_declarator_list

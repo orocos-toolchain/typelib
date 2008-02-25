@@ -38,6 +38,18 @@ void TypeSolver::endClassDefinition()
     CPPParser::endClassDefinition();
 }
 
+void TypeSolver::enterNamespace(std::string const& name)
+{
+    m_namespace.push_back(name);
+    m_registry.setDefaultNamespace( "/" + utilmm::join(m_namespace, "/") );
+}
+
+void TypeSolver::exitNamespace()
+{
+    m_namespace.pop_back();
+    m_registry.setDefaultNamespace( "/" + utilmm::join(m_namespace, "/") );
+}
+
 void TypeSolver::beginEnumDefinition(const std::string& name)
 {
     if (m_class)

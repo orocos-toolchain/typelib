@@ -5,6 +5,7 @@
 
 #include "typemodel.hh"
 #include "typebuilder.hh"
+#include <utilmm/stringtools.hh>
 #include <list>
 #include <sstream>
 
@@ -15,6 +16,8 @@ class TypeSolver : public CPPParser
     bool            m_class;
     std::string     m_class_name;
     TypeSpecifier   m_class_type;
+
+    utilmm::stringlist m_namespace;
 
     // For Compound
     typedef std::pair<std::string, Typelib::TypeBuilder> FieldBuilder;
@@ -53,6 +56,9 @@ public:
     virtual void beginEnumDefinition(const std::string& name);
     virtual void enumElement(const std::string& name, bool has_value, int value);
     virtual void endEnumDefinition();
+
+    virtual void enterNamespace(std::string const& name);
+    virtual void exitNamespace();
 
     virtual void beginFieldDeclaration();
     virtual void foundSimpleType(const std::list<std::string>& full_type);

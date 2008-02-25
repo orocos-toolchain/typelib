@@ -219,6 +219,10 @@ void CPPParser::declaratorID(const std::string& id, QualifiedItem qi)
         symbols->define(id, c);	// Add to current scope
     }
 }
+
+void CPPParser::enterNamespace(std::string const& name) { }
+void CPPParser::exitNamespace() { }
+
 /* These are the object types
    0 = otInvalid
    1 = otFunction

@@ -9,6 +9,28 @@
 #include "test_cimport.1"
 using namespace Typelib;
 
+BOOST_AUTO_TEST_CASE( test_strict_c_import )
+{
+    static const char* test_file = TEST_DATA_PATH("test_cimport.h");
+    PluginManager::self manager;
+    Importer* importer = manager->importer("c");
+
+    utilmm::config_set config;
+    config.set("cxx", "false");
+    config.set("include", TEST_DATA_PATH(".."));
+    config.set("define", "GOOD");
+    config.insert("define", "VALID_STRICT_C");
+    Registry registry;
+    BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
+
+    BOOST_CHECK( !registry.has("/NS1/NS2/Test") );
+    BOOST_CHECK( !registry.has("/NS1/Test") );
+    BOOST_CHECK( !registry.has("/NS1/Bla/Test") );
+    BOOST_CHECK( registry.has("/NS1/NS2/struct Test") );
+    BOOST_CHECK( registry.has("/NS1/struct Test") );
+    BOOST_CHECK( registry.has("/NS1/Bla/struct Test") );
+}
+
 BOOST_AUTO_TEST_CASE( test_c_import )
 {
     Registry registry;
@@ -46,6 +68,12 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     BOOST_CHECK( registry.has("/ADef") );
     BOOST_CHECK( registry.has("/B") );
     BOOST_CHECK( registry.has("/OpaqueType") );
+    BOOST_CHECK( registry.has("/NS1/NS2/Test") );
+    BOOST_CHECK( registry.has("/NS1/Test") );
+    BOOST_CHECK( registry.has("/NS1/Bla/Test") );
+    BOOST_CHECK( registry.has("/NS1/NS2/struct Test") );
+    BOOST_CHECK( registry.has("/NS1/struct Test") );
+    BOOST_CHECK( registry.has("/NS1/Bla/struct Test") );
 
     // Check that the size of B.a is the same as A
     Compound const* b   = static_cast<Compound const*>(registry.get("/B"));
