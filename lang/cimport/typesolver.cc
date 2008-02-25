@@ -12,11 +12,11 @@
 using namespace std;
 using namespace Typelib;
 
-TypeSolver::TypeSolver(const antlr::ParserSharedInputState& state, Registry& registry)
-    : CPPParser(state), m_class(0), m_registry(registry) {}
+TypeSolver::TypeSolver(const antlr::ParserSharedInputState& state, Registry& registry, bool cxx_mode)
+    : CPPParser(state), m_class(0), m_registry(registry), m_cxx_mode(cxx_mode) {}
 
-TypeSolver::TypeSolver(antlr::TokenStream& lexer, Registry& registry)
-    : CPPParser(lexer), m_class(0), m_registry(registry) {}
+TypeSolver::TypeSolver(antlr::TokenStream& lexer, Registry& registry, bool cxx_mode)
+    : CPPParser(lexer), m_class(0), m_registry(registry), m_cxx_mode(cxx_mode) {}
 
 void TypeSolver::beginClassDefinition(TypeSpecifier class_type, const std::string& name)
 {
@@ -33,7 +33,7 @@ void TypeSolver::beginClassDefinition(TypeSpecifier class_type, const std::strin
 void TypeSolver::endClassDefinition()
 {
     if (!m_class_name.empty()) // typedef struct {} bla handled later in declarationID
-        buildClassObject(false);
+        buildClassObject(m_cxx_mode);
 
     CPPParser::endClassDefinition();
 }
@@ -76,7 +76,7 @@ void TypeSolver::endEnumDefinition()
 	return;
 
     if (! m_class_name.empty())
-        buildClassObject(false);
+        buildClassObject(m_cxx_mode);
 }
 
 void TypeSolver::buildClassObject(bool define_type)

@@ -29,6 +29,8 @@ class TypeSolver : public CPPParser
     void buildClassObject(bool define_type);
     Typelib::Registry& m_registry;
 
+    bool m_cxx_mode;
+
 public:
     class UnsupportedClassType
     {
@@ -43,8 +45,8 @@ public:
         }
     };
     
-    TypeSolver(antlr::TokenStream& lexer, Typelib::Registry& registry);
-    TypeSolver(const antlr::ParserSharedInputState& state, Typelib::Registry& registry);
+    TypeSolver(antlr::TokenStream& lexer, Typelib::Registry& registry, bool cxx_mode);
+    TypeSolver(const antlr::ParserSharedInputState& state, Typelib::Registry& registry, bool cxx_mode);
     
     virtual void beginClassDefinition(TypeSpecifier class_type, const std::string& name);
     virtual void endClassDefinition();

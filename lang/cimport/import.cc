@@ -83,7 +83,7 @@ void CImport::load
     try {
         CPPLexer cpp_lexer(stream);
 
-        TypeSolver reader(cpp_lexer, registry);
+        TypeSolver reader(cpp_lexer, registry, config.get<bool>("cxx", true));
         reader.init();
         reader.translation_unit();
     }
