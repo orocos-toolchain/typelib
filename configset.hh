@@ -65,23 +65,38 @@ namespace utilmm
         /** Get the first child named \c name or an empty set */
 	config_set const& child(std::string const& name) const;
 
-        /** Get a list of values from this config_set */
+	/** In a config_set object, all values are stored as lists of strings. This
+	 * method converts the stored value into the required type using the
+	 * associated config_set::convert template specialization (if it exists).
+	 *
+	 * If no value is stored under the given key, returns \c defval
+	 */
         template<typename T> 
         T get(std::string const& name, T const& defval = T(),
                 typename boost::enable_if< details::is_list<T> >::type *enabler = 0) const;
-        /** Get a value from this config_set. If there is more than one value for this key,
-         * then the first one is returned */
+	/** In a config_set object, all values are stored as lists of strings. This
+	 * method is a convenience method when only one value is stored for a given
+	 * key.  It converts the stored value into the required type using the
+	 * associated config_set::convert template specialization (if it exists).
+	 *
+	 * If no value is associated with the key, returns \c defval
+	 */
         template<typename T> 
         T get(std::string const& name, T const& defval = T(),
                 typename boost::disable_if< details::is_list<T> >::type *enabler = 0) const;
 
-        /** Set the value for this key */
+        /** Replaces any value associated with \c name with the value provided.
+	 * See \c insert to append new values to already existing ones 
+	 */
         void set(std::string const& name, std::string const& value);
-        /** Sets multiple values for this key */
+	/** Sets multiple values for this key. If some value was already
+	 * associated with \c name, the new value replaces it. See \c insert to
+	 * append new values to already existing ones. 
+	 */
         void set(std::string const& name, std::list<std::string> const& value);
-        /** Insert a value in this config_set */
+        /** Appends the given value to the values already associated with \c name */
         void insert(std::string const& name, std::string const& value);
-        /** Inserts multiple values in this config_set */
+        /** Appends the given values to the valus already associated with \c name */
         void insert(std::string const& name, std::list<std::string> const& value);
         /** Add a child to this config_set */
         void insert(std::string const& name, config_set const* value);
@@ -99,15 +114,11 @@ namespace utilmm
     { return boost::lexical_cast<T>(value); }
 
 
-    /** Define the basic access function: list of strings. Everything
-     * is derived from this one and from the convert<> functions
-     */
     template<>
     config_set::stringlist config_set::get(std::string const& name,
             config_set::stringlist const& defval,
             boost::enable_if< details::is_list<config_set::stringlist> >::type *enabler) const;
 
-    /** Define accessors for lists */
     template<typename T> 
     T config_set::get(std::string const& name, T const& defval,
             typename boost::enable_if< details::is_list<T> >::type *enabler) const
@@ -123,7 +134,6 @@ namespace utilmm
         return result;
     }
 
-    /** Define accessor for scalars */
     template<typename T>
     T config_set::get(std::string const& name, T const& defval,
             typename boost::disable_if< details::is_list<T> >::type *enabler) const
