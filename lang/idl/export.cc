@@ -174,13 +174,7 @@ using namespace std;
 IDLExport::IDLExport() 
     : m_namespace("/") {}
 
-bool IDLExport::begin
-    ( ostream& stream
-    , Typelib::Registry const& /*registry*/ )
-{
-    return true;
-}
-bool IDLExport::end
+void IDLExport::end
     ( ostream& stream
     , Typelib::Registry const& /*registry*/ )
 {
@@ -188,8 +182,6 @@ bool IDLExport::end
     utilmm::stringlist
 	ns_levels = utilmm::split(m_namespace, "/");
     closeNamespaces(stream, ns_levels.size());
-
-    return true;
 }
 
 void IDLExport::closeNamespaces(ostream& stream, int levels)
@@ -240,7 +232,7 @@ void IDLExport::adaptNamespace(ostream& stream, string const& ns)
     m_namespace = ns;
 }
 
-bool IDLExport::save
+void IDLExport::save
     ( ostream& stream
     , Typelib::RegistryIterator const& type )
 {
@@ -266,7 +258,5 @@ bool IDLExport::save
         IDLExportVisitor exporter(stream, m_indent, m_namespace);
         exporter.apply(*type);
     }
-    return true;
 }
-
 

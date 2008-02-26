@@ -499,6 +499,20 @@ module Typelib
 
             do_import(file, kind, do_merge, options)
         end
+
+
+	# Exports the registry in the provided format, into a Ruby string. The
+	# following formats are allowed as +format+:
+	# 
+	# +tlb+:: Typelib's own XML format
+	# +idl+:: CORBA IDL
+	# 
+	# +options+ is an option hash, which is export-format specific. See the C++
+	# documentation of each exporter for more information.
+	def export(kind, options = {})
+            options = Registry.format_options(options)
+            do_export(kind, options)
+	end
     end
 
     # An opened C library

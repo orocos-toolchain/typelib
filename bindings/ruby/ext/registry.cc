@@ -2,6 +2,7 @@
 
 #include <typelib/pluginmanager.hh>
 #include <typelib/importer.hh>
+#include <typelib/exporter.hh>
 #include <typelib/registryiterator.hh>
 #include <utilmm/configfile/configset.hh>
 
@@ -98,16 +99,9 @@ VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
     return Qnil;
 }
 
-/* Private method to import a given file in the registry
- * We expect Registry#import to format the arguments before calling
- * do_import
- */
 static
-VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE options)
+void setup_configset_from_option_array(config_set& config, VALUE options)
 {
-    Registry& registry = rb2cxx::object<Registry>(self);
-
-    config_set config;
     for (int i = 0; i < RARRAY(options)->len; ++i)
     {
 	VALUE entry = RARRAY(options)->ptr[i];
@@ -124,7 +118,19 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE opt
 	else
 	    config.set(StringValuePtr(k), StringValuePtr(v));
     }
-	
+}
+
+/* Private method to import a given file in the registry
+ * We expect Registry#import to format the arguments before calling
+ * do_import
+ */
+static
+VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE options)
+{
+    Registry& registry = rb2cxx::object<Registry>(self);
+
+    config_set config;
+    setup_configset_from_option_array(config, options);
     
     std::string error_string;
     try { 
@@ -143,6 +149,42 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE opt
 
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
+
+/* Private method called by Registry#export. This latter method is supposed
+ * to format the +options+ argument from a Ruby hash into an array suitable
+ * for setup_configset_from_option_array
+ */
+static
+VALUE registry_export(VALUE self, VALUE kind, VALUE options)
+{
+    Registry& registry = rb2cxx::object<Registry>(self);
+
+    config_set config;
+    setup_configset_from_option_array(config, options);
+    
+    string error_type;
+    string error_message;
+    try {
+	std::string exported = PluginManager::save(StringValuePtr(kind), config, registry);
+	return rb_str_new(exported.c_str(), exported.length());
+    } catch (Typelib::UnsupportedType e) { 
+      error_type = e.type.getName();
+      error_message = e.reason; 
+    } catch (Typelib::ExportError) {
+      error_message = "an unexpected error occured during export";
+    }
+
+    if (error_type.empty())
+	rb_raise(rb_eTypeError, error_message.c_str());
+    else
+    {
+	rb_raise(rb_eTypeError, "type %s cannot be exported to %s: %s",
+		error_type.c_str(),
+		StringValuePtr(kind),
+		error_message.c_str());
+    }
+}
+
 
 /*
  * call-seq:
@@ -212,35 +254,6 @@ VALUE registry_each_type(int argc, VALUE* argv, VALUE self)
 }
 
 /* call-seq:
- *  registry.export(format) => string
- *
- * Exports the registry in the provided format, into a Ruby string. The following
- * formats are allowed as +format+:
- *
- * +tlb+:: Typelib's own XML format
- * +idl+:: CORBA IDL
- */
-static
-VALUE registry_export(VALUE self, VALUE kind)
-{
-    Registry& registry = rb2cxx::object<Registry>(self);
-    
-    string error_type;
-    string error_message;
-    try {
-	std::string exported = PluginManager::save(StringValuePtr(kind), registry);
-	return rb_str_new(exported.c_str(), exported.length());
-    } catch (Typelib::UnsupportedType e)
-    { error_type = e.type.getName();
-      error_message = e.reason; }
-
-    rb_raise(rb_eTypeError, "type %s cannot be exported to %s: %s",
-	    error_type.c_str(),
-	    StringValuePtr(kind),
-	    error_message.c_str());
-}
-
-/* call-seq:
  *  registry.to_xml => string
  *
  * Export the given registry into xml. The returned string can be imported back
@@ -285,7 +298,7 @@ void Typelib_init_registry()
     // do_import is called by the Ruby-defined import, which formats the 
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 4);
-    rb_define_method(cRegistry, "export", RUBY_METHOD_FUNC(registry_export), 1);
+    rb_define_method(cRegistry, "do_export", RUBY_METHOD_FUNC(registry_export), 2);
     rb_define_method(cRegistry, "to_xml", RUBY_METHOD_FUNC(registry_to_xml), 0);
     rb_define_singleton_method(cRegistry, "from_xml", RUBY_METHOD_FUNC(registry_from_xml), 1);
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);

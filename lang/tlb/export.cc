@@ -133,25 +133,23 @@ namespace
 }
 
 using namespace std;
-bool TlbExport::begin
+void TlbExport::begin
     ( ostream& stream
     , Typelib::Registry const& /*registry*/ )
 {
     stream << 
         "<?xml version=\"1.0\"?>\n"
         "<typelib>\n";
-    return true;
 }
-bool TlbExport::end
+void TlbExport::end
     ( ostream& stream
     , Typelib::Registry const& /*registry*/ )
 {
     stream << 
         "</typelib>\n";
-    return true;
 }
 
-bool TlbExport::save
+void TlbExport::save
     ( ostream& stream
     , Typelib::RegistryIterator const& type )
 {
@@ -168,6 +166,5 @@ bool TlbExport::save
         exporter.apply(*type);
         stream << "\n";
     }
-    return true;
 }
 

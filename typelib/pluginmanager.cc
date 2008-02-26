@@ -57,14 +57,25 @@ Exporter* PluginManager::exporter(std::string const& name) const
 
 std::string PluginManager::save(std::string const& kind, Registry const& registry)
 {
+    utilmm::config_set config;
+    return save(kind, config, registry);
+}
+
+std::string PluginManager::save(std::string const& kind, utilmm::config_set const& config, Registry const& registry)
+{
     ostringstream stream;
-    save(kind, registry, stream);
+    save(kind, config, registry, stream);
     return stream.str();
 }
 void PluginManager::save(std::string const& kind, Registry const& registry, std::ostream& into)
 {
+    utilmm::config_set config;
+    save(kind, config, registry, into);
+}
+void PluginManager::save(std::string const& kind, utilmm::config_set const& config, Registry const& registry, std::ostream& into)
+{
     Exporter* exporter = PluginManager::self()->exporter(kind);
-    exporter->save(into, registry);
+    exporter->save(into, config, registry);
 }
 
 Registry* PluginManager::load(std::string const& kind, std::istream& stream, utilmm::config_set const& config )

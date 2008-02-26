@@ -1,14 +1,22 @@
 #include "exporter.hh"
 #include "registry.hh"
 #include "registryiterator.hh"
+#include <utilmm/configfile/configset.hh>
+#include <typelib/typevisitor.hh>
 #include <set>
+#include <fstream>
 
 using namespace Typelib;
 
-bool Exporter::save(std::ostream& stream, Registry const& registry)
+void Exporter::save(std::string const& file_name, utilmm::config_set const& config, Registry const& registry)
 {
-    if (! begin(stream, registry))
-        return false;
+    std::ofstream file(file_name.c_str(), std::ofstream::trunc);
+    save(file, config, registry);
+}
+
+void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Registry const& registry)
+{
+    begin(stream, registry);
 
     std::set<std::string> done;
     std::set<Type const*> saved_types;
@@ -43,20 +51,23 @@ bool Exporter::save(std::ostream& stream, Registry const& registry)
 		if (! it.isPersistent())
 		    continue;
 
-		if (! save(stream, it))
-		    return false;
+		save(stream, it);
 	    }
 	}
     }
 
-    if (! end(stream, registry))
-        return false;
+    end(stream, registry);
+}
 
+bool Exporter::save( std::ostream& stream, Registry const& registry )
+{
+    utilmm::config_set config;
+    try { save(stream, config, registry); }
+    catch(UnsupportedType) { return false; }
+    catch(ExportError) { return false; }
     return true;
 }
 
-bool Exporter::begin(std::ostream& stream, Registry const& registry) 
-{ return true; }
-bool Exporter::end  (std::ostream& stream, Registry const& registry) 
-{ return true; }
+void Exporter::begin(std::ostream& stream, Registry const& registry) {}
+void Exporter::end  (std::ostream& stream, Registry const& registry) {}
 

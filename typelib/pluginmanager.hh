@@ -55,25 +55,44 @@ namespace Typelib
 	 * @throws PluginNotFound */
         Exporter* exporter(std::string const& name) const;
 
-	/** Converts a registry into string form
-	 * @arg kind	the output format. It has to be a valid exporter name
-	 * @arg registry the registry to export
-	 * @throws PluginNotFound if \c kind is invalid
-	 * @throws ExportError if an error occured during the export
+	/** \overload
+	 * This is provided for backward compatibility only
 	 */
-        static std::string save(std::string const& kind, Registry const& registry);
+        static std::string save
+	    ( std::string const& kind
+	    , Registry const& registry);
+
+	/** \overload
+	 */
+        static std::string save
+	    ( std::string const& kind
+	    , utilmm::config_set const& config
+	    , Registry const& registry);
+
+       	/** \overload
+	 * This is provided for backward compatibility only
+	 */
+	static void save
+	    ( std::string const& kind
+	    , Registry const& registry
+	    , std::ostream& into);
 
        	/** Exports a registry to an ostream object
 	 * @arg kind	    the output format. It has to be a valid exporter name
+	 * @arg config      format-specific configuration. See each exporter documentation for details.
 	 * @arg registry    the registry to export
 	 * @arg into	    the ostream object to export to
 	 * @throws PluginNotFound if \c kind is invalid
-	 * @throws ExportError if an error occured during the export
+	 * @throws UnsupportedType if a specific type cannot be exported into this format
+	 * @throws ExportError if another error occured during the export
 	 */
-	static void save(std::string const& kind, Registry const& registry, std::ostream& into);
+	static void save
+	    ( std::string const& kind
+	    , utilmm::config_set const& config
+	    , Registry const& registry
+	    , std::ostream& into);
 
-	/** Creates a registry from a istream object
-	 * @see Importer::load
+	/** \overload
 	 */
         static Registry* load
             ( std::string const& kind
@@ -81,7 +100,6 @@ namespace Typelib
             , utilmm::config_set const& config );
 	
        	/** Imports types from a istream object to an already existing registry
-	 * @see Importer::load
 	 */
 	static void load
             ( std::string const& kind
