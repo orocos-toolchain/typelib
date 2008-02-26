@@ -1,7 +1,7 @@
 #ifndef TYPELIB_EXPORT_TLB_HH
 #define TYPELIB_EXPORT_TLB_HH
 
-#include "exporter.hh"
+#include <typelib/exporter.hh>
 
 class TlbExport : public Typelib::Exporter
 {

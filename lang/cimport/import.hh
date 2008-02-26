@@ -1,7 +1,7 @@
 #ifndef __GENOM_MODULE_H
 #define __GENOM_MODULE_H
 
-#include "importer.hh"
+#include <typelib/importer.hh>
 
 class CImport : public Typelib::Importer
 {

@@ -1,6 +1,3 @@
-INCLUDE_DIRECTORIES(BEFORE ${CMAKE_SOURCE_DIR})
-INCLUDE_DIRECTORIES(${LibXML_INCLUDE_DIR}/libxml2)
-
 ADD_LIBRARY(typeLib SHARED
     registry.cc typebuilder.cc typemodel.cc typename.cc typevisitor.cc
     typedisplay.cc exporter.cc pluginmanager.cc ioplugins.cc value.cc

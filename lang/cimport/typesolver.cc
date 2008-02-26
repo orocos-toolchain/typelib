@@ -1,7 +1,7 @@
 #include "CPPParser.hpp"
 #include "CPPLexer.hpp"
 #include "typesolver.hh"
-#include "registry.hh"
+#include <typelib/registry.hh>
 #include "packing.hh"
 
 #include <iostream>

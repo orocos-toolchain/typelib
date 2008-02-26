@@ -2,7 +2,7 @@
 #include <iostream>
 #include <utilmm/stringtools.hh>
 
-#include "typevisitor.hh"
+#include <typelib/typevisitor.hh>
 
 namespace
 {

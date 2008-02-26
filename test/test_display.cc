@@ -1,6 +1,6 @@
 #include <boost/test/auto_unit_test.hpp>
 
-#include "testsuite.hh"
+#include <test/testsuite.hh>
 #include <utilmm/configfile/configset.hh>
 #include <typelib/pluginmanager.hh>
 #include <typelib/typemodel.hh>

@@ -1,8 +1,8 @@
-#include "import.hh"
-#include "registry.hh"
+#include <typelib/registry.hh>
 
 #include <CPPLexer.hpp>
 #include "typesolver.hh"
+#include "import.hh"
 
 #include <fstream>
 #include <iostream>

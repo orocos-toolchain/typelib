@@ -1,13 +1,10 @@
 #ifndef TYPELIB_LANG_TLB_IMPORT_HH
 #define TYPELIB_LANG_TLB_IMPORT_HH
 
-#include "importer.hh"
-#include "xmltools.hh"
+#include <typelib/importer.hh>
 
 class TlbImport : public Typelib::Importer
 {
-    void parse(std::string const& source_id, xmlDocPtr doc, Typelib::Registry& registry);
-
 public:
     virtual void load
         ( std::istream& stream

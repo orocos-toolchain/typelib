@@ -1,7 +1,7 @@
 #include "export.hh"
 #include <iostream>
 
-#include "typevisitor.hh"
+#include <typelib/typevisitor.hh>
 
 namespace
 {

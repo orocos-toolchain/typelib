@@ -1,6 +1,6 @@
 #include <boost/test/auto_unit_test.hpp>
 
-#include "testsuite.hh"
+#include <test/testsuite.hh>
 #include <typelib/typemodel.hh>
 #include <typelib/typename.hh>
 #include <typelib/registry.hh>

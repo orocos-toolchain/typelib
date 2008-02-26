@@ -3,8 +3,8 @@
 
 #include <CPPParser.hpp>
 
-#include "typemodel.hh"
-#include "typebuilder.hh"
+#include <typelib/typemodel.hh>
+#include <typelib/typebuilder.hh>
 #include <utilmm/stringtools.hh>
 #include <list>
 #include <sstream>

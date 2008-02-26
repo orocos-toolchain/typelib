@@ -1,7 +1,7 @@
 #ifndef TYPELIB_EXPORT_IDL_HH
 #define TYPELIB_EXPORT_IDL_HH
 
-#include "exporter.hh"
+#include <typelib/exporter.hh>
 
 class IDLExport : public Typelib::Exporter
 {

@@ -1,8 +1,9 @@
 #include "import.hh"
+#include "xmltools.hh"
 
-#include "typemodel.hh"
-#include "typebuilder.hh"
-#include "registry.hh"
+#include <typelib/typemodel.hh>
+#include <typelib/typebuilder.hh>
+#include <typelib/registry.hh>
 
 #include <iostream>
 
@@ -223,6 +224,37 @@ namespace
             map[name] = TypeNode(type_node, name, file, cat.loader);
         }
     }
+
+    void parse(std::string const& source_id, xmlDocPtr doc, Registry& registry)
+    {
+	if (!doc) 
+	    throw Parsing::MalformedXML();
+
+	try
+	{
+	    xmlNodePtr root_node = xmlDocGetRootElement(doc);
+	    if (!root_node) 
+		return;
+
+	    checkNodeName<Parsing::BadRootElement>(root_node, "typelib");
+
+	    TypeMap all_types;
+	    for(xmlNodePtr node = root_node -> xmlChildrenNode; node; node=node->next)
+	    {
+		if (!xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>("text")))
+		    continue;
+
+		::load(source_id, all_types, node);
+	    }
+
+	    Factory factory(registry);
+	    factory.build(all_types);
+	}
+	catch(...) { 
+	    xmlFreeDoc(doc); 
+	    throw;
+	}
+    }
 }
 
 void TlbImport::load
@@ -265,37 +297,6 @@ void TlbImport::load
     catch(ImportError& e)
     { 
         e.setFile(path);
-        throw;
-    }
-}
-
-void TlbImport::parse(std::string const& source_id, xmlDocPtr doc, Registry& registry)
-{
-    if (!doc) 
-        throw Parsing::MalformedXML();
-
-    try
-    {
-        xmlNodePtr root_node = xmlDocGetRootElement(doc);
-        if (!root_node) 
-            return;
-
-        checkNodeName<Parsing::BadRootElement>(root_node, "typelib");
-
-        TypeMap all_types;
-        for(xmlNodePtr node = root_node -> xmlChildrenNode; node; node=node->next)
-        {
-            if (!xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>("text")))
-                continue;
-
-            ::load(source_id, all_types, node);
-        }
-
-        Factory factory(registry);
-        factory.build(all_types);
-    }
-    catch(...) { 
-        xmlFreeDoc(doc); 
         throw;
     }
 }

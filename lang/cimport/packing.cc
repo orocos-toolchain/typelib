@@ -1,6 +1,6 @@
 #include "packing.hh"
-#include "typemodel.hh"
-#include "typevisitor.hh"
+#include <typelib/typemodel.hh>
+#include <typelib/typevisitor.hh>
 
 ////////////////////////////////////////////////////////////////////////////////
 //
