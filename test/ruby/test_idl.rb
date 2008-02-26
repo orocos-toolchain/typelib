@@ -16,9 +16,14 @@ class TC_IDL < Test::Unit::TestCase
 	value = nil
 	assert_nothing_raised { value = registry.export("idl") }
 	expected = File.read(File.join(SRCDIR, "idl_export.idl"))
-	File.open("/home/joyeux/tmp/idl/idl_export.idl", "w") do |io|
-	    io.write value
+	assert_equal(expected, value)
+
+	assert_nothing_raised do 
+	    value = registry.export("idl", 
+		    :namespace_prefix => 'CorbaPrefix/TestPrefix', 
+		    :namespace_suffix => 'CorbaSuffix/TestSuffix')
 	end
+	expected = File.read(File.join(SRCDIR, "idl_export_prefix_suffix.idl"))
 	assert_equal(expected, value)
 
         registry = Registry.new

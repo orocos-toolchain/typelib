@@ -11,13 +11,9 @@ namespace
     class IDLExportVisitor : public TypeVisitor
     {
     public:
+	IDLExport const& m_exporter;
         ostream&  m_stream;
         string    m_indent;
-	string    m_namespace;
-
-	static std::string getIDLAbsoluteTypename(Type const& type, string const& ns);
-	static std::string getIDLTypename(Type const& type);
-	static std::string getIDLBaseType(Numeric const& type);
 
         bool visit_(Compound const& type);
         bool visit_(Compound const& type, Field const& field);
@@ -29,7 +25,7 @@ namespace
 
         bool visit_(Enum const& type);
 
-        IDLExportVisitor(ostream& stream, string const& base_indent, string const& ns);
+        IDLExportVisitor(IDLExport const& exporter, ostream& stream, string const& base_indent);
     };
 
     struct Indent
@@ -42,39 +38,13 @@ namespace
         ~Indent() { m_indent = m_save; }
     };
 
-    IDLExportVisitor::IDLExportVisitor(ostream& stream, string const& base_indent, string const& ns)
-        : m_stream(stream), m_indent(base_indent), m_namespace(ns) {}
-
-    std::string IDLExportVisitor::getIDLTypename(Type const& type)
-    {
-	if (type.getCategory() == Type::Numeric)
-	    return getIDLBaseType(static_cast<Numeric const&>(type));
-	else if (type.getCategory() == Type::Compound || type.getCategory() == Type::Enum)
-	{
-	    utilmm::stringlist type_name = utilmm::split(type.getBasename(), " ");
-	    if (*type_name.begin() == "struct" || *type_name.begin() == "enum")
-		return *type_name.rbegin();
-	}
-
-	return type.getBasename();
-    }
-
-    std::string IDLExportVisitor::getIDLAbsoluteTypename(Type const& type, std::string const& current_namespace)
-    {
-	string result;
-
-	if (type.getNamespace() != current_namespace)
-	{
-	    result = utilmm::join(utilmm::split(type.getNamespace(), "/"), "::");
-	    if (!result.empty())
-		result += "::";
-	}
-	return result + getIDLTypename(type);
-    }
+    IDLExportVisitor::IDLExportVisitor(IDLExport const& exporter,
+	    ostream& stream, string const& base_indent)
+        : m_exporter(exporter), m_stream(stream), m_indent(base_indent) {}
 
     bool IDLExportVisitor::visit_(Compound const& type)
     { 
-        m_stream << m_indent << "struct " << getIDLTypename(type) << " {\n";
+        m_stream << m_indent << "struct " << IDLExport::getIDLTypename(type) << " {\n";
         
         { Indent indenter(m_indent);
             TypeVisitor::visit_(type);
@@ -94,7 +64,7 @@ namespace
 	    Array const& array_type = static_cast<Array const&>(field.getType());
 	    m_stream
 		<< m_indent
-		<< IDLExportVisitor::getIDLAbsoluteTypename(array_type.getIndirection(), m_namespace)
+		<< m_exporter.getIDLAbsoluteTypename(array_type.getIndirection())
 		<< " "
 		<< field.getName()
 		<< "[" << array_type.getDimension() << "];\n";
@@ -103,7 +73,7 @@ namespace
 	{
 	    m_stream 
 		<< m_indent
-		<< IDLExportVisitor::getIDLAbsoluteTypename(field.getType(), m_namespace) << " "
+		<< m_exporter.getIDLAbsoluteTypename(field.getType()) << " "
 		<< field.getName() << ";\n";
 	}
 
@@ -115,32 +85,6 @@ namespace
 	// no need to export Numeric types, they are already defined by IDL
 	// itself
 	return true;
-    }
-
-    std::string IDLExportVisitor::getIDLBaseType(Numeric const& type)
-    {
-	std::string idl_name;
-	if (type.getNumericCategory() != Numeric::Float)
-	{
-	    if (type.getNumericCategory() == Numeric::UInt && type.getSize() != 1)
-		idl_name = "unsigned ";
-	    switch (type.getSize())
-	    {
-		case 1: idl_name += "octet"; break;
-		case 2: idl_name += "short"; break;
-		case 4: idl_name += "long"; break;
-		case 8: idl_name += "long long"; break;
-	    }
-	}
-	else
-	{
-	    if (type.getSize() == 4)
-		idl_name = "float";
-	    else
-		idl_name = "double";
-	}
-
-        return idl_name;
     }
 
     bool IDLExportVisitor::visit_ (Pointer const& type)
@@ -157,7 +101,7 @@ namespace
 
     bool IDLExportVisitor::visit_ (Enum const& type)
     {
-	m_stream << m_indent << "enum " << IDLExportVisitor::getIDLAbsoluteTypename(type, m_namespace) << " { ";
+	m_stream << m_indent << "enum " << m_exporter.getIDLAbsoluteTypename(type) << " { ";
 
 	utilmm::stringlist symbols;
         Enum::ValueMap const& values = type.values();
@@ -232,6 +176,82 @@ void IDLExport::adaptNamespace(ostream& stream, string const& ns)
     m_namespace = ns;
 }
 
+std::string IDLExport::getExportNamespace(std::string const& type_ns) const
+{
+    string ns = type_ns;
+    if (!m_ns_prefix.empty())
+	ns = m_ns_prefix + "/" + ns;
+    if (!m_ns_suffix.empty())
+	ns = ns + "/" + m_ns_suffix;
+    return ns;
+}
+
+std::string IDLExport::getIDLAbsoluteTypename(Type const& type) const
+{
+    string result;
+
+    string type_ns = getExportNamespace(type.getNamespace());
+    if (type_ns != m_namespace && type.getCategory() != Type::Numeric)
+    {
+	result = utilmm::join(utilmm::split(type_ns, "/"), "::");
+	if (!result.empty())
+	    result += "::";
+    }
+    return result + getIDLTypename(type);
+}
+
+std::string IDLExport::getIDLTypename(Type const& type)
+{
+    if (type.getCategory() == Type::Numeric)
+	return getIDLBaseType(static_cast<Numeric const&>(type));
+    else if (type.getCategory() == Type::Compound || type.getCategory() == Type::Enum)
+    {
+	utilmm::stringlist type_name = utilmm::split(type.getBasename(), " ");
+	if (*type_name.begin() == "struct" || *type_name.begin() == "enum")
+	    return *type_name.rbegin();
+    }
+
+    return type.getBasename();
+}
+
+std::string IDLExport::getIDLBaseType(Numeric const& type)
+{
+    std::string idl_name;
+    if (type.getNumericCategory() != Numeric::Float)
+    {
+	if (type.getNumericCategory() == Numeric::UInt && type.getSize() != 1)
+	    idl_name = "unsigned ";
+	switch (type.getSize())
+	{
+	    case 1: idl_name += "octet"; break;
+	    case 2: idl_name += "short"; break;
+	    case 4: idl_name += "long"; break;
+	    case 8: idl_name += "long long"; break;
+	}
+    }
+    else
+    {
+	if (type.getSize() == 4)
+	    idl_name = "float";
+	else
+	    idl_name = "double";
+    }
+
+    return idl_name;
+}
+
+
+void IDLExport::save
+    ( ostream& stream
+    , utilmm::config_set const& config
+    , Typelib::Registry const& type )
+{
+    m_ns_prefix = config.get<std::string>("namespace_prefix", "");
+    m_ns_suffix = config.get<std::string>("namespace_suffix", "");
+    return Exporter::save(stream, config, type);
+}
+
+
 void IDLExport::save
     ( ostream& stream
     , Typelib::RegistryIterator const& type )
@@ -245,17 +265,17 @@ void IDLExport::save
 	{
 	    IDLExport::checkType(*type);
 
-	    adaptNamespace(stream, type.getNamespace());
+	    adaptNamespace(stream, getExportNamespace(type.getNamespace()));
 	    // Alias types using typedef, taking into account that the aliased type
 	    // may not be in the same module than the new alias.
 	    stream << m_indent << "typedef ";
-	    stream << IDLExportVisitor::getIDLAbsoluteTypename(*type, m_namespace) << " " << type.getBasename() << ";\n";
+	    stream << getIDLAbsoluteTypename(*type) << " " << type.getBasename() << ";\n";
 	}
     }
     else
     {
-	adaptNamespace(stream, type.getNamespace());
-        IDLExportVisitor exporter(stream, m_indent, m_namespace);
+	adaptNamespace(stream, getExportNamespace(type.getNamespace()));
+        IDLExportVisitor exporter(*this, stream, m_indent);
         exporter.apply(*type);
     }
 }
