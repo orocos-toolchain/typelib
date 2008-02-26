@@ -12,10 +12,6 @@ namespace
         ostream&  m_stream;
         string    m_indent;
 
-        template<typename T>
-        void display_compound(T const& type, char const* compound_name);
-        bool display_field(Field const& field);
-
     protected:
         bool visit_(Compound const& type);
         bool visit_(Compound const& type, Field const& field);

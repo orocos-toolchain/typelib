@@ -15,10 +15,6 @@ namespace
         string    m_indent;
 	string    m_namespace;
 
-        template<typename T>
-        void display_compound(T const& type, char const* compound_name);
-        bool display_field(Field const& field);
-
 	static std::string getIDLAbsoluteTypename(Type const& type, string const& ns);
 	static std::string getIDLTypename(Type const& type);
 	static std::string getIDLBaseType(Numeric const& type);
