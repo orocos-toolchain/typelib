@@ -79,6 +79,15 @@ class TC_Type < Test::Unit::TestCase
         assert(type != nil)
     end
 
+    def test_type_names
+	registry = make_registry
+	bla = registry.get "/NS1/Bla/Test"
+	assert_equal("/NS1/Bla/Test", bla.name)
+	assert_equal("Test", bla.basename)
+	assert_equal("/NS1/Bla/", bla.namespace)
+	assert_equal("::NS1::Bla::", bla.namespace('::'))
+    end
+
     def test_pointer
         type = Registry.new.build("/int*")
         assert_not_equal(type, type.deference)

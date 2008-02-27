@@ -68,8 +68,11 @@ module Typelib
 	end
 
         class << self
-	    # the type registry we belong to
+	    # The type registry we belong to
             attr_reader :registry
+
+	    # The type's full name (i.e. name and namespace). In typelib,
+	    # namespace components are separated by '/'
 	    def name
 		if defined? @name
 		    @name
@@ -77,10 +80,16 @@ module Typelib
 		    super
 		end
 	    end
-	    def basename
-		full_name = name
-		full_name =~ /(\w+)$/
-		$1
+
+	    # Returns the namespace part of the type's name.  If +separator+ is
+	    # given, the namespace components are separated by it, otherwise,
+	    # the default of '/' is used.
+	    def namespace(separator = nil)
+		ns = do_namespace
+		if separator
+		    ns.gsub!('/', separator)
+		end
+		ns
 	    end
 
 	    def to_s; "#<#{superclass.name}: #{name}>" end
