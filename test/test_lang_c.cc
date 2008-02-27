@@ -29,6 +29,10 @@ BOOST_AUTO_TEST_CASE( test_strict_c_import )
     BOOST_CHECK( registry.has("/NS1/NS2/struct Test") );
     BOOST_CHECK( registry.has("/NS1/struct Test") );
     BOOST_CHECK( registry.has("/NS1/Bla/struct Test") );
+
+    BOOST_CHECK( registry.has("/enum INPUT_OUTPUT_MODE") );
+    BOOST_CHECK( registry.has("/INPUT_OUTPUT_MODE") );
+    BOOST_CHECK_EQUAL( "/enum INPUT_OUTPUT_MODE", registry.get("/INPUT_OUTPUT_MODE")->getName() );
 }
 
 BOOST_AUTO_TEST_CASE( test_c_import )
@@ -75,6 +79,9 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     BOOST_CHECK( registry.has("/NS1/struct Test") );
     BOOST_CHECK( registry.has("/NS1/Bla/struct Test") );
 
+    // In C++ mode, the main type is without any leading prefix
+    BOOST_CHECK_EQUAL( "/NS1/NS2/Test", registry.get("/NS1/NS2/struct Test")->getName());
+
     // Check that the size of B.a is the same as A
     Compound const* b   = static_cast<Compound const*>(registry.get("/B"));
     Field  const* b_a = b->getField("a");
@@ -95,7 +102,7 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     Field const* b_g = b->getField("g");
     BOOST_CHECK_EQUAL( &(b_g->getType()), registry.get("/float[2]") );
     Field const* b_h = b->getField("h");
-    BOOST_CHECK_EQUAL( &(b_h->getType()), registry.get("/struct A[4]") );
+    BOOST_CHECK_EQUAL( &(b_h->getType()), registry.get("/A[4]") );
     Field const* b_i = b->getField("i");
     // order of indexes of multi-dimensional arrays are reverse than the 
     // ones in C because we always read dimensions from right to left

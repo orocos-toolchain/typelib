@@ -261,7 +261,9 @@ void IDLExport::save
 	// IDL has C++-like rules for struct and enums. Do not alias a "struct A" to "A";
 	if (type->getNamespace() != type.getNamespace()
 		|| (type->getBasename() != "struct " + type.getBasename()
-		    && type->getBasename() != "enum " + type.getBasename()))
+		    && type->getBasename() != "enum " + type.getBasename()
+		    && type.getBasename() != "struct " + type->getBasename()
+		    && type.getBasename() != "enum " + type->getBasename()))
 	{
 	    IDLExport::checkType(*type);
 

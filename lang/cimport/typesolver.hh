@@ -29,7 +29,7 @@ class TypeSolver : public CPPParser
     typedef std::list< std::pair<std::string, int> > ValueMap;
     ValueMap        m_enum_values;
 
-    void buildClassObject(bool define_type);
+    Typelib::Type& buildClassObject();
     Typelib::Registry& m_registry;
 
     bool m_cxx_mode;

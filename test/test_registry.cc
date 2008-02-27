@@ -14,6 +14,7 @@ BOOST_AUTO_TEST_CASE( test_typename_manipulation )
     BOOST_REQUIRE_EQUAL("NS2/", getNormalizedNamespace("NS2"));
 
     BOOST_REQUIRE_EQUAL("NS3/Test", getRelativeName("/NS2/NS3/Test", "/NS2"));
+    BOOST_REQUIRE_EQUAL("/NS2/NS3/", getNamespace("/NS2/NS3/Test"));
 }
 
 BOOST_AUTO_TEST_CASE( test_registry_namespaces )

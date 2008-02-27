@@ -33,7 +33,7 @@ void TypeSolver::beginClassDefinition(TypeSpecifier class_type, const std::strin
 void TypeSolver::endClassDefinition()
 {
     if (!m_class_name.empty()) // typedef struct {} bla handled later in declarationID
-        buildClassObject(m_cxx_mode);
+        buildClassObject();
 
     CPPParser::endClassDefinition();
 }
@@ -88,16 +88,31 @@ void TypeSolver::endEnumDefinition()
 	return;
 
     if (! m_class_name.empty())
-        buildClassObject(m_cxx_mode);
+        buildClassObject();
 }
 
-void TypeSolver::buildClassObject(bool define_type)
+Type& TypeSolver::buildClassObject()
 {
     Type* object;
 
+    std::string type_name = m_class_name, alias_name = m_class_name;
+    // add "struct", "enum" or "union" prefixes to the right name, according to
+    // the value of m_cxx_mode
+    { std::string* prefixed_name;
+	if (m_cxx_mode) prefixed_name = &alias_name;
+	else            prefixed_name = &type_name;
+
+	if (m_class_type == tsENUM)
+	    *prefixed_name = "enum " + *prefixed_name;
+	else if (m_class_type == tsUNION)
+	    *prefixed_name = "union " + *prefixed_name;
+	else if (m_class_type == tsSTRUCT)
+	    *prefixed_name = "struct " + *prefixed_name;
+    }
+
     if (m_class_type == tsENUM)
     {
-        auto_ptr<Enum> enum_def(new Enum(m_registry.getFullName("enum " + m_class_name)));
+        auto_ptr<Enum> enum_def(new Enum(m_registry.getFullName(type_name)));
         ValueMap::iterator it;
         for (it = m_enum_values.begin(); it != m_enum_values.end(); ++it)
             enum_def->add(it->first, it->second);
@@ -107,13 +122,7 @@ void TypeSolver::buildClassObject(bool define_type)
     }
     else
     {
-        std::string compound_name;
-        if (m_class_type == tsUNION)
-            compound_name = "union";
-        else if (m_class_type == tsSTRUCT)
-            compound_name = "struct";
-
-        Compound* compound = new Compound(m_registry.getFullName(compound_name + " " + m_class_name));
+        Compound* compound = new Compound(m_registry.getFullName(type_name));
         if (m_class_type == tsUNION)
         {
             for (FieldList::iterator it = m_fields.begin(); it != m_fields.end(); ++it)
@@ -136,14 +145,14 @@ void TypeSolver::buildClassObject(bool define_type)
 
     m_registry.add(object);
 
-
-    if (define_type)
-        m_registry.alias(object->getName(), m_registry.getFullName(m_class_name), "");
-    
+    if (m_cxx_mode)
+        m_registry.alias(object->getName(), m_registry.getFullName(alias_name), "");
 
     m_fieldtype.clear();
     m_fieldtype.push_back(object->getName());
     m_class = false;
+
+    return *object;
 }
 
 
@@ -180,7 +189,9 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
         if (name != "anonymous")
         {
             m_class_name = name;
-            buildClassObject(true);
+	    Type& new_type = buildClassObject();
+	    if (! m_cxx_mode)
+		m_registry.alias(new_type.getName(), m_registry.getFullName(name), "");
         }
     }
     else if (m_class)

@@ -135,7 +135,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal('/float[1]', b.e.class.name)
         assert_equal('/float[3]', b.f.class.name)
         assert_equal('/float[2]', b.g.class.name)
-        assert_equal('/struct A[4]', b.h.class.name)
+        assert_equal('/A[4]', b.h.class.name)
         assert_equal('/float[20][10]', b.i.class.name)
 
         assert_equal(100, b.c.size)
