@@ -5,26 +5,8 @@ require 'test/unit'
 class TC_IDL < Test::Unit::TestCase
     include Typelib
 
-    attr_reader :test_file
-    def setup
-        @test_file = File.join(SRCDIR, "idl_export.h")
-    end
-
-    def test_export
-        registry = Registry.new
-        registry.import( test_file, "c" )
-	value = nil
-	assert_nothing_raised { value = registry.export("idl") }
-	expected = File.read(File.join(SRCDIR, "idl_export.idl"))
-	assert_equal(expected, value)
-
-	assert_nothing_raised do 
-	    value = registry.export("idl", 
-		    :namespace_prefix => 'CorbaPrefix/TestPrefix', 
-		    :namespace_suffix => 'CorbaSuffix/TestSuffix')
-	end
-	expected = File.read(File.join(SRCDIR, "idl_export_prefix_suffix.idl"))
-	assert_equal(expected, value)
+    def test_export_validation
+	test_file = File.join(SRCDIR, "data", "test_idl.h")
 
         registry = Registry.new
         registry.import( test_file, "c", :define => 'IDL_POINTER_ALIAS' )
@@ -37,6 +19,28 @@ class TC_IDL < Test::Unit::TestCase
         registry = Registry.new
         registry.import( test_file, "c", :define => 'IDL_MULTI_ARRAY' )
 	assert_raises(TypeError) { registry.export("idl") }
+    end
+
+    def check_export(input_name, output_name = input_name, options = {})
+	registry = Registry.new
+	registry.import( File.join(SRCDIR, "data", "#{input_name}.h"), "c" )
+	output = if block_given?
+		    yield
+		else
+		    registry.export("idl", options)
+		end
+
+	expected = File.read(File.join(SRCDIR, "data", "#{output_name}.idl"))
+	assert(expected == output, "output: #{output}\nexpected: #{expected}")
+    end
+
+    def test_export_output
+	check_export("test_idl")
+	check_export("test_idl", "test_idl_prefix_suffix", 
+		     :namespace_prefix => 'CorbaPrefix/TestPrefix', 
+		     :namespace_suffix => 'CorbaSuffix/TestSuffix')
+
+	check_export("laser", "laser", :namespace_suffix => 'Corba')
     end
 end
 

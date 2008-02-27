@@ -101,7 +101,7 @@ namespace
 
     bool IDLExportVisitor::visit_ (Enum const& type)
     {
-	m_stream << m_indent << "enum " << m_exporter.getIDLAbsoluteTypename(type) << " { ";
+	m_stream << m_indent << "enum " << m_exporter.getIDLTypename(type) << " { ";
 
 	utilmm::stringlist symbols;
         Enum::ValueMap const& values = type.values();
@@ -276,9 +276,27 @@ void IDLExport::save
     }
     else
     {
-	adaptNamespace(stream, getExportNamespace(type.getNamespace()));
-        IDLExportVisitor exporter(*this, stream, m_indent);
+	// Don't call adaptNamespace right now, since some types can be simply
+	// ignored by the IDLExportVisitor -- resulting in an empty module,
+	// which is not accepted in IDL
+	//
+	// Instead, act "as if" the namespace was changed, capturing the output
+	// in a temporary ostringstream and change namespace only if some output
+	// has actually been generated
+	
+	string target_namespace = getExportNamespace(type.getNamespace());
+	size_t ns_size = utilmm::split(target_namespace, "/").size();
+
+	std::ostringstream temp_stream;
+        IDLExportVisitor exporter(*this, temp_stream, string(ns_size * 4, ' '));
         exporter.apply(*type);
+
+	string result = temp_stream.str();
+	if (! result.empty())
+	{
+	    adaptNamespace(stream, target_namespace);
+	    stream << result;
+	}
     }
 }
 
