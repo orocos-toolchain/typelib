@@ -86,6 +86,8 @@ class TC_Type < Test::Unit::TestCase
 	assert_equal("Test", bla.basename)
 	assert_equal("/NS1/Bla/", bla.namespace)
 	assert_equal("::NS1::Bla::", bla.namespace('::'))
+	assert_equal("/NS1/Bla/Test", bla.full_name)
+	assert_equal("::NS1::Bla::Test", bla.full_name('::'))
     end
 
     def test_pointer

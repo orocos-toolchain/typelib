@@ -92,6 +92,10 @@ module Typelib
 		ns
 	    end
 
+	    def full_name(separator = nil)
+		namespace(separator) + basename
+	    end
+
 	    def to_s; "#<#{superclass.name}: #{name}>" end
 
 	    def _dump(lvl)
