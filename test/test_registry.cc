@@ -6,15 +6,25 @@
 #include <typelib/registry.hh>
 using namespace Typelib;
 
+BOOST_AUTO_TEST_CASE( test_typename_validation )
+{
+    BOOST_CHECK(!isValidTypename("std::string", false));
+    BOOST_CHECK(!isValidTypename("std::string", true));
+    BOOST_CHECK(isValidTypename("/std/string<double>", false));
+    BOOST_CHECK(isValidTypename("/std/string<double>", true));
+    BOOST_CHECK(isValidTypename("std/string<double>", false));
+    BOOST_CHECK(!isValidTypename("std/string<double>", true));
+}
+
 BOOST_AUTO_TEST_CASE( test_typename_manipulation )
 {
-    BOOST_REQUIRE_EQUAL("/NS2/", getNormalizedNamespace("/NS2"));
-    BOOST_REQUIRE_EQUAL("/NS2/", getNormalizedNamespace("/NS2/"));
-    BOOST_REQUIRE_EQUAL("NS2/", getNormalizedNamespace("NS2/"));
-    BOOST_REQUIRE_EQUAL("NS2/", getNormalizedNamespace("NS2"));
+    BOOST_CHECK_EQUAL("/NS2/", getNormalizedNamespace("/NS2"));
+    BOOST_CHECK_EQUAL("/NS2/", getNormalizedNamespace("/NS2/"));
+    BOOST_CHECK_EQUAL("NS2/", getNormalizedNamespace("NS2/"));
+    BOOST_CHECK_EQUAL("NS2/", getNormalizedNamespace("NS2"));
 
-    BOOST_REQUIRE_EQUAL("NS3/Test", getRelativeName("/NS2/NS3/Test", "/NS2"));
-    BOOST_REQUIRE_EQUAL("/NS2/NS3/", getNamespace("/NS2/NS3/Test"));
+    BOOST_CHECK_EQUAL("NS3/Test", getRelativeName("/NS2/NS3/Test", "/NS2"));
+    BOOST_CHECK_EQUAL("/NS2/NS3/", getNamespace("/NS2/NS3/Test"));
 }
 
 BOOST_AUTO_TEST_CASE( test_registry_namespaces )

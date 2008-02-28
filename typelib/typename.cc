@@ -29,7 +29,7 @@ namespace
         for (int i = 0; i < length; ++i)
         {
             string::value_type c(identifier[i]);
-            if (c != '_' && c != ' ' && ! isalnum(identifier[i]))
+            if (c != '_' && c != ' ' && !isalnum(c) && c != '<' && c != '>')
                 return false;
         }
 
