@@ -245,6 +245,8 @@ namespace
 	    TypeMap all_types;
 	    for(xmlNodePtr node = root_node -> xmlChildrenNode; node; node=node->next)
 	    {
+		if (!xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>("comment")))
+		    continue;
 		if (!xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>("text")))
 		    continue;
 

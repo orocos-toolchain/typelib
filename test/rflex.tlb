@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <typelib>
+<!-- this is a XML comment and should be ignored -->
   <alias name="/ACTIVITY_DESCRIPTION" source="/struct ACTIVITY_DESCRIPTION"/>
   <alias name="/ACTIVITY_EVENT" source="/ACTIVITY_STATE"/>
   <enum name="/ACTIVITY_STATE"/>
