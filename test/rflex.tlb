@@ -530,5 +530,6 @@
   <numeric name="/uint32_t" category="uint" size="4"/>
   <numeric name="/uint64_t" category="uint" size="8"/>
   <numeric name="/uint8_t" category="uint" size="1"/>
+  <null name="/custom_null" />
 </typelib>
 

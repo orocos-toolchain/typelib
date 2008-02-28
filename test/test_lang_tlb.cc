@@ -29,6 +29,9 @@ BOOST_AUTO_TEST_CASE( test_tlb_import )
 	ifstream file(TEST_DATA_PATH("rflex.tlb"));
 	Registry registry;
 	BOOST_CHECK_NO_THROW( importer->load(file, config, registry); );
+
+	BOOST_CHECK( registry.get("/custom_null") );
+	BOOST_CHECK( registry.get("/custom_null")->isNull() );
     }
 }
 

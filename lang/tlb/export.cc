@@ -23,6 +23,8 @@ namespace
 
         bool visit_(Enum const& type);
 
+	bool visit_(NullType const& type);
+
     public:
         TlbExportVisitor(ostream& stream, string const& base_indent);
     };
@@ -90,6 +92,11 @@ namespace
             << "size=\"" << type.getSize() << "\"/>";
         return true;
     }
+    bool TlbExportVisitor::visit_ (NullType const& type)
+    {
+        m_stream << "<null " << " name=\"" << type.getName() << "\"/>";
+	return true;
+    }
 
     void indirect(ostream& stream, Indirect const& type)
     {
@@ -112,7 +119,6 @@ namespace
         m_stream << " dimension=\"" << type.getDimension() << "\"/>";
         return true;
     }
-
     bool TlbExportVisitor::visit_ (Enum const& type)
     {
         Enum::ValueMap const& values = type.values();

@@ -140,9 +140,12 @@ namespace
         factory.insert(node, type);
         return type;
     }
-
-
-
+    Type const* load_null(TypeNode const& node, Factory& factory)
+    {
+        Type* type = new NullType(node.name);
+        factory.insert(node, type);
+        return type;
+    }
     Type const* load_enum(TypeNode const& node, Factory& factory)
     { 
         Enum* type = new Enum(node.name);
@@ -202,6 +205,7 @@ namespace
     NodeCategories node_categories[] = {
         { reinterpret_cast<const xmlChar*>("alias"),     load_alias },
         { reinterpret_cast<const xmlChar*>("numeric"),   load_numeric },
+        { reinterpret_cast<const xmlChar*>("null"),      load_null },
         { reinterpret_cast<const xmlChar*>("enum"),      load_enum },
         { reinterpret_cast<const xmlChar*>("compound"),  load_compound },
         { 0, 0 }
