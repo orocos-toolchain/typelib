@@ -53,9 +53,13 @@ namespace Typelib
         size_t const npos = string::npos;
         size_t last_mark = name.rfind(NamespaceMark);
         if (last_mark == npos)
-            last_mark = 0;
+	{
+	    if (absolute)
+		return false;
 
-        if (! isValidNamespace( string(name, 0, last_mark + 1), absolute) )
+            last_mark = -1;
+	}
+	else if (! isValidNamespace( string(name, 0, last_mark + 1), absolute) )
             return false;
 
         std::string type_part = string(name, last_mark + 1);
