@@ -41,6 +41,9 @@ module Typelib
 	end
     end
 
+    # The namespace separator character used by Typelib
+    NAMESPACE_SEPARATOR = '/'
+
     # Base class for all types
     # Registry types are wrapped into subclasses of Type
     # or other Type-derived classes (Array, Pointer, ...)
@@ -83,17 +86,21 @@ module Typelib
 
 	    # Returns the namespace part of the type's name.  If +separator+ is
 	    # given, the namespace components are separated by it, otherwise,
-	    # the default of '/' is used.
-	    def namespace(separator = nil)
+	    # the default of Typelib::NAMESPACE_SEPARATOR is used. If nil is
+	    # used as new separator, no change is made either.
+	    def namespace(separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
 		ns = do_namespace
-		if separator
-		    ns.gsub!('/', separator)
+		if remove_leading
+		    ns = ns[1..-1]
+		end
+		if separator && separator != Typelib::NAMESPACE_SEPARATOR
+		    ns.gsub!(Typelib::NAMESPACE_SEPARATOR, separator)
 		end
 		ns
 	    end
 
-	    def full_name(separator = nil)
-		namespace(separator) + basename
+	    def full_name(separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
+		result = namespace(separator, remove_leading) + basename
 	    end
 
 	    def to_s; "#<#{superclass.name}: #{name}>" end
