@@ -42,5 +42,9 @@ class TC_IDL < Test::Unit::TestCase
 
 	check_export("laser", "laser", :namespace_suffix => 'Corba')
     end
+
+    def test_blob_threshold
+	check_export("laser", "laser_blobs", :blob_threshold => "1024")
+    end
 end
 

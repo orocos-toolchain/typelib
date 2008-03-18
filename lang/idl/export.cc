@@ -248,6 +248,7 @@ void IDLExport::save
 {
     m_ns_prefix = config.get<std::string>("namespace_prefix", "");
     m_ns_suffix = config.get<std::string>("namespace_suffix", "");
+    m_blob_threshold = config.get<int>("blob_threshold", 0);
     return Exporter::save(stream, config, type);
 }
 
@@ -294,16 +295,25 @@ void IDLExport::save
 	
 	string target_namespace = getExportNamespace(type.getNamespace());
 	size_t ns_size = utilmm::split(target_namespace, "/").size();
+	string indent_string = string(ns_size * 4, ' ');
 
-	std::ostringstream temp_stream;
-        IDLExportVisitor exporter(*this, temp_stream, string(ns_size * 4, ' '));
-        exporter.apply(*type);
-
-	string result = temp_stream.str();
-	if (! result.empty())
+	if (m_blob_threshold && type->getSize() > m_blob_threshold)
 	{
 	    adaptNamespace(stream, target_namespace);
-	    stream << result;
+	    stream << indent_string << "typedef sequence<octet> " << type->getBasename() << ";\n";
+	}
+	else
+	{
+	    std::ostringstream temp_stream;
+	    IDLExportVisitor exporter(*this, temp_stream, indent_string);
+	    exporter.apply(*type);
+
+	    string result = temp_stream.str();
+	    if (! result.empty())
+	    {
+		adaptNamespace(stream, target_namespace);
+		stream << result;
+	    }
 	}
     }
 }
