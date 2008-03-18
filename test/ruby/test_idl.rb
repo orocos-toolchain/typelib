@@ -31,7 +31,7 @@ class TC_IDL < Test::Unit::TestCase
 		end
 
 	expected = File.read(File.join(SRCDIR, "data", "#{output_name}.idl"))
-	assert(expected == output, "output: #{output}\nexpected: #{expected}")
+	assert(expected == output, "output: #{output.inspect}\nexpected: #{expected.inspect}")
     end
 
     def test_export_output

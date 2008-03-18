@@ -5,6 +5,7 @@ module Laser {
             unsigned long usec;
             double ranges[256];
         };
+        typedef long array_typedef[256];
 
     };
 

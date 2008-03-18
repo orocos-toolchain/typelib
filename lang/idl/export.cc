@@ -62,6 +62,7 @@ namespace
 	if (field.getType().getCategory() == Type::Array)
 	{
 	    Array const& array_type = static_cast<Array const&>(field.getType());
+	    IDLExport::checkType(array_type);
 	    m_stream
 		<< m_indent
 		<< m_exporter.getIDLAbsoluteTypename(array_type.getIndirection())
@@ -94,8 +95,7 @@ namespace
     }
     bool IDLExportVisitor::visit_ (Array const& type)
     {
-	IDLExport::checkType(type);
-	m_stream << m_indent << type.getBasename() << "[" << type.getDimension() << "]\n";
+	throw UnsupportedType(type, "array are not handled by the IDLExportVisitor");
         return true;
     }
 
@@ -145,7 +145,7 @@ void IDLExport::checkType(Type const& type)
     {
 	Type::Category pointed_to = static_cast<Indirect const&>(type).getIndirection().getCategory();
 	if (pointed_to == Type::Array || pointed_to == Type::Pointer)
-	    throw UnsupportedType(type, "multi-dimentional arrays are not supported yet");
+	    throw UnsupportedType(type, "multi-dimensional arrays are not supported yet");
     }
 
 }
@@ -271,7 +271,15 @@ void IDLExport::save
 	    // Alias types using typedef, taking into account that the aliased type
 	    // may not be in the same module than the new alias.
 	    stream << m_indent << "typedef ";
-	    stream << getIDLAbsoluteTypename(*type) << " " << type.getBasename() << ";\n";
+	    if (type->getCategory() == Type::Array)
+	    {
+		Array const& array_t = dynamic_cast<Array const&>(*type);
+		stream 
+		    << getIDLAbsoluteTypename(array_t.getIndirection()) 
+		    << " " << type.getBasename() << "[" << array_t.getDimension() << "];\n";
+	    }
+	    else
+		stream << getIDLAbsoluteTypename(*type) << " " << type.getBasename() << ";\n";
 	}
     }
     else
