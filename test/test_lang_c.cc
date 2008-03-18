@@ -9,6 +9,18 @@
 #include "test_cimport.1"
 using namespace Typelib;
 
+void import_test_types(Registry& registry)
+{
+    static const char* test_file = TEST_DATA_PATH("test_cimport.h");
+
+    utilmm::config_set config;
+    PluginManager::self manager;
+    Importer* importer = manager->importer("c");
+    config.set("include", TEST_DATA_PATH(".."));
+    config.set("define", "GOOD");
+    BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
+}
+
 BOOST_AUTO_TEST_CASE( test_strict_c_import )
 {
     static const char* test_file = TEST_DATA_PATH("test_cimport.h");
@@ -155,5 +167,25 @@ BOOST_AUTO_TEST_CASE( test_c_import )
 	BOOST_REQUIRE( it != map.end() );
 	BOOST_CHECK_EQUAL(exp_it->value, it->second);
     }
+}
+
+BOOST_AUTO_TEST_CASE( test_c_array_typedefs )
+{
+    Registry registry;
+    import_test_types(registry);
+
+    BOOST_REQUIRE(( registry.get("array_typedef") ));
+    Array const* array_t = dynamic_cast<Typelib::Array const*>(registry.get("array_typedef"));
+    BOOST_REQUIRE(( array_t ));
+    BOOST_REQUIRE_EQUAL(256, array_t->getDimension());
+    BOOST_REQUIRE_EQUAL(registry.get("int"), &array_t->getIndirection());
+
+    BOOST_REQUIRE(( registry.get("multi_array_typedef") ));
+    array_t = dynamic_cast<Typelib::Array const*>(registry.get("multi_array_typedef"));
+    BOOST_REQUIRE(( array_t ));
+    BOOST_REQUIRE_EQUAL(256, array_t->getDimension());
+    array_t = dynamic_cast<Typelib::Array const*>(&array_t->getIndirection());
+    BOOST_REQUIRE_EQUAL(512, array_t->getDimension());
+    BOOST_REQUIRE_EQUAL(registry.get("int"), &array_t->getIndirection());
 }
 

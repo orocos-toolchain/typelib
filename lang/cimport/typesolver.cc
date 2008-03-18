@@ -182,6 +182,22 @@ void TypeSolver::classForwardDeclaration(TypeSpecifier ts, DeclSpecifier ds, con
     CPPParser::classForwardDeclaration(ts, ds, name);
 }
 
+TypeBuilder TypeSolver::initializeTypeBuilder()
+{
+    TypeBuilder builder(m_registry, m_fieldtype);
+    if (pointer_level)
+	builder.addPointer(pointer_level);
+
+    while (!m_pending_array.empty())
+    {
+	builder.addArrayMinor(m_pending_array.front());
+	m_pending_array.pop_front();
+    }
+
+    pointer_level = 0;
+    return builder;
+}
+
 void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
 {
     if (m_class && m_class_name.empty() && qi == qiType)
@@ -195,33 +211,24 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
         }
     }
     else if (m_class)
-    {
-        m_fields.push_back( make_pair(name, TypeBuilder(m_registry, m_fieldtype)) );
-        if (pointer_level)
-            m_fields.back().second.addPointer(pointer_level);
-    }
+        m_fields.push_back( make_pair(name, initializeTypeBuilder()) );
     else if (qi == qiType)
     {
-        TypeBuilder builder(m_registry, m_fieldtype);
-        if (pointer_level)
-            builder.addPointer(pointer_level);
-        
+        TypeBuilder builder = initializeTypeBuilder();
         std::string new_name = m_registry.getFullName(name);
         std::string old_name = m_registry.getFullName(builder.getType().getName());
         m_registry.alias( old_name, new_name );
     }
+
+    if (! m_pending_array.empty())
+	std::cerr << "WARNING: the set of pending array dimensions is not empty" << std::endl;
+
     CPPParser::declaratorID(name, qi);
 }
 
 void TypeSolver::declaratorArray(int size)
 {
-    if (m_class && !m_fields.empty())
-    {
-	// C orders dimensions from the outermost
-	// at the left to the innermost at the right
-        m_fields.back().second.addArrayMinor(size);
-    }
-        
+    m_pending_array.push_back(size);
     CPPParser::declaratorArray(size);
 }
 

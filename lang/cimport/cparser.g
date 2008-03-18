@@ -541,13 +541,6 @@ direct_declarator
 	|
 		(qualified_id LSQUARE)=>	// Must be array declaration
 		id = qualified_id
-                { 
-                    if (_td==true)
-			declaratorID(id,qiType);
-		    else
-			declaratorID(id,qiVar);
-		    is_address = false; pointer_level = 0;
-		}
 		(
                     options {warnWhenFollowAmbig = false;}:
 		    LSQUARE { array_size = 0; }
@@ -556,6 +549,13 @@ direct_declarator
                     )   { declaratorArray(array_size); }
                     RSQUARE
                 )+
+                { 
+                    if (_td==true)
+			declaratorID(id,qiType);
+		    else
+			declaratorID(id,qiVar);
+		    is_address = false; pointer_level = 0;
+		}
 	|
 		id = qualified_id
 		{ 

@@ -24,6 +24,7 @@ class TypeSolver : public CPPParser
     typedef std::list< FieldBuilder > FieldList;
     std::list<std::string> m_fieldtype;
     FieldList       m_fields;
+    std::list<size_t> m_pending_array;
 
     // For Enums
     typedef std::list< std::pair<std::string, int> > ValueMap;
@@ -33,6 +34,8 @@ class TypeSolver : public CPPParser
     Typelib::Registry& m_registry;
 
     bool m_cxx_mode;
+
+    Typelib::TypeBuilder initializeTypeBuilder();
 
 public:
     class UnsupportedClassType
