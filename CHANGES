@@ -1,5 +1,7 @@
 == Version 1.0rc2
-* added a limited CORBA IDL export plugin
+* added a CORBA IDL export plugin
+* fix import of the C construct "typedef bla array[size]", and
+  its export in IDL.
 * namespace support in the C importer. In the meantime, fixed
   the (badly broken) namespace support of Typelib::Registry
 * added a "cxx" mode to the C importer (enabled by default), 
