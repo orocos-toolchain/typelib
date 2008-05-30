@@ -1,3 +1,7 @@
+if(COMMAND cmake_minimum_required)
+    cmake_minimum_required(VERSION 2.4)
+endif(COMMAND cmake_minimum_required)
+
 PROJECT(typeLib)
 SET(PROJECT_VERSION 1.0rc1)
 
@@ -6,6 +10,12 @@ INCLUDE(UsePkgConfig)
 INCLUDE(RPATHHandling)
 INCLUDE(CTest)
 INCLUDE(GenerateDoxygenDoc)
+
+# Make cmake ignore mixed absolute and -l flags for linker.  I don't want to be
+# compatible only with 2.6 for now
+if(COMMAND cmake_policy)
+    cmake_policy(SET CMP0003 OLD)
+endif(COMMAND cmake_policy)
 
 CMAKE_USE_FULL_RPATH("${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib/typelib")
 

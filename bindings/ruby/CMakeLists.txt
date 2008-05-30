@@ -21,7 +21,7 @@ ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_LIBRARIES}
 ADD_CUSTOM_TARGET(dyncall DEPENDS ${DYNCALL_LIBRARIES})
 
 if(RDOC_EXECUTABLE)
-    ADD_CUSTOM_TARGET(doc rdoc -o ${CMAKE_BINARY_DIR}/doc/html/ruby/ --title "Typelib: a C type/value manipulation library" --main README.txt -U ext lib README.txt
+    ADD_CUSTOM_TARGET(ruby_doc rdoc -o ${CMAKE_BINARY_DIR}/doc/html/ruby/ --title "Typelib: a C type/value manipulation library" --main README.txt -U ext lib README.txt
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif(RDOC_EXECUTABLE)
 
@@ -32,7 +32,7 @@ ADD_RUBY_EXTENSION(typelib_ruby
 
 TARGET_LINK_LIBRARIES(typelib_ruby typeLib)
 ADD_DEPENDENCIES(typelib_ruby dyncall)
-TARGET_LINK_LIBRARIES(typelib_ruby dyncall_s dynload_s)
+TARGET_LINK_LIBRARIES(typelib_ruby ${DYNCALL_LIBRARIES})
 
 CONFIGURE_FILE(typelib_ruby.pc.in ${CMAKE_CURRENT_BINARY_DIR}/typelib_ruby.pc @ONLY)
 
