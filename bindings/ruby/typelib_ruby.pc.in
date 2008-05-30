@@ -3,5 +3,6 @@ extdir=@CMAKE_INSTALL_PREFIX@/@RUBY_EXTENSIONS_INSTALL_DIR@
 Name: typelib
 Description: Manipulating in-memory C-types structures and typed function call library
 Libs: -L${extdir}
+Version: @PACKAGE_VERSION@
 Cflags: -I${extdir}
 
