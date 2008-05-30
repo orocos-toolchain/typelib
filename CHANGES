@@ -9,6 +9,9 @@
   define the corresponding "Bla" and "Blo" types
 * cleanup of the export interface. The old interface is kept for
   backward compatibility.
+* fixes related to cmake and pkg-config: now compatible with cmake 2.6,
+  and pkg-config does not complain about typelib_ruby anymore (added a Version
+  field)
 
 == Version 0.3
 === API
