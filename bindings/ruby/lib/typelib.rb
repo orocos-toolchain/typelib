@@ -480,6 +480,17 @@ module Typelib
             option_hash.to_a.collect { |opt| [ opt[0].to_s, opt[1] ] }
         end
 
+        # Shortcut for
+        #   registry = Registry.new
+        #   registry.import(args)
+        #
+        # See Registry#import
+        def self.import(*args)
+            registry = Registry.new
+            registry.import(*args)
+            registry
+        end
+
 	# Imports the +file+ into this registry. +kind+
 	# is the file format or nil, in which case the
 	# file format is guessed by extension (see TYPE_BY_EXT)
