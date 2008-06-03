@@ -1,3 +1,8 @@
+== Version 1.0rc3
+* fixes a bug in which function definitions were not entirely ignored,
+  and as such were "leaking" to the next type definition found.
+* re-introduced Registry.import as a shortcut for r = Registry.new; r.import
+
 == Version 1.0rc2
 * added a CORBA IDL export plugin
 * fix import of the C construct "typedef bla array[size]", and
