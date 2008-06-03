@@ -219,9 +219,23 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
         std::string old_name = m_registry.getFullName(builder.getType().getName());
         m_registry.alias( old_name, new_name );
     }
+    else
+    {
+        // we were parsing either a function definition or an argument
+        // definition. In that case, just ignore the pending array values.
+        m_pending_array.clear();
+    }
 
     if (! m_pending_array.empty())
+    {
 	std::cerr << "WARNING: the set of pending array dimensions is not empty" << std::endl;
+	std::cerr << "WARNING: name == " << name << ", qiType == " << qiType << std::endl;
+        std::cerr << "WARNING: got";
+        list<size_t>::const_iterator it, end = m_pending_array.end();
+        for (it = m_pending_array.begin(); it != end; ++it)
+            std::cerr << " " << *it;
+        std::cerr << std::endl;
+    }
 
     CPPParser::declaratorID(name, qi);
 }
