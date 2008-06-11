@@ -13,22 +13,14 @@ namespace Typelib { class Registry; }
    
 class TypeSolver : public CPPParser
 {
-    bool            m_class;
-    std::string     m_class_name;
+    Typelib::Type*  m_class_object;
     TypeSpecifier   m_class_type;
 
     utilmm::stringlist m_namespace;
 
     // For Compound
-    typedef std::pair<std::string, Typelib::TypeBuilder> FieldBuilder;
-    typedef std::list< FieldBuilder > FieldList;
     std::list<std::string> m_fieldtype;
-    FieldList       m_fields;
     std::list<size_t> m_pending_array;
-
-    // For Enums
-    typedef std::list< std::pair<std::string, int> > ValueMap;
-    ValueMap        m_enum_values;
 
     Typelib::Type& buildClassObject();
     Typelib::Registry& m_registry;
@@ -36,6 +28,8 @@ class TypeSolver : public CPPParser
     bool m_cxx_mode;
 
     Typelib::TypeBuilder initializeTypeBuilder();
+    void setTypename(std::string const& name);
+    void beginTypeDefinition(TypeSpecifier class_type, const std::string& name);
 
 public:
     class UnsupportedClassType

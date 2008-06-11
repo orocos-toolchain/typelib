@@ -13,26 +13,55 @@ using namespace std;
 using namespace Typelib;
 
 TypeSolver::TypeSolver(const antlr::ParserSharedInputState& state, Registry& registry, bool cxx_mode)
-    : CPPParser(state), m_class(0), m_registry(registry), m_cxx_mode(cxx_mode) {}
+    : CPPParser(state), m_class_object(0), m_registry(registry), m_cxx_mode(cxx_mode) {}
 
 TypeSolver::TypeSolver(antlr::TokenStream& lexer, Registry& registry, bool cxx_mode)
-    : CPPParser(lexer), m_class(0), m_registry(registry), m_cxx_mode(cxx_mode) {}
+    : CPPParser(lexer), m_class_object(0), m_registry(registry), m_cxx_mode(cxx_mode) {}
+
+void TypeSolver::setTypename(std::string const& name)
+{
+    std::string type_name = name, alias_name = name;
+    // add "struct", "enum" or "union" prefixes to the right name, according to
+    // the value of m_cxx_mode
+    { std::string* prefixed_name;
+        if (m_cxx_mode) prefixed_name = &alias_name;
+        else            prefixed_name = &type_name;
+
+        if (m_class_type == tsENUM)
+            *prefixed_name = "enum " + *prefixed_name;
+        else if (m_class_type == tsUNION)
+            *prefixed_name = "union " + *prefixed_name;
+        else if (m_class_type == tsSTRUCT)
+            *prefixed_name = "struct " + *prefixed_name;
+    }
+
+    m_class_object->setName(m_registry.getFullName(type_name));
+    m_registry.add(m_class_object);
+    if (m_cxx_mode)
+        m_registry.alias(m_class_object->getName(), m_registry.getFullName(alias_name));
+}
+
+void TypeSolver::beginTypeDefinition(TypeSpecifier class_type, const std::string& name)
+{
+    m_class_type = class_type;
+    if (m_class_type == tsENUM)
+        m_class_object = new Enum("");
+    else
+        m_class_object = new Compound("");
+
+    if (name != "" && name != "anonymous")
+        setTypename(name);
+}
 
 void TypeSolver::beginClassDefinition(TypeSpecifier class_type, const std::string& name)
 {
-    m_class = true;
-    if (name == "anonymous")
-        m_class_name = "";
-    else
-        m_class_name = name;
-    m_class_type = class_type;
-
+    beginTypeDefinition(class_type, name);
     CPPParser::beginClassDefinition(class_type, name);
 }
 
 void TypeSolver::endClassDefinition()
 {
-    if (!m_class_name.empty()) // typedef struct {} bla handled later in declarationID
+    if (!m_class_object->getName().empty()) // typedef struct {} bla handled later in declarationID
         buildClassObject();
 
     CPPParser::endClassDefinition();
@@ -52,31 +81,23 @@ void TypeSolver::exitNamespace()
 
 void TypeSolver::beginEnumDefinition(const std::string& name)
 {
-    if (m_class)
+    if (m_class_object)
     {
 	m_fieldtype.push_back("enum");
 	m_fieldtype.push_back(name);
     }
     else
-    {
-	m_class = true;
-	m_class_name = name;
-	m_class_type = tsENUM;
-    }
+        beginTypeDefinition(tsENUM, name);
     CPPParser::beginEnumDefinition(name);
 }
 
 void TypeSolver::enumElement(const std::string& name, bool has_value, int value)
 {
+    Enum& enum_type = dynamic_cast<Enum&>(*m_class_object);
     if (!has_value)
-    {
-        if (m_enum_values.empty())
-            value = 0;
-        else
-            value = m_enum_values.back().second + 1;
-    }
+        value = enum_type.getNextValue();
     
-    m_enum_values.push_back(make_pair(name, value));
+    enum_type.add(name, value);
     CPPParser::enumElement(name, has_value, value);
 }
 
@@ -87,75 +108,20 @@ void TypeSolver::endEnumDefinition()
     if (m_class_type != tsENUM)
 	return;
 
-    if (! m_class_name.empty())
+    if (! m_class_object->getName().empty()) // typedef union {} bla handled later in declarationID
         buildClassObject();
 }
 
 Type& TypeSolver::buildClassObject()
 {
-    Type* object;
-
-    std::string type_name = m_class_name, alias_name = m_class_name;
-    // add "struct", "enum" or "union" prefixes to the right name, according to
-    // the value of m_cxx_mode
-    { std::string* prefixed_name;
-	if (m_cxx_mode) prefixed_name = &alias_name;
-	else            prefixed_name = &type_name;
-
-	if (m_class_type == tsENUM)
-	    *prefixed_name = "enum " + *prefixed_name;
-	else if (m_class_type == tsUNION)
-	    *prefixed_name = "union " + *prefixed_name;
-	else if (m_class_type == tsSTRUCT)
-	    *prefixed_name = "struct " + *prefixed_name;
-    }
-
-    if (m_class_type == tsENUM)
-    {
-        auto_ptr<Enum> enum_def(new Enum(m_registry.getFullName(type_name)));
-        ValueMap::iterator it;
-        for (it = m_enum_values.begin(); it != m_enum_values.end(); ++it)
-            enum_def->add(it->first, it->second);
-        
-        m_enum_values.clear();
-        object = enum_def.release();
-    }
-    else
-    {
-        Compound* compound = new Compound(m_registry.getFullName(type_name));
-        if (m_class_type == tsUNION)
-        {
-            for (FieldList::iterator it = m_fields.begin(); it != m_fields.end(); ++it)
-                compound->addField(it->first, it->second.getType(), 0);
-        }
-        else if (m_class_type == tsSTRUCT)
-        {
-            for (FieldList::iterator it = m_fields.begin(); it != m_fields.end(); ++it)
-            {
-                size_t offset = Packing::getOffsetOf( *compound, it->second.getType() );
-                compound -> addField( it -> first, it -> second.getType(), offset );
-            }
-        }
-        else 
-            throw UnsupportedClassType(m_class_type);
-
-        m_fields.clear();
-        object = compound;
-    }
-
-    m_registry.add(object);
-
-    if (m_cxx_mode)
-        m_registry.alias(object->getName(), m_registry.getFullName(alias_name), "");
-
     m_fieldtype.clear();
-    m_fieldtype.push_back(object->getName());
-    m_class = false;
+    m_fieldtype.push_back(m_class_object->getName());
 
+    Type* object = m_class_object;
+    m_class_object = 0;
+    m_class_type = 0;
     return *object;
 }
-
-
 
 void TypeSolver::beginFieldDeclaration()
 {
@@ -200,18 +166,31 @@ TypeBuilder TypeSolver::initializeTypeBuilder()
 
 void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
 {
-    if (m_class && m_class_name.empty() && qi == qiType)
+    if (m_class_object && m_class_object->getName().empty() && qi == qiType) // typedef (struct|union|enum) { } NAME;
     {
-        if (name != "anonymous")
+        setTypename(name);
+        Type& new_type = buildClassObject();
+        if (! m_cxx_mode)
+            m_registry.alias(new_type.getName(), m_registry.getFullName(name), "");
+    }
+    else if (m_class_object) // we are building a compound
+    {
+        if (m_class_type != tsENUM)
         {
-            m_class_name = name;
-	    Type& new_type = buildClassObject();
-	    if (! m_cxx_mode)
-		m_registry.alias(new_type.getName(), m_registry.getFullName(name), "");
+            Compound& compound = dynamic_cast<Compound&>(*m_class_object);
+            TypeBuilder builder = initializeTypeBuilder();
+            Type const& field_type = builder.getType();
+            if (m_class_type == tsUNION)
+                compound.addField(name, field_type, 0);
+            else if (m_class_type == tsSTRUCT)
+            {
+                size_t offset = Packing::getOffsetOf( compound, field_type );
+                compound.addField( name, field_type, offset );
+            }
+            else 
+                throw UnsupportedClassType(m_class_type);
         }
     }
-    else if (m_class)
-        m_fields.push_back( make_pair(name, initializeTypeBuilder()) );
     else if (qi == qiType)
     {
         TypeBuilder builder = initializeTypeBuilder();

@@ -12,6 +12,32 @@
 using namespace Typelib;
 using namespace std;
 
+BOOST_AUTO_TEST_CASE( test_tlb_import_export )
+{
+    PluginManager::self manager;
+    
+    // Load the C file into a registry. Dump it as a tlb and reload it, then
+    // compare the result.
+    Registry registry;
+    {
+        static const char* test_file = TEST_DATA_PATH("test_cimport.h");
+        utilmm::config_set config;
+	config.set("include", TEST_DATA_PATH(".."));
+	config.set("define", "GOOD");
+	manager->load("c", test_file, config, registry);
+    }
+
+    utilmm::config_set config;
+    BOOST_REQUIRE_THROW(manager->save("tlb", registry), ExportError);
+
+    // istringstream io(result);
+    // Registry* reloaded = manager->load("tlb", io, config);
+    // std::string new_result = manager->save("tlb", *reloaded);
+
+    // BOOST_REQUIRE_EQUAL(result, new_result);
+    // BOOST_REQUIRE(registry.isSame(*reloaded));
+}
+
 BOOST_AUTO_TEST_CASE( test_tlb_import )
 {
     PluginManager::self manager;

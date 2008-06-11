@@ -13,6 +13,10 @@ typedef struct A ADef;
 typedef int array_typedef[256];
 typedef int multi_array_typedef[256][512];
 
+typedef struct Recursive {
+    struct Recursive* next;
+} Recursive;
+
 typedef struct B
 {
     ADef  a;
@@ -46,7 +50,7 @@ typedef enum INPUT_OUTPUT_MODE {
 
 typedef enum {
     ANONYMOUS_ENUM_OK
-} ANONYMOUS_ENUM;
+} ANONYMOUS_ENUM, *ANONYMOUS_ENUM_PTR;
 
 typedef void* OpaqueType;
 

@@ -131,12 +131,26 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     BOOST_CHECK_EQUAL( b->getSize(), sizeof(B) );
     BOOST_CHECK_EQUAL( b_c_array.getDimension(), 100UL );
 
-    // Test the forms of DEFINE_STR and DEFINE_ID
+    // Test the forms of DEFINE_STR and DEFINE_ID (anonymous structure and pointer-to-struct)
     BOOST_CHECK( registry.has("/DEFINE_STR") );
     BOOST_CHECK( registry.has("/DEFINE_ID") );
     BOOST_CHECK_EQUAL(Type::Compound, registry.get("/DEFINE_STR")->getCategory());
     BOOST_CHECK_EQUAL(Type::Pointer, registry.get("/DEFINE_ID")->getCategory());
     BOOST_CHECK( *registry.get("/DEFINE_STR") == static_cast<Pointer const*>(registry.get("/DEFINE_ID"))->getIndirection());
+
+    // Test definition of recursive structures
+    BOOST_CHECK( registry.has("/Recursive") );
+    BOOST_CHECK_EQUAL(Type::Compound, registry.get("/Recursive")->getCategory());
+    Type const& recursive_ptr = static_cast<Compound const*>(registry.get("/Recursive"))->getField("next")->getType();
+    BOOST_CHECK_EQUAL(Type::Pointer, recursive_ptr.getCategory());
+    BOOST_CHECK( *registry.get("/Recursive") == static_cast<Pointer const&>(recursive_ptr).getIndirection());
+    
+    // Test the forms of ANONYMOUS_ENUM and ANONYMOUS_ENUM_PTR
+    BOOST_CHECK( registry.has("/ANONYMOUS_ENUM") );
+    BOOST_CHECK( registry.has("/ANONYMOUS_ENUM_PTR") );
+    BOOST_CHECK_EQUAL(Type::Enum, registry.get("/ANONYMOUS_ENUM")->getCategory());
+    BOOST_CHECK_EQUAL(Type::Pointer, registry.get("/ANONYMOUS_ENUM_PTR")->getCategory());
+    BOOST_CHECK( *registry.get("/ANONYMOUS_ENUM") == static_cast<Pointer const*>(registry.get("/ANONYMOUS_ENUM_PTR"))->getIndirection());
 
     // Check the enum behaviour
     BOOST_CHECK( registry.has("/E") );
