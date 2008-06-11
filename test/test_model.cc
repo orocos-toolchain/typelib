@@ -7,7 +7,26 @@
 #include <typelib/typemodel.hh>
 #include <typelib/registry.hh>
 #include "test_cimport.1"
+#include <boost/tuple/tuple.hpp>
 using namespace Typelib;
+using namespace std;
+using boost::tie;
+
+static pair<Compound*, Compound*> recursive_types(Registry& reg)
+{
+    Compound* direct = new Compound("/R");
+    reg.add(direct);
+    direct->addField("recursive", *reg.build("/R*"), 0);
+
+    Compound* indirect  = new Compound("/R_indirect");
+    Compound* indirect_temp = new Compound("/R_temp");
+    reg.add(indirect);
+    reg.add(indirect_temp);
+    indirect_temp->addField("recursive", *reg.build("/R_indirect*"), 0);
+    indirect->addField("temp", *indirect_temp, 0);
+
+    return make_pair(direct, indirect);
+}
 
 BOOST_AUTO_TEST_CASE( test_compound_size )
 {
@@ -22,6 +41,11 @@ BOOST_AUTO_TEST_CASE( test_compound_size )
     BOOST_REQUIRE_EQUAL(10U, str.getSize());
     str.addField("e", *r.get("/int64_t"), 0);
     BOOST_REQUIRE_EQUAL(10U, str.getSize());
+
+    Compound *direct, *indirect;
+    tie(direct, indirect) = recursive_types(r);
+    BOOST_REQUIRE_EQUAL(direct->getSize(), sizeof(int*));
+    BOOST_REQUIRE_EQUAL(indirect->getSize(), sizeof(int*));
 }
 
 BOOST_AUTO_TEST_CASE( test_equality )
@@ -98,6 +122,19 @@ BOOST_AUTO_TEST_CASE( test_equality )
 	str_c.addField("c", *rb.build("/nil*"), 1);
 	BOOST_REQUIRE(!str_c.isSame(str_b));
     }
+
+    // Directly recursive type
+    { 
+        Compound* direct_a, *indirect_a;
+        Compound* direct_b, *indirect_b;
+        tie(direct_a, indirect_a) = recursive_types(ra);
+        tie(direct_b, indirect_b) = recursive_types(rb);
+
+        BOOST_REQUIRE(direct_a->isSame(*direct_b));
+        BOOST_REQUIRE(indirect_a->isSame(*indirect_b));
+        BOOST_REQUIRE(!direct_a->isSame(*indirect_b));
+        BOOST_REQUIRE(!indirect_a->isSame(*direct_b));
+    }
 }
 
 BOOST_AUTO_TEST_CASE( test_merge )
@@ -117,6 +154,10 @@ BOOST_AUTO_TEST_CASE( test_merge )
     rb.add(str_b, "");
     rb.alias("/A", "/C");
     rb.alias("/B", "/D");
+
+    //// Add some recursive types
+    recursive_types(rb);
+
     ra.merge(rb);
 
     BOOST_REQUIRE(ra.get("/int[16]") != rb.get("/int[16]"));
@@ -129,6 +170,10 @@ BOOST_AUTO_TEST_CASE( test_merge )
     BOOST_REQUIRE(ra.get("/B")->isSame(*str_b));
     BOOST_REQUIRE(*ra.get("/A") == *ra.get("/C"));
     BOOST_REQUIRE(*ra.get("/B") == *ra.get("/D"));
+    BOOST_REQUIRE(*ra.get("/R") != *rb.get("/R"));
+    BOOST_REQUIRE(*ra.get("/R_indirect") != *rb.get("/R_indirect"));
+    BOOST_REQUIRE(ra.get("/R")->isSame(*rb.get("/R")));
+    BOOST_REQUIRE(ra.get("/R_indirect")->isSame(*rb.get("/R_indirect")));
 
     BOOST_REQUIRE(static_cast<Compound const*>(ra.get("/A"))->getField("a")->getType() == *ra.get("/int[16]"));
     BOOST_REQUIRE(static_cast<Compound const*>(ra.get("/A"))->getField("b")->getType() == *ra.get("/float*"));

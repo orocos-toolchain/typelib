@@ -192,6 +192,9 @@ namespace Typelib
          */
         void        alias(std::string const& base, std::string const& alias, std::string const& source_id = "");
 
+        /** Returns the count of types defined in this registry, including
+         * non-persistent and aliases */
+        size_t      size() const;
         /** Remove all types */
         void        clear();
 
@@ -210,6 +213,15 @@ namespace Typelib
 
 	/** Merges the content of \c registry into this object */
 	void merge(Registry const& registry);
+
+        /** Compares the two registries. Returns true if they contain the same
+         * set of types, referenced under the same name
+         *
+         * Note that for now, if this contains a type 'A' aliased to 'B' and \c
+         * other contains the \b same type but named 'B' and aliased to 'A',
+         * the method will return false.
+         */
+        bool isSame(Registry const& other) const;
         
     public:
         enum DumpMode

@@ -41,44 +41,88 @@ namespace Typelib
     bool   Type::operator != (Type const& with) const { return (this != &with); }
     bool   Type::operator == (Type const& with) const { return (this == &with); }
     bool   Type::isSame(Type const& with) const
-    { return (getSize() == with.getSize() && getCategory() == with.getCategory() && getName() == with.getName()); }
+    { 
+        RecursionStack stack;
+        stack.insert(make_pair(this, &with));
+        return do_isSame(with, stack);
+    }
+    bool Type::rec_isSame(Type const& left, Type const& right, RecursionStack& stack) const
+    {
+        RecursionStack::const_iterator it = stack.find(&left);
+        if (it != stack.end())
+            return (&right == it->second);
+
+        RecursionStack::iterator new_it = stack.insert( make_pair(&left, &right) ).first;
+        bool result = left.do_isSame(right, stack);
+        stack.erase(new_it);
+        return result;
+    }
+    bool Type::do_isSame(Type const& other, RecursionStack& stack) const
+    { return (getSize() == other.getSize() && getCategory() == other.getCategory() && getName() == other.getName()); }
+
     Type const& Type::merge(Registry& registry) const
     {
+        RecursionStack stack;
+        return merge(registry, stack);
+    }
+    Type const* Type::try_merge(Registry& registry, RecursionStack& stack) const
+    {
+        RecursionStack::iterator it = stack.find(this);
+        if (it != stack.end())
+            return it->second;
+
 	Type const* old_type = registry.get(getName());
 	if (old_type)
 	{
 	    if (old_type->isSame(*this))
-		return *old_type;
+		return old_type;
 	    else
 		throw DefinitionMismatch(getName());
 	}
-	Type* new_type = do_merge(registry);
+        return 0;
+    }
+    Type const& Type::merge(Registry& registry, RecursionStack& stack) const
+    {
+        Type const* old_type = try_merge(registry, stack);
+        if (old_type)
+            return *old_type;
+
+	Type* new_type = do_merge(registry, stack);
 	registry.add(new_type, "");
 	return *new_type;
     }
 
 
+
     Numeric::Numeric(std::string const& name, size_t size, NumericCategory category)
         : Type(name, size, Type::Numeric), m_category(category) {}
     Numeric::NumericCategory Numeric::getNumericCategory() const { return m_category; }
-    bool Numeric::isSame(Type const& type) const 
+    bool Numeric::do_isSame(Type const& type, RecursionStack& stack) const 
     { return getSize() == type.getSize() && getCategory() == type.getCategory() && 
 	m_category == static_cast<Numeric const&>(type).m_category; }
-    Type* Numeric::do_merge(Registry& registry) const
+    Type* Numeric::do_merge(Registry& registry, RecursionStack& stack) const
     { return new Numeric(*this); }
 
     Indirect::Indirect(std::string const& name, size_t size, Category category, Type const& on)
         : Type(name, size, category)
         , m_indirection(on) {}
     Type const& Indirect::getIndirection() const { return m_indirection; }
-    bool Indirect::isSame(Type const& type) const
-    { return Type::isSame(type) && 
-	m_indirection.isSame(static_cast<Indirect const&>(type).m_indirection); }
+    bool Indirect::do_isSame(Type const& type, RecursionStack& stack) const
+    { return Type::do_isSame(type, stack) &&
+        rec_isSame(m_indirection, static_cast<Indirect const&>(type).m_indirection, stack); }
     std::set<Type const*> Indirect::dependsOn() const
     {
 	std::set<Type const*> result;
 	result.insert(&getIndirection());
 	return result;
+    }
+    Type const& Indirect::merge(Registry& registry, RecursionStack& stack) const
+    {
+        Type const* old_type = try_merge(registry, stack);
+        if (old_type) return *old_type;
+        Type const& indirect_type = getIndirection().merge(registry, stack);
+
+        return Type::merge(registry, stack);
     }
 
     Compound::Compound(std::string const& name)
@@ -94,9 +138,33 @@ namespace Typelib
         }
         return 0;
     }
-    bool Compound::isSame(Type const& type) const
-    { return Type::isSame(type) &&
-	    m_fields == static_cast<Compound const&>(type).m_fields; }
+    bool Compound::do_isSame(Type const& type, RecursionStack& stack) const
+    { 
+        if (!Type::do_isSame(type, stack))
+            return false;
+
+        Compound const& right_type = static_cast<Compound const&>(type);
+        if (m_fields.size() != right_type.getFields().size())
+            return false;
+
+        FieldList::const_iterator left_it = m_fields.begin(),
+            left_end = m_fields.end(),
+            right_it = right_type.getFields().begin(),
+            right_end = right_type.getFields().end();
+
+        while (left_it != left_end)
+        {
+            if (left_it->getName() != right_it->getName()
+                    || left_it->m_offset != right_it->m_offset
+                    || left_it->m_name != right_it->m_name)
+                return false;
+
+            if (!rec_isSame(left_it->getType(), right_it->getType(), stack))
+                return false;
+            ++left_it; ++right_it;
+        }
+        return true;
+    }
 
     void Compound::addField(const std::string& name, Type const& type, size_t offset) 
     { addField( Field(name, type), offset ); }
@@ -109,11 +177,15 @@ namespace Typelib
 	if (old_size < new_size)
 	    setSize(new_size);
     }
-    Type* Compound::do_merge(Registry& registry) const
+    Type* Compound::do_merge(Registry& registry, RecursionStack& stack) const
     {
 	auto_ptr<Compound> result(new Compound(getName()));
+        RecursionStack::iterator it = stack.insert(make_pair(this, result.get())).first;
+
 	for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
-	    result->addField(it->getName(), it->getType().merge(registry), it->getOffset());
+	    result->addField(it->getName(), it->getType().merge(registry, stack), it->getOffset());
+
+        stack.erase(it);
 	return result.release();
     }
     std::set<Type const*> Compound::dependsOn() const
@@ -129,19 +201,22 @@ namespace Typelib
         enum FindSizeOfEnum { EnumField };
         BOOST_STATIC_ASSERT(( sizeof(FindSizeOfEnum) == sizeof(Enum::integral_type) ));
     }
-    Enum::Enum(const std::string& name)
-        : Type (name, sizeof(FindSizeOfEnum), Type::Enum) { }
+    Enum::Enum(const std::string& name, Enum::integral_type initial_value)
+        : Type (name, sizeof(FindSizeOfEnum), Type::Enum)
+        , m_last_value(initial_value - 1) { }
     Enum::ValueMap const& Enum::values() const { return m_values; }
-    bool Enum::isSame(Type const& type) const
-    { return Type::isSame(type) &&
+    bool Enum::do_isSame(Type const& type, RecursionStack& stack) const
+    { return Type::do_isSame(type, stack) &&
 	m_values == static_cast<Enum const&>(type).m_values; }
 
+    Enum::integral_type Enum::getNextValue() const { return m_last_value + 1; }
     void Enum::add(std::string const& name, int value)
     { 
         std::pair<ValueMap::iterator, bool> inserted;
         inserted = m_values.insert( make_pair(name, value) );
         if (!inserted.second && inserted.first->second != value)
             throw AlreadyExists();
+        m_last_value = value;
     }
     Enum::integral_type  Enum::get(std::string const& name) const
     {
@@ -169,7 +244,7 @@ namespace Typelib
             ret.push_back(it->first);
         return ret;
     }
-    Type* Enum::do_merge(Registry& registry) const
+    Type* Enum::do_merge(Registry& registry, RecursionStack& stack) const
     { return new Enum(*this); }
 
     Array::Array(Type const& of, size_t new_dim)
@@ -183,23 +258,33 @@ namespace Typelib
         return stream.str();
     }
     size_t  Array::getDimension() const { return m_dimension; }
-    bool Array::isSame(Type const& type) const
+    bool Array::do_isSame(Type const& type, RecursionStack& stack) const
     {
-	if (!Type::isSame(type))
+	if (!Type::do_isSame(type, stack))
 	    return false;
 
 	Array const& array = static_cast<Array const&>(type);
-	return (m_dimension == array.m_dimension) && Indirect::isSame(type);
+	return (m_dimension == array.m_dimension) && Indirect::do_isSame(type, stack);
     }
-    Type* Array::do_merge(Registry& registry) const
-    { return new Array(getIndirection().merge(registry), m_dimension); }
+    Type* Array::do_merge(Registry& registry, RecursionStack& stack) const
+    {
+        // The pointed-to type has already been inserted in the repository by
+        // Indirect::merge, so we don't have to worry.
+        Type const& indirect_type = getIndirection().merge(registry, stack);
+        return new Array(indirect_type, m_dimension);
+    }
 
     Pointer::Pointer(const Type& on)
         : Indirect( getPointerName(on.getName()), sizeof(int *), Type::Pointer, on) {}
     std::string Pointer::getPointerName(std::string const& base)
     { return base + '*'; }
-    Type* Pointer::do_merge(Registry& registry) const
-    { return new Pointer(getIndirection().merge(registry)); }
+    Type* Pointer::do_merge(Registry& registry, RecursionStack& stack) const
+    {
+        // The pointed-to type has already been inserted in the repository by
+        // Indirect::merge, so we don't have to worry.
+        Type const& indirect_type = getIndirection().merge(registry, stack);
+        return new Pointer(indirect_type);
+    }
 
 
 

@@ -38,7 +38,8 @@ namespace Typelib
         static bool isValidIdentifier(const std::string& identifier);
 
     protected:
-        void setName    (const std::string& name);
+        typedef std::map<Type const*, Type const*> RecursionStack;
+
         void setSize    (size_t size);
 
         // Creates a basic type from \c name, \c size and \c category
@@ -47,6 +48,9 @@ namespace Typelib
     public:
         virtual ~Type();
 
+        /** Changes the type name. Never use once the type has been added to a
+         * registry */
+        void setName    (const std::string& name);
 	/** The type full name (including namespace) */
         std::string   getName() const;
 	/** The type name without the namespace */
@@ -70,30 +74,39 @@ namespace Typelib
 	 * self. Basic checks on name, size and category are
 	 * performed by ==
 	 */
-	virtual bool isSame(Type const& other) const;
+	bool isSame(Type const& other) const;
 
-	/** Merges this type into \c registry
+        /** Merges this type into \c registry: creates a type equivalent to
+         * this one in the target registry, reusing possible equivalent types
+         * already present in +registry+.
 	 */
 	Type const& merge(Registry& registry) const;
 
+        virtual Type const& merge(Registry& registry, RecursionStack& stack) const;
+
     protected:
+	virtual bool do_isSame(Type const& other, std::map<Type const*, Type const*>& stack) const;
+
+        bool rec_isSame(Type const& left, Type const& right, RecursionStack& stack) const;
+
+
+        Type const* try_merge(Registry& registry, RecursionStack& stack) const;
 	/** Called by Type::merge when the type does not exist
 	 * in \c registry already. This is needed for types
 	 * to update their subtypes (pointed-to type, ...) to
 	 * the definitions found in \c registry
 	 */
-	virtual Type* do_merge(Registry& registry) const = 0;
+	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const = 0;
     };
 
     class NullType : public Type
     {
     public:
         NullType(std::string const& name) : Type(name, 0, Type::NullType ) {}
-	virtual bool isSame(Type const&) const { return true; }
 	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
 
     private:
-	virtual Type* do_merge(Registry& registry) const { return new NullType(*this); }
+	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const { return new NullType(*this); }
     };
 
     /** Numeric values (integer, unsigned integer and floating point) */
@@ -115,11 +128,11 @@ namespace Typelib
         /** Creates a basic type from \c name, \c size and \c category */
         Numeric(const std::string& name, size_t size, NumericCategory category);
 
-	virtual bool isSame(Type const& type) const;
 	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
 
     private:
-	virtual Type* do_merge(Registry& registry) const;
+	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
+	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         NumericCategory m_category;
     };
 
@@ -134,7 +147,7 @@ namespace Typelib
         class SymbolNotFound {};
         class ValueNotFound  {};
         
-        Enum(const std::string& name);
+        Enum(const std::string& name, Enum::integral_type initial_value = 0);
 	/** Add a new definition */
         void            add(std::string const& name, int value);
 	/** Gets the value for @c name 
@@ -149,11 +162,16 @@ namespace Typelib
 	/** The name => value map */
         ValueMap const& values() const;
 
-	virtual bool isSame(Type const& type) const;
 	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
 
+        /** Returns the value the next inserted element should have (it is
+         * last_inserted_value + 1) */
+        Enum::integral_type getNextValue() const;
+
     private:
-	virtual Type* do_merge(Registry& registry) const;
+	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
+	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
+        integral_type m_last_value;
         ValueMap m_values;
     };
 
@@ -203,11 +221,11 @@ namespace Typelib
 	/** Add a new field */
         void              addField(const std::string& name, const Type& type, size_t offset);
 
-	virtual bool isSame(Type const& type) const;
 	virtual std::set<Type const*> dependsOn() const;
 
     private:
-	virtual Type* do_merge(Registry& registry) const;
+	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
+	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         FieldList m_fields;
     };
 
@@ -218,11 +236,15 @@ namespace Typelib
         static const int ValidIDs = Type::Pointer | Type::Array;
 
     public:
-	virtual bool isSame(Type const& type) const;
 
         Indirect(std::string const& name, size_t size, Category category, Type const& on);
         Type const& getIndirection() const;
 	virtual std::set<Type const*> dependsOn() const;
+
+        virtual Type const& merge(Registry& registry, RecursionStack& stack) const;
+
+    protected:
+	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
 
     private:
         Type const& m_indirection;
@@ -234,14 +256,14 @@ namespace Typelib
     class Array : public Indirect
     {
     public:
-	virtual bool isSame(Type const& type) const;
 
         Array(Type const& of, size_t dimension);
         size_t getDimension() const;
         static std::string getArrayName(std::string const& base, size_t new_dim);
 
     private:
-	virtual Type* do_merge(Registry& registry) const;
+	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
+	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         size_t m_dimension;
     };
 
@@ -253,7 +275,7 @@ namespace Typelib
         static std::string getPointerName(std::string const& base);
 
     private:
-	virtual Type* do_merge(Registry& registry) const;
+	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
     };
 
 

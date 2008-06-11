@@ -28,8 +28,6 @@ namespace Typelib
         virtual Exporter* create() = 0;
     };
 
-    class ExportError : public std::exception { };
-
     /** Base class for export objects */
     class Exporter
     {
@@ -62,7 +60,9 @@ namespace Typelib
 	 * in registry, taking into account dependencies (i.e. a type will be serialized
 	 * before another type which references it) and finally calls end()
 	 *
-	 * @exception UnsupportedType if a type cannot be serialized in this format
+         * @exception UnsupportedType if a type cannot be serialized in this
+         *          format. In particular, this is thrown if the registry contains
+         *          recursive types
 	 * @exception ExportError for all export errors
 	 */
         virtual void save

@@ -19,6 +19,15 @@ namespace Typelib
     /** Exception thrown when an unknown plugin is found */
     class PluginNotFound : public std::exception {};
 
+    /** Generic error for problems during export */
+    class ExportError : public std::exception
+    { 
+    public:
+        char const* msg;
+        ExportError(char const* msg) : msg(msg) {}
+        char const* what() throw() { return msg; }
+    };
+
     /** The plugin manager 
      * 
      * It is a singleton, using utilmm::singleton

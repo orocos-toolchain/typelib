@@ -323,6 +323,7 @@ namespace Typelib
         add(newname, base_type, source_id);
     }
 
+    size_t Registry::size() const { return m_global.size(); }
     void Registry::clear()
     {
 	// Set the type pointer to 0 on aliases
@@ -393,5 +394,28 @@ namespace Typelib
 
     RegistryIterator Registry::begin() const { return RegistryIterator(m_global.begin()); }
     RegistryIterator Registry::end() const { return RegistryIterator(m_global.end()); }
+
+    bool Registry::isSame(Registry const& other) const
+    {
+        if (m_global.size() != other.m_global.size())
+            return false;
+
+        TypeMap::const_iterator
+            left_it   = m_global.begin(),
+            left_end  = m_global.end(),
+            right_it  = other.m_global.begin();
+
+        while (left_it != left_end)
+        {
+            if (!left_it->second.type->isSame(*right_it->second.type))
+            {
+                throw;
+                return false;
+            }
+            left_it++; left_end++;
+        }
+        return true;
+    }
+
 }; // namespace Typelib
 

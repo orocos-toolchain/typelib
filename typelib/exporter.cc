@@ -56,6 +56,9 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
 	}
     }
 
+    if (done.size() != registry.size())
+        throw ExportError("recursive type found, not supported yet");
+
     end(stream, registry);
 }
 
