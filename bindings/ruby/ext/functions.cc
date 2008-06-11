@@ -68,7 +68,7 @@ class PrepareVM : public TypeVisitor
             {
                 case 1: dcArgChar    (m_vm, static_cast<char>(NUM2INT(m_data))); break;
                 case 2: dcArgShort   (m_vm, static_cast<short>(NUM2INT(m_data))); break;
-                case 4: dcArgLong    (m_vm, NUM2LONG(m_data)); break;
+                case 4: dcArgInt	 (m_vm, NUM2INT(m_data)); break;
                 case 8: dcArgLongLong(m_vm, NUM2LL(m_data)); break;
             }
         }
@@ -151,7 +151,7 @@ class VMCall : public TypeVisitor
             {
                 case 1: m_return = INT2NUM (dcCallChar    (m_vm, m_handle)); break;
                 case 2: m_return = INT2NUM (dcCallShort   (m_vm, m_handle)); break;
-                case 4: m_return = LONG2NUM(dcCallLong    (m_vm, m_handle)); break;
+                case 4: m_return = INT2NUM (dcCallInt	  (m_vm, m_handle)); break;
                 case 8: m_return = LL2NUM  (dcCallLongLong(m_vm, m_handle)); break;
             }
         }

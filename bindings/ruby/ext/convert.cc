@@ -70,10 +70,10 @@ class RubySetter : public ValueVisitor
 
     virtual bool visit_ (int8_t  & value) { value = NUM2CHR(m_value); return false; }
     virtual bool visit_ (uint8_t & value) { value = NUM2CHR(m_value); return false; }
-    virtual bool visit_ (int16_t & value) { value = NUM2LONG(m_value); return false; }
-    virtual bool visit_ (uint16_t& value) { value = NUM2ULONG(m_value); return false; }
-    virtual bool visit_ (int32_t & value) { value = NUM2LONG(m_value); return false; }
-    virtual bool visit_ (uint32_t& value) { value = NUM2ULONG(m_value); return false; }
+    virtual bool visit_ (int16_t & value) { value = NUM2INT(m_value); return false; }
+    virtual bool visit_ (uint16_t& value) { value = NUM2UINT(m_value); return false; }
+    virtual bool visit_ (int32_t & value) { value = NUM2INT(m_value); return false; }
+    virtual bool visit_ (uint32_t& value) { value = NUM2UINT(m_value); return false; }
     virtual bool visit_ (int64_t & value) { value = NUM2LL(m_value);  return false; }
     virtual bool visit_ (uint64_t& value) { value = NUM2LL(m_value); return false; }
     virtual bool visit_ (float   & value) { value = NUM2DBL(m_value); return false; }
