@@ -189,9 +189,6 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
 	size_t expected_array_size = sizeof(expected) / sizeof(size_t);
 	for (size_t i = 0; i < expected_array_size; ++i)
 	    BOOST_REQUIRE_EQUAL(expected[i], compiled.m_compiled[i + offset]);
-
-	compiled.display();
-
     }
 
     /* Check a multidimensional array */
