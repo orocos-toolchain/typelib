@@ -77,6 +77,7 @@ header
     #include <antlr/CharScanner.hpp>
     #include "CPPDictionary.hh"
     #include <list>
+    #include <stdlib.h>
 }
 
 options

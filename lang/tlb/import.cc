@@ -1,5 +1,6 @@
 #include "import.hh"
 #include "xmltools.hh"
+#include <limits.h>
 
 #include <typelib/typemodel.hh>
 #include <typelib/typebuilder.hh>
