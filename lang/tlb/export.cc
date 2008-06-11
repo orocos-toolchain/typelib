@@ -127,10 +127,12 @@ namespace
         else
         {
             m_stream << "<enum name=\"" << type.getName() << "\">\n";
-            Enum::ValueMap::const_iterator it, end = values.end();
-            for (it = values.begin(); it != values.end(); ++it)
-                m_stream << "  <value symbol=\"" << it->first << "\" value=\"" << it->second << "\"/>\n" << endl;
-            m_stream << "</enum>";
+            { Indent indenter(m_indent);
+                Enum::ValueMap::const_iterator it, end = values.end();
+                for (it = values.begin(); it != values.end(); ++it)
+                    m_stream << m_indent << "<value symbol=\"" << it->first << "\" value=\"" << it->second << "\"/>\n";
+            }
+            m_stream << m_indent << "</enum>";
         }
 
         return true;
