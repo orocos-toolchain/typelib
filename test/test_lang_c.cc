@@ -172,6 +172,7 @@ BOOST_AUTO_TEST_CASE( test_c_import )
 	{ "E_HEX",    E_HEX },
 	{ "E_OCT",    E_OCT },
 	{ "LAST", LAST },
+        { "E_FROM_SYMBOL", E_FIRST + E_HEX },
 	{ 0, 0 }
     };
 	

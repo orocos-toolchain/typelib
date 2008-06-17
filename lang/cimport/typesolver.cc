@@ -98,6 +98,7 @@ void TypeSolver::enumElement(const std::string& name, bool has_value, int value)
         value = enum_type.getNextValue();
     
     enum_type.add(name, value);
+    m_constants[name] = value;
     CPPParser::enumElement(name, has_value, value);
 }
 
@@ -110,6 +111,15 @@ void TypeSolver::endEnumDefinition()
 
     if (! m_class_object->getName().empty()) // typedef union {} bla handled later in declarationID
         buildClassObject();
+}
+
+int TypeSolver::getIntConstant(std::string const& name)
+{
+    map<string, int>::iterator it = m_constants.find(name);
+    if (it != m_constants.end())
+        return it->second;
+    else
+        throw InvalidConstantName();
 }
 
 Type& TypeSolver::buildClassObject()

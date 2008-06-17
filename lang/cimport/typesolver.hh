@@ -22,6 +22,8 @@ class TypeSolver : public CPPParser
     std::list<std::string> m_fieldtype;
     std::list<size_t> m_pending_array;
 
+    std::map<std::string, int> m_constants;
+
     Typelib::Type& buildClassObject();
     Typelib::Registry& m_registry;
 
@@ -44,6 +46,8 @@ public:
             return stream.str();
         }
     };
+
+    class InvalidConstantName { };
     
     TypeSolver(antlr::TokenStream& lexer, Typelib::Registry& registry, bool cxx_mode);
     TypeSolver(const antlr::ParserSharedInputState& state, Typelib::Registry& registry, bool cxx_mode);
@@ -53,6 +57,7 @@ public:
     virtual void beginEnumDefinition(const std::string& name);
     virtual void enumElement(const std::string& name, bool has_value, int value);
     virtual void endEnumDefinition();
+    virtual int getIntConstant(std::string const& name);
 
     virtual void enterNamespace(std::string const& name);
     virtual void exitNamespace();

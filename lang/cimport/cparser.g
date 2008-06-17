@@ -206,6 +206,7 @@ protected:
     virtual void beginEnumDefinition(const std::string&);
     virtual void enumElement(const std::string&, bool has_value, int value);
     virtual void endEnumDefinition();
+    virtual int getIntConstant(std::string const& name);
 
     // Declaration and definition stuff
     virtual void declarationSpecifier(bool, StorageClass,TypeQualifier,TypeSpecifier,CPPParser::DeclSpecifier);
@@ -1160,6 +1161,7 @@ int_constant returns [ int value ]
                 oct:OCTALINT       { value = strtol(oct->getText().data(), NULL, 0); }
         |       dec:DECIMALINT     { value = strtol(dec->getText().data(), NULL, 0); }
         |       hex:HEXADECIMALINT { value = strtol(hex->getText().data(), NULL, 0); }
+        |       id:ID              { value = getIntConstant(id->getText()); }
          
         ;
 
