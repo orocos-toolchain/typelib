@@ -47,8 +47,6 @@ public:
         }
     };
 
-    class InvalidConstantName { };
-    
     TypeSolver(antlr::TokenStream& lexer, Typelib::Registry& registry, bool cxx_mode);
     TypeSolver(const antlr::ParserSharedInputState& state, Typelib::Registry& registry, bool cxx_mode);
     
@@ -58,6 +56,7 @@ public:
     virtual void enumElement(const std::string& name, bool has_value, int value);
     virtual void endEnumDefinition();
     virtual int getIntConstant(std::string const& name);
+    virtual int getTypeSize(std::string const& name);
 
     virtual void enterNamespace(std::string const& name);
     virtual void exitNamespace();

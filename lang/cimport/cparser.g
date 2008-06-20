@@ -183,6 +183,9 @@ public:
     void init();
     ~CPPParser();
 
+    class InvalidConstantName { };
+    class InvalidTypeName { };
+
 protected:
     // Semantic interface; You could subclass and redefine these functions
     //  so you don't have to mess with the grammar itself.
@@ -1162,6 +1165,7 @@ int_constant returns [ int value ]
         |       dec:DECIMALINT     { value = strtol(dec->getText().data(), NULL, 0); }
         |       hex:HEXADECIMALINT { value = strtol(hex->getText().data(), NULL, 0); }
         |       id:ID              { value = getIntConstant(id->getText()); }
+        |       "sizeof" LPAREN { value = getTypeSize(LT(1)->getText()); } type_name RPAREN
          
         ;
 

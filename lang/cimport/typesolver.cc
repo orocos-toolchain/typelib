@@ -122,6 +122,15 @@ int TypeSolver::getIntConstant(std::string const& name)
         throw InvalidConstantName();
 }
 
+int TypeSolver::getTypeSize(std::string const& name)
+{
+    Type const* t = m_registry.build(name);
+    if (t)
+        return t->getSize();
+    else
+        throw InvalidTypeName();
+}
+
 Type& TypeSolver::buildClassObject()
 {
     m_fieldtype.clear();

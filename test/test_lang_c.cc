@@ -173,6 +173,8 @@ BOOST_AUTO_TEST_CASE( test_c_import )
 	{ "E_OCT",    E_OCT },
 	{ "LAST", LAST },
         { "E_FROM_SYMBOL", E_FIRST + E_HEX },
+        { "E_FROM_SIZEOF_STD",  sizeof(int32_t) },
+        { "E_FROM_SIZEOF_SPEC", sizeof(B) },
 	{ 0, 0 }
     };
 	

@@ -407,7 +407,8 @@ void CPPParser::beginEnumDefinition(const std::string& e)
 }
 
 void CPPParser::endEnumDefinition() {	}
-int CPPParser::getIntConstant(std::string const& name) { return -1; }
+int CPPParser::getIntConstant(std::string const& name) { throw InvalidConstantName(); }
+int CPPParser::getTypeSize(std::string const& name) { throw InvalidTypeName(); }
 
 void CPPParser::foundSimpleType(const std::list<std::string>& full_type) { }
 
