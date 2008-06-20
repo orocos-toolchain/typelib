@@ -97,8 +97,6 @@ void CPPParser::init()
     assign_stmt_RHS_found = 0;
     in_parameter_list = false;
     in_return = false;
-    is_address = false;
-    pointer_level = 0;
 }
 
 CPPParser::~CPPParser()

@@ -18,9 +18,7 @@ class TypeSolver : public CPPParser
 
     utilmm::stringlist m_namespace;
 
-    // For Compound
-    std::list<std::string> m_fieldtype;
-    std::list<size_t> m_pending_array;
+    std::list<CurrentTypeDefinition> m_current;
 
     std::map<std::string, int> m_constants;
 
@@ -29,7 +27,7 @@ class TypeSolver : public CPPParser
 
     bool m_cxx_mode;
 
-    Typelib::TypeBuilder initializeTypeBuilder();
+    Typelib::Type const& buildCurrentType();
     void setTypename(std::string const& name);
     void beginTypeDefinition(TypeSpecifier class_type, const std::string& name);
 
@@ -56,17 +54,25 @@ public:
     virtual void enumElement(const std::string& name, bool has_value, int value);
     virtual void endEnumDefinition();
     virtual int getIntConstant(std::string const& name);
-    virtual int getTypeSize(std::string const& name);
+    virtual int getTypeSize(CurrentTypeDefinition const& def);
+    virtual void beginTypedef();
 
     virtual void enterNamespace(std::string const& name);
     virtual void exitNamespace();
 
     virtual void beginFieldDeclaration();
+    virtual void endFieldDeclaration();
     virtual void foundSimpleType(const std::list<std::string>& full_type);
     virtual void classForwardDeclaration(TypeSpecifier ts, DeclSpecifier,const std::string& name);
     virtual void end_of_stmt();
     virtual void declaratorID(const std::string& name, QualifiedItem);
     virtual void declaratorArray(int size);
+
+    virtual void resetPointerLevel();
+    virtual void incrementPointerLevel();
+
+    virtual CurrentTypeDefinition popType();
+    virtual void pushNewType();
 };
 
 #endif

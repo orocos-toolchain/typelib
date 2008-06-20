@@ -122,6 +122,14 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     // 20 elements of floats))
     BOOST_CHECK_EQUAL( &(b_i->getType()), registry.get("/float[20][10]") );
 
+    Compound const* c   = static_cast<Compound const*>(registry.get("/C"));
+    Field const* c_x = c->getField("x");
+    BOOST_CHECK_EQUAL( &(c_x->getType()), registry.get("/float[4]") );
+    Field const* c_y = c->getField("y");
+    BOOST_CHECK_EQUAL( &(c_y->getType()), registry.get("/float*") );
+    Field const* c_z = c->getField("z");
+    BOOST_CHECK_EQUAL( &(c_z->getType()), registry.get("/float") );
+
     // Check the array indirection
     Array const& b_c_array(dynamic_cast<Array const&>(b_c->getType()));
     BOOST_CHECK_EQUAL( &b_c_array.getIndirection(), registry.get("/float") );

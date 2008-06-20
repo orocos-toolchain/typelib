@@ -177,8 +177,6 @@ protected:
     int assign_stmt_RHS_found;
     bool in_parameter_list;	// DW 13/02/04 used within CPP_parser
     bool in_return;
-    bool is_address;
-    int  pointer_level;
 
 public:
     void init();
@@ -193,6 +191,16 @@ public:
     struct TypeStackEmpty : std::logic_error
     { 
         TypeStackEmpty() : std::logic_error("empty type stack encountered") { }
+    };
+
+    struct CurrentTypeDefinition 
+    {
+        std::list<std::string> name;
+        std::list<size_t>      array;
+        size_t                 pointer_level;
+
+        CurrentTypeDefinition()
+            : pointer_level(0) {}
     };
 
 protected:
@@ -219,7 +227,8 @@ protected:
     virtual void enumElement(const std::string&, bool has_value, int value);
     virtual void endEnumDefinition();
     virtual int getIntConstant(std::string const& name) = 0;
-    virtual int getTypeSize(std::string const& name) = 0;
+    virtual int getTypeSize(CurrentTypeDefinition const& def) = 0;
+    virtual void beginTypedef() {}
 
     // Declaration and definition stuff
     virtual void declarationSpecifier(bool, StorageClass,TypeQualifier,TypeSpecifier,CPPParser::DeclSpecifier);
@@ -227,6 +236,7 @@ protected:
     virtual void endDeclaration();
     virtual void beginParameterDeclaration();
     virtual void beginFieldDeclaration();
+    virtual void endFieldDeclaration() { };
     virtual void beginFunctionDefinition();
     virtual void endFunctionDefinition();
     virtual void functionParameterList();
@@ -235,10 +245,14 @@ protected:
     // Declarator stuff
     virtual void declaratorID(const std::string&, QualifiedItem);	// This stores new symbol with its type.
     virtual void declaratorArray(int size);
+    virtual void resetPointerLevel() = 0;
+    virtual void incrementPointerLevel() = 0;
     virtual void declaratorParameterList(const int def);
     virtual void declaratorEndParameterList(const int def);
     virtual void foundSimpleType(const std::list<std::string>& full_type);
 
+    virtual CurrentTypeDefinition popType() = 0;
+    virtual void pushNewType() = 0;
 }
 
 translation_unit
@@ -330,7 +344,7 @@ declaration_specifiers
 :	sc = storage_class_specifier
 |	tq = type_qualifier 
 |	("inline"|"_inline"|"__inline")	   { ds = dsINLINE; }
-|	"typedef"	{td=true;}			
+|	"typedef"	{td=true; beginTypedef(); }
 |	("_stdcall"|"__stdcall")
 |       "__extension__"
 )*
@@ -421,7 +435,8 @@ member_declaration
 	(
 		(declaration_specifiers)=>
 		{ beginFieldDeclaration(); }
-		declaration_specifiers (member_declarator_list)? SEMICOLON {end_of_stmt();}
+		declaration_specifiers (member_declarator_list)? SEMICOLON {
+                endFieldDeclaration(); end_of_stmt();}
 	|  
 		SEMICOLON {end_of_stmt();}
 	)
@@ -539,7 +554,7 @@ declarator
 	:
 		//{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
 		(ptr_operator)=> ptr_operator	// AMPERSAND or STAR
-                { ++pointer_level; }
+                { incrementPointerLevel(); }
 		declarator
 	|	
 		direct_declarator
@@ -569,7 +584,7 @@ direct_declarator
 			declaratorID(id,qiType);
 		    else
 			declaratorID(id,qiVar);
-		    is_address = false; pointer_level = 0;
+                    resetPointerLevel();
 		}
 	|
 		id = qualified_id
@@ -578,7 +593,7 @@ direct_declarator
 			declaratorID(id,qiType);
 		    else
 			declaratorID(id,qiVar);
-		    is_address = false; pointer_level = 0;
+                    resetPointerLevel();
 		}
 	|	
 		LPAREN declarator RPAREN declarator_suffixes
@@ -1100,7 +1115,7 @@ unary_operator
 	;
 
 ptr_operator
-	:	(	AMPERSAND 	{is_address = true;}
+	:	(	AMPERSAND
                 |       STAR
 		|	("_cdecl"|"__cdecl") 
 		|	("_near"|"__near") 
@@ -1170,12 +1185,13 @@ int_constant_unary_expression returns [ int value ]
 
 
 int_constant returns [ int value ]
+        { CurrentTypeDefinition def; }
         :       
                 oct:OCTALINT       { value = strtol(oct->getText().data(), NULL, 0); }
         |       dec:DECIMALINT     { value = strtol(dec->getText().data(), NULL, 0); }
         |       hex:HEXADECIMALINT { value = strtol(hex->getText().data(), NULL, 0); }
         |       id:ID              { value = getIntConstant(id->getText()); }
-        |       "sizeof" LPAREN { value = getTypeSize(LT(1)->getText()); } type_name RPAREN
+        |       "sizeof" { pushNewType(); } LPAREN type_name { def = popType(); value = getTypeSize(def); } RPAREN
          
         ;
 
