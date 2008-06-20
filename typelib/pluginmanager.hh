@@ -5,6 +5,7 @@
 #include <string>
 #include <utilmm/singleton/use.hh>
 #include <utilmm/configfile/configset.hh>
+#include <stdexcept>
 
 namespace Typelib
 {
@@ -17,15 +18,15 @@ namespace Typelib
     class ImportPlugin;
     
     /** Exception thrown when an unknown plugin is found */
-    class PluginNotFound : public std::exception {};
+    struct PluginNotFound : std::logic_error
+    {
+        PluginNotFound() : std::logic_error("plugin not found") { }
+    };
 
     /** Generic error for problems during export */
-    class ExportError : public std::exception
+    struct ExportError : std::logic_error
     { 
-    public:
-        char const* msg;
-        ExportError(char const* msg) : msg(msg) {}
-        char const* what() throw() { return msg; }
+        ExportError(char const* msg) : std::logic_error(msg) {}
     };
 
     /** The plugin manager 

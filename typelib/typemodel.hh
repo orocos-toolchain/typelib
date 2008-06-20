@@ -284,22 +284,22 @@ namespace Typelib
 
 
 
-    class TypeException : public std::exception {};
-
-    class BadCategory : public TypeException
+    struct TypeException : public std::logic_error
     {
-        Type::Category m_found;
-        int m_expected;
-    public:
-        BadCategory(Type::Category found, int expected)
-            : m_found(found), m_expected(expected) {}
+        TypeException(std::string const& msg) : std::logic_error(msg) { }
     };
 
-    class NullTypeFound : public BadCategory
+    struct BadCategory : public TypeException
     {
-    public:
-        NullTypeFound()
-            : BadCategory(Type::NullType, Type::ValidCategories) {}
+        Type::Category const found;
+        int            const expected;
+
+        BadCategory(Type::Category found, int expected);
+    };
+
+    struct NullTypeFound : public TypeException
+    {
+        NullTypeFound();
     };
 };
 

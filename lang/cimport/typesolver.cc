@@ -2,6 +2,7 @@
 #include "CPPLexer.hpp"
 #include "typesolver.hh"
 #include <typelib/registry.hh>
+#include <utilmm/stringtools.hh>
 #include "packing.hh"
 
 #include <iostream>
@@ -119,7 +120,7 @@ int TypeSolver::getIntConstant(std::string const& name)
     if (it != m_constants.end())
         return it->second;
     else
-        throw InvalidConstantName();
+        throw InvalidConstantName(name);
 }
 
 int TypeSolver::getTypeSize(std::string const& name)
@@ -128,7 +129,7 @@ int TypeSolver::getTypeSize(std::string const& name)
     if (t)
         return t->getSize();
     else
-        throw InvalidTypeName();
+        throw InvalidTypeName(name);
 }
 
 Type& TypeSolver::buildClassObject()

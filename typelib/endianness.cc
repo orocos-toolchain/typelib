@@ -1,6 +1,7 @@
 #include "endianness.hh"
 #include <iostream>
 #include <boost/tuple/tuple.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace Typelib {
     size_t const CompileEndianSwapVisitor::FLAG_SKIP;
@@ -44,7 +45,7 @@ namespace Typelib {
 	    return true;
 
 	default:
-	    throw UnsupportedEndianSwap();
+	    throw UnsupportedEndianSwap("objects of size " + boost::lexical_cast<std::string>(type.getSize()));
 	}
     }
 
@@ -56,7 +57,7 @@ namespace Typelib {
     }
 
     bool CompileEndianSwapVisitor::visit_ (Pointer const& type)
-    { throw UnsupportedEndianSwap(); }
+    { throw UnsupportedEndianSwap("pointers"); }
     bool CompileEndianSwapVisitor::visit_ (Array const& type)
     {
 	if (type.getIndirection().getCategory() == Type::Array)

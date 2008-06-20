@@ -7,6 +7,11 @@
 
 namespace Typelib
 {
+    struct UnsupportedEndianSwap : public std::logic_error
+    { 
+        UnsupportedEndianSwap(std::string const& what) : std::logic_error("cannot swap " + what) { }
+    };
+
     /* This visitor swaps the endianness of the given value in-place */
     class EndianSwapVisitor : public ValueVisitor
     {
@@ -58,7 +63,6 @@ namespace Typelib
 	static const size_t SizeOfEnum = sizeof(int);;
 
     protected:
-	struct UnsupportedEndianSwap : public std::exception { };
 	void skip(int skip_size);
         bool visit_ (Numeric const& type);
         bool visit_ (Enum const& type);

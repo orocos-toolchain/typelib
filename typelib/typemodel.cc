@@ -10,18 +10,11 @@
 using namespace std;
 
 #include <iostream>
+#include <boost/lexical_cast.hpp>
+using boost::lexical_cast;
 
 namespace Typelib
 {
-    class InternalError : public std::exception
-    {
-	std::string const m_message;
-    public:
-	InternalError(std::string const& message)
-	    : m_message(message) {}
-	~InternalError() throw() {}
-	char const* what() const throw() { return m_message.c_str(); }
-    };
     Type::Type(std::string const& name, size_t size, Category category)
         : m_size(size)
         , m_category(category)
@@ -298,5 +291,12 @@ namespace Typelib
     void    Field::setOffset(size_t offset) { m_offset = offset; }
     bool Field::operator == (Field const& field) const
     { return m_offset == field.m_offset && m_name == field.m_name && m_type.isSame(field.m_type); }
+
+
+    BadCategory::BadCategory(Type::Category found, int expected)
+        : TypeException("bad category: found " + lexical_cast<string>(found) + " expecting " + lexical_cast<string>(expected))
+        , found(found), expected(expected) {}
+    NullTypeFound::NullTypeFound()
+        : TypeException("null type found") { }
 };
 

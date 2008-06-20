@@ -78,6 +78,7 @@ header
     #include "CPPDictionary.hh"
     #include <list>
     #include <stdlib.h>
+    #include <stdexcept>
 }
 
 options
@@ -183,8 +184,16 @@ public:
     void init();
     ~CPPParser();
 
-    class InvalidConstantName { };
-    class InvalidTypeName { };
+    struct InvalidConstantName : std::logic_error
+    { InvalidConstantName(std::string const& name)
+        : std::logic_error("unknown constant " + name) {} };
+    struct InvalidTypeName : std::logic_error
+    { InvalidTypeName(std::string const& name) 
+        : std::logic_error("unknown type " + name) {} };
+    struct TypeStackEmpty : std::logic_error
+    { 
+        TypeStackEmpty() : std::logic_error("empty type stack encountered") { }
+    };
 
 protected:
     // Semantic interface; You could subclass and redefine these functions
@@ -209,7 +218,8 @@ protected:
     virtual void beginEnumDefinition(const std::string&);
     virtual void enumElement(const std::string&, bool has_value, int value);
     virtual void endEnumDefinition();
-    virtual int getIntConstant(std::string const& name);
+    virtual int getIntConstant(std::string const& name) = 0;
+    virtual int getTypeSize(std::string const& name) = 0;
 
     // Declaration and definition stuff
     virtual void declarationSpecifier(bool, StorageClass,TypeQualifier,TypeSpecifier,CPPParser::DeclSpecifier);
