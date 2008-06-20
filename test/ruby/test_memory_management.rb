@@ -11,7 +11,7 @@ class TC_MemoryManagement < Test::Unit::TestCase
 
     class FailedFinalizationCheck < RuntimeError; end
 
-    def cleanup_stack(depth = 10, *args, &block)
+    def cleanup_stack(depth = 50, *args, &block)
 	if depth > 0
 	    cleanup_stack(depth - 1, *args, &block)
 	else
