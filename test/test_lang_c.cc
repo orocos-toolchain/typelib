@@ -2,12 +2,16 @@
 
 #include <test/testsuite.hh>
 #include <utilmm/configfile/configset.hh>
+#include <utilmm/stringtools.hh>
 #include <typelib/pluginmanager.hh>
 #include <typelib/importer.hh>
 #include <typelib/typemodel.hh>
 #include <typelib/registry.hh>
 #include "test_cimport.1"
 using namespace Typelib;
+using std::string;
+using utilmm::split;
+using utilmm::join;
 
 void import_test_types(Registry& registry)
 {
@@ -47,6 +51,38 @@ BOOST_AUTO_TEST_CASE( test_strict_c_import )
     BOOST_CHECK_EQUAL( "/enum INPUT_OUTPUT_MODE", registry.get("/INPUT_OUTPUT_MODE")->getName() );
 }
 
+static Type const& check_type(Registry const& registry, string const& name, size_t expected_size)
+{
+    // Replace the '::' in +name+ by '/'
+    string const typelib_name = join(split(name, "::"), "/");
+
+    Type const* object = registry.get(typelib_name);
+    BOOST_REQUIRE_MESSAGE(object, name << " is not defined");
+    BOOST_REQUIRE_MESSAGE(object->getSize() == expected_size, "size mismatch for " << name << " " << object->getSize() << " != " << expected_size);
+    return *object;
+}
+#define CHECK_TYPE(type) check_type(registry, #type, sizeof(type))
+
+static void check_field(Registry const& registry, string const& compound_name, string const& field_name,
+        size_t expected_offset, string const& expected_type, size_t expected_size)
+{
+    string const typelib_compound_name = join(split(compound_name, "::"), "/");
+    string const typelib_expected_name = join(split(expected_type, "::"), "/");
+
+    Compound const& compound_object = dynamic_cast<Compound const&>(*registry.get(typelib_compound_name));
+    Field const* field_object = compound_object.getField(field_name);
+    BOOST_REQUIRE(field_object);
+    BOOST_REQUIRE_EQUAL(field_object->getOffset(), expected_offset);
+    BOOST_REQUIRE_MESSAGE(
+            (&(field_object->getType()) == registry.get(typelib_expected_name)),
+            "expecting " << typelib_compound_name << ", got " <<
+            field_object->getType().getName() << " for " << compound_name << "." << field_name);
+    BOOST_REQUIRE_EQUAL(field_object->getType().getSize(), expected_size);
+}
+
+#define CHECK_FIELD(compound, field, expected_type) \
+{ check_field(registry, #compound, #field, offsetof(compound, field), #expected_type, sizeof(expected_type)); }
+
 BOOST_AUTO_TEST_CASE( test_c_import )
 {
     Registry registry;
@@ -79,47 +115,48 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
 
     // Check that the types are defined
-    BOOST_CHECK( registry.has("/struct A") );
-    BOOST_CHECK( registry.has("/struct B") );
-    BOOST_CHECK( registry.has("/ADef") );
-    BOOST_CHECK( registry.has("/B") );
-    BOOST_CHECK( registry.has("/OpaqueType") );
-    BOOST_CHECK( registry.has("/NS1/NS2/Test") );
-    BOOST_CHECK( registry.has("/NS1/Test") );
-    BOOST_CHECK( registry.has("/NS1/Bla/Test") );
-    BOOST_CHECK( registry.has("/NS1/NS2/struct Test") );
-    BOOST_CHECK( registry.has("/NS1/struct Test") );
-    BOOST_CHECK( registry.has("/NS1/Bla/struct Test") );
+    CHECK_TYPE(struct A);
+    CHECK_TYPE(struct B);
+    CHECK_TYPE(ADef);
+    CHECK_TYPE(B);
+    CHECK_TYPE( struct A );
+    CHECK_TYPE( struct B );
+    CHECK_TYPE( ADef );
+    Compound const& b = dynamic_cast<Compound const&>(CHECK_TYPE( B ));
+    CHECK_TYPE( OpaqueType );
+    CHECK_TYPE( NS1::NS2::Test );
+    CHECK_TYPE( NS1::Bla::Test );
+    CHECK_FIELD(NS1::Test, b, NS1::Bla::Test);
+    CHECK_TYPE( NS1::Test );
+    CHECK_TYPE( NS1::NS2::Test );
+    CHECK_TYPE( NS1::Test );
+    CHECK_TYPE( NS1::Bla::Test );
 
     // In C++ mode, the main type is without any leading prefix
     BOOST_CHECK_EQUAL( "/NS1/NS2/Test", registry.get("/NS1/NS2/struct Test")->getName());
 
     // Check that the size of B.a is the same as A
-    Compound const* b   = static_cast<Compound const*>(registry.get("/B"));
-    Field  const* b_a = b->getField("a");
-    BOOST_CHECK_EQUAL( &(b_a->getType()), registry.get("/ADef") );
+    CHECK_FIELD(B, a, ADef);
 
     // Check the type of c (array of floats)
-    Field  const* b_c = b->getField("c");
-    BOOST_CHECK_EQUAL( &(b_c->getType()), registry.get("/float[100]") );
-    BOOST_CHECK_EQUAL( b_c->getType().getCategory(), Type::Array );
+    CHECK_FIELD(B, c, float[100]);
 
-    // Check the sizes for d, e, f
-    Field const* b_d = b->getField("d");
-    BOOST_CHECK_EQUAL( &(b_d->getType()), registry.get("/float[1]") );
-    Field const* b_e = b->getField("e");
-    BOOST_CHECK_EQUAL( &(b_e->getType()), registry.get("/float[1]") );
-    Field const* b_f = b->getField("f");
-    BOOST_CHECK_EQUAL( &(b_f->getType()), registry.get("/float[3]") );
-    Field const* b_g = b->getField("g");
-    BOOST_CHECK_EQUAL( &(b_g->getType()), registry.get("/float[2]") );
-    Field const* b_h = b->getField("h");
-    BOOST_CHECK_EQUAL( &(b_h->getType()), registry.get("/A[4]") );
-    Field const* b_i = b->getField("i");
+    // Check the sizes for various ways of defining integer constants
+    CHECK_FIELD(B, d, float[1]);
+    CHECK_FIELD(B, e, float[1]);
+    CHECK_FIELD(B, f, float[3]);
+    CHECK_FIELD(B, g, float[2]);
+    CHECK_FIELD(B, h, A[4]);
+    CHECK_FIELD(B, i, float[20][10]);
+    CHECK_FIELD(B, x, float);
+    CHECK_FIELD(B, y, float);
+    CHECK_FIELD(B, z, float);
+
     // order of indexes of multi-dimensional arrays are reverse than the 
     // ones in C because we always read dimensions from right to left
     // (i.e. b.i is supposed to be a (array of 10 elements of (array of 
     // 20 elements of floats))
+    Field const* b_i = b.getField("i");
     BOOST_CHECK_EQUAL( &(b_i->getType()), registry.get("/float[20][10]") );
 
     Compound const* c   = static_cast<Compound const*>(registry.get("/C"));
@@ -131,12 +168,8 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     BOOST_CHECK_EQUAL( &(c_z->getType()), registry.get("/float") );
 
     // Check the array indirection
-    Array const& b_c_array(dynamic_cast<Array const&>(b_c->getType()));
+    Array const& b_c_array(dynamic_cast<Array const&>(b.getField("c")->getType()));
     BOOST_CHECK_EQUAL( &b_c_array.getIndirection(), registry.get("/float") );
-
-    // Check the sizes
-    BOOST_CHECK_EQUAL( registry.get("/struct A")->getSize(), sizeof(A) );
-    BOOST_CHECK_EQUAL( b->getSize(), sizeof(B) );
     BOOST_CHECK_EQUAL( b_c_array.getDimension(), 100UL );
 
     // Test the forms of DEFINE_STR and DEFINE_ID (anonymous structure and pointer-to-struct)

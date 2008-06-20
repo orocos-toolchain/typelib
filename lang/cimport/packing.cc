@@ -25,6 +25,51 @@ namespace
 
     int const packing_info_size = ::boost::mpl::size<podlist>::type::value;
     PackingInfo packing_info[packing_info_size];
+
+    /** Try to determine some structure size rounding rules */
+    struct CompoundSizeInfo
+    {
+        size_t base_size;
+        size_t rounded_size;
+    };
+    template<int i> struct StructSizeDiscovery;
+    template<> struct StructSizeDiscovery<0> { };
+    template<> struct StructSizeDiscovery<1> { int8_t a; };
+    template<> struct StructSizeDiscovery<2> { short a; };
+    template<> struct StructSizeDiscovery<3> { short a; int8_t b; };
+    template<> struct StructSizeDiscovery<4> { int32_t a; };
+    template<> struct StructSizeDiscovery<5> { int32_t a; int8_t b; };
+    template<> struct StructSizeDiscovery<6> { int32_t a; int16_t b; };
+    template<> struct StructSizeDiscovery<7> { int32_t a; int16_t b; int8_t c; };
+    template<> struct StructSizeDiscovery<8> { int32_t a; int32_t d; };
+    template<> struct StructSizeDiscovery<9> { int64_t x; int8_t a; };
+    template<> struct StructSizeDiscovery<10> { int64_t x; short a; };
+    template<> struct StructSizeDiscovery<11> { int64_t x; short a; int8_t b; };
+    template<> struct StructSizeDiscovery<12> { int64_t x; int32_t a; };
+    template<> struct StructSizeDiscovery<13> { int64_t x; int32_t a; int8_t b; };
+    template<> struct StructSizeDiscovery<14> { int64_t x; int32_t a; int16_t b; };
+    template<> struct StructSizeDiscovery<15> { int64_t x; int32_t a; int16_t b; int8_t c; };
+    static const int STRUCT_SIZE_DISCOVERY_LAST = 15;
+
+    /** These two following structures are to check the rounding after 16 (i.e.
+     * how 17 is packed determines how the whole thing will work from now on)
+     */
+    template<> struct StructSizeDiscovery<17> { int64_t x; int64_t b; int8_t c; };
+    static const size_t STRUCT_SIZE_BASE_SIZE = sizeof(StructSizeDiscovery<17>) - 16;
+
+    CompoundSizeInfo compound_size_info[STRUCT_SIZE_DISCOVERY_LAST + 1];
+    template <int i>
+    struct doStructSizeDiscovery : doStructSizeDiscovery<i - 1>
+    {
+        doStructSizeDiscovery()
+        {
+            compound_size_info[i].base_size = i;
+            compound_size_info[i].rounded_size = sizeof(StructSizeDiscovery<i>);
+        }
+    };
+    template<> struct doStructSizeDiscovery<-1> { };
+
+    doStructSizeDiscovery<STRUCT_SIZE_DISCOVERY_LAST> do_it_now;
 }
 #include "packing/build_packing_info.tcc"
 
@@ -117,5 +162,13 @@ int Typelib::Packing::getOffsetOf(const Compound& current, const Type& append_fi
         return 0;
 
     return getOffsetOf(fields.back(), append_field);
+}
+
+int Typelib::Packing::getSizeOfCompound(Compound const& compound)
+{
+    if (compound.getSize() <= STRUCT_SIZE_DISCOVERY_LAST)
+        return compound_size_info[compound.getSize()].rounded_size;
+
+    return (compound.getSize() + STRUCT_SIZE_BASE_SIZE - 1) / STRUCT_SIZE_BASE_SIZE * STRUCT_SIZE_BASE_SIZE;
 }
 

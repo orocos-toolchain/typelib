@@ -40,8 +40,6 @@ namespace Typelib
     protected:
         typedef std::map<Type const*, Type const*> RecursionStack;
 
-        void setSize    (size_t size);
-
         // Creates a basic type from \c name, \c size and \c category
         Type(const std::string& name, size_t size, Category category);
 
@@ -51,6 +49,11 @@ namespace Typelib
         /** Changes the type name. Never use once the type has been added to a
          * registry */
         void setName    (const std::string& name);
+        /** Changes the type size. Don't use that unless you know what you are
+         * doing. In particular, don't use it once the type is used in a
+         * Compound.
+         */
+        void setSize    (size_t size);
 	/** The type full name (including namespace) */
         std::string   getName() const;
 	/** The type name without the namespace */

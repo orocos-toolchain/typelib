@@ -263,7 +263,7 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
             else 
                 throw UnsupportedClassType(m_class_type);
 
-            //cerr << "resetting " << m_current.front() << endl;
+            compound.setSize( Packing::getSizeOfCompound(compound) );
             m_current.front().pointer_level = 0;
             m_current.front().array.clear();
         }

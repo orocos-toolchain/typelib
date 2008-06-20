@@ -20,6 +20,7 @@ namespace Typelib
 
         int getOffsetOf(Compound const& compound, Type const& append);
         int getOffsetOf(Field const& last_field, Type const& append);
+        int getSizeOfCompound(Compound const& compound);
     }
 };
 
