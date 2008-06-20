@@ -126,6 +126,10 @@ BOOST_AUTO_TEST_CASE( test_value_endian_swap )
     BOOST_REQUIRE_EQUAL(52, b.a.d);
     for (int i = 0; i < 10; ++i)
 	BOOST_REQUIRE_EQUAL(static_cast<float>(i) / 10.0f, b.c[i]);
+
+    C c;
+    Value v_c(&c, *registry.get("/C"));
+    BOOST_CHECK_THROW(Typelib::endian_swap(v_c), Typelib::UnsupportedEndianSwap);
 }
 
 BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
@@ -207,6 +211,13 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
 
 	for (size_t i = 0; i < expected_size; ++i)
 	    BOOST_REQUIRE_EQUAL(expected[i], compiled.m_compiled[i]);
+    }
+
+    // Check a structure with pointer (must throw)
+    {
+	Type const& type = *registry.get("/C");
+	CompileEndianSwapVisitor compiled;
+        BOOST_CHECK_THROW(compiled.apply(type), Typelib::UnsupportedEndianSwap);
     }
 }
 

@@ -26,6 +26,7 @@ namespace Typelib
         bool visit_ (uint64_t& value) { value = utilmm::endian::swap(value); return true; }
         bool visit_ (float   & value) { value = utilmm::endian::swap(value); return true; }
         bool visit_ (double  & value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (Value const& v, Pointer const& t) { throw UnsupportedEndianSwap("pointers"); }
         bool visit_ (Enum::integral_type& v, Enum const& e) { v = utilmm::endian::swap(v); return true; }
     };
 
