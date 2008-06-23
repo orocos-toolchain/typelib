@@ -99,7 +99,7 @@ class Dictionary
         void dumpScope(FILE *, int scope=-1);
         void dumpScopes();
 
-        virtual void panic(char *);
+        virtual void panic(char const *);
 };
 
 #endif

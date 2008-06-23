@@ -373,7 +373,7 @@ void Dictionary::dumpScopes()
     printf("\n");
 }
 
-void Dictionary::panic(char *err)
+void Dictionary::panic(char const *err)
 {
     fprintf(stdout, "Dictionary panic: %s\n", err);
     exit(-1);
