@@ -13,7 +13,7 @@ namespace Typelib
         UnsupportedType(Type const& type_) 
             : TypeException("type " + type_.getName() + " not supported"), type(type_) {}
         UnsupportedType(Type const& type_, std::string const& reason_) 
-            : TypeException("type " + type_.getName() + " not supported: " + reason), type(type_), reason(reason_) {}
+            : TypeException("type " + type_.getName() + " not supported: " + reason_), type(type_), reason(reason_) {}
 	~UnsupportedType() throw() { }
     };
     
