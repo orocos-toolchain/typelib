@@ -271,9 +271,24 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
     else if (qi == qiType)
     {
         Type const& type = buildCurrentType();
-        std::string new_name = m_registry.getFullName(name);
-        std::string old_name = m_registry.getFullName(type.getName());
-        m_registry.alias( old_name, new_name );
+        string base_name = m_registry.getFullName(type.getName());
+        string new_name  = m_registry.getFullName(name);
+
+        Type const* base_type = m_registry.get(base_name);
+        if (! base_type)
+            throw Undefined(base_name);
+
+        // Ignore cases where the aliased type already exists and is equivalent
+        // to the source type.
+        Type const* aliased_type = m_registry.get(new_name);
+        if (aliased_type)
+        {
+            if (!aliased_type->isSame(*base_type))
+                throw AlreadyDefined(new_name);
+        }
+        else
+            m_registry.alias( base_name, new_name );
+
     }
 
     // if (!m_current.empty())
