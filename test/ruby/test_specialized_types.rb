@@ -226,12 +226,14 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     end
 
     def test_enum
-        e_type = make_registry.get("EContainer")
+        registry = make_registry
+        e_type = registry.get("EContainer")
         assert(e_type.respond_to?(:value))
         enum = e_type.value
         assert_equal([["E_FIRST", 0], ["E_SECOND", 1], ["E_SET", -1], ["E_PARENS", -2],
                       ["E_OCT", 7],   ["E_HEX", 255],  ["LAST", 8],   ["E_FROM_SIZEOF_STD", 4],
-                      ["E_FROM_SIZEOF_SPEC", 1308], ["E_FROM_SYMBOL", 255]].to_set, enum.keys.to_set)
+                      ["E_FROM_SIZEOF_SPEC", registry.get("B").size],
+                      ["E_FROM_SYMBOL", 255]].to_set, enum.keys.to_set)
 
         e = e_type.new
         assert(e.respond_to?(:value))
