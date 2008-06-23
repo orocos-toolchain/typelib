@@ -192,10 +192,7 @@ void TypeSolver::classForwardDeclaration(TypeSpecifier ts, DeclSpecifier ds, con
 Typelib::Type const& TypeSolver::buildCurrentType()
 {
     if (m_current.empty())
-    {
-        *(int*)0 = 10;
         throw TypeStackEmpty();
-    }
 
     CurrentTypeDefinition type_def = m_current.front();
 
@@ -230,7 +227,6 @@ TypeSolver::CurrentTypeDefinition TypeSolver::popType()
 
     CurrentTypeDefinition def = m_current.front();
     m_current.pop_front();
-    //cerr << "removed " << def << endl;
     return def;
 }
 void TypeSolver::pushNewType()
@@ -290,38 +286,6 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
             m_registry.alias( base_name, new_name );
 
     }
-
-    // if (!m_current.empty())
-    // {
-    //     std::cerr << "WARNING: the set of pending type definitions is not empty" << std::endl;
-    //     std::cerr << "WARNING: name == " << name << ", qiType == " << qiType << std::endl;
-
-
-    //     list<CurrentTypeDefinition>::const_iterator it = m_current.begin(),
-    //         end = m_current.end();
-    //     for (; it != end; ++it)
-    //         cerr << "  " << *it << endl;
-
-    // }
-
-    // if (! m_pending_array.empty())
-    // {
-    //     std::cerr << "WARNING: the set of pending array dimensions is not empty" << std::endl;
-    //     std::cerr << "WARNING: name == " << name << ", qiType == " << qiType << std::endl;
-    //     std::cerr << "WARNING: got";
-    //     list<size_t>::const_iterator it, end = m_pending_array.end();
-    //     for (it = m_pending_array.begin(); it != end; ++it)
-    //         std::cerr << " " << *it;
-    //     std::cerr << std::endl;
-    // }
-
-    // if (pointer_level)
-    // {
-    //     std::cerr << "WARNING: the pointer level is not zero" << std::endl;
-    //     std::cerr << "WARNING: name == " << name << ", qiType == " << qiType << std::endl;
-    //     std::cerr << "WARNING: got pointer_level == " << pointer_level << std::endl;
-    // }
-
 
     CPPParser::declaratorID(name, qi);
 }
