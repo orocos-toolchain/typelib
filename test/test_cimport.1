@@ -1,6 +1,8 @@
 int h2RecordErrMsgs(char *bywho, char *moduleName, short moduleId, 
 		    int nbErrors, const int errMsgs[]);
 
+int functionWithGCCAttributes(void* id) __attribute__((__nothrow__)) __attribute__((__nonnull__ (1)));
+
 struct A
 {
     long long a;

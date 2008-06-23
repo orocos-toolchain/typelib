@@ -742,11 +742,21 @@ abstract_declarator_suffix
 	;
 
 gcc_attribute_specification
-    : "__attribute__" LPAREN LPAREN
-    ("__format_args__" LPAREN Decimal RPAREN
-    |"__const__")
-    RPAREN RPAREN
-    ;
+        :       "__attribute__"
+                LPAREN balanceParens RPAREN
+        ;
+
+
+
+protected
+balanceParens
+        : 
+            LPAREN
+            (options {greedy=false;}:
+                balanceParens | .
+            )*
+            RPAREN
+        ;
 
 /* This is to allow an assigned type_name in a template parameter
  *	list to be defined previously in the same parameter list,
