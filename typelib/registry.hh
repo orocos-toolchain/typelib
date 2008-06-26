@@ -3,26 +3,17 @@
 
 #include "typemodel.hh"
 #include <boost/shared_ptr.hpp>
+#include <stdexcept>
 
 namespace Typelib
 {
     class RegistryIterator;
     
     /** Base for exceptions thrown by the registry */
-    class RegistryException : public std::exception 
-    {
-	/// What a very ugly big hack ...
-	mutable std::string what_error;
-
+    class RegistryException : public std::runtime_error 
+    { 
     public:
-	virtual ~RegistryException() throw() {}
-        virtual std::string toString() const throw() 
-        { return std::exception::what(); }
-	char const* what() const throw()
-	{
-	    what_error = toString();
-	    return what_error.c_str();
-	}
+        RegistryException(std::string const& what) : std::runtime_error(what) {}
     };
 
     /** A type has not been found while it was expected */
@@ -31,13 +22,12 @@ namespace Typelib
         std::string m_name;
 
     public:
-        std::string getName() const { return m_name; }
         Undefined(const std::string& name)
-            : m_name(name) {}
+            : RegistryException("undefined type " + name)
+            , m_name(name) {}
         ~Undefined() throw() {}
 
-        std::string toString() const throw() 
-        { return "Undefined type " + m_name; }
+        std::string getName() const { return m_name; }
     };
 
     /** A type is already defined (duplicates definitions are
@@ -45,14 +35,14 @@ namespace Typelib
     class AlreadyDefined : public RegistryException
     {
         std::string m_name;
+
     public:
         AlreadyDefined(std::string const& name)
-            : m_name(name) {}
-        ~AlreadyDefined() throw() { }
+            : RegistryException("type " + name + " already defined in registry")
+            , m_name(name) {}
+        ~AlreadyDefined() throw() {}
 
         std::string getName() const { return m_name; }
-        std::string toString() const throw() 
-        { return "Type " + m_name + " already defined in registry"; }
     };
 
     /** An attempt has been made of registering a type with an invalid name */
@@ -62,11 +52,9 @@ namespace Typelib
 
     public:
         BadName(const std::string& name)
-            : m_name(name) {}
+            : RegistryException(name + " is not a valid type name")
+            , m_name(name) {}
         ~BadName() throw() {}
-
-        std::string toString() const throw()
-        { return "Type name " + m_name + " is invalid"; }
     };
 
     /** We are trying to merge two registries where two types have the same
@@ -78,11 +66,8 @@ namespace Typelib
 
     public:
         DefinitionMismatch(const std::string& name)
-            : m_name(name) {}
+            : RegistryException(name + " already defines a type in the registry, but with a different definition") {}
         ~DefinitionMismatch() throw() {}
-
-        std::string toString() const throw()
-        { return "Type definition mismatch for " + m_name; }
     };
 
 

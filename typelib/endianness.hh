@@ -7,9 +7,9 @@
 
 namespace Typelib
 {
-    struct UnsupportedEndianSwap : public std::logic_error
+    struct UnsupportedEndianSwap : public std::runtime_error
     { 
-        UnsupportedEndianSwap(std::string const& what) : std::logic_error("cannot swap " + what) { }
+        UnsupportedEndianSwap(std::string const& what) : std::runtime_error("cannot swap " + what) { }
     };
 
     /* This visitor swaps the endianness of the given value in-place */

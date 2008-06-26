@@ -150,8 +150,7 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE opt
 	    PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, registry); 
 	return Qnil;
     }
-    catch(Typelib::ImportError& e) { error_string = e.what(); }
-    catch(Typelib::RegistryException const& e) { error_string = e.toString(); }
+    catch(std::runtime_error const& e) { error_string = e.what(); }
 
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
@@ -168,27 +167,13 @@ VALUE registry_export(VALUE self, VALUE kind, VALUE options)
     config_set config;
     setup_configset_from_option_array(config, options);
     
-    string error_type;
     string error_message;
     try {
 	std::string exported = PluginManager::save(StringValuePtr(kind), config, registry);
 	return rb_str_new(exported.c_str(), exported.length());
-    } catch (Typelib::UnsupportedType e) { 
-      error_type = e.type.getName();
-      error_message = e.reason; 
-    } catch (Typelib::ExportError) {
-      error_message = "an unexpected error occured during export";
     }
-
-    if (error_type.empty())
-	rb_raise(rb_eTypeError, error_message.c_str());
-    else
-    {
-	rb_raise(rb_eTypeError, "type %s cannot be exported to %s: %s",
-		error_type.c_str(),
-		StringValuePtr(kind),
-		error_message.c_str());
-    }
+    catch (std::runtime_error e) { error_message = e.what(); }
+    rb_raise(rb_eTypeError, error_message.c_str());
 }
 
 
@@ -209,8 +194,9 @@ VALUE registry_merge(VALUE self, VALUE rb_merged)
 	registry.merge(merged);
 	return self;
     }
-    catch(Typelib::ImportError& e) { error_string = e.what(); }
-    catch(Typelib::RegistryException const& e) { error_string = e.toString(); }
+    catch(std::runtime_error& e) { error_string = e.what(); }
+    rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
+}
 
 /* call-seq:
  *  minimal(auto_types) => registry
@@ -232,6 +218,7 @@ VALUE registry_minimal(VALUE self, VALUE rb_auto)
     catch(std::runtime_error e) { error_string = e.what(); }
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
+
 
 /*
  * each_type(include_alias = false) { |type| ... }
@@ -273,7 +260,7 @@ VALUE registry_each_type(int argc, VALUE* argv, VALUE self)
 
 	return self;
     }
-    catch(Typelib::RegistryException const& e) { error_string = e.toString(); }
+    catch(std::runtime_error e) { error_string = e.what(); }
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
 

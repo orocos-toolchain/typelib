@@ -287,9 +287,9 @@ namespace Typelib
 
 
 
-    struct TypeException : public std::logic_error
+    struct TypeException : public std::runtime_error
     {
-        TypeException(std::string const& msg) : std::logic_error(msg) { }
+        TypeException(std::string const& msg) : std::runtime_error(msg) { }
     };
 
     struct BadCategory : public TypeException

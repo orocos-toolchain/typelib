@@ -18,15 +18,15 @@ namespace Typelib
     class ImportPlugin;
     
     /** Exception thrown when an unknown plugin is found */
-    struct PluginNotFound : std::logic_error
+    struct PluginNotFound : std::runtime_error
     {
-        PluginNotFound() : std::logic_error("plugin not found") { }
+        PluginNotFound() : std::runtime_error("plugin not found") { }
     };
 
     /** Generic error for problems during export */
-    struct ExportError : std::logic_error
+    struct ExportError : std::runtime_error
     { 
-        ExportError(char const* msg) : std::logic_error(msg) {}
+        ExportError(char const* msg) : std::runtime_error(msg) {}
     };
 
     /** The plugin manager 

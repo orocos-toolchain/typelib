@@ -182,15 +182,15 @@ public:
     void init();
     ~CPPParser();
 
-    struct InvalidConstantName : std::logic_error
+    struct InvalidConstantName : std::runtime_error
     { InvalidConstantName(std::string const& name)
-        : std::logic_error("unknown constant " + name) {} };
-    struct InvalidTypeName : std::logic_error
+        : std::runtime_error("unknown constant " + name) {} };
+    struct InvalidTypeName : std::runtime_error
     { InvalidTypeName(std::string const& name) 
-        : std::logic_error("unknown type " + name) {} };
-    struct TypeStackEmpty : std::logic_error
+        : std::runtime_error("unknown type " + name) {} };
+    struct TypeStackEmpty : std::runtime_error
     { 
-        TypeStackEmpty() : std::logic_error("empty type stack encountered") { }
+        TypeStackEmpty() : std::runtime_error("empty type stack encountered") { }
     };
 
     struct CurrentTypeDefinition 
