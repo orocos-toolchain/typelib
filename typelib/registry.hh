@@ -214,6 +214,10 @@ namespace Typelib
 	/** Merges the content of \c registry into this object */
 	void merge(Registry const& registry);
 
+        /** Returns a registry containing the minimal set of types needed to
+         * define the types that are in \c this and not in \c auto_types */
+        Registry* minimal(Registry const& auto_types) const;
+
         /** Compares the two registries. Returns true if they contain the same
          * set of types, referenced under the same name
          *

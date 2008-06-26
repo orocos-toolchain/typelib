@@ -37,15 +37,21 @@ static
 void wrappers_free(void* ptr) { delete reinterpret_cast<cxx2rb::WrapperMap*>(ptr); }
 
 static
-VALUE registry_alloc(VALUE klass)
+VALUE registry_wrap(VALUE klass, Registry* registry)
 {
-    Registry* registry = new Registry;
     VALUE rb_registry = Data_Wrap_Struct(klass, 0, registry_free, registry);
 
     cxx2rb::WrapperMap *wrappers = new cxx2rb::WrapperMap;
     VALUE rb_wrappers = Data_Wrap_Struct(rb_cObject, wrappers_mark, wrappers_free, wrappers);
     rb_iv_set(rb_registry, "@wrappers", rb_wrappers);
     return rb_registry;
+}
+
+static
+VALUE registry_alloc(VALUE klass)
+{
+    Registry* registry = new Registry;
+    return registry_wrap(klass, registry);
 }
 
 
@@ -206,6 +212,24 @@ VALUE registry_merge(VALUE self, VALUE rb_merged)
     catch(Typelib::ImportError& e) { error_string = e.what(); }
     catch(Typelib::RegistryException const& e) { error_string = e.toString(); }
 
+/* call-seq:
+ *  minimal(auto_types) => registry
+ *
+ * Returns the minimal registry needed to define all types that are in +self+
+ * but not in +auto_types+
+ */
+static
+VALUE registry_minimal(VALUE self, VALUE rb_auto)
+{
+    std::string error_string;
+
+    Registry& registry   = rb2cxx::object<Registry>(self);
+    Registry& auto_types = rb2cxx::object<Registry>(rb_auto);
+    try { 
+	Registry* result = registry.minimal(auto_types);
+        return registry_wrap(cRegistry, result);
+    }
+    catch(std::runtime_error e) { error_string = e.what(); }
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
 
@@ -303,5 +327,6 @@ void Typelib_init_registry()
     rb_define_singleton_method(cRegistry, "from_xml", RUBY_METHOD_FUNC(registry_from_xml), 1);
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
     rb_define_method(cRegistry, "merge", RUBY_METHOD_FUNC(registry_merge), 1);
+    rb_define_method(cRegistry, "minimal", RUBY_METHOD_FUNC(registry_minimal), 1);
 }
 

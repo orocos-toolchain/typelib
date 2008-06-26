@@ -213,6 +213,45 @@ namespace Typelib
 	}
     }
 
+
+    Registry* Registry::minimal(Registry const& auto_types) const
+    {
+        auto_ptr<Registry> result(new Registry);
+ 
+	// Merge non aliased types. Aliases are never used by type model classes
+	// so we can safely call merge()
+	for(Iterator it = begin(); it != end(); ++it)
+	{
+	    if (it.isAlias()) continue;
+            if (!auto_types.has(it->getName()))
+                it->merge(*result);
+	}
+
+	for (Iterator it = begin(); it != end(); ++it)
+	{
+	    // Either the alias already points to a concrete type, and
+	    // we must check that it is the same concrete type, or
+	    // we have to add the alias
+	    if (!it.isAlias()) continue;
+            if (auto_types.has(it.getName())) continue;
+
+	    Type const* old_type = get(it.getName());
+	    if (old_type)
+	    {
+		if (!old_type->isSame(*it))
+		    throw DefinitionMismatch(it.getName());
+	    }
+	    else
+	    {
+		// we are sure the concrete type we are pointing to is 
+		// already in the target registry
+		result->alias(it->getName(), it.getName(), "");
+	    }
+	}
+
+        return result.release();
+    }
+
     bool Registry::has(const std::string& name, bool build_if_missing) const
     {
         if (m_current.find(name) != m_current.end())
