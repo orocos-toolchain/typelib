@@ -36,8 +36,9 @@ namespace
             path tmp_path = tmpfile.path();
             FILE* handle = tmpfile.handle();
 
-            bool keep_output = config.get<bool>("keep_cpp_output");
-            if (keep_output)
+            bool debug = config.get<bool>("debug");
+
+            if (debug)
             {
                 std::clog << "cpp output goes to " << tmp_path.native_file_string() << std::endl;
                 tmpfile.detach();
@@ -50,7 +51,11 @@ namespace
             typedef list<string> strlist;
             list<string> defines  = config.get< list<string> >("define");
             list<string> includes = config.get< list<string> >("include");
-            list<string> rawflags = config.get< list<string> >("rawflag");
+            list<string> rawflags = config.get< list<string> >("rawflags");
+            { // for backward compatibility
+                list<string> rawflag = config.get< list<string> >("rawflag");
+                rawflags.splice(rawflags.end(), rawflag);
+            }
 
             for (strlist::const_iterator it = defines.begin(); it != defines.end(); ++it)
                 cpp.push("-D" + *it);
@@ -59,12 +64,19 @@ namespace
             for (strlist::const_iterator it = rawflags.begin(); it != rawflags.end(); ++it)
                 cpp.push(*it);
 
+            if (debug)
+            {
+                std::clog << "will run the following command: \n"
+                    << "  " << utilmm::join(cpp.cmdline(), " ") << std::endl;
+            }
+
+
             cpp.redirect_to(process::Stdout, handle, false);
             cpp.start();
             cpp.wait();
             if (cpp.exit_normal() && !cpp.exit_status())
             {
-                if (!keep_output)
+                if (!debug)
                     tmpfile.detach();
                 return tmp_path;
             }

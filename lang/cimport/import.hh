@@ -12,6 +12,7 @@ public:
      *  <li> \c defines  the define arguments to cpp (-D options)
      *  <li> \c includes the include arguments to cpp (-I options)
      *  <li> \c rawflags flags to be passed as-is to cpp 
+     *  <li> \c debug output debugging information on stdout, and keep preprocessed output
      * </ul>
      */
     virtual void load

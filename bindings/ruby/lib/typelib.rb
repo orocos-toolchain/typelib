@@ -491,36 +491,39 @@ module Typelib
             registry
         end
 
-	# Imports the +file+ into this registry. +kind+
-	# is the file format or nil, in which case the
-	# file format is guessed by extension (see TYPE_BY_EXT)
+        # Imports the +file+ into this registry. +kind+ is the file format or
+        # nil, in which case the file format is guessed by extension (see
+        # TYPE_BY_EXT)
 	# 
-	# +options+ is an option hash. The Ruby bindings define
-	# the following specific options:
+        # +options+ is an option hash. The Ruby bindings define the following
+        # specific options:
 	# merge:: 
-	#   merges +file+ into this repository. If this is
-	#   false, an exception is raised if +file+ contains
-	#   types already defined in +self+, event if the
-	#   definitions are the same.
+        #   merges +file+ into this repository. If this is false, an exception
+        #   is raised if +file+ contains types already defined in +self+, even
+        #   if the definitions are the same.
 	#
 	#     registry.import(my_path, 'auto', :merge => true)
 	#
 	# The Tlb importer has no options
 	#
-	# The C importer defines the following options:
-	# preprocessor:
-	# define:: a list of VAR=VALUE or VAR options for cpp
-	#              registry.import(my_path, :define => ['PATH=/usr', 'NDEBUG'])
-	# include:: a list of path to add to cpp's search path
-	#              registry.import(my_path, :include => ['/usr', '/home/blabla/prefix/include'])
-	# rawflags:: flags to be passed as-is to cpp. For instance, the two
-	#            previous examples can be written
+        # The C importer defines the following options: preprocessor:
+        #
+	# define:: 
+        #   a list of VAR=VALUE or VAR options for cpp
+	#     registry.import(my_path, :define => ['PATH=/usr', 'NDEBUG'])
+	# include:: 
+        #   a list of path to add to cpp's search path
+	#     registry.import(my_path, :include => ['/usr', '/home/blabla/prefix/include'])
+	# rawflags:: 
+        #   flags to be passed as-is to cpp. For instance, the two previous
+        #   examples can be written
 	#
-	#              registry.import(my_path, 'auto',
-	#		    :rawflags => ['-I/usr', '-I/home/blabla/prefix/include', 
-	#				  -DPATH=/usr', -DNDEBUG])
-	#
-	# keep_cpp_output:: if true, the output of cpp is kept
+	#   registry.import(my_path, 'auto',
+	#     :rawflags => ['-I/usr', '-I/home/blabla/prefix/include', 
+	#                  -DPATH=/usr', -DNDEBUG])
+	# debug::
+        #   if true, debugging information is outputted on stdout, and the
+        #   preprocessed output is kept.
 	#
         def import(file, kind = 'auto', options = {})
 	    file = File.expand_path(file)
