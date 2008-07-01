@@ -23,6 +23,9 @@
 
 SET(Antlr_FOUND FALSE)
 FIND_PROGRAM(Antlr_EXECUTABLE NAMES cantlr antlr runantlr)
+IF(NOT Antlr_EXECUTABLE)
+    MESSAGE(STATUS "cannot find the antlr executable")
+ENDIF(NOT Antlr_EXECUTABLE)
 
 MACRO(ADD_ANTLR_GRAMMAR grammar_file output_var)
     IF (NOT Antlr_FOUND)
@@ -63,10 +66,12 @@ IF(Antlr_EXECUTABLE)
 
 	IF(Antlr_SEARCH_CPP)
 	    SET(Antlr_FOUND FALSE)
+            SET(Antlr_CPP_FOUND FALSE)
 	    FIND_PROGRAM(Antlr_ANTLR_CONFIG_EXECUTABLE NAMES antlr-config)
 
 	    IF(Antlr_ANTLR_CONFIG_EXECUTABLE)
 		SET(Antlr_FOUND TRUE)
+		SET(Antlr_CPP_FOUND TRUE)
 
 		EXECUTE_PROCESS(COMMAND ${Antlr_ANTLR_CONFIG_EXECUTABLE} --cflags
 		    OUTPUT_VARIABLE Antlr_CFLAGS)
@@ -78,6 +83,8 @@ IF(Antlr_EXECUTABLE)
 		STRING(REPLACE ".a" "-pic.a" Antlr_PIC_LIBRARIES "${Antlr_LIBRARIES}")
 
 		MARK_AS_ADVANCED(Antlr_CFLAGS Antlr_LIBRARIES Antlr_PIC_LIBRARIES)
+            ELSE(Antlr_ANTLR_CONFIG_EXECUTABLE)
+                MESSAGE(STATUS "cannot find the antlr-config script. Antlr C++ support disabled")
 	    ENDIF(Antlr_ANTLR_CONFIG_EXECUTABLE)
 	ENDIF(Antlr_SEARCH_CPP)
     ENDFOREACH(lang)
@@ -89,7 +96,7 @@ IF (Antlr_FOUND)
     ENDIF(NOT Antlr_FIND_QUIETLY)
 ELSE (Antlr_FOUND)
     IF (Antlr_FIND_REQUIRED)
-	MESSAGE(FATAL_ERROR "Please install the Antlr executable and/or the ${Boost_FIND_COMPONENTS} language packages")
+	MESSAGE(FATAL_ERROR "Please install the Antlr executable and/or the ${Antlr_FIND_COMPONENTS} language packages")
     ENDIF(Antlr_FIND_REQUIRED)
 ENDIF(Antlr_FOUND)
 
