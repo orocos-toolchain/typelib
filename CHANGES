@@ -1,7 +1,33 @@
 == Version 1.0rc3
-* fixes a bug in which function definitions were not entirely ignored,
-  and as such were "leaking" to the next type definition found.
-* re-introduced Registry.import as a shortcut for r = Registry.new; r.import
+* core: re-introduced Registry.import as a shortcut for r = Registry.new;
+  r.import
+* core: defined registry.minimal(other): this method computes the minimal
+  registry needed to define the types that are in +registry+ but not in +other+.
+* C importer: accept sizeof(type) and enumeration as integer constants during
+  parsing.
+
+* C importer: replaced the 'keep_cpp_output' flag by a 'debug' flag,
+  and display more debugging information when it is set.
+* C importer: properly handle all kind of GCC __attribute__ specification.
+  Standard headers are parsable again.
+* C importer: do accept the 'rawflags' option. Due to a misspelling,
+  'rawflag' was actually expected. Both are accepted for the sake of
+  backward compatibility.
+* C importer: fixes a bug in which function definitions were not entirely
+  ignored, and as such were "leaking" to the next type definition found.
+* core, C importer: support for recursive types like
+    struct Type {
+        Type* next;
+    };
+  Repositories including recursive types cannot be exported yet though.
+* all: fix problems on x86_64
+* C importer: fix issues with structure calculations. Some compilers may round the
+  structure size to the next native machine word (i.e. 4 on 32bits and 8 on
+  64bits). This was leading to packing calculation problems.
+* all: clean up exception handling. All exceptions now derive from
+  std::runtime_error and provide a developer-understandable message. This
+  also makes the Ruby bindings more robust, as catching runtime_error is now
+  a catch-all.
 
 == Version 1.0rc2
 * added a CORBA IDL export plugin
