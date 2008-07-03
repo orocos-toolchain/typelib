@@ -75,13 +75,13 @@ BOOST_AUTO_TEST_CASE( test_tlb_import )
 	string empty_tlb = "<?xml version=\"1.0\"?>\n<typelib>\n</typelib>";
 	istringstream stream(empty_tlb);
 	Registry registry;
-	BOOST_CHECK_NO_THROW( importer->load(stream, config, registry); );
+	importer->load(stream, config, registry);
     }
 
     { 
 	ifstream file(TEST_DATA_PATH("rflex.tlb"));
 	Registry registry;
-	BOOST_CHECK_NO_THROW( importer->load(file, config, registry); );
+	importer->load(file, config, registry);
 
 	BOOST_CHECK( registry.get("/custom_null") );
 	BOOST_CHECK( registry.get("/custom_null")->isNull() );
