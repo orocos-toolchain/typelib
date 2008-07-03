@@ -272,5 +272,14 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 	assert(char_pointer.respond_to?(:to_str))
     end
 
+    def test_null
+        null = make_registry.get("/void")
+        assert(null.null?)
+    end
+
+    def test_opaque
+        std = make_registry.get("StdCollections")
+        assert(std.dbl_vector.opaque?)
+    end
 end
 

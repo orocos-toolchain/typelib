@@ -119,6 +119,8 @@ module Typelib
             end
 	    # are we a null type ?
 	    def null?; @null end
+            # are we an opaque type ?
+            def opaque?; @opaque end
 	    # returns the pointer-to-self type
             def to_ptr; registry.build(name + "*") end
 
