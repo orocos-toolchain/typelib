@@ -34,7 +34,7 @@ bool TypeDisplayVisitor::visit_(OpaqueType const& type)
 
 bool TypeDisplayVisitor::visit_(Compound const& type)
 { 
-    m_stream << "compound " << type.getName() << " {\n";
+    m_stream << "compound " << type.getName() << " [" << type.getSize() << "] {\n";
     
     { Indent indenter(m_indent);
         TypeVisitor::visit_(type);
