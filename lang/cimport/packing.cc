@@ -1,6 +1,9 @@
 #include "packing.hh"
 #include <typelib/typemodel.hh>
 #include <typelib/typevisitor.hh>
+#include <boost/lexical_cast.hpp>
+#include <typelib/typedisplay.hh>
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -153,7 +156,7 @@ int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_fi
         }
     }
 
-    throw PackingUnknown();
+    throw PackingUnknown("cannot compute the packing of " + boost::lexical_cast<std::string>(append_field));
 }
 int Typelib::Packing::getOffsetOf(const Compound& current, const Type& append_field)
 {
