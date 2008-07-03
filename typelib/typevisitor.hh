@@ -36,6 +36,7 @@ namespace Typelib
 
         virtual bool visit_ (Pointer const& type);
         virtual bool visit_ (Array const& type);
+        virtual bool visit_ (Container const& type);
 
         virtual bool visit_ (Compound const& type);
         virtual bool visit_ (Compound const& type, Field const& field);

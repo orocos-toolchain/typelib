@@ -18,7 +18,7 @@ using std::string;
 using utilmm::split;
 using utilmm::join;
 
-void import_test_types(Registry& registry)
+static void import_test_types(Registry& registry)
 {
     static const char* test_file = TEST_DATA_PATH("test_cimport.h");
 

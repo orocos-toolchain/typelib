@@ -280,7 +280,68 @@ namespace Typelib
         return new Pointer(indirect_type);
     }
 
+    Container::Container(std::string const& name, size_t size, Type const& of)
+        : Indirect( name, size, Type::Container, of ) {}
 
+    Container::AvailableContainers Container::s_available_containers;
+    Container::AvailableContainers Container::availableContainers() { return s_available_containers; }
+
+    void Container::registerContainer(std::string const& name, ContainerFactory factory)
+    {
+        s_available_containers[name] = factory;
+    }
+    Container* Container::createContainer(std::string const& name, Type const& on)
+    {
+        AvailableContainers::const_iterator it = s_available_containers.find(name);
+        if (it == s_available_containers.end())
+            return NULL;
+        return (*it->second)(on);
+    }
+
+    bool Container::do_isSame(Type const& other, RecursionStack& stack) const
+    {
+	if (!Type::do_isSame(other, stack))
+	    return false;
+
+	Container const& container = static_cast<Container const&>(other);
+	return (getFactory() == container.getFactory()) && Indirect::do_isSame(other, stack);
+    }
+
+    Type* Container::do_merge(Registry& registry, RecursionStack& stack) const
+    {
+        // The pointed-to type has already been inserted in the repository by
+        // Indirect::merge, so we don't have to worry.
+        Type const& indirect_type = getIndirection().merge(registry, stack);
+        return (*getFactory())(indirect_type);
+    }
+
+    BOOST_STATIC_ASSERT(( sizeof(vector<void*>) == sizeof(vector<Container>) ));
+    class Vector : public Container
+    {
+    public:
+        Vector(Type const& on)
+            : Container("vector<" + on.getName() + ">", sizeof(std::vector<void*>), on) {}
+
+        size_t getElementCount(void* ptr) const
+        {
+            size_t byte_count = reinterpret_cast< std::vector<int8_t>* >(ptr)->size();
+            return byte_count / getIndirection().getSize();
+        }
+        void destroy(void* ptr)
+        { reinterpret_cast< std::vector<int8_t>* >(ptr)->~vector<int8_t>(); }
+        uint8_t* getElement(void* base, int i) const
+        { return &(*reinterpret_cast< std::vector<uint8_t>* >(base))[0] + i * getIndirection().getSize(); }
+        static Container* factory(Type const& on) { return new Vector(on); }
+        ContainerFactory getFactory() const { return factory; }
+    };
+
+    struct Registrar
+    {
+        Registrar() {
+            Container::registerContainer("std/vector", Vector::factory);
+        }
+    };
+    static Registrar registrar;
 
 
     Field::Field(const std::string& name, const Type& type)

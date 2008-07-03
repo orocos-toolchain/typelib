@@ -54,6 +54,12 @@ namespace Typelib
             return m_visitor.visit_(v, type);
         }
 
+        virtual bool visit_ (Container const& type)
+        {
+            Value v(m_stack.back(), type);
+            return m_visitor.visit_(v, type);
+        }
+
         virtual bool visit_ (Pointer const& type)
         {
             Value v(m_stack.back(), type);
@@ -119,6 +125,22 @@ namespace Typelib
 
 	m_dispatcher->m_stack.pop_back();
 	return true;
+    }
+    bool ValueVisitor::visit_(Value const& v, Container const& c)
+    { 
+	m_dispatcher->m_stack.push_back(0);
+	uint8_t*& element = m_dispatcher->m_stack.back();
+
+	Type const& subtype(c.getIndirection());
+        for(size_t i = 0; i < c.getElementCount(v.getData()); ++i)
+        {
+            element = c.getElement(reinterpret_cast<uint8_t*>(v.getData()), i);
+            if (! m_dispatcher->TypeVisitor::visit_(subtype))
+                break;
+        }
+	m_dispatcher->m_stack.pop_back();
+
+        return true;
     }
     bool ValueVisitor::visit_(Value const&, Compound const& c) 
     { return m_dispatcher->TypeVisitor::visit_(c); }

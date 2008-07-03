@@ -15,6 +15,8 @@ namespace Typelib
     { return dispatch(type.getIndirection()); }
     bool TypeVisitor::visit_  (Array const& type)
     { return dispatch(type.getIndirection()); }
+    bool TypeVisitor::visit_  (Container const& type)
+    { return dispatch(type.getIndirection()); }
 
     bool TypeVisitor::visit_  (Compound const& type)                 
     {  
@@ -50,6 +52,8 @@ namespace Typelib
                 return visit_( dynamic_cast<OpaqueType const&>(type) );
             case Type::Compound:
                 return visit_( dynamic_cast<Compound const&>(type) );
+            case Type::Container:
+                return visit_( dynamic_cast<Container const&>(type) );
         }
         // Never reached
         assert(false);

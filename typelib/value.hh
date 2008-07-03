@@ -69,6 +69,7 @@ namespace Typelib
         virtual bool visit_ (Value const& v, OpaqueType const& t);
         virtual bool visit_ (Value const& v, Pointer const& t);
         virtual bool visit_ (Value const& v, Array const& a);
+        virtual bool visit_ (Value const& v, Container const& a);
         virtual bool visit_ (Value const& v, Compound const& c); 
         virtual bool visit_ (Value const& v, Compound const& c, Field const& f);
         virtual bool visit_ (Enum::integral_type& v, Enum const& e);
