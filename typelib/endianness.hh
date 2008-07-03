@@ -76,6 +76,7 @@ namespace Typelib
 
     protected:
 	void skip(int skip_size);
+        bool visit_ (OpaqueType const& type);
         bool visit_ (Numeric const& type);
         bool visit_ (Enum const& type);
         bool visit_ (Pointer const& type);

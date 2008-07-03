@@ -24,7 +24,8 @@ namespace Typelib
             Pointer, 
             Numeric, 
             Enum   ,
-            Compound 
+            Compound,
+            Opaque
         };
         static const int ValidCategories = Compound + 1;
         
@@ -110,6 +111,18 @@ namespace Typelib
 
     private:
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const { return new NullType(*this); }
+    };
+
+    /** This type is to be used when we want a field to be completely ignored,
+     * while being able to handle the rest of the system. Endianness swapping
+     * will for instance completely ignore this type.
+     */
+    class OpaqueType : public Type
+    {
+    public:
+        OpaqueType(std::string const& name, size_t size) : Type(name, size, Type::Opaque) {}
+	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
+	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const { return new OpaqueType(*this); }
     };
 
     /** Numeric values (integer, unsigned integer and floating point) */

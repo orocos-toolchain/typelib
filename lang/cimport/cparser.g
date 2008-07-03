@@ -184,10 +184,10 @@ public:
 
     struct InvalidConstantName : std::runtime_error
     { InvalidConstantName(std::string const& name)
-        : std::runtime_error("unknown constant " + name) {} };
+        : std::runtime_error("unknown constant '" + name + "'") {} };
     struct InvalidTypeName : std::runtime_error
     { InvalidTypeName(std::string const& name) 
-        : std::runtime_error("unknown type " + name) {} };
+        : std::runtime_error("unknown type '" + name + "'") { assert(false); } };
     struct TypeStackEmpty : std::runtime_error
     { 
         TypeStackEmpty() : std::runtime_error("empty type stack encountered") { }
@@ -198,6 +198,7 @@ public:
         std::list<std::string> name;
         std::list<size_t>      array;
         size_t                 pointer_level;
+        std::list<std::string> template_args;
 
         CurrentTypeDefinition()
             : pointer_level(0) {}
@@ -253,6 +254,8 @@ protected:
 
     virtual CurrentTypeDefinition popType() = 0;
     virtual void pushNewType() = 0;
+    virtual int getStackSize() const = 0;
+    virtual void setTemplateArguments(int count) = 0;
 }
 
 translation_unit
@@ -418,7 +421,18 @@ qualified_type returns [std::string qitem]
 	|
 		id2:ID
 		{ qitem = id2->getText(); }
+        |       id3:ID LESSTHAN template_specifier GREATERTHAN
+                { qitem = id3->getText(); }
 	;
+
+template_specifier
+        { int current_stack_size = getStackSize();
+          pushNewType();
+        }
+        :
+                simple_type_specifier (COMMA { pushNewType(); } simple_type_specifier)*
+                { setTemplateArguments(getStackSize() - current_stack_size); }
+        ;
 
 member_declarator_list
         : member_declarator (COMMA member_declarator)*

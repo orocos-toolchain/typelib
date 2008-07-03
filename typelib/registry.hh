@@ -23,7 +23,7 @@ namespace Typelib
 
     public:
         Undefined(const std::string& name)
-            : RegistryException("undefined type " + name)
+            : RegistryException("undefined type '" + name + "'")
             , m_name(name) {}
         ~Undefined() throw() {}
 

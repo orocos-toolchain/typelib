@@ -231,10 +231,10 @@ class TC_Functions < Test::Unit::TestCase
     end
 
     def test_opaque_handling
-        wrapper = lib.find('test_opaque_handling').returns('OpaqueType')
+        wrapper = lib.find('test_opaque_handling').returns('OPAQUE_TYPE')
         my_handler = wrapper[]
 
-        check_argument_passing lib.find('check_opaque_value').returns('int').with_arguments('OpaqueType'), 
+        check_argument_passing lib.find('check_opaque_value').returns('int').with_arguments('OPAQUE_TYPE'), 
 	    [my_handler]
 
 	wrapper = lib.find('test_void_argument').returns('int').with_arguments('nil*', 'int')

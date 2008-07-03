@@ -56,6 +56,11 @@ namespace Typelib {
 	return true;
     }
 
+    bool CompileEndianSwapVisitor::visit_ (OpaqueType const& type)
+    { 
+        skip(type.getSize());
+        return true;
+    }
     bool CompileEndianSwapVisitor::visit_ (Pointer const& type)
     { throw UnsupportedEndianSwap("pointers"); }
     bool CompileEndianSwapVisitor::visit_ (Array const& type)

@@ -2,8 +2,10 @@
 
 namespace Typelib
 {
-    bool visit_ ( NullType const& type )
+    bool TypeVisitor::visit_ ( NullType const& type )
     { throw NullTypeFound(); }
+    bool TypeVisitor::visit_ (OpaqueType const& type)
+    { return true; }
     bool TypeVisitor::visit_  (Numeric const& type)
     { return true; }
     bool TypeVisitor::visit_  (Enum const& type)
@@ -44,6 +46,8 @@ namespace Typelib
                 return visit_( dynamic_cast<Array const&>(type) );
             case Type::Pointer:
                 return visit_( dynamic_cast<Pointer const&>(type) );
+            case Type::Opaque:
+                return visit_( dynamic_cast<OpaqueType const&>(type) );
             case Type::Compound:
                 return visit_( dynamic_cast<Compound const&>(type) );
         }

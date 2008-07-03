@@ -29,6 +29,8 @@ namespace Typelib
     protected:
         bool dispatch(Type const& type);
 
+        virtual bool visit_ (NullType const& type);
+        virtual bool visit_ (OpaqueType const& type);
         virtual bool visit_ (Numeric const& type);
         virtual bool visit_ (Enum const& type);
 

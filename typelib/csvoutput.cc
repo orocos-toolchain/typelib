@@ -23,6 +23,7 @@ namespace
             string name = join(m_name, ""); 
             m_headers.push_back(name);
         }
+        bool visit_ (OpaqueType const& type) { output(); return true; }
         bool visit_ (Numeric const&) { output(); return true; }
         bool visit_ (Enum const&) { output(); return true; }
              
@@ -88,6 +89,11 @@ namespace
         bool display(T value)
         {
             m_output.push_back(boost::lexical_cast<string>(value)); 
+            return true;
+        }
+        bool visit_ (Value value, OpaqueType const& type)
+        {
+            display("<" + type.getName() + ">");
             return true;
         }
         bool visit_ (int8_t  & value) { return display(value); }

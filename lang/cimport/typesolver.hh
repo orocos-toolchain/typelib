@@ -73,6 +73,8 @@ public:
 
     virtual CurrentTypeDefinition popType();
     virtual void pushNewType();
+    virtual int getStackSize() const;
+    void setTemplateArguments(int count);
 };
 
 #endif

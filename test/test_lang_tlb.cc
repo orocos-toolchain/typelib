@@ -6,36 +6,63 @@
 #include <typelib/importer.hh>
 #include <typelib/typemodel.hh>
 #include <typelib/registry.hh>
+#include <typelib/registryiterator.hh>
+#include <typelib/typedisplay.hh>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 using namespace Typelib;
 using namespace std;
 
-BOOST_AUTO_TEST_CASE( test_tlb_import_export )
+BOOST_AUTO_TEST_CASE( test_tlb_rejects_recursive_types )
 {
     PluginManager::self manager;
-    
-    // Load the C file into a registry. Dump it as a tlb and reload it, then
-    // compare the result.
     Registry registry;
+
+    static const char* test_file = TEST_DATA_PATH("test_cimport.h");
+    utilmm::config_set config;
+    config.set("include", TEST_DATA_PATH(".."));
+    config.insert("define", "GOOD");
+    manager->load("c", test_file, config, registry);
+
+    BOOST_REQUIRE_THROW(manager->save("tlb", registry), ExportError);
+}
+
+BOOST_AUTO_TEST_CASE( test_tlb_idempotent )
+{
+    PluginManager::self manager;
+    Registry registry;
+
+    static const char* test_file = TEST_DATA_PATH("test_cimport.h");
     {
-        static const char* test_file = TEST_DATA_PATH("test_cimport.h");
         utilmm::config_set config;
-	config.set("include", TEST_DATA_PATH(".."));
-	config.set("define", "GOOD");
-	manager->load("c", test_file, config, registry);
+        config.set("include", TEST_DATA_PATH(".."));
+        config.insert("define", "GOOD");
+        config.insert("define", "NO_RECURSIVE_TYPE");
+        manager->load("c", test_file, config, registry);
     }
 
+    string const result = manager->save("tlb", registry);
+    istringstream io(result);
     utilmm::config_set config;
-    BOOST_REQUIRE_THROW(manager->save("tlb", registry), ExportError);
+    Registry* reloaded = manager->load("tlb", io, config);
 
-    // istringstream io(result);
-    // Registry* reloaded = manager->load("tlb", io, config);
-    // std::string new_result = manager->save("tlb", *reloaded);
-
-    // BOOST_REQUIRE_EQUAL(result, new_result);
-    // BOOST_REQUIRE(registry.isSame(*reloaded));
+    if (!registry.isSame(*reloaded))
+    {
+        RegistryIterator it = registry.begin(),
+                         end = registry.end();
+        for (; it != end; ++it)
+        {
+            if (!reloaded->has(it->getName(), true))
+                std::cerr << "reloaded does not have " << it->getName() << std::endl;
+            else if (!(*it).isSame(*reloaded->build(it->getName())))
+            {
+                std::cerr << "versions of " << it->getName() << " differ" << std::endl;
+                std::cerr << *it << std::endl << std::endl;
+                std::cerr << *reloaded->get(it->getName()) << std::endl;
+            }
+        }
+    }
 }
 
 BOOST_AUTO_TEST_CASE( test_tlb_import )

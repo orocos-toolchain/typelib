@@ -74,6 +74,12 @@ namespace Typelib
             return m_visitor.visit_(v, type);
         }
 
+        virtual bool visit_ (OpaqueType const& type)
+        {
+            Value v(m_stack.back(), type);
+            return m_visitor.visit_(v, type);
+        }
+
         virtual bool visit_ (Compound const& type, Field const& field)
         {
             m_stack.push_back( m_stack.back() + field.getOffset() );
@@ -120,6 +126,8 @@ namespace Typelib
     { return m_dispatcher->TypeVisitor::visit_(c, f); }
     bool ValueVisitor::visit_(Enum::integral_type&, Enum const& e) 
     { return m_dispatcher->TypeVisitor::visit_(e); }
+    bool ValueVisitor::visit_(Value const& v, OpaqueType const& t)
+    { return true; }
 
 }
 

@@ -15,9 +15,11 @@ typedef struct A ADef;
 typedef int array_typedef[256];
 typedef int multi_array_typedef[256][512];
 
+#ifndef NO_RECURSIVE_TYPE
 typedef struct Recursive {
     struct Recursive* next;
 } Recursive;
+#endif
 
 typedef struct B
 {
@@ -64,7 +66,7 @@ typedef enum {
     ANONYMOUS_ENUM_OK
 } ANONYMOUS_ENUM, *ANONYMOUS_ENUM_PTR;
 
-typedef void* OpaqueType;
+typedef void* OPAQUE_TYPE;
 
 void ignore_functions();
 
@@ -137,4 +139,14 @@ namespace NS1 {
 	NS1_1::Foo test;
     };
 }
+
+struct StdCollections {
+     int iv;
+     std::vector<double> dbl_vector;
+     int8_t v8;
+     std::set<float> float_set;
+     int16_t v16;
+     std::map<int, int> int_map;
+     int64_t bv;
+};
 #endif

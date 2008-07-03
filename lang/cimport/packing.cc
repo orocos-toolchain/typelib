@@ -16,6 +16,10 @@
 #include "packing/check_struct_in_struct.tcc"
 #include "packing/check_size_criteria.tcc"
 
+#include <vector>
+#include <set>
+#include <map>
+
 namespace
 {
     struct PackingInfo
@@ -28,6 +32,24 @@ namespace
 
     int const packing_info_size = ::boost::mpl::size<podlist>::type::value;
     PackingInfo packing_info[packing_info_size];
+
+    template<typename T>
+    struct DiscoverCollectionPacking
+    {
+        int8_t v;
+        T      collection;
+
+        static size_t get() {
+            DiscoverCollectionPacking<T> obj;
+            return reinterpret_cast<uint8_t*>(&obj.collection) - reinterpret_cast<uint8_t*>(&obj);
+        }
+    };
+
+    struct CollectionPackingInfo
+    {
+        char const* name;
+        size_t packing;
+    };
 
     /** Try to determine some structure size rounding rules */
     struct CompoundSizeInfo
@@ -105,6 +127,8 @@ namespace {
         { return false; }
         bool visit_(Pointer const& value)
         { return false; }
+        bool visit_(OpaqueType const& value)
+        { return false; }
         bool visit_(Array const& value)
         { 
             size = value.getIndirection().getSize();
@@ -153,6 +177,25 @@ int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_fi
         {
             size_t const packing(packing_info[i].packing);
             return (base_offset + (packing - 1)) / packing * packing;
+        }
+    }
+
+    CollectionPackingInfo collection_packing_info[] = {
+        { "/std/vector", DiscoverCollectionPacking< std::vector<uint8_t> >::get() },
+        { "/std/set",    DiscoverCollectionPacking< std::set<uint8_t> >::get() },
+        { "/std/map",    DiscoverCollectionPacking< std::map<uint8_t, uint8_t> >::get() },
+        { 0, 0 }
+    };
+
+    if (append_field.getCategory() == Type::Opaque)
+    {
+        for (CollectionPackingInfo* info = collection_packing_info; info->name; ++info)
+        {
+            if (info->name == std::string(append_field.getName(), 0, std::string(info->name).size()))
+            {
+                size_t const packing = info->packing;
+                return (base_offset + (packing - 1)) / packing * packing;
+            }
         }
     }
 

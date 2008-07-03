@@ -189,12 +189,58 @@ void TypeSolver::classForwardDeclaration(TypeSpecifier ts, DeclSpecifier ds, con
     CPPParser::classForwardDeclaration(ts, ds, name);
 }
 
+BOOST_STATIC_ASSERT( sizeof(vector<int8_t>) == sizeof(vector<double>) );
+BOOST_STATIC_ASSERT( sizeof(set<int8_t>) == sizeof(set<double>) );
+BOOST_STATIC_ASSERT( sizeof(map<int8_t,int16_t>) == sizeof(map<double,float>) );
+struct TemplateDef {
+    char const* name;
+    size_t size;
+};
+TemplateDef const ALLOWED_TEMPLATES[] = {
+    { "std/vector", sizeof(vector<int>) },
+    { "std/set", sizeof(set<int>) },
+    { "std/map", sizeof(map<int, int>) },
+    { 0, 0 }
+};
+
 Typelib::Type const& TypeSolver::buildCurrentType()
 {
     if (m_current.empty())
         throw TypeStackEmpty();
 
     CurrentTypeDefinition type_def = m_current.front();
+
+    // Check if type_def.name is an allowed container (vector, map, set). If it
+    // is the case, make sure that it is already defined in the registry
+    if (!type_def.template_args.empty())
+    {
+        // Only collections in std:: are supported
+        if (type_def.name.size() > 1)
+            throw Undefined(join(type_def.name, " "));
+
+        TemplateDef const* tmpl_def = 0;
+        for (tmpl_def = ALLOWED_TEMPLATES; tmpl_def->name; ++tmpl_def)
+        {
+            if (tmpl_def->name == type_def.name.back())
+            {
+                string full_name = type_def.name.back() + "<" + join(type_def.template_args, ",") + ">";
+                if (*full_name.begin() != '/')
+                    full_name = "/" + full_name;
+
+                if (!m_registry.has(full_name))
+                {
+                    OpaqueType* template_type = new OpaqueType(full_name, tmpl_def->size);
+                    m_registry.add(template_type);
+                    type_def.name.clear();
+                    type_def.name.push_back(full_name);
+                    type_def.template_args.clear();
+                    break;
+                }
+            }
+        }
+        if (!tmpl_def->name)
+            throw Undefined(join(type_def.name, "::"));
+    }
 
     TypeBuilder builder(m_registry, type_def.name);
     if (type_def.pointer_level)
@@ -231,6 +277,7 @@ TypeSolver::CurrentTypeDefinition TypeSolver::popType()
 }
 void TypeSolver::pushNewType()
 { m_current.push_front( CurrentTypeDefinition() ); }
+int TypeSolver::getStackSize() const { return m_current.size(); }
 
 void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
 {
@@ -304,4 +351,17 @@ void TypeSolver::end_of_stmt()
     CPPParser::end_of_stmt(); 
 }
 
+void TypeSolver::setTemplateArguments(int count)
+{
+    std::list<std::string> template_args;
+    while (count)
+    {
+        Type const& arg_type = buildCurrentType();
+        m_current.pop_front();
+        template_args.push_front(arg_type.getName());
+        --count;
+    }
+
+    m_current.front().template_args = template_args;
+}
 

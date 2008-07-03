@@ -532,6 +532,5 @@
   <numeric name="/uint64_t" category="uint" size="8"/>
   <numeric name="/uint8_t" category="uint" size="1"/>
   <null name="/custom_null" />
-  <null name="/std/vector&lt;double&gt;" />
 </typelib>
 

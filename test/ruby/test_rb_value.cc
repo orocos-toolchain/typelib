@@ -167,10 +167,10 @@ extern "C" {
     }
 
     static int opaque_handler;
-    OpaqueType test_opaque_handling()
+    OPAQUE_TYPE test_opaque_handling()
     { return &opaque_handler; }
 
-    int check_opaque_value(OpaqueType handler, int check)
+    int check_opaque_value(OPAQUE_TYPE handler, int check)
     { return (handler == test_opaque_handling()) ? check : 0; }
 
     void test_string_argument(char const* value)

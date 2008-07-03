@@ -19,6 +19,8 @@ namespace Typelib
         std::string   m_indent;
 
     protected:
+        bool visit_(NullType const& type);
+        bool visit_(OpaqueType const& type);
         bool visit_(Compound const& type);
         bool visit_(Compound const& type, Field const& field);
         

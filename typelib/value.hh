@@ -66,6 +66,7 @@ namespace Typelib
         virtual bool visit_ (float   &) { return m_defval; }
         virtual bool visit_ (double  &) { return m_defval; }
 
+        virtual bool visit_ (Value const& v, OpaqueType const& t);
         virtual bool visit_ (Value const& v, Pointer const& t);
         virtual bool visit_ (Value const& v, Array const& a);
         virtual bool visit_ (Value const& v, Compound const& c); 

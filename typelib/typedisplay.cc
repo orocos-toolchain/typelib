@@ -20,6 +20,17 @@ namespace
 TypeDisplayVisitor::TypeDisplayVisitor(std::ostream& stream, std::string const& base_indent)
     : m_stream(stream), m_indent(base_indent) {}
             
+bool TypeDisplayVisitor::visit_(NullType const& type)
+{
+    m_stream << "null\n";
+    return true;
+}
+
+bool TypeDisplayVisitor::visit_(OpaqueType const& type)
+{
+    m_stream << "opaque " << type.getName() << "\n";
+    return true;
+}
 
 bool TypeDisplayVisitor::visit_(Compound const& type)
 { 

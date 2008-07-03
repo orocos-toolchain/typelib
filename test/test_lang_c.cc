@@ -7,7 +7,11 @@
 #include <typelib/importer.hh>
 #include <typelib/typemodel.hh>
 #include <typelib/registry.hh>
+#include <typelib/typedisplay.hh>
 #include "test_cimport.1"
+#include <iostream>
+
+#include <antlr/ANTLRException.hpp>
 using namespace Typelib;
 using std::string;
 using utilmm::split;
@@ -22,7 +26,7 @@ void import_test_types(Registry& registry)
     Importer* importer = manager->importer("c");
     config.set("include", TEST_DATA_PATH(".."));
     config.set("define", "GOOD");
-    BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
+    importer->load(test_file, config, registry);
 }
 
 BOOST_AUTO_TEST_CASE( test_strict_c_import )
@@ -37,7 +41,7 @@ BOOST_AUTO_TEST_CASE( test_strict_c_import )
     config.set("define", "GOOD");
     config.insert("define", "VALID_STRICT_C");
     Registry registry;
-    BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
+    importer->load(test_file, config, registry);
 
     BOOST_CHECK( !registry.has("/NS1/NS2/Test") );
     BOOST_CHECK( !registry.has("/NS1/Test") );
@@ -58,7 +62,7 @@ static Type const& check_type(Registry const& registry, string const& name, size
 
     Type const* object = registry.get(typelib_name);
     BOOST_REQUIRE_MESSAGE(object, name << " is not defined");
-    BOOST_REQUIRE_MESSAGE(object->getSize() == expected_size, "size mismatch for " << name << " " << object->getSize() << " != " << expected_size);
+    BOOST_REQUIRE_MESSAGE(object->getSize() == expected_size, "size mismatch for " << name << " " << object->getSize() << " != (expected) " << expected_size << ": " << *object);
     return *object;
 }
 #define CHECK_TYPE(type) check_type(registry, #type, sizeof(type))
@@ -75,13 +79,15 @@ static void check_field(Registry const& registry, string const& compound_name, s
     BOOST_REQUIRE_EQUAL(field_object->getOffset(), expected_offset);
     BOOST_REQUIRE_MESSAGE(
             (&(field_object->getType()) == registry.get(typelib_expected_name)),
-            "expecting " << typelib_compound_name << ", got " <<
+            "expecting " << typelib_expected_name << ", got " <<
             field_object->getType().getName() << " for " << compound_name << "." << field_name);
     BOOST_REQUIRE_EQUAL(field_object->getType().getSize(), expected_size);
 }
 
-#define CHECK_FIELD(compound, field, expected_type) \
-{ check_field(registry, #compound, #field, offsetof(compound, field), #expected_type, sizeof(expected_type)); }
+#define CHECK_FIELD(compound, field, expected_type, expected_name) \
+{ compound v; \
+    size_t offset = reinterpret_cast<uint8_t*>(&v.field) - reinterpret_cast<uint8_t*>(&v); \
+    check_field(registry, #compound, #field, offset, (expected_name ? expected_name : #expected_type), sizeof(expected_type)); }
 
 BOOST_AUTO_TEST_CASE( test_c_import )
 {
@@ -96,14 +102,14 @@ BOOST_AUTO_TEST_CASE( test_c_import )
 	utilmm::config_set config;
 	config.set("include", TEST_DATA_PATH(".."));
 	config.set("define", "GOOD");
-	BOOST_CHECK_NO_THROW( importer->load(test_file, config, temp_registry) );
+	importer->load(test_file, config, temp_registry);
     }
     {
 	Registry temp_registry;
 	utilmm::config_set config;
 	config.insert("rawflag", "-I" TEST_DATA_PATH(".."));
 	config.insert("rawflag", "-DGOOD");
-	BOOST_CHECK_NO_THROW( importer->load(test_file, config, temp_registry) );
+	importer->load(test_file, config, temp_registry);
     }
 
     utilmm::config_set config;
@@ -112,7 +118,7 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     BOOST_CHECK_THROW( importer->load(test_file, config, registry), ImportError );
     config.set("include", TEST_DATA_PATH(".."));
     config.set("define", "GOOD");
-    BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
+    importer->load(test_file, config, registry);
 
     // Check that the types are defined
     CHECK_TYPE(struct A);
@@ -123,10 +129,10 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     CHECK_TYPE( struct B );
     CHECK_TYPE( ADef );
     Compound const& b = dynamic_cast<Compound const&>(CHECK_TYPE( B ));
-    CHECK_TYPE( OpaqueType );
+    CHECK_TYPE( OPAQUE_TYPE );
     CHECK_TYPE( NS1::NS2::Test );
     CHECK_TYPE( NS1::Bla::Test );
-    CHECK_FIELD(NS1::Test, b, NS1::Bla::Test);
+    CHECK_FIELD(NS1::Test, b, NS1::Bla::Test, 0);
     CHECK_TYPE( NS1::Test );
     CHECK_TYPE( NS1::NS2::Test );
     CHECK_TYPE( NS1::Test );
@@ -136,21 +142,21 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     BOOST_CHECK_EQUAL( "/NS1/NS2/Test", registry.get("/NS1/NS2/struct Test")->getName());
 
     // Check that the size of B.a is the same as A
-    CHECK_FIELD(B, a, ADef);
+    CHECK_FIELD(B, a, ADef, 0);
 
     // Check the type of c (array of floats)
-    CHECK_FIELD(B, c, float[100]);
+    CHECK_FIELD(B, c, float[100], 0);
 
     // Check the sizes for various ways of defining integer constants
-    CHECK_FIELD(B, d, float[1]);
-    CHECK_FIELD(B, e, float[1]);
-    CHECK_FIELD(B, f, float[3]);
-    CHECK_FIELD(B, g, float[2]);
-    CHECK_FIELD(B, h, A[4]);
-    CHECK_FIELD(B, i, float[20][10]);
-    CHECK_FIELD(B, x, float);
-    CHECK_FIELD(B, y, float);
-    CHECK_FIELD(B, z, float);
+    CHECK_FIELD(B, d, float[1], 0);
+    CHECK_FIELD(B, e, float[1], 0);
+    CHECK_FIELD(B, f, float[3], 0);
+    CHECK_FIELD(B, g, float[2], 0);
+    CHECK_FIELD(B, h, A[4], 0);
+    CHECK_FIELD(B, i, float[20][10], 0);
+    CHECK_FIELD(B, x, float, 0);
+    CHECK_FIELD(B, y, float, 0);
+    CHECK_FIELD(B, z, float, 0);
 
     // order of indexes of multi-dimensional arrays are reverse than the 
     // ones in C because we always read dimensions from right to left
@@ -225,6 +231,28 @@ BOOST_AUTO_TEST_CASE( test_c_import )
 	BOOST_REQUIRE( it != map.end() );
 	BOOST_CHECK_EQUAL(exp_it->value, it->second);
     }
+}
+
+BOOST_AUTO_TEST_CASE( test_std_collections )
+{
+    Registry registry;
+    import_test_types(registry);
+
+    CHECK_TYPE(StdCollections);
+    CHECK_FIELD(StdCollections, iv, int, 0);
+    CHECK_FIELD(StdCollections, dbl_vector, std::vector<double>, "/std/vector</double>");
+    CHECK_FIELD(StdCollections, v8, int8_t, 0);
+    CHECK_FIELD(StdCollections, float_set, std::set<float>, "/std/set</float>");
+    CHECK_FIELD(StdCollections, v16, int16_t, 0);
+    CHECK_FIELD(StdCollections, bv, int64_t, 0);
+    
+    // Unfortunately, cannot check this one automatically
+    Compound const& collections = dynamic_cast<Compound const&>(*registry.get("StdCollections"));
+    Field const* field = collections.getField("int_map");
+    BOOST_REQUIRE(field);
+
+    BOOST_REQUIRE_MESSAGE(&field->getType() == registry.get("/std/map</int,/int>"),
+            field->getType().getName());
 }
 
 BOOST_AUTO_TEST_CASE( test_c_array_typedefs )

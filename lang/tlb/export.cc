@@ -24,6 +24,7 @@ namespace
         bool visit_(Enum const& type);
 
 	bool visit_(NullType const& type);
+        bool visit_(OpaqueType const& type);
 
     public:
         TlbExportVisitor(ostream& stream, string const& base_indent);
@@ -42,10 +43,31 @@ namespace
     TlbExportVisitor::TlbExportVisitor(ostream& stream, string const& base_indent)
         : m_stream(stream), m_indent(base_indent) {}
                 
+    std::string xmlEscape(std::string const& source)
+    {
+        string result = source;
+        size_t pos = result.find_first_of("<>");
+        while (pos != string::npos)
+        {
+            if (result[pos] == '<')
+                result.replace(pos, 1, "&lt;");
+            else if (result[pos] == '>')
+                result.replace(pos, 1, "&gt;");
+            pos = result.find_first_of("<>");
+        }
+
+        return result;
+    }
+
+    bool TlbExportVisitor::visit_(OpaqueType const& type)
+    {
+        m_stream << "<opaque name=\"" << xmlEscape(type.getName()) << "\" size=\"" << type.getSize() << "\" />\n";
+        return true;
+    }
 
     bool TlbExportVisitor::visit_(Compound const& type)
     { 
-        m_stream << "<compound name=\"" << type.getName() << "\">\n";
+        m_stream << "<compound name=\"" << xmlEscape(type.getName()) << "\" size=\"" << type.getSize() << "\">\n";
         
         { Indent indenter(m_indent);
             TypeVisitor::visit_(type);
@@ -61,7 +83,7 @@ namespace
         m_stream 
             << m_indent
             << "<field name=\"" << field.getName() << "\""
-            << " type=\"" << field.getType().getName()  << "\""
+            << " type=\""   << xmlEscape(field.getType().getName())  << "\""
             << " offset=\"" << field.getOffset() << "\"/>\n";
         return true;
     }
