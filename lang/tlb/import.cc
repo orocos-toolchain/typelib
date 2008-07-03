@@ -182,6 +182,7 @@ namespace
     Type const* load_compound(TypeNode const& node, Factory& factory)
     {
         Compound* compound = new Compound(node.name);
+        size_t size = getAttribute<size_t>(node.xml, "size");
 
         for(xmlNodePtr xml = node.xml->xmlChildrenNode; xml; xml=xml->next)
         {
@@ -197,6 +198,7 @@ namespace
             compound->addField(name, *type, offset);
         }
 
+        compound->setSize(size);
         factory.insert(node, compound);
         return compound;
     }

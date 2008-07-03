@@ -1,105 +1,28 @@
 <?xml version="1.0"?>
 <typelib>
-<!-- this is a XML comment and should be ignored -->
-  <alias name="/ACTIVITY_DESCRIPTION" source="/struct ACTIVITY_DESCRIPTION"/>
-  <alias name="/ACTIVITY_EVENT" source="/ACTIVITY_STATE"/>
   <enum name="/ACTIVITY_STATE"/>
-  <alias name="/BOOL" source="/int"/>
-  <alias name="/CLIENT_ID" source="/struct CS_CLIENT*"/>
-  <alias name="/CLIENT_RQST" source="/struct CLIENT_RQST"/>
-  <alias name="/CNTRL_TASK_DESCRIPTION" source="/struct CNTRL_TASK_DESCRIPTION"/>
-  <alias name="/CS_CLIENT" source="/struct CS_CLIENT"/>
-  <alias name="/CS_SERV" source="/struct CS_SERV"/>
-  <alias name="/DBLFUNCPTR" source="/double*"/>
-  <alias name="/EXEC_TASK_DESCRIPTION" source="/struct EXEC_TASK_DESCRIPTION"/>
-  <alias name="/FLTFUNCPTR" source="/float*"/>
-  <alias name="/FUNCPTR" source="/int*"/>
   <enum name="/GENOM_BOOL"/>
   <enum name="/GENOM_STATUS"/>
-  <alias name="/GENPOS_CART_CMD_PARAM" source="/struct GENPOS_CART_CMD_PARAM"/>
-  <alias name="/GENPOS_CART_CMD_SPEED_PARAM" source="/struct GENPOS_CART_CMD_SPEED_PARAM"/>
-  <alias name="/GENPOS_CART_CONFIG" source="/struct GENPOS_CART_CONFIG"/>
-  <alias name="/GENPOS_CART_CONFIG_VAR" source="/struct GENPOS_CART_CONFIG_VAR"/>
-  <alias name="/GENPOS_CART_REF" source="/struct GENPOS_CART_REF"/>
-  <alias name="/GENPOS_CART_SPEED" source="/struct GENPOS_CART_SPEED"/>
-  <alias name="/GENPOS_CART_STATE" source="/struct GENPOS_CART_STATE"/>
   <enum name="/GENPOS_MOTION_DIRECTION"/>
-  <alias name="/GENPOS_POSTER_NAME" source="/struct GENPOS_POSTER_NAME"/>
-  <alias name="/GENPOS_TRACK" source="/struct GENPOS_TRACK"/>
   <enum name="/GENPOS_TRACK_MODE"/>
-  <alias name="/GENPOS_TRAILER_CONNECTION" source="/struct GENPOS_TRAILER_CONNECTION"/>
   <enum name="/GENPOS_TRAILER_TYPE"/>
-  <alias name="/GENPOS_TRCART_CONFIG" source="/struct GENPOS_TRCART_CONFIG"/>
-  <alias name="/GENPOS_TRCART_GEO_PARAM" source="/struct GENPOS_TRCART_GEO_PARAM"/>
-  <alias name="/GENPOS_TRCART_REF" source="/struct GENPOS_TRCART_REF"/>
-  <alias name="/GENPOS_TRCART_STATE" source="/struct GENPOS_TRCART_STATE"/>
   <enum name="/H2_ENDIANNESS"/>
-  <alias name="/H2_ERROR" source="/struct H2_ERROR"/>
-  <alias name="/INTFUNCPTR" source="/int*"/>
-  <alias name="/LETTER" source="/struct LETTER"/>
-  <alias name="/LETTER_HDR" source="/struct LETTER_HDR"/>
-  <alias name="/LETTER_HDR_ID" source="/struct LETTER_HDR*"/>
-  <alias name="/LETTER_ID" source="/struct LETTER*"/>
-  <alias name="/MBOX_ID" source="/int"/>
   <enum name="/POM_ACTION"/>
-  <alias name="/POM_EULER" source="/struct POM_EULER"/>
-  <alias name="/POM_EULER_V" source="/struct POM_EULER_V"/>
-  <alias name="/POM_EULER_VARIANCES" source="/struct POM_EULER_VARIANCES"/>
   <enum name="/POM_FUSION_FLAG"/>
   <enum name="/POM_FUSION_METHOD"/>
   <enum name="/POM_ME_CLASS"/>
-  <alias name="/POM_ME_CREATE_DATA" source="/struct POM_ME_CREATE_DATA"/>
-  <alias name="/POM_ME_POS" source="/struct POM_ME_POS"/>
-  <alias name="/POM_POS" source="/struct POM_POS"/>
-  <alias name="/POM_SENSOR_POS" source="/struct POM_SENSOR_POS"/>
-  <alias name="/POM_SET_POS" source="/struct POM_SET_POS"/>
-  <alias name="/POM_SE_CREATE_DATA" source="/struct POM_SE_CREATE_DATA"/>
-  <alias name="/POM_STRING" source="/struct POM_STRING"/>
-  <alias name="/POM_UNC" source="/struct POM_UNC"/>
-  <alias name="/POSTER_ID" source="/nil*"/>
   <enum name="/POSTER_OP"/>
   <enum name="/RFLEX_BATTERY_STATUS"/>
   <enum name="/RFLEX_CLIENT_STATUS"/>
-  <alias name="/RFLEX_CLIENT_STR" source="/struct RFLEX_CLIENT_STR"/>
-  <alias name="/RFLEX_CNTRL_STR" source="/struct RFLEX_CNTRL_STR"/>
-  <alias name="/RFLEX_CONFIG" source="/struct RFLEX_CONFIG"/>
-  <alias name="/RFLEX_DOORSSWITCH_POSTER_STR" source="/struct RFLEX_DOORSSWITCH_POSTER_STR"/>
-  <alias name="/RFLEX_DOORS_SWITCH" source="/struct RFLEX_DOORS_SWITCH"/>
-  <alias name="/RFLEX_GEOM_PARAM_STR" source="/struct RFLEX_GEOM_PARAM_STR"/>
-  <alias name="/RFLEX_GYRO" source="/struct RFLEX_GYRO"/>
   <enum name="/RFLEX_GYRO_MODE"/>
-  <alias name="/RFLEX_GYRO_PARAMS" source="/struct RFLEX_GYRO_PARAMS"/>
-  <alias name="/RFLEX_INFRARED_POSTER_STR" source="/struct RFLEX_INFRARED_POSTER_STR"/>
-  <alias name="/RFLEX_INFRA_REDS" source="/struct RFLEX_INFRA_REDS"/>
-  <alias name="/RFLEX_JOYSTICK_STR" source="/struct RFLEX_JOYSTICK_STR"/>
-  <alias name="/RFLEX_MEPOS_POSTER_STR" source="/struct RFLEX_MEPOS_POSTER_STR"/>
-  <alias name="/RFLEX_MISC_ODO" source="/struct RFLEX_MISC_ODO"/>
   <enum name="/RFLEX_MODE"/>
-  <alias name="/RFLEX_ODO_STR" source="/struct RFLEX_ODO_STR"/>
-  <alias name="/RFLEX_POINT" source="/struct RFLEX_POINT"/>
   <enum name="/RFLEX_POM_TAGGING"/>
-  <alias name="/RFLEX_RAW_AXIS_STR" source="/struct RFLEX_RAW_AXIS_STR"/>
-  <alias name="/RFLEX_ROBOT_POSTER_STR" source="/struct RFLEX_ROBOT_POSTER_STR"/>
-  <alias name="/RFLEX_SONARSCART_POSTER_STR" source="/struct RFLEX_SONARSCART_POSTER_STR"/>
-  <alias name="/RFLEX_SONARSCONFIG_POSTER_STR" source="/struct RFLEX_SONARSCONFIG_POSTER_STR"/>
-  <alias name="/RFLEX_SONARSRHO_POSTER_STR" source="/struct RFLEX_SONARSRHO_POSTER_STR"/>
-  <alias name="/RFLEX_SONARS_CART_MEASURES" source="/struct RFLEX_SONARS_CART_MEASURES"/>
-  <alias name="/RFLEX_SONARS_CONFIG" source="/struct RFLEX_SONARS_CONFIG"/>
-  <alias name="/RFLEX_SONARS_RANGE" source="/struct RFLEX_SONARS_RANGE"/>
-  <alias name="/RFLEX_STR" source="/struct RFLEX_STR"/>
-  <alias name="/RFLEX_SYSTEM_STATE_STR" source="/struct RFLEX_SYSTEM_STATE_STR"/>
-  <alias name="/RFLEX_VAR_PARAMS" source="/struct RFLEX_VAR_PARAMS"/>
-  <alias name="/SEND" source="/struct SEND"/>
-  <alias name="/SERV_ID" source="/struct CS_SERV*"/>
-  <alias name="/SERV_RQST" source="/struct SERV_RQST"/>
-  <alias name="/STATUS" source="/int"/>
-  <alias name="/VOIDFUNCPTR" source="/nil*"/>
-  <alias name="/VOIDPTRFUNCPTR" source="/nil**"/>
+  <null  name="/custom_null"/>
   <numeric name="/int16_t" category="sint" size="2"/>
   <numeric name="/int32_t" category="sint" size="4"/>
   <numeric name="/int64_t" category="sint" size="8"/>
   <numeric name="/int8_t" category="sint" size="1"/>
-  <compound name="/struct ACTIVITY_DESCRIPTION">
+  <compound name="/struct ACTIVITY_DESCRIPTION" size="52">
     <field name="rqstId" type="/int" offset="0"/>
     <field name="rqstNum" type="/int" offset="4"/>
     <field name="activityId" type="/int" offset="8"/>
@@ -115,14 +38,7 @@
     <field name="nbIncompatibles" type="/int" offset="48"/>
     <field name="incompatibleActivities" type="/int[0]" offset="52"/>
   </compound>
-  <compound name="/struct CLIENT_RQST">
-    <field name="rqstIdFlag" type="/int" offset="0"/>
-    <field name="intermedFlag" type="/int" offset="4"/>
-    <field name="sendId" type="/int" offset="8"/>
-    <field name="intermReply" type="/struct LETTER*" offset="12"/>
-    <field name="finalReply" type="/struct LETTER*" offset="16"/>
-  </compound>
-  <compound name="/struct CNTRL_TASK_DESCRIPTION">
+  <compound name="/struct CNTRL_TASK_DESCRIPTION" size="36">
     <field name="taskId" type="/int" offset="0"/>
     <field name="status" type="/int" offset="4"/>
     <field name="bilan" type="/int" offset="8"/>
@@ -132,35 +48,7 @@
     <field name="nbExecTasks" type="/int" offset="24"/>
     <field name="sdif" type="/nil*" offset="28"/>
   </compound>
-  <compound name="/struct CS_CLIENT">
-    <field name="initFlag" type="/int" offset="0"/>
-    <field name="servMboxId" type="/int" offset="4"/>
-    <field name="sendLetter" type="/struct LETTER*" offset="8"/>
-    <field name="rqstTab" type="/struct CLIENT_RQST[20]" offset="12"/>
-  </compound>
-  <compound name="/struct CS_SERV">
-    <field name="initFlag" type="/int" offset="0"/>
-    <field name="rcvLetter" type="/struct LETTER*" offset="4"/>
-    <field name="replyLetter" type="/struct LETTER*" offset="8"/>
-    <field name="inExecRqstId" type="/int" offset="12"/>
-    <field name="nbRqstFunc" type="/int" offset="16"/>
-    <field name="rqstFuncTab" type="/int**" offset="20"/>
-    <field name="rqstTab" type="/struct SERV_RQST[20]" offset="24"/>
-  </compound>
-  <compound name="/struct EXEC_TASK_DESCRIPTION">
-    <field name="taskId" type="/int" offset="0"/>
-    <field name="status" type="/int" offset="4"/>
-    <field name="period" type="/double" offset="8"/>
-    <field name="maxPeriod" type="/unsigned long" offset="16"/>
-    <field name="onPeriod" type="/unsigned long" offset="20"/>
-    <field name="bilan" type="/int" offset="24"/>
-    <field name="currentActivity" type="/int" offset="28"/>
-    <field name="wakeUp" type="/int" offset="32"/>
-    <field name="nbActivities" type="/int" offset="36"/>
-    <field name="posterId" type="/nil*[16]" offset="40"/>
-    <field name="clientId" type="/struct CS_CLIENT*[4]" offset="104"/>
-  </compound>
-  <compound name="/struct GENPOS_CART_CMD_PARAM">
+  <compound name="/struct GENPOS_CART_CMD_PARAM" size="128">
     <field name="distPoint" type="/double" offset="0"/>
     <field name="KpLongit" type="/double" offset="8"/>
     <field name="KiLongit" type="/double" offset="16"/>
@@ -178,7 +66,7 @@
     <field name="transvMaxGap" type="/double" offset="112"/>
     <field name="angMaxGap" type="/double" offset="120"/>
   </compound>
-  <compound name="/struct GENPOS_CART_CMD_SPEED_PARAM">
+  <compound name="/struct GENPOS_CART_CMD_SPEED_PARAM" size="48">
     <field name="Kp" type="/double" offset="0"/>
     <field name="Ki" type="/double" offset="8"/>
     <field name="Kd" type="/double" offset="16"/>
@@ -186,15 +74,15 @@
     <field name="maxErrorResetInt" type="/double" offset="32"/>
     <field name="maxErrorSum" type="/double" offset="40"/>
   </compound>
-  <compound name="/struct GENPOS_CART_CONFIG">
+  <compound name="/struct GENPOS_CART_CONFIG" size="24">
     <field name="x" type="/double" offset="0"/>
     <field name="y" type="/double" offset="8"/>
     <field name="theta" type="/double" offset="16"/>
   </compound>
-  <compound name="/struct GENPOS_CART_CONFIG_VAR">
+  <compound name="/struct GENPOS_CART_CONFIG_VAR" size="48">
     <field name="var" type="/double[6]" offset="0"/>
   </compound>
-  <compound name="/struct GENPOS_CART_REF">
+  <compound name="/struct GENPOS_CART_REF" size="80">
     <field name="backFlag" type="/GENPOS_MOTION_DIRECTION" offset="0"/>
     <field name="numRef" type="/int" offset="4"/>
     <field name="x" type="/double" offset="8"/>
@@ -207,7 +95,7 @@
     <field name="linAccelMax" type="/double" offset="64"/>
     <field name="angAccelMax" type="/double" offset="72"/>
   </compound>
-  <compound name="/struct GENPOS_CART_SPEED">
+  <compound name="/struct GENPOS_CART_SPEED" size="56">
     <field name="numRef" type="/int" offset="0"/>
     <field name="updatePeriod" type="/int" offset="4"/>
     <field name="v" type="/double" offset="8"/>
@@ -217,7 +105,7 @@
     <field name="linAccelMax" type="/double" offset="40"/>
     <field name="angAccelMax" type="/double" offset="48"/>
   </compound>
-  <compound name="/struct GENPOS_CART_STATE">
+  <compound name="/struct GENPOS_CART_STATE" size="56">
     <field name="x" type="/double" offset="0"/>
     <field name="y" type="/double" offset="8"/>
     <field name="xC" type="/double" offset="16"/>
@@ -226,51 +114,46 @@
     <field name="v" type="/double" offset="40"/>
     <field name="w" type="/double" offset="48"/>
   </compound>
-  <compound name="/struct GENPOS_POSTER_NAME">
+  <compound name="/struct GENPOS_POSTER_NAME" size="32">
     <field name="name" type="/char[32]" offset="0"/>
   </compound>
-  <compound name="/struct GENPOS_TRACK">
+  <compound name="/struct GENPOS_TRACK" size="40">
     <field name="trackMode" type="/GENPOS_TRACK_MODE" offset="0"/>
     <field name="posterId" type="/int" offset="4"/>
     <field name="posterName" type="/struct GENPOS_POSTER_NAME" offset="8"/>
   </compound>
-  <compound name="/struct GENPOS_TRAILER_CONNECTION">
+  <compound name="/struct GENPOS_TRAILER_CONNECTION" size="24">
     <field name="l1" type="/double" offset="0"/>
     <field name="l2" type="/double" offset="8"/>
     <field name="maxAngle" type="/double" offset="16"/>
   </compound>
-  <compound name="/struct GENPOS_TRCART_CONFIG">
+  <compound name="/struct GENPOS_TRCART_CONFIG" size="32">
     <field name="robot" type="/struct GENPOS_CART_CONFIG" offset="0"/>
     <field name="phi" type="/double" offset="24"/>
   </compound>
-  <compound name="/struct GENPOS_TRCART_GEO_PARAM">
+  <compound name="/struct GENPOS_TRCART_GEO_PARAM" size="32">
     <field name="trailerConnection" type="/struct GENPOS_TRAILER_CONNECTION" offset="0"/>
     <field name="sensorAngOffset" type="/double" offset="24"/>
   </compound>
-  <compound name="/struct GENPOS_TRCART_REF">
+  <compound name="/struct GENPOS_TRCART_REF" size="88">
     <field name="robot" type="/struct GENPOS_CART_REF" offset="0"/>
     <field name="phi" type="/double" offset="80"/>
   </compound>
-  <compound name="/struct GENPOS_TRCART_STATE">
+  <compound name="/struct GENPOS_TRCART_STATE" size="64">
     <field name="robot" type="/struct GENPOS_CART_STATE" offset="0"/>
     <field name="phi" type="/double" offset="56"/>
   </compound>
-  <compound name="/struct H2_ERROR">
+  <compound name="/struct H2_ERROR" size="8">
     <field name="name" type="/char*" offset="0"/>
     <field name="num" type="/short" offset="4"/>
   </compound>
-  <compound name="/struct LETTER">
-    <field name="flagInit" type="/int" offset="0"/>
-    <field name="size" type="/int" offset="4"/>
-    <field name="pHdr" type="/struct LETTER_HDR*" offset="8"/>
-  </compound>
-  <compound name="/struct LETTER_HDR">
+  <compound name="/struct LETTER_HDR" size="16">
     <field name="sendId" type="/int" offset="0"/>
     <field name="type" type="/int" offset="4"/>
     <field name="dataType" type="/int" offset="8"/>
     <field name="dataSize" type="/int" offset="12"/>
   </compound>
-  <compound name="/struct POM_EULER">
+  <compound name="/struct POM_EULER" size="48">
     <field name="yaw" type="/double" offset="0"/>
     <field name="pitch" type="/double" offset="8"/>
     <field name="roll" type="/double" offset="16"/>
@@ -278,11 +161,7 @@
     <field name="y" type="/double" offset="32"/>
     <field name="z" type="/double" offset="40"/>
   </compound>
-  <compound name="/struct POM_EULER_V">
-    <field name="euler" type="/struct POM_EULER" offset="0"/>
-    <field name="var" type="/struct POM_EULER_VARIANCES" offset="48"/>
-  </compound>
-  <compound name="/struct POM_EULER_VARIANCES">
+  <compound name="/struct POM_EULER_VARIANCES" size="168">
     <field name="voo" type="/double" offset="0"/>
     <field name="vop" type="/double" offset="8"/>
     <field name="vpp" type="/double" offset="16"/>
@@ -305,36 +184,12 @@
     <field name="vyz" type="/double" offset="152"/>
     <field name="vzz" type="/double" offset="160"/>
   </compound>
-  <compound name="/struct POM_ME_CREATE_DATA">
+  <compound name="/struct POM_ME_CREATE_DATA" size="520">
     <field name="name" type="/char[512]" offset="0"/>
     <field name="fuseFlag" type="/POM_FUSION_FLAG" offset="512"/>
     <field name="unused" type="/int" offset="516"/>
   </compound>
-  <compound name="/struct POM_ME_POS">
-    <field name="class" type="/POM_ME_CLASS" offset="0"/>
-    <field name="unused" type="/int" offset="4"/>
-    <field name="confidence" type="/double" offset="8"/>
-    <field name="date1" type="/int" offset="16"/>
-    <field name="date2" type="/int" offset="20"/>
-    <field name="main" type="/struct POM_EULER_V" offset="24"/>
-    <field name="VLocal" type="/struct POM_EULER_V" offset="240"/>
-  </compound>
-  <compound name="/struct POM_POS">
-    <field name="date" type="/int" offset="0"/>
-    <field name="pomTickDate" type="/int" offset="4"/>
-    <field name="mainToOrigin" type="/struct POM_EULER_V" offset="8"/>
-    <field name="mainToBase" type="/struct POM_EULER_V" offset="224"/>
-    <field name="VLocal" type="/struct POM_EULER_V" offset="440"/>
-  </compound>
-  <compound name="/struct POM_SENSOR_POS">
-    <field name="date" type="/int" offset="0"/>
-    <field name="pad" type="/int" offset="4"/>
-    <field name="sensorToMain" type="/struct POM_EULER_V" offset="8"/>
-    <field name="mainToBase" type="/struct POM_EULER_V" offset="224"/>
-    <field name="mainToOrigin" type="/struct POM_EULER_V" offset="440"/>
-    <field name="VLocal" type="/struct POM_EULER_V" offset="656"/>
-  </compound>
-  <compound name="/struct POM_SET_POS">
+  <compound name="/struct POM_SET_POS" size="560">
     <field name="frame" type="/char[512]" offset="0"/>
     <field name="alpha" type="/double" offset="512"/>
     <field name="beta" type="/double" offset="520"/>
@@ -343,16 +198,16 @@
     <field name="y" type="/double" offset="544"/>
     <field name="z" type="/double" offset="552"/>
   </compound>
-  <compound name="/struct POM_SE_CREATE_DATA">
+  <compound name="/struct POM_SE_CREATE_DATA" size="1540">
     <field name="namese" type="/char[512]" offset="0"/>
     <field name="namefrom" type="/char[512]" offset="512"/>
     <field name="nameto" type="/char[512]" offset="1024"/>
     <field name="unused" type="/int" offset="1536"/>
   </compound>
-  <compound name="/struct POM_STRING">
+  <compound name="/struct POM_STRING" size="512">
     <field name="name" type="/char[512]" offset="0"/>
   </compound>
-  <compound name="/struct POM_UNC">
+  <compound name="/struct POM_UNC" size="48">
     <field name="utheta" type="/double" offset="0"/>
     <field name="uphi" type="/double" offset="8"/>
     <field name="upsi" type="/double" offset="16"/>
@@ -360,27 +215,19 @@
     <field name="uy" type="/double" offset="32"/>
     <field name="uz" type="/double" offset="40"/>
   </compound>
-  <compound name="/struct RFLEX_CLIENT_STR">
+  <compound name="/struct RFLEX_CLIENT_STR" size="20">
     <field name="deviceName" type="/char[16]" offset="0"/>
     <field name="baudRate" type="/int" offset="16"/>
   </compound>
-  <compound name="/struct RFLEX_CNTRL_STR">
-    <field name="cntrlTask" type="/struct CNTRL_TASK_DESCRIPTION" offset="0"/>
-    <field name="execTaskTab" type="/struct EXEC_TASK_DESCRIPTION[0]" offset="32"/>
-    <field name="activityTab" type="/struct ACTIVITY_DESCRIPTION[0]" offset="32"/>
-  </compound>
-  <compound name="/struct RFLEX_CONFIG">
+  <compound name="/struct RFLEX_CONFIG" size="24">
     <field name="x" type="/double" offset="0"/>
     <field name="y" type="/double" offset="8"/>
     <field name="theta" type="/double" offset="16"/>
   </compound>
-  <compound name="/struct RFLEX_DOORSSWITCH_POSTER_STR">
-    <field name="doorSwitchs" type="/struct RFLEX_DOORS_SWITCH" offset="0"/>
-  </compound>
-  <compound name="/struct RFLEX_DOORS_SWITCH">
+  <compound name="/struct RFLEX_DOORS_SWITCH" size="112">
     <field name="tab" type="/short[14][4]" offset="0"/>
   </compound>
-  <compound name="/struct RFLEX_GEOM_PARAM_STR">
+  <compound name="/struct RFLEX_GEOM_PARAM_STR" size="48">
     <field name="linMToStep" type="/double" offset="0"/>
     <field name="angRadToStep" type="/double" offset="8"/>
     <field name="linStepToM" type="/double" offset="16"/>
@@ -388,7 +235,162 @@
     <field name="sonarScale" type="/double" offset="32"/>
     <field name="sonarOffset" type="/double" offset="40"/>
   </compound>
-  <compound name="/struct RFLEX_GYRO">
+  <compound name="/struct RFLEX_GYRO_PARAMS" size="40">
+    <field name="mode" type="/RFLEX_GYRO_MODE" offset="0"/>
+    <field name="unused" type="/int" offset="4"/>
+    <field name="port" type="/char[32]" offset="8"/>
+  </compound>
+  <compound name="/struct RFLEX_INFRA_REDS" size="96">
+    <field name="tab" type="/int[24]" offset="0"/>
+  </compound>
+  <compound name="/struct RFLEX_JOYSTICK_STR" size="16">
+    <field name="x" type="/int" offset="0"/>
+    <field name="y" type="/int" offset="4"/>
+    <field name="buttons" type="/int" offset="8"/>
+    <field name="unused" type="/int" offset="12"/>
+  </compound>
+  <compound name="/struct RFLEX_MISC_ODO" size="16">
+    <field name="s" type="/double" offset="0"/>
+    <field name="sInit" type="/long int" offset="8"/>
+  </compound>
+  <compound name="/struct RFLEX_ODO_STR" size="104">
+    <field name="robot" type="/struct GENPOS_CART_STATE" offset="0"/>
+    <field name="odoError" type="/struct GENPOS_CART_CONFIG_VAR" offset="56"/>
+  </compound>
+  <compound name="/struct RFLEX_POINT" size="16">
+    <field name="x" type="/double" offset="0"/>
+    <field name="y" type="/double" offset="8"/>
+  </compound>
+  <compound name="/struct RFLEX_RAW_AXIS_STR" size="16">
+    <field name="pos" type="/int" offset="0"/>
+    <field name="vel" type="/int" offset="4"/>
+    <field name="acc" type="/int" offset="8"/>
+    <field name="trq" type="/int" offset="12"/>
+  </compound>
+  <compound name="/struct RFLEX_SONARS_CART_MEASURES" size="768">
+    <field name="tab" type="/struct RFLEX_POINT[48]" offset="0"/>
+  </compound>
+  <compound name="/struct RFLEX_SONARS_CONFIG" size="1152">
+    <field name="tab" type="/struct RFLEX_CONFIG[48]" offset="0"/>
+  </compound>
+  <compound name="/struct RFLEX_SONARS_RANGE" size="384">
+    <field name="tab" type="/double[48]" offset="0"/>
+  </compound>
+  <compound name="/struct RFLEX_SYSTEM_STATE_STR" size="48">
+    <field name="mode" type="/RFLEX_MODE" offset="0"/>
+    <field name="brake" type="/int" offset="4"/>
+    <field name="shock" type="/int" offset="8"/>
+    <field name="batteryStatus" type="/RFLEX_BATTERY_STATUS" offset="12"/>
+    <field name="batteryLevel" type="/double" offset="16"/>
+    <field name="highBatteryLevel" type="/double" offset="24"/>
+    <field name="mediumBatteryLevel" type="/double" offset="32"/>
+    <field name="lowBatteryLevel" type="/double" offset="40"/>
+  </compound>
+  <compound name="/struct RFLEX_VAR_PARAMS" size="24">
+    <field name="coeffLin" type="/double" offset="0"/>
+    <field name="coeffAng" type="/double" offset="8"/>
+    <field name="coeffLinAng" type="/double" offset="16"/>
+  </compound>
+  <compound name="/struct SERV_RQST" size="12">
+    <field name="rqstIdFlag" type="/int" offset="0"/>
+    <field name="clientMboxId" type="/int" offset="4"/>
+    <field name="clientSendId" type="/int" offset="8"/>
+  </compound>
+  <numeric name="/uint16_t" category="uint" size="2"/>
+  <numeric name="/uint32_t" category="uint" size="4"/>
+  <numeric name="/uint64_t" category="uint" size="8"/>
+  <numeric name="/uint8_t" category="uint" size="1"/>
+  <alias name="/ACTIVITY_DESCRIPTION" source="/struct ACTIVITY_DESCRIPTION"/>
+  <alias name="/ACTIVITY_EVENT" source="/ACTIVITY_STATE"/>
+  <alias name="/BOOL" source="/int"/>
+  <alias name="/CNTRL_TASK_DESCRIPTION" source="/struct CNTRL_TASK_DESCRIPTION"/>
+  <alias name="/DBLFUNCPTR" source="/double*"/>
+  <alias name="/FLTFUNCPTR" source="/float*"/>
+  <alias name="/FUNCPTR" source="/int*"/>
+  <alias name="/GENPOS_CART_CMD_PARAM" source="/struct GENPOS_CART_CMD_PARAM"/>
+  <alias name="/GENPOS_CART_CMD_SPEED_PARAM" source="/struct GENPOS_CART_CMD_SPEED_PARAM"/>
+  <alias name="/GENPOS_CART_CONFIG" source="/struct GENPOS_CART_CONFIG"/>
+  <alias name="/GENPOS_CART_CONFIG_VAR" source="/struct GENPOS_CART_CONFIG_VAR"/>
+  <alias name="/GENPOS_CART_REF" source="/struct GENPOS_CART_REF"/>
+  <alias name="/GENPOS_CART_SPEED" source="/struct GENPOS_CART_SPEED"/>
+  <alias name="/GENPOS_CART_STATE" source="/struct GENPOS_CART_STATE"/>
+  <alias name="/GENPOS_POSTER_NAME" source="/struct GENPOS_POSTER_NAME"/>
+  <alias name="/GENPOS_TRACK" source="/struct GENPOS_TRACK"/>
+  <alias name="/GENPOS_TRAILER_CONNECTION" source="/struct GENPOS_TRAILER_CONNECTION"/>
+  <alias name="/GENPOS_TRCART_CONFIG" source="/struct GENPOS_TRCART_CONFIG"/>
+  <alias name="/GENPOS_TRCART_GEO_PARAM" source="/struct GENPOS_TRCART_GEO_PARAM"/>
+  <alias name="/GENPOS_TRCART_REF" source="/struct GENPOS_TRCART_REF"/>
+  <alias name="/GENPOS_TRCART_STATE" source="/struct GENPOS_TRCART_STATE"/>
+  <alias name="/H2_ERROR" source="/struct H2_ERROR"/>
+  <alias name="/INTFUNCPTR" source="/int*"/>
+  <alias name="/LETTER_HDR" source="/struct LETTER_HDR"/>
+  <alias name="/LETTER_HDR_ID" source="/struct LETTER_HDR*"/>
+  <alias name="/MBOX_ID" source="/int"/>
+  <alias name="/POM_EULER" source="/struct POM_EULER"/>
+  <alias name="/POM_EULER_VARIANCES" source="/struct POM_EULER_VARIANCES"/>
+  <alias name="/POM_ME_CREATE_DATA" source="/struct POM_ME_CREATE_DATA"/>
+  <alias name="/POM_SET_POS" source="/struct POM_SET_POS"/>
+  <alias name="/POM_SE_CREATE_DATA" source="/struct POM_SE_CREATE_DATA"/>
+  <alias name="/POM_STRING" source="/struct POM_STRING"/>
+  <alias name="/POM_UNC" source="/struct POM_UNC"/>
+  <alias name="/POSTER_ID" source="/nil*"/>
+  <alias name="/RFLEX_CLIENT_STR" source="/struct RFLEX_CLIENT_STR"/>
+  <alias name="/RFLEX_CONFIG" source="/struct RFLEX_CONFIG"/>
+  <alias name="/RFLEX_DOORS_SWITCH" source="/struct RFLEX_DOORS_SWITCH"/>
+  <alias name="/RFLEX_GEOM_PARAM_STR" source="/struct RFLEX_GEOM_PARAM_STR"/>
+  <alias name="/RFLEX_GYRO_PARAMS" source="/struct RFLEX_GYRO_PARAMS"/>
+  <alias name="/RFLEX_INFRA_REDS" source="/struct RFLEX_INFRA_REDS"/>
+  <alias name="/RFLEX_JOYSTICK_STR" source="/struct RFLEX_JOYSTICK_STR"/>
+  <alias name="/RFLEX_MISC_ODO" source="/struct RFLEX_MISC_ODO"/>
+  <alias name="/RFLEX_ODO_STR" source="/struct RFLEX_ODO_STR"/>
+  <alias name="/RFLEX_POINT" source="/struct RFLEX_POINT"/>
+  <alias name="/RFLEX_RAW_AXIS_STR" source="/struct RFLEX_RAW_AXIS_STR"/>
+  <alias name="/RFLEX_SONARS_CART_MEASURES" source="/struct RFLEX_SONARS_CART_MEASURES"/>
+  <alias name="/RFLEX_SONARS_CONFIG" source="/struct RFLEX_SONARS_CONFIG"/>
+  <alias name="/RFLEX_SONARS_RANGE" source="/struct RFLEX_SONARS_RANGE"/>
+  <alias name="/RFLEX_SYSTEM_STATE_STR" source="/struct RFLEX_SYSTEM_STATE_STR"/>
+  <alias name="/RFLEX_VAR_PARAMS" source="/struct RFLEX_VAR_PARAMS"/>
+  <alias name="/SERV_RQST" source="/struct SERV_RQST"/>
+  <alias name="/STATUS" source="/int"/>
+  <alias name="/VOIDFUNCPTR" source="/nil*"/>
+  <alias name="/VOIDPTRFUNCPTR" source="/nil**"/>
+  <compound name="/struct LETTER" size="16">
+    <field name="flagInit" type="/int" offset="0"/>
+    <field name="size" type="/int" offset="4"/>
+    <field name="pHdr" type="/struct LETTER_HDR*" offset="8"/>
+  </compound>
+  <compound name="/struct POM_EULER_V" size="216">
+    <field name="euler" type="/struct POM_EULER" offset="0"/>
+    <field name="var" type="/struct POM_EULER_VARIANCES" offset="48"/>
+  </compound>
+  <compound name="/struct POM_ME_POS" size="456">
+    <field name="class" type="/POM_ME_CLASS" offset="0"/>
+    <field name="unused" type="/int" offset="4"/>
+    <field name="confidence" type="/double" offset="8"/>
+    <field name="date1" type="/int" offset="16"/>
+    <field name="date2" type="/int" offset="20"/>
+    <field name="main" type="/struct POM_EULER_V" offset="24"/>
+    <field name="VLocal" type="/struct POM_EULER_V" offset="240"/>
+  </compound>
+  <compound name="/struct POM_POS" size="656">
+    <field name="date" type="/int" offset="0"/>
+    <field name="pomTickDate" type="/int" offset="4"/>
+    <field name="mainToOrigin" type="/struct POM_EULER_V" offset="8"/>
+    <field name="mainToBase" type="/struct POM_EULER_V" offset="224"/>
+    <field name="VLocal" type="/struct POM_EULER_V" offset="440"/>
+  </compound>
+  <compound name="/struct POM_SENSOR_POS" size="872">
+    <field name="date" type="/int" offset="0"/>
+    <field name="pad" type="/int" offset="4"/>
+    <field name="sensorToMain" type="/struct POM_EULER_V" offset="8"/>
+    <field name="mainToBase" type="/struct POM_EULER_V" offset="224"/>
+    <field name="mainToOrigin" type="/struct POM_EULER_V" offset="440"/>
+    <field name="VLocal" type="/struct POM_EULER_V" offset="656"/>
+  </compound>
+  <compound name="/struct RFLEX_DOORSSWITCH_POSTER_STR" size="112">
+    <field name="doorSwitchs" type="/struct RFLEX_DOORS_SWITCH" offset="0"/>
+  </compound>
+  <compound name="/struct RFLEX_GYRO" size="80">
     <field name="params" type="/struct RFLEX_GYRO_PARAMS" offset="0"/>
     <field name="initDone" type="/int" offset="40"/>
     <field name="gyroOn" type="/int" offset="44"/>
@@ -398,45 +400,13 @@
     <field name="gyroTheta" type="/double" offset="64"/>
     <field name="robotTheta" type="/double" offset="72"/>
   </compound>
-  <compound name="/struct RFLEX_GYRO_PARAMS">
-    <field name="mode" type="/RFLEX_GYRO_MODE" offset="0"/>
-    <field name="unused" type="/int" offset="4"/>
-    <field name="port" type="/char[32]" offset="8"/>
-  </compound>
-  <compound name="/struct RFLEX_INFRARED_POSTER_STR">
+  <compound name="/struct RFLEX_INFRARED_POSTER_STR" size="96">
     <field name="infraReds" type="/struct RFLEX_INFRA_REDS" offset="0"/>
   </compound>
-  <compound name="/struct RFLEX_INFRA_REDS">
-    <field name="tab" type="/int[24]" offset="0"/>
-  </compound>
-  <compound name="/struct RFLEX_JOYSTICK_STR">
-    <field name="x" type="/int" offset="0"/>
-    <field name="y" type="/int" offset="4"/>
-    <field name="buttons" type="/int" offset="8"/>
-    <field name="unused" type="/int" offset="12"/>
-  </compound>
-  <compound name="/struct RFLEX_MEPOS_POSTER_STR">
+  <compound name="/struct RFLEX_MEPOS_POSTER_STR" size="456">
     <field name="POM_ME_POS" type="/struct POM_ME_POS" offset="0"/>
   </compound>
-  <compound name="/struct RFLEX_MISC_ODO">
-    <field name="s" type="/double" offset="0"/>
-    <field name="sInit" type="/long int" offset="8"/>
-  </compound>
-  <compound name="/struct RFLEX_ODO_STR">
-    <field name="robot" type="/struct GENPOS_CART_STATE" offset="0"/>
-    <field name="odoError" type="/struct GENPOS_CART_CONFIG_VAR" offset="56"/>
-  </compound>
-  <compound name="/struct RFLEX_POINT">
-    <field name="x" type="/double" offset="0"/>
-    <field name="y" type="/double" offset="8"/>
-  </compound>
-  <compound name="/struct RFLEX_RAW_AXIS_STR">
-    <field name="pos" type="/int" offset="0"/>
-    <field name="vel" type="/int" offset="4"/>
-    <field name="acc" type="/int" offset="8"/>
-    <field name="trq" type="/int" offset="12"/>
-  </compound>
-  <compound name="/struct RFLEX_ROBOT_POSTER_STR">
+  <compound name="/struct RFLEX_ROBOT_POSTER_STR" size="336">
     <field name="Position" type="/struct GENPOS_CART_STATE" offset="0"/>
     <field name="rawAxis" type="/struct RFLEX_RAW_AXIS_STR[2]" offset="56"/>
     <field name="PosError" type="/struct GENPOS_CART_CONFIG_VAR" offset="88"/>
@@ -445,25 +415,16 @@
     <field name="systemState" type="/struct RFLEX_SYSTEM_STATE_STR" offset="272"/>
     <field name="miscOdo" type="/struct RFLEX_MISC_ODO" offset="320"/>
   </compound>
-  <compound name="/struct RFLEX_SONARSCART_POSTER_STR">
+  <compound name="/struct RFLEX_SONARSCART_POSTER_STR" size="768">
     <field name="MeasureInRobotCart" type="/struct RFLEX_SONARS_CART_MEASURES" offset="0"/>
   </compound>
-  <compound name="/struct RFLEX_SONARSCONFIG_POSTER_STR">
+  <compound name="/struct RFLEX_SONARSCONFIG_POSTER_STR" size="1152">
     <field name="Config" type="/struct RFLEX_SONARS_CONFIG" offset="0"/>
   </compound>
-  <compound name="/struct RFLEX_SONARSRHO_POSTER_STR">
+  <compound name="/struct RFLEX_SONARSRHO_POSTER_STR" size="384">
     <field name="Range" type="/struct RFLEX_SONARS_RANGE" offset="0"/>
   </compound>
-  <compound name="/struct RFLEX_SONARS_CART_MEASURES">
-    <field name="tab" type="/struct RFLEX_POINT[48]" offset="0"/>
-  </compound>
-  <compound name="/struct RFLEX_SONARS_CONFIG">
-    <field name="tab" type="/struct RFLEX_CONFIG[48]" offset="0"/>
-  </compound>
-  <compound name="/struct RFLEX_SONARS_RANGE">
-    <field name="tab" type="/double[48]" offset="0"/>
-  </compound>
-  <compound name="/struct RFLEX_STR">
+  <compound name="/struct RFLEX_STR" size="3456">
     <field name="pomTagging" type="/RFLEX_POM_TAGGING" offset="0"/>
     <field name="client" type="/struct RFLEX_CLIENT_STR" offset="4"/>
     <field name="connect" type="/RFLEX_CLIENT_STATUS" offset="24"/>
@@ -499,22 +460,7 @@
     <field name="SetPosFromMEPosterInput" type="/char[20]" offset="3356"/>
     <field name="MonitorBatteryInput" type="/RFLEX_BATTERY_STATUS[20]" offset="3376"/>
   </compound>
-  <compound name="/struct RFLEX_SYSTEM_STATE_STR">
-    <field name="mode" type="/RFLEX_MODE" offset="0"/>
-    <field name="brake" type="/int" offset="4"/>
-    <field name="shock" type="/int" offset="8"/>
-    <field name="batteryStatus" type="/RFLEX_BATTERY_STATUS" offset="12"/>
-    <field name="batteryLevel" type="/double" offset="16"/>
-    <field name="highBatteryLevel" type="/double" offset="24"/>
-    <field name="mediumBatteryLevel" type="/double" offset="32"/>
-    <field name="lowBatteryLevel" type="/double" offset="40"/>
-  </compound>
-  <compound name="/struct RFLEX_VAR_PARAMS">
-    <field name="coeffLin" type="/double" offset="0"/>
-    <field name="coeffAng" type="/double" offset="8"/>
-    <field name="coeffLinAng" type="/double" offset="16"/>
-  </compound>
-  <compound name="/struct SEND">
+  <compound name="/struct SEND" size="28">
     <field name="status" type="/int" offset="0"/>
     <field name="time" type="/unsigned long" offset="4"/>
     <field name="finalReplyTout" type="/int" offset="8"/>
@@ -522,15 +468,67 @@
     <field name="finalReplyLetter" type="/struct LETTER*" offset="16"/>
     <field name="intermedReplyLetter" type="/struct LETTER*" offset="20"/>
   </compound>
-  <compound name="/struct SERV_RQST">
+  <alias name="/LETTER" source="/struct LETTER"/>
+  <alias name="/LETTER_ID" source="/struct LETTER*"/>
+  <alias name="/POM_EULER_V" source="/struct POM_EULER_V"/>
+  <alias name="/POM_ME_POS" source="/struct POM_ME_POS"/>
+  <alias name="/POM_POS" source="/struct POM_POS"/>
+  <alias name="/POM_SENSOR_POS" source="/struct POM_SENSOR_POS"/>
+  <alias name="/RFLEX_DOORSSWITCH_POSTER_STR" source="/struct RFLEX_DOORSSWITCH_POSTER_STR"/>
+  <alias name="/RFLEX_GYRO" source="/struct RFLEX_GYRO"/>
+  <alias name="/RFLEX_INFRARED_POSTER_STR" source="/struct RFLEX_INFRARED_POSTER_STR"/>
+  <alias name="/RFLEX_MEPOS_POSTER_STR" source="/struct RFLEX_MEPOS_POSTER_STR"/>
+  <alias name="/RFLEX_ROBOT_POSTER_STR" source="/struct RFLEX_ROBOT_POSTER_STR"/>
+  <alias name="/RFLEX_SONARSCART_POSTER_STR" source="/struct RFLEX_SONARSCART_POSTER_STR"/>
+  <alias name="/RFLEX_SONARSCONFIG_POSTER_STR" source="/struct RFLEX_SONARSCONFIG_POSTER_STR"/>
+  <alias name="/RFLEX_SONARSRHO_POSTER_STR" source="/struct RFLEX_SONARSRHO_POSTER_STR"/>
+  <alias name="/RFLEX_STR" source="/struct RFLEX_STR"/>
+  <alias name="/SEND" source="/struct SEND"/>
+  <compound name="/struct CLIENT_RQST" size="24">
     <field name="rqstIdFlag" type="/int" offset="0"/>
-    <field name="clientMboxId" type="/int" offset="4"/>
-    <field name="clientSendId" type="/int" offset="8"/>
+    <field name="intermedFlag" type="/int" offset="4"/>
+    <field name="sendId" type="/int" offset="8"/>
+    <field name="intermReply" type="/struct LETTER*" offset="12"/>
+    <field name="finalReply" type="/struct LETTER*" offset="16"/>
   </compound>
-  <numeric name="/uint16_t" category="uint" size="2"/>
-  <numeric name="/uint32_t" category="uint" size="4"/>
-  <numeric name="/uint64_t" category="uint" size="8"/>
-  <numeric name="/uint8_t" category="uint" size="1"/>
-  <null name="/custom_null" />
+  <compound name="/struct CS_CLIENT" size="492">
+    <field name="initFlag" type="/int" offset="0"/>
+    <field name="servMboxId" type="/int" offset="4"/>
+    <field name="sendLetter" type="/struct LETTER*" offset="8"/>
+    <field name="rqstTab" type="/struct CLIENT_RQST[20]" offset="12"/>
+  </compound>
+  <compound name="/struct CS_SERV" size="264">
+    <field name="initFlag" type="/int" offset="0"/>
+    <field name="rcvLetter" type="/struct LETTER*" offset="4"/>
+    <field name="replyLetter" type="/struct LETTER*" offset="8"/>
+    <field name="inExecRqstId" type="/int" offset="12"/>
+    <field name="nbRqstFunc" type="/int" offset="16"/>
+    <field name="rqstFuncTab" type="/int**" offset="20"/>
+    <field name="rqstTab" type="/struct SERV_RQST[20]" offset="24"/>
+  </compound>
+  <compound name="/struct EXEC_TASK_DESCRIPTION" size="168">
+    <field name="taskId" type="/int" offset="0"/>
+    <field name="status" type="/int" offset="4"/>
+    <field name="period" type="/double" offset="8"/>
+    <field name="maxPeriod" type="/unsigned long" offset="16"/>
+    <field name="onPeriod" type="/unsigned long" offset="20"/>
+    <field name="bilan" type="/int" offset="24"/>
+    <field name="currentActivity" type="/int" offset="28"/>
+    <field name="wakeUp" type="/int" offset="32"/>
+    <field name="nbActivities" type="/int" offset="36"/>
+    <field name="posterId" type="/nil*[16]" offset="40"/>
+    <field name="clientId" type="/struct CS_CLIENT*[4]" offset="104"/>
+  </compound>
+  <compound name="/struct RFLEX_CNTRL_STR" size="36">
+    <field name="cntrlTask" type="/struct CNTRL_TASK_DESCRIPTION" offset="0"/>
+    <field name="execTaskTab" type="/struct EXEC_TASK_DESCRIPTION[0]" offset="32"/>
+    <field name="activityTab" type="/struct ACTIVITY_DESCRIPTION[0]" offset="32"/>
+  </compound>
+  <alias name="/CLIENT_ID" source="/struct CS_CLIENT*"/>
+  <alias name="/CLIENT_RQST" source="/struct CLIENT_RQST"/>
+  <alias name="/CS_CLIENT" source="/struct CS_CLIENT"/>
+  <alias name="/CS_SERV" source="/struct CS_SERV"/>
+  <alias name="/EXEC_TASK_DESCRIPTION" source="/struct EXEC_TASK_DESCRIPTION"/>
+  <alias name="/RFLEX_CNTRL_STR" source="/struct RFLEX_CNTRL_STR"/>
+  <alias name="/SERV_ID" source="/struct CS_SERV*"/>
 </typelib>
-
