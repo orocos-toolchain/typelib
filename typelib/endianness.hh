@@ -56,7 +56,18 @@ namespace Typelib
 	// found in compiled
 	std::vector<size_t> m_compiled;
 
+        /**
+         * FLAG_SKIP
+         * <number of bytes to skip>
+         */
 	static size_t const FLAG_SKIP  = ((size_t) -1);
+        /**
+         * FLAG_ARRAY
+         * <array size in elements>
+         * <element size in bytes>
+         * <endian swapping code for the array elements>
+         * FLAG_END
+         */
 	static size_t const FLAG_ARRAY = ((size_t) -2);
 	static size_t const FLAG_END   = ((size_t) -3);
 	static size_t const FLAG_SWAP_4 = ((size_t) -4);
