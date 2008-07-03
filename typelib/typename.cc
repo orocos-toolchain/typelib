@@ -1,9 +1,12 @@
 #include "typename.hh"
 #include <boost/static_assert.hpp>
+#include <utilmm/stringtools.hh>
+#include <iostream>
 
 using namespace std;
 using namespace boost;
 using namespace Typelib;
+using namespace utilmm;
 
 namespace
 {
@@ -46,9 +49,29 @@ namespace Typelib
     }
 
     bool isValidTypename(const std::string& name, bool absolute)
-    { 
+    {
         if (name.empty())
             return false;
+
+        stringlist with_templates = utilmm::split(name, "<");
+        if (with_templates.size() > 1)
+        {
+            if (*with_templates.back().rbegin() != '>')
+                return false;
+
+            if (!isValidTypename(with_templates.front(), absolute))
+                return false;
+
+            string template_args = with_templates.back();
+            stringlist args = split(string(template_args, 0, template_args.size() - 1), ",");
+            for (stringlist::const_iterator it = args.begin(); it != args.end(); ++it)
+            {
+                if (!isValidTypename(*it, absolute))
+                    return false;
+            }
+
+            return true;
+        }
 
         size_t const npos = string::npos;
         size_t last_mark = name.rfind(NamespaceMark);

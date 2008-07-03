@@ -11,9 +11,9 @@ BOOST_AUTO_TEST_CASE( test_typename_validation )
     BOOST_CHECK(!isValidTypename("std::string", false));
     BOOST_CHECK(!isValidTypename("std::string", true));
     BOOST_CHECK(isValidTypename("/std/string<double>", false));
-    BOOST_CHECK(isValidTypename("/std/string<double>", true));
+    BOOST_CHECK(isValidTypename("/std/string</double>", true));
     BOOST_CHECK(isValidTypename("std/string<double>", false));
-    BOOST_CHECK(!isValidTypename("std/string<double>", true));
+    BOOST_CHECK(!isValidTypename("std/string</double>", true));
 
     BOOST_CHECK(isValidTypename("s", false));
     BOOST_CHECK(!isValidTypename(":blabla", false));
