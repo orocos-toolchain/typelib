@@ -21,7 +21,7 @@ namespace Typelib
 
     public:
         RegistryIterator(RegistryIterator const& other)
-            : m_iter(other.m_iter) {}
+            : m_iter(other.m_iter), m_registry(other.m_registry) {}
 
 	/** The type name */
         std::string getName() const { return m_iter->first; }
@@ -39,12 +39,15 @@ namespace Typelib
 	 * are not persistent */
         bool isPersistent() const { return m_iter->second.persistent; }
 
+        Registry const& getRegistry() const { return m_registry; }
+
     private:
         typedef Registry::TypeMap::const_iterator BaseIter;
+        Registry const& m_registry;
         BaseIter m_iter;
             
-        explicit RegistryIterator(BaseIter init)
-            : m_iter(init) {}
+        explicit RegistryIterator(Registry const& registry, BaseIter init)
+            : m_registry(registry), m_iter(init) {}
         friend class boost::iterator_core_access;
 
         bool equal(RegistryIterator const& other) const

@@ -431,8 +431,8 @@ namespace Typelib
         }
     }
 
-    RegistryIterator Registry::begin() const { return RegistryIterator(m_global.begin()); }
-    RegistryIterator Registry::end() const { return RegistryIterator(m_global.end()); }
+    RegistryIterator Registry::begin() const { return RegistryIterator(*this, m_global.begin()); }
+    RegistryIterator Registry::end() const { return RegistryIterator(*this, m_global.end()); }
 
     bool Registry::isSame(Registry const& other) const
     {

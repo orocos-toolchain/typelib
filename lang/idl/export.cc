@@ -11,10 +11,12 @@ namespace
     class IDLExportVisitor : public TypeVisitor
     {
     public:
+	Registry const& m_registry;
 	IDLExport const& m_exporter;
         ostream&  m_stream;
         string    m_indent;
 
+        bool visit_(OpaqueType const& type);
         bool visit_(Compound const& type);
         bool visit_(Compound const& type, Field const& field);
 
@@ -25,7 +27,7 @@ namespace
 
         bool visit_(Enum const& type);
 
-        IDLExportVisitor(IDLExport const& exporter, ostream& stream, string const& base_indent);
+        IDLExportVisitor(Registry const& registry, IDLExport const& exporter, ostream& stream, string const& base_indent);
     };
 
     struct Indent
@@ -38,9 +40,9 @@ namespace
         ~Indent() { m_indent = m_save; }
     };
 
-    IDLExportVisitor::IDLExportVisitor(IDLExport const& exporter,
+    IDLExportVisitor::IDLExportVisitor(Registry const& registry, IDLExport const& exporter,
 	    ostream& stream, string const& base_indent)
-        : m_exporter(exporter), m_stream(stream), m_indent(base_indent) {}
+        : m_registry(registry), m_exporter(exporter), m_stream(stream), m_indent(base_indent) {}
 
     bool IDLExportVisitor::visit_(Compound const& type)
     { 
@@ -59,7 +61,9 @@ namespace
     { 
 	IDLExport::checkType(field.getType());
 
-	if (field.getType().getCategory() == Type::Array)
+        Type const& field_type(field.getType());
+
+	if (field_type.getCategory() == Type::Array)
 	{
 	    Array const& array_type = static_cast<Array const&>(field.getType());
 	    IDLExport::checkType(array_type);
@@ -70,6 +74,28 @@ namespace
 		<< field.getName()
 		<< "[" << array_type.getDimension() << "];\n";
 	}
+        else if (field_type.getCategory() == Type::Opaque)
+	{
+            string field_typename = field_type.getName();
+            // Check if it is a C++-like collection, in which case export it as a
+            // sequence of the corresponding type
+            size_t lt_pos = field_typename.find("<");
+            if (lt_pos != string::npos)
+            {
+                string element_typename = string(field_typename, lt_pos + 1, field_typename.size() - lt_pos - 2);
+                Type const* element_type = m_registry.get(element_typename);
+                if (!element_type)
+                    throw UnsupportedType(type, "cannot find the sequence element type '" + element_typename + "' of '" + field_typename + "'");
+
+                IDLExport::checkType(*element_type);
+
+                m_stream
+                    << m_indent
+                    << "sequence<" + m_exporter.getIDLAbsoluteTypename(*element_type) + ">"
+                    << " "
+                    << field.getName() << ";\n";
+            }
+        }
 	else
 	{
 	    m_stream 
@@ -95,7 +121,7 @@ namespace
     }
     bool IDLExportVisitor::visit_ (Array const& type)
     {
-	throw UnsupportedType(type, "array are not handled by the IDLExportVisitor");
+	throw UnsupportedType(type, "top-level arrays are not handled by the IDLExportVisitor");
         return true;
     }
 
@@ -110,6 +136,12 @@ namespace
 	    symbols.push_back(it->first);
 	m_stream << utilmm::join(symbols, ", ") << " };\n";
 
+        return true;
+    }
+
+    bool IDLExportVisitor::visit_(OpaqueType const& type)
+    {
+	//throw UnsupportedType(type, "top-level containers are not handled by the IDLExportVisitor");
         return true;
     }
 }
@@ -305,7 +337,7 @@ void IDLExport::save
 	else
 	{
 	    std::ostringstream temp_stream;
-	    IDLExportVisitor exporter(*this, temp_stream, indent_string);
+	    IDLExportVisitor exporter(type.getRegistry(), *this, temp_stream, indent_string);
 	    exporter.apply(*type);
 
 	    string result = temp_stream.str();
