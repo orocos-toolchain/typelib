@@ -110,7 +110,7 @@ void TypeSolver::enumElement(const std::string& name, bool has_value, int value)
         value = enum_type.getNextValue();
     
     enum_type.add(name, value);
-    m_constants[name] = value;
+    m_constants.insert(make_pair(name, value));
     CPPParser::enumElement(name, has_value, value);
 }
 

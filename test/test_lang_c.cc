@@ -275,3 +275,28 @@ BOOST_AUTO_TEST_CASE( test_c_array_typedefs )
     BOOST_REQUIRE_EQUAL(registry.get("int"), &array_t->getIndirection());
 }
 
+BOOST_AUTO_TEST_CASE( test_import_validation )
+{
+    utilmm::config_set config;
+    PluginManager::self manager;
+
+    static const char* test_file = TEST_DATA_PATH("data/nested_types.h");
+    BOOST_REQUIRE_THROW( manager->load("c", test_file, config), std::runtime_error );
+}
+
+BOOST_AUTO_TEST_CASE( test_import_problematic_headers )
+{
+    utilmm::config_set config;
+    PluginManager::self manager;
+
+    {
+        static const char* test_file = TEST_DATA_PATH("data/posterLib.h");
+        delete manager->load("c", test_file, config);
+    }
+
+    {
+        static const char* test_file = TEST_DATA_PATH("data/stdheaders.h");
+        delete manager->load("c", test_file, config);
+    }
+}
+
