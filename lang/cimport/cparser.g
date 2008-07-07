@@ -428,9 +428,10 @@ qualified_type returns [std::string qitem]
 template_specifier
         { int current_stack_size = getStackSize();
           pushNewType();
+          std::string dummy;
         }
         :
-                simple_type_specifier (COMMA { pushNewType(); } simple_type_specifier)*
+                dummy = simple_type_specifier (COMMA { pushNewType(); } dummy = simple_type_specifier)*
                 { setTemplateArguments(getStackSize() - current_stack_size); }
         ;
 
