@@ -90,10 +90,10 @@ void TypeSolver::beginEnumDefinition(const std::string& name)
 {
     if (m_class_object)
     {
-        CurrentTypeDefinition def;
+        pushNewType();
+        CurrentTypeDefinition& def = m_current.front();
 	def.name.push_back("enum");
 	def.name.push_back(name);
-        m_current.push_front( def );
     }
     else
         beginTypeDefinition(tsENUM, name);
@@ -149,7 +149,7 @@ int TypeSolver::getTypeSize(CurrentTypeDefinition const& def)
 
 Type& TypeSolver::buildClassObject()
 {
-    m_current.push_front( CurrentTypeDefinition() );
+    pushNewType();
     m_current.front().name.push_back(m_class_object->getName());
 
     Type* object = m_class_object;
@@ -177,14 +177,14 @@ void TypeSolver::foundSimpleType(const std::list<std::string>& full_type)
 
 void TypeSolver::classForwardDeclaration(TypeSpecifier ts, DeclSpecifier ds, const std::string& name)
 {
-    CurrentTypeDefinition def;
+    pushNewType();
+    CurrentTypeDefinition& def = m_current.front();
     if (ts == tsSTRUCT)
         def.name.push_back("struct");
     else if (ts == tsUNION)
         def.name.push_back("union");
 
     def.name.push_back(name);
-    m_current.push_front( def );
 
     CPPParser::classForwardDeclaration(ts, ds, name);
 }
@@ -209,6 +209,7 @@ Typelib::Type const& TypeSolver::buildCurrentType()
         throw TypeStackEmpty();
 
     CurrentTypeDefinition type_def = m_current.front();
+    popType();
 
     // Check if type_def.name is an allowed container (vector, map, set). If it
     // is the case, make sure that it is already defined in the registry
@@ -252,7 +253,8 @@ Typelib::Type const& TypeSolver::buildCurrentType()
 	type_def.array.pop_front();
     }
 
-    return builder.getType();
+    Type const& type = builder.getType();
+    return type;
 }
 
 void TypeSolver::resetPointerLevel()
@@ -276,7 +278,9 @@ TypeSolver::CurrentTypeDefinition TypeSolver::popType()
     return def;
 }
 void TypeSolver::pushNewType()
-{ m_current.push_front( CurrentTypeDefinition() ); }
+{
+    m_current.push_front( CurrentTypeDefinition() );
+}
 int TypeSolver::getStackSize() const { return m_current.size(); }
 
 void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
@@ -307,8 +311,9 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
                 throw UnsupportedClassType(m_class_type);
 
             compound.setSize( Packing::getSizeOfCompound(compound) );
-            m_current.front().pointer_level = 0;
-            m_current.front().array.clear();
+            def.pointer_level = 0;
+            def.array.clear();
+            m_current.push_front(def);
         }
     }
     else if (qi == qiType)
@@ -346,7 +351,7 @@ void TypeSolver::declaratorArray(int size)
 
 void TypeSolver::end_of_stmt()
 { 
-    if (! m_current.empty())
+    while (! m_current.empty())
         popType();
     CPPParser::end_of_stmt(); 
 }
@@ -357,7 +362,6 @@ void TypeSolver::setTemplateArguments(int count)
     while (count)
     {
         Type const& arg_type = buildCurrentType();
-        m_current.pop_front();
         template_args.push_front(arg_type.getName());
         --count;
     }
