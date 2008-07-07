@@ -73,7 +73,7 @@ public:
     virtual void incrementPointerLevel();
 
     virtual CurrentTypeDefinition popType();
-    virtual void pushNewType();
+    virtual CurrentTypeDefinition& pushNewType();
     virtual int getStackSize() const;
     void setTemplateArguments(int count);
 };

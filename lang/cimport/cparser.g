@@ -190,7 +190,7 @@ public:
         : std::runtime_error("unknown type '" + name + "'") { assert(false); } };
     struct TypeStackEmpty : std::runtime_error
     { 
-        TypeStackEmpty() : std::runtime_error("empty type stack encountered") { }
+        TypeStackEmpty(std::string const& where) : std::runtime_error("empty type stack encountered at " + where) { }
     };
 
     struct CurrentTypeDefinition 
@@ -253,7 +253,7 @@ protected:
     virtual void foundSimpleType(const std::list<std::string>& full_type);
 
     virtual CurrentTypeDefinition popType() = 0;
-    virtual void pushNewType() = 0;
+    virtual CurrentTypeDefinition& pushNewType() = 0;
     virtual int getStackSize() const = 0;
     virtual void setTemplateArguments(int count) = 0;
 }

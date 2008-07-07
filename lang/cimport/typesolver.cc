@@ -93,8 +93,7 @@ void TypeSolver::beginEnumDefinition(const std::string& name)
 {
     if (m_class_object)
     {
-        pushNewType();
-        CurrentTypeDefinition& def = m_current.front();
+        CurrentTypeDefinition& def = pushNewType();
 	def.name.push_back("enum");
 	def.name.push_back(name);
     }
@@ -110,7 +109,7 @@ void TypeSolver::enumElement(const std::string& name, bool has_value, int value)
         value = enum_type.getNextValue();
     
     enum_type.add(name, value);
-    m_constants.insert(make_pair(name, value));
+    m_constants[name] = value;
     CPPParser::enumElement(name, has_value, value);
 }
 
@@ -152,8 +151,8 @@ int TypeSolver::getTypeSize(CurrentTypeDefinition const& def)
 
 Type& TypeSolver::buildClassObject()
 {
-    pushNewType();
-    m_current.front().name.push_back(m_class_object->getName());
+    CurrentTypeDefinition& def = pushNewType();
+    def.name.push_back(m_class_object->getName());
 
     Type* object = m_class_object;
     m_class_object = 0;
@@ -180,8 +179,7 @@ void TypeSolver::foundSimpleType(const std::list<std::string>& full_type)
 
 void TypeSolver::classForwardDeclaration(TypeSpecifier ts, DeclSpecifier ds, const std::string& name)
 {
-    pushNewType();
-    CurrentTypeDefinition& def = m_current.front();
+    CurrentTypeDefinition& def = pushNewType();
     if (ts == tsSTRUCT)
         def.name.push_back("struct");
     else if (ts == tsUNION)
@@ -209,10 +207,9 @@ TemplateDef const ALLOWED_TEMPLATES[] = {
 Typelib::Type const& TypeSolver::buildCurrentType()
 {
     if (m_current.empty())
-        throw TypeStackEmpty();
+        throw TypeStackEmpty("buildCurrentType");
 
-    CurrentTypeDefinition type_def = m_current.front();
-    popType();
+    CurrentTypeDefinition type_def = popType();
 
     // Check if type_def.name is an allowed container (vector, map, set). If it
     // is the case, make sure that it is already defined in the registry
@@ -268,21 +265,23 @@ void TypeSolver::resetPointerLevel()
 
 void TypeSolver::incrementPointerLevel()
 {
-    m_current.front().pointer_level++;
+    if (!m_current.empty())
+        m_current.front().pointer_level++;
 }
 
 TypeSolver::CurrentTypeDefinition TypeSolver::popType()
 {
     if (m_current.empty())
-        throw TypeStackEmpty();
+        throw TypeStackEmpty("popType");
 
     CurrentTypeDefinition def = m_current.front();
     m_current.pop_front();
     return def;
 }
-void TypeSolver::pushNewType()
+TypeSolver::CurrentTypeDefinition& TypeSolver::pushNewType()
 {
     m_current.push_front( CurrentTypeDefinition() );
+    return m_current.front();
 }
 int TypeSolver::getStackSize() const { return m_current.size(); }
 
@@ -299,6 +298,10 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
     {
         if (m_class_type != tsENUM)
         {
+            // Keep it here to readd it afterwards. This handles definitions
+            // like
+            //   TYPE a, *b, c[10], d;
+            // I.e. TYPE remains the same but the modifiers are reset.
             CurrentTypeDefinition def = m_current.front();
 
             Compound& compound     = dynamic_cast<Compound&>(*m_class_object);
@@ -349,6 +352,7 @@ void TypeSolver::declaratorArray(int size)
 {
     if (!m_current.empty())
         m_current.front().array.push_back(size);
+
     CPPParser::declaratorArray(size);
 }
 
@@ -361,6 +365,9 @@ void TypeSolver::end_of_stmt()
 
 void TypeSolver::setTemplateArguments(int count)
 {
+    if (m_current.empty())
+        throw TypeStackEmpty("setTemplateArguments");
+
     std::list<std::string> template_args;
     while (count)
     {
