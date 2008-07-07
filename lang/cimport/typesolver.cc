@@ -50,6 +50,9 @@ void TypeSolver::setTypename(std::string const& name)
 
 void TypeSolver::beginTypeDefinition(TypeSpecifier class_type, const std::string& name)
 {
+    if (m_class_object)
+        throw NestedTypeDefinition(name, m_class_object->getName());
+
     m_class_type = class_type;
     if (m_class_type == tsENUM)
         m_class_object = new Enum("");

@@ -32,17 +32,18 @@ class TypeSolver : public CPPParser
     void beginTypeDefinition(TypeSpecifier class_type, const std::string& name);
 
 public:
-    class UnsupportedClassType
+    struct UnsupportedClassType : public std::runtime_error
     {
-        int m_type;
-    public:
-        UnsupportedClassType(int type) : m_type(type) {}
-        std::string toString() 
-        { 
-            std::ostringstream stream;
-            stream << "unsupported class type " << m_type; 
-            return stream.str();
-        }
+        const int type;
+        UnsupportedClassType(int type_)
+            : std::runtime_error("internal error: found a type which is classified neither as struct nor union")
+            , type(type_) {}
+    };
+
+    struct NestedTypeDefinition : public std::runtime_error
+    {
+        NestedTypeDefinition(std::string const& inside, std::string const& outside)
+            : std::runtime_error("found nested type definition: " + inside + " is defined in " + outside) {}
     };
 
     TypeSolver(antlr::TokenStream& lexer, Typelib::Registry& registry, bool cxx_mode);
