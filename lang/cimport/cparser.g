@@ -313,7 +313,7 @@ declaration
         linkage_specification
 |	
     { beginDeclaration(); }
-    declaration_specifiers ((COMMA)? init_declarator_list)? SEMICOLON { end_of_stmt();}
+    declaration_specifiers ((COMMA)? init_declarator_list)? (gcc_attribute_specification)* SEMICOLON { end_of_stmt();}
     { endDeclaration(); }
 ;
 
@@ -633,8 +633,7 @@ declarator_suffixes
 		(parameter_list)?
 		RPAREN {declaratorEndParameterList(0);}
 		(tq = type_qualifier)*
-                (gcc_attribute_specification)*
-	)
+        )
 	;
 
 /* I think something is weird with the context-guards for predicates;
@@ -685,7 +684,6 @@ function_direct_declarator [int definition]
 		RPAREN
 		(tq = type_qualifier)*
 		{ functionEndParameterList(definition); }
-                (gcc_attribute_specification)*
 	;
 
 parameter_list
