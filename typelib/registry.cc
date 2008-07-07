@@ -154,6 +154,8 @@ namespace Typelib
         DECLARE_STD_TYPE(signed long int);
         DECLARE_STD_TYPE(unsigned long);
         DECLARE_STD_TYPE(unsigned long int);
+        DECLARE_STD_TYPE(long unsigned);
+        DECLARE_STD_TYPE(long unsigned int);
 
         DECLARE_STD_TYPE(long long);
         DECLARE_STD_TYPE(long long int);
