@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE( test_equality )
     }
 }
 
-BOOST_AUTO_TEST_CASE( test_merge )
+BOOST_AUTO_TEST_CASE( test_model_merge )
 {
     Registry ra, rb;
 

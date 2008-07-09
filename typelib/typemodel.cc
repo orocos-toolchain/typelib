@@ -179,6 +179,7 @@ namespace Typelib
 	    result->addField(it->getName(), it->getType().merge(registry, stack), it->getOffset());
 
         stack.erase(it);
+        result->setSize(getSize());
 	return result.release();
     }
     std::set<Type const*> Compound::dependsOn() const

@@ -4,6 +4,9 @@
 #include <typelib/typemodel.hh>
 #include <typelib/typename.hh>
 #include <typelib/registry.hh>
+#include <typelib/typedisplay.hh>
+#include <typelib/registryiterator.hh>
+#include <typelib/pluginmanager.hh>
 using namespace Typelib;
 
 BOOST_AUTO_TEST_CASE( test_typename_validation )
@@ -95,5 +98,42 @@ BOOST_AUTO_TEST_CASE( test_namespace_update_at_insertion )
     BOOST_REQUIRE_EQUAL(registry.get("/A/B/B/B/Test"), registry.get("Test"));
     BOOST_REQUIRE_EQUAL(registry.get("/A/B/B/B/Test"), registry.get("B/Test"));
     BOOST_REQUIRE_EQUAL(registry.get("/A/B/B/B/Test"), registry.get("B/B/Test"));
+}
+
+static void assert_registries_equal(Registry const& registry, Registry const& ref)
+{
+    BOOST_REQUIRE_EQUAL(ref.size(), registry.size());
+
+    Registry::Iterator
+        t_it = registry.begin(),
+        t_end = registry.end(),
+        r_it = ref.begin(),
+        r_end = ref.end();
+
+    for (; t_it != t_end && r_it != r_end; ++t_it, ++r_it)
+    {
+        BOOST_REQUIRE_EQUAL(t_it.getName(), r_it.getName());
+        BOOST_REQUIRE_EQUAL(t_it->getName(), r_it->getName());
+        BOOST_REQUIRE_MESSAGE(t_it->isSame(*r_it), "definitions of " << t_it->getName() << " differ: " << *t_it << "\n" << *r_it);
+    }
+
+    BOOST_REQUIRE(t_it == t_end);
+    BOOST_REQUIRE(r_it == r_end);
+}
+
+BOOST_AUTO_TEST_CASE( test_repositories_merge )
+{
+    static const char* test_file = TEST_DATA_PATH("test_cimport.1");
+
+    utilmm::config_set config;
+    PluginManager::self manager;
+
+    std::auto_ptr<Registry> ref( manager->load("c", test_file, config));
+    Registry target;
+    target.merge(*ref);
+    assert_registries_equal(target, *ref);
+
+    target.merge(*ref);
+    assert_registries_equal(target, *ref);
 }
 
