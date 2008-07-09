@@ -81,11 +81,7 @@ bool TypeDisplayVisitor::visit_(Enum const& type)
 
 bool TypeDisplayVisitor::visit_(Pointer const& type)
 {
-    m_stream << "pointer on\n";
-    { Indent indenter(m_indent);
-        m_stream << m_indent;
-        TypeVisitor::visit_(type);
-    }
+    m_stream << "pointer on " << type.getIndirection().getName() << "\n";
     return true;
 }
 
