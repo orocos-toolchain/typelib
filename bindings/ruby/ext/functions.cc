@@ -318,11 +318,11 @@ void Typelib_init_functions()
     rb_define_singleton_method(mTypelib, "filter_numeric_arg", RUBY_METHOD_FUNC(filter_numeric_arg), 2);
     rb_define_singleton_method(mTypelib, "filter_value_arg", RUBY_METHOD_FUNC(filter_value_arg), 2);
 
-    cLibrary = rb_const_get(mTypelib, rb_intern("Library"));
+    cLibrary = rb_define_class_under(mTypelib, "Library", rb_cObject);
     rb_define_singleton_method(cLibrary, "wrap", RUBY_METHOD_FUNC(library_wrap), 1);
     rb_define_method(cLibrary, "find", RUBY_METHOD_FUNC(library_find), 1);
 
-    cFunction = rb_const_get(mTypelib, rb_intern("Function"));
+    cFunction = rb_define_class_under(mTypelib, "Function", rb_cObject);
     rb_define_private_method(cFunction, "prepare_vm", RUBY_METHOD_FUNC(function_compile), 1);
 
     cCallVM  = rb_define_class_under(mTypelib, "CallVM", rb_cObject);

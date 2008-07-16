@@ -2,6 +2,7 @@ require 'test_config'
 require 'typelib'
 require 'test/unit'
 
+if Typelib.with_dyncall?
 class TC_Functions < Test::Unit::TestCase
     include Typelib
     
@@ -290,5 +291,6 @@ class TC_Functions < Test::Unit::TestCase
         assert_nothing_raised { one.call }
         assert_raises(ArgumentError) { zero.call }
     end
+end
 end
 

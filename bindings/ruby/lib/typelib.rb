@@ -550,7 +550,12 @@ module Typelib
             do_export(kind, options)
 	end
     end
+end
 
+require 'typelib_ruby'
+
+if Typelib.with_dyncall?
+module Typelib
     # An opened C library
     class Library
 	# The file name of this library
@@ -832,6 +837,5 @@ module Typelib
 	end
     end
 end
-
-require 'typelib_ruby'
+end
 

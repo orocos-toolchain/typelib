@@ -20,9 +20,11 @@ extern VALUE cEnum;
 extern void Typelib_init_memory();
 extern void Typelib_init_values();
 extern void Typelib_init_strings();
-extern void Typelib_init_functions();
 extern void Typelib_init_specialized_types();
 extern void Typelib_init_registry();
+#ifdef WITH_DYNCALL
+extern void Typelib_init_functions();
+#endif
 
 namespace cxx2rb {
     using namespace Typelib;
