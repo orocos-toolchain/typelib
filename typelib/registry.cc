@@ -332,6 +332,9 @@ namespace Typelib
         std::string cur_space = NamespaceMarkString;
 	while(true)
         {
+            if (name.size() <= cur_space.size() || string(name, 0, cur_space.size()) != cur_space)
+                break;
+
 	    string cur_name  = getRelativeName(name, cur_space);
 
 	    // Check if there is already a type with the same relative name
