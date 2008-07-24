@@ -114,11 +114,11 @@ function_compile(VALUE self, VALUE filtered_args)
     rb_iv_set(rb_vm, "@arguments", filtered_args);
 
     VALUE argument_types = rb_iv_get(self, "@arguments");
-    size_t argc = RARRAY_LEN(argument_types);
-    VALUE* argv = RARRAY_PTR(argument_types);
+    size_t argc = RARRAY(argument_types)->len;
+    VALUE* argv = RARRAY(argument_types)->ptr;
 
     for (int i = 0; i < argc; ++i)
-	PrepareVM::append(vm, rb2cxx::object<Type>(argv[i]), RARRAY_PTR(filtered_args)[i]);
+	PrepareVM::append(vm, rb2cxx::object<Type>(argv[i]), RARRAY(filtered_args)->ptr[i]);
 
     return rb_vm;
 }
