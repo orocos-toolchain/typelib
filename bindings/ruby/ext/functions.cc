@@ -133,6 +133,7 @@ class VMCall : public TypeVisitor
     virtual bool visit_ (NullType const& type)
     {
 	dcCallVoid(m_vm, m_handle);
+	return true;
     }
 
     virtual bool visit_ (Numeric const& type)
