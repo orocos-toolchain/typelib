@@ -1,4 +1,5 @@
 CONFIGURE_FILE(testsuite.hh.in test/testsuite.hh @ONLY)
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../lang/cimport ${CMAKE_CURRENT_BINARY_DIR}/../lang/cimport)
 ADD_EXECUTABLE(typelib_testsuite testsuite.cc
     test_registry.cc
     test_display.cc test_lang_c.cc test_lang_tlb.cc test_model.cc

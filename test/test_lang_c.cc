@@ -8,6 +8,7 @@
 #include <typelib/typemodel.hh>
 #include <typelib/registry.hh>
 #include <typelib/typedisplay.hh>
+#include <typesolver.hh>
 #include "test_cimport.1"
 #include <iostream>
 
@@ -280,8 +281,10 @@ BOOST_AUTO_TEST_CASE( test_import_validation )
     utilmm::config_set config;
     PluginManager::self manager;
 
-    static const char* test_file = TEST_DATA_PATH("data/nested_types.h");
-    BOOST_REQUIRE_THROW( manager->load("c", test_file, config), std::runtime_error );
+    static const char* test1 = TEST_DATA_PATH("data/nested_types/struct_in_struct.h");
+    BOOST_REQUIRE_THROW( manager->load("c", test1, config), TypeSolver::NestedTypeDefinition );
+    static const char* test2 = TEST_DATA_PATH("data/nested_types/enum_in_struct.h");
+    BOOST_REQUIRE_THROW( manager->load("c", test2, config), TypeSolver::NestedTypeDefinition );
 }
 
 BOOST_AUTO_TEST_CASE( test_import_problematic_headers )

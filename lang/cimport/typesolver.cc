@@ -104,6 +104,9 @@ void TypeSolver::beginEnumDefinition(const std::string& name)
 
 void TypeSolver::enumElement(const std::string& name, bool has_value, int value)
 {
+    if (m_class_type != tsENUM)
+        throw NestedTypeDefinition(m_current.front().name.back(), m_class_object->getName());
+
     Enum& enum_type = dynamic_cast<Enum&>(*m_class_object);
     if (!has_value)
         value = enum_type.getNextValue();
