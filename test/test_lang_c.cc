@@ -300,3 +300,24 @@ BOOST_AUTO_TEST_CASE( test_import_problematic_headers )
     }
 }
 
+BOOST_AUTO_TEST_CASE( test_import_and_merge )
+{
+    static const char* test_file = TEST_DATA_PATH("test_cimport.h");
+
+    utilmm::config_set config;
+    config.set("include", TEST_DATA_PATH(".."));
+    config.set("define", "GOOD");
+    PluginManager::self manager;
+
+    { std::auto_ptr<Registry> r1(manager->load("c", test_file, config));
+        std::auto_ptr<Registry> r2(manager->load("c", test_file, config));
+        r1->merge(*r2);
+    }
+    { Registry target;
+        std::auto_ptr<Registry> r1(manager->load("c", test_file, config));
+        std::auto_ptr<Registry> r2(manager->load("c", test_file, config));
+        target.merge(*r1);
+        target.merge(*r2);
+    }
+}
+
