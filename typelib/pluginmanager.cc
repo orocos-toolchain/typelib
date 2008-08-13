@@ -78,6 +78,27 @@ void PluginManager::save(std::string const& kind, utilmm::config_set const& conf
     exporter->save(into, config, registry);
 }
 
+Registry* PluginManager::load(std::string const& kind, std::istream& stream)
+{
+    utilmm::config_set config;
+    return load(kind, stream, config);
+}
+void PluginManager::load(std::string const& kind, std::istream& stream, Registry& into )
+{
+    utilmm::config_set config;
+    return load(kind, stream, config, into);
+}
+Registry* PluginManager::load(std::string const& kind, std::string const& file)
+{
+    utilmm::config_set config;
+    return load(kind, file, config);
+}
+void PluginManager::load(std::string const& kind, std::string const& file, Registry& into)
+{
+    utilmm::config_set config;
+    return load(kind, file, config, into);
+}
+
 Registry* PluginManager::load(std::string const& kind, std::istream& stream, utilmm::config_set const& config )
 {
     auto_ptr<Registry> registry(new Registry);

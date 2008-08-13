@@ -106,6 +106,35 @@ namespace Typelib
 	 */
         static Registry* load
             ( std::string const& kind
+            , std::istream& stream );
+	
+       	/** Imports types from a istream object to an already existing registry
+	 */
+	static void load
+            ( std::string const& kind
+            , std::istream& stream
+            , Registry& into );
+
+       	/** Creates a registry from a file
+	 * @see Importer::load
+	 */
+        static Registry* load
+            ( std::string const& kind
+            , std::string const& file );
+
+       	/** Imports types from a file into an already existing registry
+	 * @see Importer::load
+	 */
+        static void load
+            ( std::string const& kind
+            , std::string const& file
+            , Registry& into );
+
+
+	/** \overload
+	 */
+        static Registry* load
+            ( std::string const& kind
             , std::istream& stream
             , utilmm::config_set const& config );
 	
