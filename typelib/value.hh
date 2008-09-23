@@ -78,6 +78,10 @@ namespace Typelib
         ValueVisitor(bool defval = false) 
             : m_defval(defval), m_dispatcher(0) {}
         virtual ~ValueVisitor() {}
+
+        /** This is for internal use only. To visit a Value object, use apply */
+        void dispatch(Value v);
+
         void apply(Value v);
     };
 

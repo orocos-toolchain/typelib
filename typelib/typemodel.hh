@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <boost/tuple/tuple.hpp>
 
 #include "typename.hh"
   
@@ -301,18 +302,67 @@ namespace Typelib
             : std::runtime_error("unknown container " + name) {}
     };
 
+    class ValueVisitor;
+    class Value;
+
     /** Base type for variable-length sets */
     class Container : public Indirect
     {
         std::string m_kind;
 
     public:
+        typedef std::vector<size_t> MarshalOps;
+
         Container(std::string const& kind, std::string const& name, size_t size, Type const& of);
 
         std::string kind() const;
-        virtual size_t getElementCount(void* ptr) const = 0;
+        virtual void init(void* ptr) const = 0;
         virtual void destroy(void* ptr) const = 0;
-        virtual uint8_t* getElement(void* ptr, int i) const = 0;
+        virtual bool visit(ValueVisitor& visitor, Value const& v) const = 0;
+        virtual size_t getElementCount(void* ptr) const = 0;
+
+        /** The marshalling process calls this method so that the contents of
+         * the container are dumped into the provided buffer.
+         *
+         * In the marshalled stream, all containers are dumped as
+         *   <element-count [65 bits]> <elements>
+         *
+         * @arg container_ptr the pointer to the container data
+         * @arg element_count the count of elements in the container. This is
+         *   passed here to avoid costly computations: getElementCount is already
+         *   called by the marshalling code itself.
+         * @arg buffer the memory buffer to which the elements should be appended
+         * @arg begin the marshalling code that describes the marshalling process for one element
+         * @arg end end of the marshalling code that describes the marshalling process for one element
+         * @return the marshalling process should end at the first FLAG_END found in [begin, end)
+         *   (with nesting taken into account). The returned value is the iterator on this FLAG_END element
+         *   (i.e. *retval == FLAG_END is a postcondition of this method)
+         */
+        virtual MarshalOps::const_iterator dump(
+            void* container_ptr, size_t element_count,
+            std::vector<uint8_t>& buffer,
+            MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const = 0;
+
+        /** The marshalling process calls this method so that the contents of
+         * the container are loaded from the provided buffer.
+         *
+         * In the marshalled stream, all containers are dumped as
+         *   <element-count [65 bits]> <elements>
+         *
+         * @arg container_ptr the pointer to the container data
+         * @arg element_count the count of elements in the container, loaded from the stream.
+         * @arg buffer the memory buffer from which the elements should be loaded
+         * @arg in_offset the offset in \c buffer of the first element of the container
+         * @arg begin the marshalling code that describes the loading process for one element
+         * @arg end end of the marshalling code that describes the loading process for one element
+         * @return the marshalling process should end at the first FLAG_END found in [begin, end)
+         *   (with nesting taken into account). The first element of the returned value is the iterator on this FLAG_END element
+         *   (i.e. *retval == FLAG_END is a postcondition of this method). The second element is the new value of \c in_offset
+         */
+        virtual boost::tuple<MarshalOps::const_iterator, size_t> load(
+            void* container_ptr, size_t element_count,
+            std::vector<uint8_t> const& buffer, size_t in_offset,
+            MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const = 0;
 
         typedef Container const& (*ContainerFactory)(Registry& r, std::list<Type const*> const& base_type);
         typedef std::map<std::string, ContainerFactory> AvailableContainers;

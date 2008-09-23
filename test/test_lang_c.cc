@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE( test_std_collections )
     CHECK_FIELD(StdCollections, v8, int8_t, 0);
     //CHECK_FIELD(StdCollections, float_set, std::set<float>, "/std/set</float>");
     CHECK_FIELD(StdCollections, v16, int16_t, 0);
-    CHECK_FIELD(StdCollections, bv, int64_t, 0);
+    CHECK_FIELD(StdCollections, v64, int64_t, 0);
     
     // Unfortunately, cannot check this one automatically
     // Compound const& collections = dynamic_cast<Compound const&>(*registry.get("StdCollections"));

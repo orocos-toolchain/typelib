@@ -127,21 +127,7 @@ namespace Typelib
 	return true;
     }
     bool ValueVisitor::visit_(Value const& v, Container const& c)
-    { 
-	m_dispatcher->m_stack.push_back(0);
-	uint8_t*& element = m_dispatcher->m_stack.back();
-
-	Type const& subtype(c.getIndirection());
-        for(size_t i = 0; i < c.getElementCount(v.getData()); ++i)
-        {
-            element = c.getElement(reinterpret_cast<uint8_t*>(v.getData()), i);
-            if (! m_dispatcher->TypeVisitor::visit_(subtype))
-                break;
-        }
-	m_dispatcher->m_stack.pop_back();
-
-        return true;
-    }
+    { return c.visit(*this, v); }
     bool ValueVisitor::visit_(Value const&, Compound const& c) 
     { return m_dispatcher->TypeVisitor::visit_(c); }
     bool ValueVisitor::visit_(Value const&, Compound const& c, Field const& f) 
@@ -150,6 +136,12 @@ namespace Typelib
     { return m_dispatcher->TypeVisitor::visit_(e); }
     bool ValueVisitor::visit_(Value const& v, OpaqueType const& t)
     { return true; }
+    void ValueVisitor::dispatch(Value v)
+    {
+        m_dispatcher->m_stack.push_back(reinterpret_cast<uint8_t*>(v.getData()));
+        m_dispatcher->TypeVisitor::visit_(v.getType());
+        m_dispatcher->m_stack.pop_back();
+    }
 
 }
 
