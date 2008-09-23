@@ -123,8 +123,8 @@ namespace
     void indirect(ostream& stream, Indirect const& type)
     {
         stream 
-            << " name=\"" << type.getName() 
-            << "\" of=\"" << type.getIndirection().getName() << "\"";
+            << " name=\"" << xmlEscape(type.getName())
+            << "\" of=\"" << xmlEscape(type.getIndirection().getName()) << "\"";
     }
 
     bool TlbExportVisitor::visit_ (Pointer const& type)
