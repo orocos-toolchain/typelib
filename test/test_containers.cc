@@ -54,7 +54,8 @@ BOOST_AUTO_TEST_CASE( test_vector )
 
     Container const& container = Container::createContainer(registry, "/std/vector", *registry.get("B"));
 
-    std::vector<B>* v = new std::vector<B>();
+    void* v_memory = malloc(sizeof(std::vector<B>));
+    std::vector<B>* v = new(v_memory) std::vector<B>();
     v->resize(10);
     BOOST_REQUIRE_EQUAL(10, container.getElementCount(v));
 
