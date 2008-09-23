@@ -82,6 +82,7 @@ namespace Typelib
         bool visit_ (Pointer const& type);
         bool visit_ (Array const& type);
 	bool visit_ (Compound const& type);
+	bool visit_ (Container const& type);
 
     public:
 	~CompileEndianSwapVisitor() { }

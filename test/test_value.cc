@@ -220,13 +220,11 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
         BOOST_CHECK_THROW(compiled.apply(type), Typelib::UnsupportedEndianSwap);
     }
 
-    // Check an opaque type (must skip)
+    // Check an opaque type (must throw)
     {
         OpaqueType type("test_opaque", 10);
 	CompileEndianSwapVisitor compiled;
-        compiled.apply(type);
-        BOOST_REQUIRE_EQUAL(CompileEndianSwapVisitor::FLAG_SKIP, compiled.m_compiled[0]);
-        BOOST_REQUIRE_EQUAL(10, compiled.m_compiled[1]);
+        BOOST_CHECK_THROW(compiled.apply(type), Typelib::UnsupportedEndianSwap);
     }
 }
 
