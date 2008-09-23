@@ -22,7 +22,7 @@ namespace
             if (!xmlStrcmp(name, cur_cat->name)) 
                 return *cur_cat;
         }
-        return Cat();
+        throw std::runtime_error(string("unrecognized XML node '") + reinterpret_cast<char const*>(name) + "'");
     }
 }
 
