@@ -218,32 +218,26 @@ Typelib::Type const& TypeSolver::buildCurrentType()
     // is the case, make sure that it is already defined in the registry
     if (!type_def.template_args.empty())
     {
-        // Only collections in std:: are supported
-        if (type_def.name.size() > 1)
-            throw Undefined(join(type_def.name, " "));
+        typedef Container::AvailableContainers Containers;
+        typedef std::list<std::string> stringlist;
 
-        TemplateDef const* tmpl_def = 0;
-        for (tmpl_def = ALLOWED_TEMPLATES; tmpl_def->name; ++tmpl_def)
+        string fullname = join(type_def.name, "/");
+        if (fullname[0] != '/')
+            fullname = "/" + fullname;
+
+        Containers containers = Container::availableContainers();
+        Containers::const_iterator factory = containers.find(fullname);
+        if (factory == containers.end())
+            throw Undefined(fullname);
+        
+        std::list<Type const*> template_args;
+        for (stringlist::const_iterator it = type_def.template_args.begin();
+                it != type_def.template_args.end(); ++it)
         {
-            if (tmpl_def->name == type_def.name.back())
-            {
-                string full_name = type_def.name.back() + "<" + join(type_def.template_args, ",") + ">";
-                if (*full_name.begin() != '/')
-                    full_name = "/" + full_name;
-
-                if (!m_registry.has(full_name))
-                {
-                    OpaqueType* template_type = new OpaqueType(full_name, tmpl_def->size);
-                    m_registry.add(template_type);
-                    type_def.name.clear();
-                    type_def.name.push_back(full_name);
-                    type_def.template_args.clear();
-                    break;
-                }
-            }
+            template_args.push_back( m_registry.build( *it ) );
         }
-        if (!tmpl_def->name)
-            throw Undefined(join(type_def.name, "::"));
+
+        return (*factory->second)(m_registry, template_args);
     }
 
     TypeBuilder builder(m_registry, type_def.name);

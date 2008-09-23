@@ -243,17 +243,17 @@ BOOST_AUTO_TEST_CASE( test_std_collections )
     CHECK_FIELD(StdCollections, iv, int, 0);
     CHECK_FIELD(StdCollections, dbl_vector, std::vector<double>, "/std/vector</double>");
     CHECK_FIELD(StdCollections, v8, int8_t, 0);
-    CHECK_FIELD(StdCollections, float_set, std::set<float>, "/std/set</float>");
+    //CHECK_FIELD(StdCollections, float_set, std::set<float>, "/std/set</float>");
     CHECK_FIELD(StdCollections, v16, int16_t, 0);
     CHECK_FIELD(StdCollections, bv, int64_t, 0);
     
     // Unfortunately, cannot check this one automatically
-    Compound const& collections = dynamic_cast<Compound const&>(*registry.get("StdCollections"));
-    Field const* field = collections.getField("int_map");
-    BOOST_REQUIRE(field);
+    // Compound const& collections = dynamic_cast<Compound const&>(*registry.get("StdCollections"));
+    // Field const* field = collections.getField("int_map");
+    // BOOST_REQUIRE(field);
 
-    BOOST_REQUIRE_MESSAGE(&field->getType() == registry.get("/std/map</int,/int>"),
-            field->getType().getName());
+    // BOOST_REQUIRE_MESSAGE(&field->getType() == registry.get("/std/map</int,/int>"),
+    //         field->getType().getName());
 }
 
 BOOST_AUTO_TEST_CASE( test_c_array_typedefs )

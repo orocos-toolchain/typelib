@@ -25,6 +25,7 @@ namespace
 
 	bool visit_(NullType const& type);
         bool visit_(OpaqueType const& type);
+        bool visit_(Container const& type);
 
     public:
         TlbExportVisitor(ostream& stream, string const& base_indent);
@@ -141,6 +142,14 @@ namespace
         m_stream << " dimension=\"" << type.getDimension() << "\"/>";
         return true;
     }
+    bool TlbExportVisitor::visit_(Container const& type)
+    { 
+        m_stream << "<container ";
+        indirect(m_stream, type);
+        m_stream << " kind=\"" << xmlEscape(type.kind()) << "\" />";
+        return true;
+    }
+
     bool TlbExportVisitor::visit_ (Enum const& type)
     {
         Enum::ValueMap const& values = type.values();

@@ -68,6 +68,8 @@ namespace
         Factory(Registry& registry)
             : m_registry(registry) {}
 
+        Registry& getRegistry() { return m_registry; }
+
         void insert(TypeNode const& type, Type* object)
         { m_registry.add(object, type.file); }
 
@@ -154,6 +156,15 @@ namespace
         factory.insert(node, type);
         return type;
     }
+    Type const* load_container(TypeNode const& node, Factory& factory)
+    {
+        string indirect_name = getAttribute<string>(node.xml, "of");
+        Type const* indirect = factory.build(indirect_name);
+        string kind          = getAttribute<string>(node.xml, "kind");
+
+        Type const* container = &Container::createContainer(factory.getRegistry(), kind, *indirect);
+        return container;
+    }
     Type const* load_enum(TypeNode const& node, Factory& factory)
     { 
         Enum* type = new Enum(node.name);
@@ -212,6 +223,7 @@ namespace
         const xmlChar* name;
         NodeLoader  loader;
     };
+
     NodeCategories node_categories[] = {
         { reinterpret_cast<const xmlChar*>("alias"),     load_alias },
         { reinterpret_cast<const xmlChar*>("numeric"),   load_numeric },
@@ -219,6 +231,7 @@ namespace
         { reinterpret_cast<const xmlChar*>("opaque"),    load_opaque },
         { reinterpret_cast<const xmlChar*>("enum"),      load_enum },
         { reinterpret_cast<const xmlChar*>("compound"),  load_compound },
+        { reinterpret_cast<const xmlChar*>("container"),  load_container },
         { 0, 0 }
     };
 

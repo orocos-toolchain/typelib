@@ -187,7 +187,7 @@ int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_fi
         { 0, 0 }
     };
 
-    if (append_field.getCategory() == Type::Opaque)
+    if (append_field.getCategory() == Type::Container)
     {
         for (CollectionPackingInfo* info = collection_packing_info; info->name; ++info)
         {

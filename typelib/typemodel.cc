@@ -280,22 +280,38 @@ namespace Typelib
         return new Pointer(indirect_type);
     }
 
-    Container::Container(std::string const& name, size_t size, Type const& of)
-        : Indirect( name, size, Type::Container, of ) {}
+    Container::Container(std::string const& kind, std::string const& name, size_t size, Type const& of)
+        : Indirect( name, size, Type::Container, of )
+        , m_kind(kind) {}
 
-    Container::AvailableContainers Container::s_available_containers;
-    Container::AvailableContainers Container::availableContainers() { return s_available_containers; }
+    std::string Container::kind() const { return m_kind; }
+
+    Container::AvailableContainers* Container::s_available_containers;
+    Container::AvailableContainers Container::availableContainers() {
+        if (!s_available_containers)
+            return Container::AvailableContainers();
+        return *s_available_containers;
+    }
 
     void Container::registerContainer(std::string const& name, ContainerFactory factory)
     {
-        s_available_containers[name] = factory;
+        if (s_available_containers == 0)
+            s_available_containers = new Container::AvailableContainers;
+
+        (*s_available_containers)[name] = factory;
     }
-    Container* Container::createContainer(std::string const& name, Type const& on)
+    Container const& Container::createContainer(Registry& r, std::string const& name, Type const& on)
     {
-        AvailableContainers::const_iterator it = s_available_containers.find(name);
-        if (it == s_available_containers.end())
-            return NULL;
-        return (*it->second)(on);
+        std::list<Type const*> temp;
+        temp.push_back(&on);
+        return createContainer(r, name, temp);
+    }
+    Container const& Container::createContainer(Registry& r, std::string const& name, std::list<Type const*> const& on)
+    {
+        AvailableContainers::const_iterator it = s_available_containers->find(name);
+        if (it == s_available_containers->end())
+            throw UnknownContainer(name);
+        return (*it->second)(r, on);
     }
 
     bool Container::do_isSame(Type const& other, RecursionStack& stack) const
@@ -312,36 +328,10 @@ namespace Typelib
         // The pointed-to type has already been inserted in the repository by
         // Indirect::merge, so we don't have to worry.
         Type const& indirect_type = getIndirection().merge(registry, stack);
-        return (*getFactory())(indirect_type);
+        std::list<Type const*> on;
+        on.push_back(&indirect_type);
+        return const_cast<Container*>(&(*getFactory())(registry, on));
     }
-
-    BOOST_STATIC_ASSERT(( sizeof(vector<void*>) == sizeof(vector<Container>) ));
-    class Vector : public Container
-    {
-    public:
-        Vector(Type const& on)
-            : Container("vector<" + on.getName() + ">", sizeof(std::vector<void*>), on) {}
-
-        size_t getElementCount(void* ptr) const
-        {
-            size_t byte_count = reinterpret_cast< std::vector<int8_t>* >(ptr)->size();
-            return byte_count / getIndirection().getSize();
-        }
-        void destroy(void* ptr)
-        { reinterpret_cast< std::vector<int8_t>* >(ptr)->~vector<int8_t>(); }
-        uint8_t* getElement(void* base, int i) const
-        { return &(*reinterpret_cast< std::vector<uint8_t>* >(base))[0] + i * getIndirection().getSize(); }
-        static Container* factory(Type const& on) { return new Vector(on); }
-        ContainerFactory getFactory() const { return factory; }
-    };
-
-    struct Registrar
-    {
-        Registrar() {
-            Container::registerContainer("std/vector", Vector::factory);
-        }
-    };
-    static Registrar registrar;
 
 
     Field::Field(const std::string& name, const Type& type)

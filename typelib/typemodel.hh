@@ -295,23 +295,32 @@ namespace Typelib
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
     };
 
+    struct UnknownContainer : public std::runtime_error
+    {
+        UnknownContainer(std::string const& name)
+            : std::runtime_error("unknown container " + name) {}
+    };
+
     /** Base type for variable-length sets */
     class Container : public Indirect
     {
+        std::string m_kind;
 
     public:
-        Container(std::string const& name, size_t size, Type const& of);
+        Container(std::string const& kind, std::string const& name, size_t size, Type const& of);
 
+        std::string kind() const;
         virtual size_t getElementCount(void* ptr) const = 0;
-        virtual void destroy(void* ptr) = 0;
+        virtual void destroy(void* ptr) const = 0;
         virtual uint8_t* getElement(void* ptr, int i) const = 0;
 
-        typedef Container* (*ContainerFactory)(Type const& base_type);
+        typedef Container const& (*ContainerFactory)(Registry& r, std::list<Type const*> const& base_type);
         typedef std::map<std::string, ContainerFactory> AvailableContainers;
 
         static AvailableContainers availableContainers();
         static void registerContainer(std::string const& name, ContainerFactory factory);
-        static Container* createContainer(std::string const& name, Type const& on);
+        static Container const& createContainer(Registry& r, std::string const& name, Type const& on);
+        static Container const& createContainer(Registry& r, std::string const& name, std::list<Type const*> const& on);
 
     protected:
 	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
@@ -319,7 +328,7 @@ namespace Typelib
         Type* do_merge(Registry& registry, RecursionStack& stack) const;
 
     private:
-        static AvailableContainers s_available_containers;
+        static AvailableContainers* s_available_containers;
     };
 
     struct TypeException : public std::runtime_error
