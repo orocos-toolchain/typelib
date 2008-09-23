@@ -15,7 +15,7 @@ namespace Typelib {
     void CompileEndianSwapVisitor::skip(int skip_size)
     { 
 	size_t size = m_compiled.size();
-	if (m_compiled[size - 2] == FLAG_SKIP)
+	if (m_compiled.size() > 1 && m_compiled[size - 2] == FLAG_SKIP)
 	    m_compiled[size - 1] += skip_size;
 	else
 	{
