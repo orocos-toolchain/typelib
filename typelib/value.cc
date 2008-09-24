@@ -127,7 +127,7 @@ namespace Typelib
 	return true;
     }
     bool ValueVisitor::visit_(Value const& v, Container const& c)
-    { return c.visit(*this, v); }
+    { return c.visit(v.getData(), *this); }
     bool ValueVisitor::visit_(Value const&, Compound const& c) 
     { return m_dispatcher->TypeVisitor::visit_(c); }
     bool ValueVisitor::visit_(Value const&, Compound const& c, Field const& f) 

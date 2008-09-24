@@ -8,11 +8,13 @@
 #include <typelib/typevisitor.hh>
 #include <typelib/csvoutput.hh>
 #include <typelib/endianness.hh>
+#include <typelib/value_ops.hh>
 
 #include <iostream>
 
 using namespace Typelib;
 using std::numeric_limits;
+using std::vector;
 
 namespace cxx2rb {
     /* There are constraints when creating a Ruby wrapper for a Type, mainly
@@ -42,6 +44,7 @@ namespace cxx2rb {
     {
         VALUE rb_type = type_wrap(type, registry);
 	VALUE ptr     = memory_allocate(type.getSize());
+        memory_init(ptr, rb_type);
         VALUE wrapper = rb_funcall(rb_type, rb_intern("wrap"), 1, ptr);
 	return wrapper;
     }
@@ -54,6 +57,7 @@ VALUE cPointer   = Qnil;
 VALUE cArray     = Qnil;
 VALUE cCompound  = Qnil;
 VALUE cEnum      = Qnil;
+VALUE cContainer = Qnil;
 
 VALUE cxx2rb::class_of(Typelib::Type const& type)
 {
@@ -64,6 +68,7 @@ VALUE cxx2rb::class_of(Typelib::Type const& type)
 	case Type::Pointer:     return cPointer;
 	case Type::Array:       return cArray;
 	case Type::Enum:        return cEnum;
+        case Type::Container:   return cContainer;
 	default:                return cType;
     }
 }
@@ -220,7 +225,6 @@ static VALUE value_alloc(VALUE klass)
 static
 VALUE value_initialize(VALUE self, VALUE ptr)
 {
-    Value& value = rb2cxx::object<Value>(self);
     Type const& t(rb2cxx::object<Type>(rb_class_of(self)));
 
     if (NIL_P(ptr) || rb_obj_is_kind_of(ptr, rb_cString))
@@ -228,17 +232,21 @@ VALUE value_initialize(VALUE self, VALUE ptr)
         VALUE buffer = memory_allocate(t.getSize());
 	if (! NIL_P(ptr))
 	{
-	    if (static_cast<size_t>(RSTRING(ptr)->len) < t.getSize())
-		rb_raise(rb_eArgError, "given buffer is too short: got %d, but %s has size %d",
-			RSTRING(ptr)->len, t.getName().c_str(), t.getSize());
-
-	    memcpy(memory_cptr(buffer), StringValuePtr(ptr), t.getSize());
+            char* ruby_buffer = StringValuePtr(ptr);
+            vector<uint8_t> cxx_buffer(ruby_buffer, ruby_buffer + RSTRING(ptr)->len);
+            try { Typelib::load(Value(memory_cptr(buffer), t), cxx_buffer); }
+            catch(std::runtime_error e)
+            { rb_raise(rb_eArgError, e.what()); }
 	}
+        else
+            memory_init(buffer, rb_class_of(self));
+
 	ptr = buffer;
     }
 
     // Protect 'ptr' against the GC
     rb_iv_set(self, "@ptr", ptr);
+    Value& value  = rb2cxx::object<Value>(self);
     value = Value(memory_cptr(ptr), t);
     return self;
 }
@@ -274,13 +282,15 @@ VALUE value_endian_swap_b(VALUE self, VALUE rb_compile)
 /* call-seq:
  *  obj.to_byte_array => a_string
  *
- * Returns a string whose content is a copy of the memory hold by +obj+
+ * Returns a string whose content is a marshalled representation of the memory
+ * hold by +obj+
  */
 static
 VALUE value_to_byte_array(VALUE self)
 {
     Value& value = rb2cxx::object<Value>(self);
-    return rb_str_new(reinterpret_cast<const char*>(value.getData()), value.getType().getSize());
+    vector<uint8_t> buffer = Typelib::dump(value);
+    return rb_str_new(reinterpret_cast<char*>(&buffer[0]), value.getType().getSize());
 }
 
 VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)

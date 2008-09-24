@@ -10,6 +10,7 @@
 #include <typelib/registry.hh>
 #include <typelib/value.hh>
 #include "test_cimport.1"
+#include <string.h>
 using namespace Typelib;
 using namespace std;
 using utilmm::split;
@@ -19,10 +20,34 @@ BOOST_AUTO_TEST_CASE( test_vector_assumptions )
 {
     // It is expected that ->size() depends on the type of the vector elements,
     // but that the size can be offset by using the ratio of sizeof()
-    vector<int32_t> values;
-    values.resize(10);
-    BOOST_REQUIRE_EQUAL(10, values.size());
-    BOOST_REQUIRE_EQUAL(5, reinterpret_cast< vector<int64_t>& >(values).size());
+    {
+        vector<int32_t> values;
+        values.resize(10);
+        BOOST_REQUIRE_EQUAL(10, values.size());
+        BOOST_REQUIRE_EQUAL(5, reinterpret_cast< vector<int64_t>& >(values).size());
+    }
+
+    // It is expected that some byte-copies operations are valid with vectors
+    // The test do not really do anything by itself. Result should be checked
+    // with Valgrind
+    {
+        vector< vector<int32_t> > values;
+        values.resize(10);
+        for (int i = 0; i < 10; ++i)
+            values[i].resize(i + 1);
+
+        memcpy(&values[5], &values[6], sizeof(vector<int32_t>) * 4);
+
+        {
+            vector<uint8_t>* raw_values = reinterpret_cast< vector<uint8_t>* >(&values);
+            raw_values->resize(raw_values->size() - sizeof(vector<int32_t>));
+        }
+
+        for (int i = 0; i < 5; ++i)
+            BOOST_REQUIRE_EQUAL(i + 1, values[i].size());
+        for (int i = 5; i < 9; ++i)
+            BOOST_REQUIRE_EQUAL(i + 2, values[i].size());
+    }
 }
 
 static void import_test_types(Registry& registry)
@@ -47,20 +72,92 @@ struct AssertValueVisit : public ValueVisitor
     }
 };
 
-BOOST_AUTO_TEST_CASE( test_vector )
+BOOST_AUTO_TEST_CASE( test_vector_getElementCount )
 {
     Registry registry;
     import_test_types(registry);
-
     Container const& container = Container::createContainer(registry, "/std/vector", *registry.get("B"));
 
-    void* v_memory = malloc(sizeof(std::vector<B>));
-    std::vector<B>* v = new(v_memory) std::vector<B>();
-    v->resize(10);
-    BOOST_REQUIRE_EQUAL(10, container.getElementCount(v));
+    std::vector<B> vector;
+    vector.resize(10);
+    BOOST_REQUIRE_EQUAL(10, container.getElementCount(&vector));
+}
 
-    container.destroy(v);
-    free(v);
+BOOST_AUTO_TEST_CASE( test_vector_init_destroy )
+{
+    Registry registry;
+    import_test_types(registry);
+    Container const& container = Container::createContainer(registry, "/std/vector", *registry.get("B"));
+    BOOST_REQUIRE_EQUAL(Type::Container, container.getCategory());
+
+    void* v_memory = malloc(sizeof(std::vector<B>));
+    container.init(v_memory);
+    BOOST_REQUIRE_EQUAL(0, container.getElementCount(v_memory));
+    container.destroy(v_memory);
+    free(v_memory);
+}
+
+BOOST_AUTO_TEST_CASE( test_vector_insert )
+{
+    Registry registry;
+    import_test_types(registry);
+    Container const& container = Container::createContainer(registry, "/std/vector", *registry.get("int"));
+
+    std::vector<int> vector;
+    for (int value = 0; value < 10; ++value)
+    {
+        container.insert(&vector, Value(&value, container.getIndirection()));
+        BOOST_REQUIRE_EQUAL(value + 1, vector.size());
+
+        for (int i = 0; i < value; ++i)
+            BOOST_REQUIRE_EQUAL(i, vector[i]);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( test_vector_erase )
+{
+    Registry registry;
+    import_test_types(registry);
+    Container const& container = Container::createContainer(registry, "/std/vector", *registry.get("int"));
+
+    std::vector<int> vector;
+    for (int value = 0; value < 10; ++value)
+        vector.push_back(value);
+
+    int value = 20;
+    BOOST_REQUIRE(!container.erase(&vector, Value(&value, container.getIndirection())));
+    value = 5;
+    BOOST_REQUIRE(container.erase(&vector, Value(&value, container.getIndirection())));
+
+    BOOST_REQUIRE_EQUAL(9, vector.size());
+    for (int i = 0; i < 5; ++i)
+        BOOST_REQUIRE_EQUAL(i, vector[i]);
+    for (int i = 5; i < 9; ++i)
+        BOOST_REQUIRE_EQUAL(i + 1, vector[i]);
+}
+
+bool test_delete_if_pred(Value v)
+{
+    int* value = reinterpret_cast<int*>(v.getData());
+    return (*value > 3) && (*value < 6);
+}
+BOOST_AUTO_TEST_CASE( test_vector_delete_if )
+{
+    Registry registry;
+    import_test_types(registry);
+    Container const& container = Container::createContainer(registry, "/std/vector", *registry.get("int"));
+
+    std::vector<int> vector;
+    for (int value = 0; value < 10; ++value)
+        vector.push_back(value);
+
+    container.delete_if(&vector, test_delete_if_pred);
+
+    BOOST_REQUIRE_EQUAL(8, vector.size());
+    for (int i = 0; i < 4; ++i)
+        BOOST_REQUIRE_EQUAL(i, vector[i]);
+    for (int i = 4; i < 8; ++i)
+        BOOST_REQUIRE_EQUAL(i + 2, vector[i]);
 }
 
 BOOST_AUTO_TEST_CASE( test_vector_visit )

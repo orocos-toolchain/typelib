@@ -277,9 +277,54 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert(null.null?)
     end
 
-    def test_opaque
+    def test_containers
         std = make_registry.get("StdCollections")
-        assert(std.dbl_vector.opaque?)
+        assert(std.dbl_vector < Typelib::ContainerType)
+
+        value = std.new
+        assert_equal(0, value.dbl_vector.length)
+        assert(value.dbl_vector.empty?)
+
+        value.dbl_vector.insert(10)
+        assert_equal(1, value.dbl_vector.length)
+        assert_equal([10], value.dbl_vector.to_a)
+
+        expected = [10]
+        10.times do |i|
+            value.dbl_vector.insert(i)
+            assert_equal(i + 2, value.dbl_vector.length)
+            expected << i
+            assert_equal(expected, value.dbl_vector.to_a)
+        end
+
+        expected.delete_if { |v| v < 5 }
+        value.dbl_vector.delete_if { |v| v < 5 }
+        assert_equal(expected, value.dbl_vector.to_a)
+
+        expected.delete_at(2)
+        value.dbl_vector.erase(6)
+        assert_equal(expected, value.dbl_vector.to_a)
+    end
+
+    def test_container_of_container
+        std      = make_registry.get("StdCollections")
+        assert(std.v_of_v < Typelib::ContainerType)
+        assert(std.v_of_v.deference < Typelib::ContainerType)
+
+        inner_t = std.v_of_v.deference
+
+        value = std.new
+        outer = value.v_of_v
+        assert_equal(0, outer.length)
+
+        new_element = inner_t.new
+        new_element.insert(10)
+        outer.insert(new_element)
+
+        assert_equal(1, outer.length)
+        elements = outer.to_a
+        assert_kind_of(Typelib::ContainerType, elements[0])
+        assert_equal([10], elements[0].to_a)
     end
 end
 

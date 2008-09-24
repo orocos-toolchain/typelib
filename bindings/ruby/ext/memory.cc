@@ -1,8 +1,12 @@
+#include "typelib.hh"
+#include <typelib/value_ops.hh>
 #include <ruby.h>
 extern "C" {
 #include <st.h>
 }
 
+using namespace Typelib;
+using namespace std;
 #undef VERBOSE
 
 static VALUE cMemoryZone;
@@ -27,20 +31,30 @@ static struct st_hash_type memory_table_type = {
     (int (*)())memory_table_hash
 };
 
+typedef std::map<void*, VALUE> MemoryTypes;
+MemoryTypes memory_types;
+
 
 static void
 memory_unref(void *ptr)
 {
     st_delete(MemoryTable, (st_data_t*)&ptr, 0);
+    memory_types.erase(ptr);
 }
 
 static void
 memory_delete(void *ptr)
 {
+    MemoryTypes::iterator it = memory_types.find(ptr);
+    if (it != memory_types.end())
+    {
+        Type const& type = rb2cxx::object<Type>(it->second);
+        Typelib::destroy(Value(ptr, type));
+    }
+
     free(ptr);
     memory_unref(ptr);
 }
-
 
 static VALUE
 memory_aref(void *ptr)
@@ -75,6 +89,20 @@ memory_allocate(size_t size)
 #   endif
     memory_aset(ptr, zone);
     return zone;
+}
+
+void
+memory_init(VALUE ptr, VALUE type)
+{
+    void* cptr = memory_cptr(ptr);
+    MemoryTypes::iterator it = memory_types.find(cptr);
+    if (it != memory_types.end())
+        rb_raise(rb_eArgError, "memory zone already initialized");
+
+    // For deinitialization later
+    Type const& t(rb2cxx::object<Type>(type));
+    memory_types.insert( make_pair(cptr, type) );
+    Typelib::init(Value(cptr, t));
 }
 
 VALUE
@@ -137,10 +165,18 @@ string_to_memory_ptr(VALUE self)
     return ptr;
 }
 
+void memory_table_mark(void* ptr)
+{
+    for (MemoryTypes::iterator it = memory_types.begin(); it != memory_types.end(); ++it)
+        rb_gc_mark(it->second);
+}
+
 void Typelib_init_memory()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
-    MemoryTable = st_init_table(&memory_table_type);
+    MemoryTable     = st_init_table(&memory_table_type);
+    VALUE table     = Data_Wrap_Struct(rb_cObject, &memory_table_mark, 0, MemoryTable);
+    rb_iv_set(mTypelib, "@__memory_table__", table);
 
     cMemoryZone = rb_define_class_under(mTypelib, "MemoryZone", rb_cObject);
     rb_define_method(cMemoryZone, "zone_address", RUBY_METHOD_FUNC(memory_zone_address), 0);

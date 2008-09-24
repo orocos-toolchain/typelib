@@ -433,6 +433,12 @@ module Typelib
        	end
     end
 
+    # Base class for all dynamic containers
+    class ContainerType < IndirectType
+        include Enumerable
+        def empty?; length == 0 end
+    end
+
     # Base class for all enumeration types. Enumerations
     # are mappings from strings to integers
     class EnumType < Type

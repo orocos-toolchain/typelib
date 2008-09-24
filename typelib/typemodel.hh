@@ -310,6 +310,31 @@ namespace Typelib
     {
         std::string m_kind;
 
+
+    protected:
+        struct DeleteIfPredicate
+        {
+            virtual bool should_delete(Value const& v) = 0;
+        };
+
+        virtual void delete_if_impl(void* ptr, DeleteIfPredicate& pred) const = 0;
+
+    private:
+        template<typename Pred>
+        struct PredicateWrapper : public DeleteIfPredicate
+        {
+            Pred pred;
+
+            PredicateWrapper(Pred pred)
+                : pred(pred) {}
+
+            virtual bool should_delete(Value const& v)
+            {
+                return pred(v);
+            };
+        };
+
+
     public:
         typedef std::vector<size_t> MarshalOps;
 
@@ -318,7 +343,37 @@ namespace Typelib
         std::string kind() const;
         virtual void init(void* ptr) const = 0;
         virtual void destroy(void* ptr) const = 0;
-        virtual bool visit(ValueVisitor& visitor, Value const& v) const = 0;
+        virtual bool visit(void* ptr, ValueVisitor& visitor) const = 0;
+
+        /** Insert the given element \c v into the container at +ptr+
+         */
+        virtual void insert(void* ptr, Value v) const = 0;
+
+        /** Removes the element equal to \c in \c ptr.
+         *
+         * @return true if \c has been found in \c ptr, false otherwise.
+         */
+        virtual bool erase(void* ptr, Value v) const = 0;
+
+        /** Called to check if +ptr+ and +other+, which are containers of the
+         * same type, actually contain the same data
+         *
+         * @return true if the two containers have the same data, false otherwise
+         */
+        virtual bool compare(void* ptr, void* other) const = 0;
+
+        /** Called to copy the contents of +src+ into +dst+, which are both
+         * containers of the same type.
+         */
+        virtual void copy(void* dst, void* src) const = 0;
+
+        template<typename Pred>
+        void delete_if(void* ptr, Pred pred) const
+        {
+            PredicateWrapper<Pred> predicate(pred);
+            delete_if_impl(ptr, predicate);
+        }
+
         virtual size_t getElementCount(void* ptr) const = 0;
 
         /** The marshalling process calls this method so that the contents of
@@ -359,7 +414,7 @@ namespace Typelib
          *   (with nesting taken into account). The first element of the returned value is the iterator on this FLAG_END element
          *   (i.e. *retval == FLAG_END is a postcondition of this method). The second element is the new value of \c in_offset
          */
-        virtual boost::tuple<MarshalOps::const_iterator, size_t> load(
+        virtual boost::tuple<size_t, MarshalOps::const_iterator> load(
             void* container_ptr, size_t element_count,
             std::vector<uint8_t> const& buffer, size_t in_offset,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const = 0;

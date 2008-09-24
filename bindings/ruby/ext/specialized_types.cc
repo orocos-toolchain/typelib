@@ -1,7 +1,11 @@
 #include "typelib.hh"
 #include <iostream>
 
+#include <boost/bind.hpp>
+#include <typelib/value_ops.hh>
+
 using namespace Typelib;
+using std::vector;
 
 /**********************************************
  * Typelib::Compound
@@ -14,7 +18,7 @@ static VALUE compound_get_fields(VALUE self)
     Compound::FieldList const& fields(compound.getFields());
     Compound::FieldList::const_iterator it, end = fields.end();
 
-    VALUE registry = rb_iv_get(self, "@registry");
+    VALUE registry  = type_get_registry(self);
     VALUE fieldlist = rb_ary_new();
     for (it = fields.begin(); it != end; ++it)
     {
@@ -43,8 +47,10 @@ static VALUE compound_field_get(VALUE rbvalue, VALUE name)
         Value field_value = value_get_field(value, StringValuePtr(name));
 	return typelib_to_ruby(field_value, registry, rbvalue);
     } 
-    catch(FieldNotFound)   {} 
-    rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name));
+    catch(FieldNotFound)
+    { rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name)); } 
+    catch(std::runtime_error e)
+    { rb_raise(rb_eRuntimeError, e.what()); }
 }
 /* Helper function for CompoundType#[]= */
 static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
@@ -55,8 +61,11 @@ static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
         Value field_value = value_get_field(tlib_value, StringValuePtr(name));
         typelib_from_ruby(field_value, newval);
         return newval;
-    } catch(FieldNotFound) {}
-    rb_raise(rb_eArgError, "no field '%s' in '%s'", StringValuePtr(name), rb_obj_classname(self));
+    }
+    catch(FieldNotFound)
+    { rb_raise(rb_eArgError, "no field '%s' in '%s'", StringValuePtr(name), rb_obj_classname(self)); }
+    catch(std::runtime_error e)
+    { rb_raise(rb_eRuntimeError, e.what()); }
 }
 
 /* call-seq:
@@ -145,7 +154,7 @@ VALUE enum_keys(VALUE self)
  */
 static VALUE indirect_type_deference(VALUE self)
 {
-    VALUE registry = rb_iv_get(self, "@registry");
+    VALUE registry = type_get_registry(self);
     Type const& type(rb2cxx::object<Type>(self));
     Indirect const& indirect(static_cast<Indirect const&>(type));
     return cxx2rb::type_wrap(indirect.getIndirection(), registry);
@@ -340,6 +349,136 @@ static VALUE numeric_type_unsigned_p(VALUE self)
     return Qnil; // never reached
 }
 
+
+/*
+ * call-seq:
+ *  container.length => value
+ *
+ * Returns the count of elements in +container+
+ */
+static VALUE container_length(VALUE self)
+{
+    Value value = rb2cxx::object<Value>(self);
+    Container const& type(dynamic_cast<Container const&>(value.getType()));
+
+    return INT2NUM(type.getElementCount(value.getData()));
+}
+
+/*
+ * call-seq:
+ *  container.insert(element) => container
+ *
+ * Inserts a new element in the container
+ */
+static VALUE container_insert(VALUE self, VALUE obj)
+{
+    Value container_v = rb2cxx::object<Value>(self);
+    Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
+
+    Type const& element_t = container_t.getIndirection();
+    vector<int8_t> buffer(element_t.getSize());
+    Value v(&buffer[0], element_t);
+    Typelib::init(v);
+    typelib_from_ruby(v, obj);
+
+    container_t.insert(container_v.getData(), v);
+    return self;
+}
+
+struct ContainerIterator : public RubyGetter
+{
+    bool inside;
+
+    bool visit_(Value const& v, Container const& c)
+    { 
+        if (inside)
+            RubyGetter::visit_(v, c);
+        else
+            ValueVisitor::visit_(v, c);
+        return false;
+    }
+
+    void apply(Value v, VALUE registry, VALUE parent)
+    {
+        inside = false;
+        RubyGetter::apply(v, registry, parent);
+    }
+    virtual void dispatch(Value v)
+    {
+        inside = true;
+        RubyGetter::dispatch(v);
+
+        VALUE result = m_value;
+        m_value = Qnil;
+        rb_yield(result);
+    }
+};
+
+/*
+ * call-seq:
+ *  container.each { |obj| ... } => container
+ *
+ * Iterates on the elements of the container
+ */
+static VALUE container_each(VALUE self)
+{
+    Value value = rb2cxx::object<Value>(self);
+    Container const& type(dynamic_cast<Container const&>(value.getType()));
+
+    VALUE registry = value_get_registry(self);
+    ContainerIterator iterator;
+    iterator.apply(value, registry, self);
+    return self;
+}
+
+/*
+ * call-seq:
+ *  container.erase(obj) => true or false
+ *
+ * Removes +obj+ from the container. Returns true if +obj+ has been found and
+ * deleted, and false otherwise
+ */
+static VALUE container_erase(VALUE self, VALUE obj)
+{
+    Value container_v = rb2cxx::object<Value>(self);
+    Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
+
+    Type const& element_t = container_t.getIndirection();
+    vector<int8_t> buffer(element_t.getSize());
+    Value v(&buffer[0], element_t);
+    Typelib::init(v);
+    typelib_from_ruby(v, obj);
+
+    if (container_t.erase(container_v.getData(), v))
+        return Qtrue;
+    else
+        return Qfalse;
+}
+
+bool container_delete_if_i(Value v, VALUE registry, VALUE container)
+{
+    VALUE rb_v = typelib_to_ruby(v, registry, container);
+    if (RTEST(rb_yield(rb_v)))
+        return true;
+    return false;
+}
+
+/*
+ * call-seq:
+ *  container.delete_if { |obj| ... } => container
+ *
+ * Removes the elements in the container for which the block returns true.
+ */
+static VALUE container_delete_if(VALUE self)
+{
+    Value container_v = rb2cxx::object<Value>(self);
+    Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
+
+    VALUE registry = value_get_registry(self);
+    container_t.delete_if(container_v.getData(), boost::bind(container_delete_if_i, _1, registry, self));
+    return self;
+}
+
 /* Document-class: Typelib::NumericType
  *
  * Wrapper for numeric types (int, float, ...)
@@ -394,5 +533,12 @@ void Typelib_init_specialized_types()
     rb_define_method(cArray, "[]=",     RUBY_METHOD_FUNC(array_set), 2);
     rb_define_method(cArray, "each",    RUBY_METHOD_FUNC(array_each), 0);
     rb_define_method(cArray, "size",    RUBY_METHOD_FUNC(array_size), 0);
+
+    cContainer = rb_define_class_under(mTypelib, "ContainerType", cIndirect);
+    rb_define_method(cContainer, "length",    RUBY_METHOD_FUNC(container_length), 0);
+    rb_define_method(cContainer, "insert",    RUBY_METHOD_FUNC(container_insert), 1);
+    rb_define_method(cContainer, "each",      RUBY_METHOD_FUNC(container_each), 0);
+    rb_define_method(cContainer, "erase",     RUBY_METHOD_FUNC(container_erase), 1);
+    rb_define_method(cContainer, "delete_if", RUBY_METHOD_FUNC(container_delete_if), 0);
 }
 

@@ -80,7 +80,7 @@ namespace Typelib
         virtual ~ValueVisitor() {}
 
         /** This is for internal use only. To visit a Value object, use apply */
-        void dispatch(Value v);
+        virtual void dispatch(Value v);
 
         void apply(Value v);
     };

@@ -15,6 +15,7 @@ extern VALUE cArray;
 extern VALUE cCompound;
 extern VALUE cNumeric;
 extern VALUE cEnum;
+extern VALUE cContainer;
 
 /** Initialization routines */
 extern void Typelib_init_memory();
@@ -88,10 +89,73 @@ namespace rb2cxx {
     Enum::integral_type enum_value(VALUE rb_value, Enum const& e);
 }
 
+class RubyGetter : public Typelib::ValueVisitor
+{
+protected:
+    VALUE m_value;
+    VALUE m_registry;
+    VALUE m_parent;
+
+    bool visit_ (int8_t  & value);
+    bool visit_ (uint8_t & value);
+    bool visit_ (int16_t & value);
+    bool visit_ (uint16_t& value);
+    bool visit_ (int32_t & value);
+    bool visit_ (uint32_t& value);
+    bool visit_ (int64_t & value);
+    bool visit_ (uint64_t& value);
+    bool visit_ (float   & value);
+    bool visit_ (double  & value);
+
+    bool visit_(Typelib::Value const& v, Typelib::Pointer const& p);
+    bool visit_(Typelib::Value const& v, Typelib::Array const& a);
+    bool visit_(Typelib::Value const& v, Typelib::Compound const& c);
+    bool visit_(Typelib::Value const& v, Typelib::Container const& c);
+    bool visit_(Typelib::Value const& v, Typelib::OpaqueType const& c);
+    bool visit_(Typelib::Enum::integral_type& v, Typelib::Enum const& e);
+    
+public:
+    RubyGetter();
+    ~RubyGetter();
+
+    VALUE apply(Typelib::Value value, VALUE registry, VALUE parent);
+};
+
+class RubySetter : public Typelib::ValueVisitor
+{
+protected:
+    VALUE m_value;
+
+    bool visit_ (int8_t  & value);
+    bool visit_ (uint8_t & value);
+    bool visit_ (int16_t & value);
+    bool visit_ (uint16_t& value);
+    bool visit_ (int32_t & value);
+    bool visit_ (uint32_t& value);
+    bool visit_ (int64_t & value);
+    bool visit_ (uint64_t& value);
+    bool visit_ (float   & value);
+    bool visit_ (double  & value);
+
+    bool visit_(Typelib::Value const& v, Typelib::Pointer const& p);
+    bool visit_(Typelib::Value const& v, Typelib::Array const& a);
+    bool visit_(Typelib::Value const& v, Typelib::Compound const& c);
+    bool visit_(Typelib::Value const& v, Typelib::Container const& c);
+    bool visit_(Typelib::Value const& v, Typelib::OpaqueType const& c);
+    bool visit_(Typelib::Enum::integral_type& v, Typelib::Enum const& e);
+    
+public:
+    RubySetter();
+    ~RubySetter();
+
+    VALUE apply(Typelib::Value value, VALUE new_value);
+};
+
 extern VALUE value_get_registry(VALUE self);
 extern VALUE type_get_registry(VALUE self);
 extern VALUE memory_wrap(void* ptr);
 extern VALUE memory_allocate(size_t size);
+extern void  memory_init(VALUE ptr, VALUE type);
 extern void* memory_cptr(VALUE ptr);
 
 #endif
