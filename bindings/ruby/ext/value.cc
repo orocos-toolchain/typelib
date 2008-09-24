@@ -188,6 +188,65 @@ static VALUE type_size(VALUE self)
     return INT2FIX(type.getSize());
 }
 
+/* call-seq:
+ *  type.memory_layout(VALUE with_pointers) => [operations]
+ *
+ * Returns a representation of the MemoryLayout for this type. If
+ * +with_pointers+ is true, then pointers will be included in the layout.
+ * Otherwise, an exception is raised if pointers are part of the type
+ */
+static VALUE type_memory_layout(VALUE self, VALUE with_pointers)
+{
+    Type const& type(rb2cxx::object<Type>(self));
+    VALUE registry = type_get_registry(self);
+
+    VALUE result = rb_ary_new();
+
+    VALUE rb_memcpy = ID2SYM(rb_intern("FLAG_MEMCPY"));
+    VALUE rb_skip = ID2SYM(rb_intern("FLAG_SKIP"));
+    VALUE rb_array = ID2SYM(rb_intern("FLAG_ARRAY"));
+    VALUE rb_end = ID2SYM(rb_intern("FLAG_END"));
+    VALUE rb_container = ID2SYM(rb_intern("FLAG_CONTAINER"));
+
+    try {
+        MemoryLayout layout = Typelib::layout_of(type, RTEST(with_pointers));
+
+        // Now, convert into something representable in Ruby
+        for (MemoryLayout::const_iterator it = layout.begin(); it != layout.end(); ++it)
+        {
+            switch(*it)
+            {
+                case MemLayout::FLAG_MEMCPY:
+                    rb_ary_push(result, rb_memcpy);
+                    rb_ary_push(result, LONG2NUM(*(++it)));
+                    break;
+                case MemLayout::FLAG_SKIP:
+                    rb_ary_push(result, rb_skip);
+                    rb_ary_push(result, LONG2NUM(*(++it)));
+                    break;
+                case MemLayout::FLAG_ARRAY:
+                    rb_ary_push(result, rb_array);
+                    rb_ary_push(result, LONG2NUM(*(++it)));
+                    break;
+                case MemLayout::FLAG_END:
+                    rb_ary_push(result, rb_end);
+                    break;
+                case MemLayout::FLAG_CONTAINER:
+                    rb_ary_push(result, rb_container);
+                    rb_ary_push(result, cxx2rb::type_wrap(*reinterpret_cast<Container*>(*(++it)), registry));
+                    break;
+                default:
+                    rb_raise(rb_eArgError, "error encountered while parsing memory layout");
+            }
+        }
+
+    } catch(std::runtime_error e) {
+        rb_raise(rb_eArgError, e.what());
+    }
+
+    return result;
+}
+
 /* PODs are assignable, pointers are dereferenced */
 static VALUE type_is_assignable(Type const& type)
 {
@@ -415,8 +474,9 @@ void Typelib_init_values()
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
     rb_define_alloc_func(cType, value_alloc);
-    rb_define_singleton_method(cType, "==",	    RUBY_METHOD_FUNC(type_equal_operator), 1);
-    rb_define_singleton_method(cType, "size", RUBY_METHOD_FUNC(&type_size), 0);
+    rb_define_singleton_method(cType, "==",	       RUBY_METHOD_FUNC(type_equal_operator), 1);
+    rb_define_singleton_method(cType, "size",          RUBY_METHOD_FUNC(&type_size), 0);
+    rb_define_singleton_method(cType, "memory_layout", RUBY_METHOD_FUNC(&type_memory_layout), 0);
     rb_define_method(cType, "__initialize__",   RUBY_METHOD_FUNC(&value_initialize), 1);
     rb_define_method(cType, "to_ruby",      RUBY_METHOD_FUNC(&value_to_ruby), 0);
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);

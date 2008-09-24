@@ -100,6 +100,25 @@ class TC_Type < Test::Unit::TestCase
         assert_equal(type, type.deference.to_ptr)
         assert_equal(type, type.to_ptr.deference)
     end
+
+    def test_memory_layout
+        reg = make_registry
+        std = reg.get("StdCollections")
+        layout = std.memory_layout
+        expected = [:FLAG_MEMCPY, 8,
+            :FLAG_CONTAINER, reg.get("/std/vector</double>"),
+                :FLAG_MEMCPY, 8,
+            :FLAG_END,
+            :FLAG_MEMCPY, 8,
+            :FLAG_CONTAINER, reg.get("/std/vector</std/vector</double>>"),
+                :FLAG_CONTAINER, reg.get("/std/vector</double>"),
+                    :FLAG_MEMCPY, 8,
+                :FLAG_END,
+            :FLAG_END,
+            :FLAG_MEMCPY, 16]
+
+        assert_equal(expected, layout)
+    end
 end
 
 
