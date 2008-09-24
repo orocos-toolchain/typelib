@@ -280,6 +280,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     def test_containers
         std = make_registry.get("StdCollections")
         assert(std.dbl_vector < Typelib::ContainerType)
+        assert_equal("/std/vector", std.dbl_vector.container_kind)
 
         value = std.new
         assert_equal(0, value.dbl_vector.length)

@@ -352,6 +352,19 @@ static VALUE numeric_type_unsigned_p(VALUE self)
 
 /*
  * call-seq:
+ *  klass.container_name => name
+ *
+ * Returns the name of the generic container. For instance, a
+ * /std/vector</double> type would return /std/vector.
+ */
+static VALUE container_kind(VALUE self)
+{
+    Container const& type(dynamic_cast<Container const&>(rb2cxx::object<Type>(self)));
+    return rb_str_new2(type.kind().c_str());
+}
+
+/*
+ * call-seq:
  *  container.length => value
  *
  * Returns the count of elements in +container+
@@ -535,6 +548,7 @@ void Typelib_init_specialized_types()
     rb_define_method(cArray, "size",    RUBY_METHOD_FUNC(array_size), 0);
 
     cContainer = rb_define_class_under(mTypelib, "ContainerType", cIndirect);
+    rb_define_singleton_method(cContainer, "container_kind", RUBY_METHOD_FUNC(container_kind), 0);
     rb_define_method(cContainer, "length",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "insert",    RUBY_METHOD_FUNC(container_insert), 1);
     rb_define_method(cContainer, "each",      RUBY_METHOD_FUNC(container_each), 0);
