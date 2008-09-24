@@ -48,6 +48,8 @@ namespace Typelib
     void dump(Value v, std::vector<uint8_t>& buffer, MemoryLayout const& ops);
     void load(Value v, std::vector<uint8_t> const& buffer);
     void load(Value v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops);
+    void dump(uint8_t* v, std::vector<uint8_t>& buffer, MemoryLayout const& ops);
+    void load(uint8_t* v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops);
 }
 
 #endif

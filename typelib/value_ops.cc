@@ -403,10 +403,13 @@ void Typelib::dump(Value v, std::vector<uint8_t>& buffer)
 
 void Typelib::dump(Value v, std::vector<uint8_t>& buffer, MemoryLayout const& ops)
 {
-    int base_offset;
+    dump(reinterpret_cast<uint8_t*>(v.getData()), buffer, ops);
+}
+
+void Typelib::dump(uint8_t* v, std::vector<uint8_t>& buffer, MemoryLayout const& ops)
+{
     MemoryLayout::const_iterator end = ValueOps::dump(
-            reinterpret_cast<uint8_t*>(v.getData()), 0,
-            buffer, ops.begin(), ops.end()).get<1>();
+            v, 0, buffer, ops.begin(), ops.end()).get<1>();
     if (end != ops.end())
         throw std::runtime_error("internal error in the marshalling process");
 }
@@ -418,19 +421,18 @@ void Typelib::load(Value v, std::vector<uint8_t> const& buffer)
 }
 
 void Typelib::load(Value v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops)
+{ load(reinterpret_cast<uint8_t*>(v.getData()), buffer, ops); }
+
+void Typelib::load(uint8_t* v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops)
 {
     MemoryLayout::const_iterator it;
     int in_offset, out_offset;
     tie(out_offset, in_offset, it) =
-        ValueOps::load(
-                reinterpret_cast<uint8_t*>(v.getData()), 0,
-                buffer, 0, ops.begin(), ops.end());
+        ValueOps::load(v, 0, buffer, 0, ops.begin(), ops.end());
     if (it != ops.end())
         throw std::runtime_error("internal error in the memory layout");
     if (in_offset != buffer.size())
         throw std::runtime_error("parts of the provided buffer has not been used");
-    if (out_offset != v.getType().getSize())
-        throw std::runtime_error("produced data is too small");
 }
 
 
