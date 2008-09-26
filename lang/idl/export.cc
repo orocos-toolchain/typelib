@@ -17,6 +17,7 @@ namespace
         string    m_indent;
 
         bool visit_(OpaqueType const& type);
+        bool visit_(NullType const& type);
         bool visit_(Container const& type);
         bool visit_(Compound const& type);
         bool visit_(Compound const& type, Field const& field);
@@ -88,6 +89,11 @@ namespace
         }
 	else
 	{
+            if (field_type.getName() == "/std/string")
+                m_stream << m_indent << "string " << field.getName() << ";\n";
+            else if (field_type.getCategory() == Type::Opaque)
+                throw UnsupportedType(type, "opaque types are not allowed in IDL");
+
 	    m_stream 
 		<< m_indent
 		<< m_exporter.getIDLAbsoluteTypename(field.getType()) << " "
@@ -135,9 +141,16 @@ namespace
         // are already handled in visit_(Compound, Field)
         return true;
     }
+    bool IDLExportVisitor::visit_(NullType const& type)
+    {
+        if (type.getName() != "/std/string")
+            TypeVisitor::visit_(type);
+        return true;
+    }
     bool IDLExportVisitor::visit_(OpaqueType const& type)
     {
-	//throw UnsupportedType(type, "top-level containers are not handled by the IDLExportVisitor");
+        if (type.getName() != "/std/string")
+            throw UnsupportedType(type, "opaque types are not supported for export in IDL");
         return true;
     }
 }
@@ -217,6 +230,9 @@ std::string IDLExport::getExportNamespace(std::string const& type_ns) const
 std::string IDLExport::getIDLAbsoluteTypename(Type const& type) const
 {
     string result;
+
+    if (type.getName() == "std::string")
+        return "string";
 
     string type_ns = getExportNamespace(type.getNamespace());
     if (type_ns != m_namespace && type.getCategory() != Type::Numeric)
