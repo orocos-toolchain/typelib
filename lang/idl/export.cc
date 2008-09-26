@@ -17,6 +17,7 @@ namespace
         string    m_indent;
 
         bool visit_(OpaqueType const& type);
+        bool visit_(Container const& type);
         bool visit_(Compound const& type);
         bool visit_(Compound const& type, Field const& field);
 
@@ -74,27 +75,16 @@ namespace
 		<< field.getName()
 		<< "[" << array_type.getDimension() << "];\n";
 	}
-        else if (field_type.getCategory() == Type::Opaque)
+        else if (field_type.getCategory() == Type::Container)
 	{
-            string field_typename = field_type.getName();
-            // Check if it is a C++-like collection, in which case export it as a
-            // sequence of the corresponding type
-            size_t lt_pos = field_typename.find("<");
-            if (lt_pos != string::npos)
-            {
-                string element_typename = string(field_typename, lt_pos + 1, field_typename.size() - lt_pos - 2);
-                Type const* element_type = m_registry.get(element_typename);
-                if (!element_type)
-                    throw UnsupportedType(type, "cannot find the sequence element type '" + element_typename + "' of '" + field_typename + "'");
+            Type const& element_type = static_cast<Indirect const&>(field_type).getIndirection();
+            IDLExport::checkType(element_type);
 
-                IDLExport::checkType(*element_type);
-
-                m_stream
-                    << m_indent
-                    << "sequence<" + m_exporter.getIDLAbsoluteTypename(*element_type) + ">"
-                    << " "
-                    << field.getName() << ";\n";
-            }
+            m_stream
+                << m_indent
+                << "sequence<" + m_exporter.getIDLAbsoluteTypename(element_type) + ">"
+                << " "
+                << field.getName() << ";\n";
         }
 	else
 	{
@@ -139,6 +129,12 @@ namespace
         return true;
     }
 
+    bool IDLExportVisitor::visit_(Container const& type)
+    {
+        // Simply ignore the type, it is uneeded to export it. Containers in structures
+        // are already handled in visit_(Compound, Field)
+        return true;
+    }
     bool IDLExportVisitor::visit_(OpaqueType const& type)
     {
 	//throw UnsupportedType(type, "top-level containers are not handled by the IDLExportVisitor");
