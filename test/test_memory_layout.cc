@@ -95,12 +95,21 @@ BOOST_AUTO_TEST_CASE(test_layout_containers)
     {
         Type const& type      = *registry.get("/struct StdCollections");
         Type const& v_double  = *registry.get("/std/vector</double>");
+        Type const& v_of_v_double  = *registry.get("/std/vector</std/vector</double>>");
         MemoryLayout ops = Typelib::layout_of(type);
 
+        StdCollections test;
+
         size_t expected[] = {
-            MemLayout::FLAG_MEMCPY, 8,
+            MemLayout::FLAG_MEMCPY, reinterpret_cast<uint8_t*>(&test.dbl_vector) - reinterpret_cast<uint8_t*>(&test),
             MemLayout::FLAG_CONTAINER, reinterpret_cast<size_t>(&v_double),
                 MemLayout::FLAG_MEMCPY, sizeof(double),
+            MemLayout::FLAG_END,
+            MemLayout::FLAG_MEMCPY, reinterpret_cast<uint8_t*>(&test.v_of_v) - reinterpret_cast<uint8_t*>(&test.v8),
+            MemLayout::FLAG_CONTAINER, reinterpret_cast<size_t>(&v_of_v_double),
+                MemLayout::FLAG_CONTAINER, reinterpret_cast<size_t>(&v_double),
+                    MemLayout::FLAG_MEMCPY, sizeof(double),
+                MemLayout::FLAG_END,
             MemLayout::FLAG_END,
             MemLayout::FLAG_MEMCPY, 16
         };

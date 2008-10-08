@@ -191,12 +191,12 @@ public:
         }
         else
         {
-            MarshalOps::const_iterator it_end;
+            MarshalOps::const_iterator it_end = begin;
             size_t in_offset = 0;
             for (int i = 0; i < element_count; ++i)
             {
                 boost::tie(in_offset, it_end) = ValueOps::dump(
-                        &(*vector_ptr)[i + in_offset], in_offset,
+                        &(*vector_ptr)[i * getIndirection().getSize()], 0,
                         buffer, begin, end);
             }
             return it_end;
@@ -211,7 +211,12 @@ public:
         std::vector<uint8_t>* vector_ptr =
             reinterpret_cast< std::vector<uint8_t>* >(container_ptr);
 
-        vector_ptr->resize(element_count * getIndirection().getSize());
+        Type const& element_t = getIndirection();
+        size_t      element_size = element_t.getSize();
+        vector_ptr->resize(element_count * element_size);
+
+        for (int i = 0; i < element_count; ++i)
+            Typelib::init(Value(&(*vector_ptr)[i * element_size], element_t));
 
         MarshalOps::const_iterator it = begin;
         if (isElementMemcpy(begin, end))
@@ -227,7 +232,7 @@ public:
             for (int i = 0; i < element_count; ++i)
             {
                 boost::tie(out_offset, in_offset, it_end) =
-                    ValueOps::load(&(*vector_ptr)[i + out_offset], out_offset,
+                    ValueOps::load(&(*vector_ptr)[i * element_size], 0,
                         buffer, in_offset, begin, end);
             }
             return boost::make_tuple(in_offset, it_end);

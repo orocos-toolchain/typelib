@@ -134,19 +134,37 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
     {
         StdCollections data;
         data.iv = 10;
-        data.dbl_vector.resize(100);
-        for (int i = 0; i < 100; ++i)
+        data.dbl_vector.resize(5);
+        for (int i = 0; i < 5; ++i)
             data.dbl_vector[i] = 0.01 * i;
         data.v8  = -106;
+        data.v_of_v.resize(5);
+        for (int i = 0; i < 5; ++i)
+        {
+            data.v_of_v[i].resize(3);
+            for (int j = 0; j < 3; ++j)
+                data.v_of_v[i][j] = i * 10 + j;
+        }
         data.v16 = 5235;
         data.v64 = 5230971546;
 
-        Type const& type      = *registry.get("/struct StdCollections");
+        Type const& type       = *registry.get("/struct StdCollections");
         vector<uint8_t> buffer = dump(Value(&data, type));
-        BOOST_REQUIRE_EQUAL( buffer.size(), sizeof(StdCollections) - sizeof(std::vector<double>) + sizeof(double) * 100 + sizeof(uint64_t));
+        BOOST_REQUIRE_EQUAL( buffer.size(),
+                sizeof(StdCollections) - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
+                + sizeof(double) * 20 // elements
+                + 7 * sizeof(uint64_t)); // element counts
         BOOST_REQUIRE(! memcmp(&data.iv, &buffer[0], sizeof(data.iv)));
-        BOOST_REQUIRE_EQUAL(100, *reinterpret_cast<uint64_t*>(&buffer[8]));
-        BOOST_REQUIRE(! memcmp(&data.dbl_vector[0], &buffer[16], sizeof(double) * 100));
+        BOOST_REQUIRE_EQUAL(5, *reinterpret_cast<uint64_t*>(&buffer[8]));
+        BOOST_REQUIRE(! memcmp(&data.dbl_vector[0], &buffer[16], sizeof(double) * 5));
+
+        BOOST_REQUIRE_EQUAL(5, *reinterpret_cast<uint64_t*>(&buffer[64]));
+        for (int i = 0; i < 5; ++i)
+        {
+            size_t base_offset = i * (sizeof(double) * 3 + sizeof(uint64_t));
+            BOOST_REQUIRE_EQUAL(3, *reinterpret_cast<uint64_t*>(&buffer[72 + base_offset]));
+            BOOST_REQUIRE(! memcmp(&data.v_of_v[i][0], &buffer[80 + base_offset], sizeof(double) * 3));
+        }
 
         StdCollections reloaded;
         load(Value(&reloaded, type), buffer);

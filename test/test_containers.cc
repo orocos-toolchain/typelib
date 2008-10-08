@@ -26,6 +26,12 @@ BOOST_AUTO_TEST_CASE( test_vector_assumptions )
         BOOST_REQUIRE_EQUAL(10, values.size());
         BOOST_REQUIRE_EQUAL(5, reinterpret_cast< vector<int64_t>& >(values).size());
     }
+    {
+        vector< vector<double> > values;
+        values.resize(10);
+        BOOST_REQUIRE_EQUAL(10, values.size());
+        BOOST_REQUIRE_EQUAL(10 * sizeof(vector<double>), reinterpret_cast< vector<int8_t>& >(values).size());
+    }
 
     // It is expected that some byte-copies operations are valid with vectors
     // The test do not really do anything by itself. Result should be checked
