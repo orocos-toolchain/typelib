@@ -174,5 +174,29 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
         BOOST_REQUIRE( data.v16        == reloaded.v16 );
         BOOST_REQUIRE( data.v64        == reloaded.v64 );
     }
+
+    {
+        StdCollections data;
+        
+        data.iv = 0;
+        data.v8 = 1;
+        data.v_of_v.resize(5);
+        data.v16 = 2;
+        data.v64 = 3;
+
+        Type const& type       = *registry.get("/struct StdCollections");
+        vector<uint8_t> buffer = dump(Value(&data, type));
+        BOOST_REQUIRE_EQUAL( buffer.size(),
+                sizeof(StdCollections) - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
+                + 7 * sizeof(uint64_t)); // element counts
+        BOOST_REQUIRE(! memcmp(&data.iv, &buffer[0], sizeof(data.iv)));
+        BOOST_REQUIRE_EQUAL(0, *reinterpret_cast<uint64_t*>(&buffer[8]));
+        BOOST_REQUIRE_EQUAL(5, *reinterpret_cast<uint64_t*>(&buffer[24]));
+        for (int i = 0; i < 5; ++i)
+        {
+            size_t base_offset = i * sizeof(uint64_t);
+            BOOST_REQUIRE_EQUAL(0, *reinterpret_cast<uint64_t*>(&buffer[32 + base_offset]));
+        }
+    }
 }
 

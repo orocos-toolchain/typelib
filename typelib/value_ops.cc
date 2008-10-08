@@ -27,8 +27,13 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
             {
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
-                for (int i = 0; i < element_count; ++i)
-                    tie(in_offset, it) = dump(data, in_offset, buffer, element_it, end);
+                if (element_count == 0)
+                    it = MemLayout::skip_block(element_it, end);
+                else
+                {
+                    for (int i = 0; i < element_count; ++i)
+                        tie(in_offset, it) = dump(data, in_offset, buffer, element_it, end);
+                }
 
                 if (it == end || *it != MemLayout::FLAG_END)
                     throw std::runtime_error("error in the marshalling bytecode: array does not end with FLAG_END");
@@ -50,11 +55,14 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
 
                 size_t element_count = type->getElementCount(container_ptr);
 
-                int out_offset  = buffer.size();
+                int out_offset = buffer.size();
                 buffer.resize( out_offset + sizeof(uint64_t) );
                 reinterpret_cast<uint64_t&>(buffer[out_offset]) = element_count;
 
-                it = type->dump(container_ptr, element_count, buffer, ++it, end);
+                if (element_count == 0)
+                    it = MemLayout::skip_block(++it, end);
+                else
+                    it = type->dump(container_ptr, element_count, buffer, ++it, end);
 
                 if (it == end || *it != MemLayout::FLAG_END)
                     throw std::runtime_error("error in bytecode while dumping: container does not end with FLAG_END");
@@ -93,9 +101,15 @@ tuple<size_t, size_t, MemoryLayout::const_iterator> ValueOps::load(
             {
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
-                for (int i = 0; i < element_count; ++i)
-                    tie(out_offset, in_offset, it) =
-                        load(data, out_offset, buffer, in_offset, element_it, end);
+
+                if (element_count == 0)
+                    it = MemLayout::skip_block(element_it, end);
+                else
+                {
+                    for (int i = 0; i < element_count; ++i)
+                        tie(out_offset, in_offset, it) =
+                            load(data, out_offset, buffer, in_offset, element_it, end);
+                }
 
                 if (*it != MemLayout::FLAG_END)
                     throw std::runtime_error("bytecode error in load(): array does not end with FLAG_END");
@@ -117,9 +131,13 @@ tuple<size_t, size_t, MemoryLayout::const_iterator> ValueOps::load(
 
                 size_t element_count = reinterpret_cast<uint64_t const&>(buffer[in_offset]);
                 in_offset += sizeof(uint64_t);
-
-                tie(in_offset, it) =
-                    type->load(container_ptr, element_count, buffer, in_offset, ++it, end);
+                if (element_count == 0)
+                    it = MemLayout::skip_block(++it, end);
+                else
+                {
+                    tie(in_offset, it) =
+                        type->load(container_ptr, element_count, buffer, in_offset, ++it, end);
+                }
 
                 if (it == end || *it != MemLayout::FLAG_END)
                     throw std::runtime_error("bytecode error in load(): container does not end with FLAG_END");
