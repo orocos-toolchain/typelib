@@ -80,6 +80,20 @@ BOOST_AUTO_TEST_CASE( test_tlb_import )
 	importer->load(stream, config, registry);
     }
 
+    {
+	string invalid_element_type = "<?xml version=\"1.0\"?>\n<typelib>\n<invalid_thing name=\"fake\"/></typelib>";
+	istringstream stream(invalid_element_type);
+	Registry registry;
+	BOOST_CHECK_THROW(importer->load(stream, config, registry), std::runtime_error);
+    }
+    {
+	string missing_arg = "<?xml version=\"1.0\"?>\n<typelib>\n<invalid_thing /></typelib>";
+	istringstream stream(missing_arg);
+	Registry registry;
+	BOOST_CHECK_THROW(importer->load(stream, config, registry), std::runtime_error);
+    }
+
+
     { 
 	ifstream file(TEST_DATA_PATH("rflex.tlb"));
 	Registry registry;
