@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
                 data.v_of_v[i][j] = i * 10 + j;
         }
         data.v16 = 5235;
-        data.v64 = 5230971546;
+        data.v64 = 5230971546LL;
 
         Type const& type       = *registry.get("/struct StdCollections");
         vector<uint8_t> buffer = dump(Value(&data, type));
