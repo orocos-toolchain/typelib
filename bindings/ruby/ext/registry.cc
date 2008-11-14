@@ -293,7 +293,11 @@ VALUE registry_from_xml(VALUE mod, VALUE xml)
 
     std::istringstream istream(StringValuePtr(xml));
     config_set config;
-    PluginManager::load("tlb", istream, config, registry);
+    try { PluginManager::load("tlb", istream, config, registry); }
+    catch(std::runtime_error e)
+    {
+        rb_raise(rb_eArgError, "cannot load xml: %s", e.what());
+    }
 
     return rb_registry;
 }
