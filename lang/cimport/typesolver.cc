@@ -19,11 +19,11 @@ ostream& operator << (ostream& io, TypeSolver::CurrentTypeDefinition const& def)
     return io << "  " << join(def.name, " ") << " [" << join(def.array, ", ") << "] " << def.pointer_level;
 }
 
-TypeSolver::TypeSolver(const antlr::ParserSharedInputState& state, Registry& registry, bool cxx_mode)
-    : CPPParser(state), m_class_object(0), m_registry(registry), m_cxx_mode(cxx_mode) {}
+TypeSolver::TypeSolver(const antlr::ParserSharedInputState& state, Registry& registry, bool cxx_mode, bool ignore_opaques)
+    : CPPParser(state), m_class_object(0), m_registry(registry), m_cxx_mode(cxx_mode), m_ignore_opaques(ignore_opaques) {}
 
-TypeSolver::TypeSolver(antlr::TokenStream& lexer, Registry& registry, bool cxx_mode)
-    : CPPParser(lexer), m_class_object(0), m_registry(registry), m_cxx_mode(cxx_mode) {}
+TypeSolver::TypeSolver(antlr::TokenStream& lexer, Registry& registry, bool cxx_mode, bool ignore_opaques)
+    : CPPParser(lexer), m_class_object(0), m_registry(registry), m_cxx_mode(cxx_mode), m_ignore_opaques(ignore_opaques) {}
 
 void TypeSolver::setTypename(std::string const& name)
 {
@@ -307,7 +307,20 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
                 compound.addField(name, field_type, 0);
             else if (m_class_type == tsSTRUCT)
             {
-                size_t offset = Packing::getOffsetOf( compound, field_type );
+                size_t offset = 0;
+                if (field_type.getCategory() != Type::Opaque || !m_ignore_opaques)
+                    offset = Packing::getOffsetOf( compound, field_type );
+                else
+                {
+                    Compound::FieldList const& fields(compound.getFields());
+                    if (fields.empty()) offset = 0;
+                    else
+                    {
+                        Field const& last_field = fields.back();
+                        offset = last_field.getOffset() + last_field.getType().getSize();
+                    }
+                }
+
                 compound.addField( name, field_type, offset );
             }
             else 

@@ -15,6 +15,7 @@ namespace
 	IDLExport const& m_exporter;
         ostream&  m_stream;
         string    m_indent;
+        bool      m_opaque_as_any;
 
         bool visit_(OpaqueType const& type);
         bool visit_(NullType const& type);
@@ -29,7 +30,7 @@ namespace
 
         bool visit_(Enum const& type);
 
-        IDLExportVisitor(Registry const& registry, IDLExport const& exporter, ostream& stream, string const& base_indent);
+        IDLExportVisitor(Registry const& registry, IDLExport const& exporter, ostream& stream, string const& base_indent, bool opaque_as_any);
     };
 
     struct Indent
@@ -43,8 +44,9 @@ namespace
     };
 
     IDLExportVisitor::IDLExportVisitor(Registry const& registry, IDLExport const& exporter,
-	    ostream& stream, string const& base_indent)
-        : m_registry(registry), m_exporter(exporter), m_stream(stream), m_indent(base_indent) {}
+	    ostream& stream, string const& base_indent, bool opaque_as_any)
+        : m_registry(registry), m_exporter(exporter), m_stream(stream), m_indent(base_indent)
+        , m_opaque_as_any(opaque_as_any) {}
 
     bool IDLExportVisitor::visit_(Compound const& type)
     { 
@@ -92,7 +94,12 @@ namespace
             if (field_type.getName() == "/std/string")
                 m_stream << m_indent << "string " << field.getName() << ";\n";
             else if (field_type.getCategory() == Type::Opaque)
-                throw UnsupportedType(type, "opaque types are not allowed in IDL");
+            {
+                if (m_opaque_as_any)
+                    m_stream << m_indent << "Any " << field.getName() << ";\n";
+                else
+                    throw UnsupportedType(type, "opaque types are not allowed in IDL");
+            }
 
 	    m_stream 
 		<< m_indent
@@ -149,15 +156,16 @@ namespace
     }
     bool IDLExportVisitor::visit_(OpaqueType const& type)
     {
-        if (type.getName() != "/std/string")
-            throw UnsupportedType(type, "opaque types are not supported for export in IDL");
-        return true;
+        if (type.getName() == "/std/string" || m_opaque_as_any)
+            return true;
+
+        throw UnsupportedType(type, "opaque types are not supported for export in IDL");
     }
 }
 
 using namespace std;
 IDLExport::IDLExport() 
-    : m_namespace("/") {}
+    : m_namespace("/"), m_opaque_as_any(false) {}
 
 void IDLExport::end
     ( ostream& stream
@@ -293,6 +301,7 @@ void IDLExport::save
     m_ns_prefix = config.get<std::string>("namespace_prefix", "");
     m_ns_suffix = config.get<std::string>("namespace_suffix", "");
     m_blob_threshold = config.get<int>("blob_threshold", 0);
+    m_opaque_as_any  = config.get<bool>("opaque_as_any", false);
     return Exporter::save(stream, config, type);
 }
 
@@ -349,7 +358,7 @@ void IDLExport::save
 	else
 	{
 	    std::ostringstream temp_stream;
-	    IDLExportVisitor exporter(type.getRegistry(), *this, temp_stream, indent_string);
+	    IDLExportVisitor exporter(type.getRegistry(), *this, temp_stream, indent_string, m_opaque_as_any);
 	    exporter.apply(*type);
 
 	    string result = temp_stream.str();
