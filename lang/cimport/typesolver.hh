@@ -26,6 +26,7 @@ class TypeSolver : public CPPParser
     Typelib::Registry& m_registry;
 
     bool m_cxx_mode;
+    bool m_ignore_opaques;
 
     Typelib::Type const& buildCurrentType();
     void setTypename(std::string const& name);
@@ -46,8 +47,8 @@ public:
             : std::runtime_error("found nested type definition: " + inside + " is defined in " + outside) {}
     };
 
-    TypeSolver(antlr::TokenStream& lexer, Typelib::Registry& registry, bool cxx_mode);
-    TypeSolver(const antlr::ParserSharedInputState& state, Typelib::Registry& registry, bool cxx_mode);
+    TypeSolver(antlr::TokenStream& lexer, Typelib::Registry& registry, bool cxx_mode, bool ignore_opaques);
+    TypeSolver(const antlr::ParserSharedInputState& state, Typelib::Registry& registry, bool cxx_mode, bool ignore_opaques);
     
     virtual void beginClassDefinition(TypeSpecifier class_type, const std::string& name);
     virtual void endClassDefinition();

@@ -22,6 +22,7 @@ class IDLExport : public Typelib::Exporter
     std::string m_ns_suffix;
     std::string m_indent;
     int m_blob_threshold;
+    bool m_opaque_as_any;
 
     void closeNamespaces(std::ostream& stream, int levels);
     void adaptNamespace(std::ostream& stream, std::string const& ns);
