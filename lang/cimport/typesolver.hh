@@ -26,7 +26,10 @@ class TypeSolver : public CPPParser
     Typelib::Registry& m_registry;
 
     bool m_cxx_mode;
-    bool m_ignore_opaques;
+    bool m_opaques_forced_alignment;
+    bool m_opaques_ignore;
+    typedef std::map<std::string, size_t> AlignmentMap;
+    AlignmentMap m_opaques_alignment;
 
     Typelib::Type const& buildCurrentType();
     void setTypename(std::string const& name);
@@ -47,8 +50,11 @@ public:
             : std::runtime_error("found nested type definition: " + inside + " is defined in " + outside) {}
     };
 
-    TypeSolver(antlr::TokenStream& lexer, Typelib::Registry& registry, bool cxx_mode, bool ignore_opaques);
-    TypeSolver(const antlr::ParserSharedInputState& state, Typelib::Registry& registry, bool cxx_mode, bool ignore_opaques);
+    TypeSolver(antlr::TokenStream& lexer, Typelib::Registry& registry, bool cxx_mode);
+    TypeSolver(const antlr::ParserSharedInputState& state, Typelib::Registry& registry, bool cxx_mode);
+
+    void setupOpaqueHandling(bool forced_alignment, bool ignore);
+    void defineOpaqueAlignment(std::string const& type_name, size_t value);
     
     virtual void beginClassDefinition(TypeSpecifier class_type, const std::string& name);
     virtual void endClassDefinition();

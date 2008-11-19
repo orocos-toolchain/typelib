@@ -19,11 +19,24 @@ ostream& operator << (ostream& io, TypeSolver::CurrentTypeDefinition const& def)
     return io << "  " << join(def.name, " ") << " [" << join(def.array, ", ") << "] " << def.pointer_level;
 }
 
-TypeSolver::TypeSolver(const antlr::ParserSharedInputState& state, Registry& registry, bool cxx_mode, bool ignore_opaques)
-    : CPPParser(state), m_class_object(0), m_registry(registry), m_cxx_mode(cxx_mode), m_ignore_opaques(ignore_opaques) {}
+TypeSolver::TypeSolver(const antlr::ParserSharedInputState& state, Registry& registry, bool cxx_mode)
+    : CPPParser(state), m_class_object(0), m_registry(registry), m_cxx_mode(cxx_mode)
+    , m_opaques_forced_alignment(true), m_opaques_ignore(false) {}
 
-TypeSolver::TypeSolver(antlr::TokenStream& lexer, Registry& registry, bool cxx_mode, bool ignore_opaques)
-    : CPPParser(lexer), m_class_object(0), m_registry(registry), m_cxx_mode(cxx_mode), m_ignore_opaques(ignore_opaques) {}
+TypeSolver::TypeSolver(antlr::TokenStream& lexer, Registry& registry, bool cxx_mode)
+    : CPPParser(lexer), m_class_object(0), m_registry(registry), m_cxx_mode(cxx_mode)
+    , m_opaques_forced_alignment(true), m_opaques_ignore(false) {}
+
+void TypeSolver::setupOpaqueHandling(bool forced_alignment, bool ignore)
+{
+    m_opaques_forced_alignment = forced_alignment;
+    m_opaques_ignore = ignore;
+}
+void TypeSolver::defineOpaqueAlignment(std::string const& type_name, size_t value)
+{
+    cerr << type_name << " is aligned on " << value << endl;
+    m_opaques_alignment[type_name] = value;
+}
 
 void TypeSolver::setTypename(std::string const& name)
 {
@@ -308,16 +321,37 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
             else if (m_class_type == tsSTRUCT)
             {
                 size_t offset = 0;
-                if (field_type.getCategory() != Type::Opaque || !m_ignore_opaques)
+                if (field_type.getCategory() != Type::Opaque)
                     offset = Packing::getOffsetOf( compound, field_type );
                 else
                 {
+                    size_t explicit_alignment = 0;
+                    AlignmentMap::const_iterator it = m_opaques_alignment.find(field_type.getName());
+                    if (it != m_opaques_alignment.end())
+                        explicit_alignment = it->second;
+                    
+                    size_t natural_offset  = 0;
                     Compound::FieldList const& fields(compound.getFields());
-                    if (fields.empty()) offset = 0;
-                    else
+                    if (!fields.empty())
                     {
                         Field const& last_field = fields.back();
-                        offset = last_field.getOffset() + last_field.getType().getSize();
+                        natural_offset = last_field.getOffset() + last_field.getType().getSize();
+                    }
+
+                    if (explicit_alignment)
+                        offset = Packing::getOffsetOf( compound, field_type, explicit_alignment );
+                    else if (m_opaques_ignore)
+                        offset = Packing::getOffsetOf( compound, field_type, natural_offset );
+                    else
+                        throw std::runtime_error("do not know how to compute alignment of the opaque field " + name + ": no explicit alignment value provided");
+
+                    if (m_opaques_forced_alignment && natural_offset != offset)
+                    {
+                        ostringstream msg;
+                        msg << name << " needs to be explicitely aligned on " << explicit_alignment << " bytes, but "
+                            << offset - natural_offset << " padding bytes are missing";
+
+                        throw std::runtime_error(msg.str());
                     }
                 }
 

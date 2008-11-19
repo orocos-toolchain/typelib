@@ -95,7 +95,17 @@ void CImport::load
     try {
         CPPLexer cpp_lexer(stream);
 
-        TypeSolver reader(cpp_lexer, registry, config.get<bool>("cxx", true), config.get<bool>("ignore_opaques", false));
+        TypeSolver reader(cpp_lexer, registry, config.get<bool>("cxx", true));
+        reader.setupOpaqueHandling(config.get<bool>("opaques_forced_alignment", true),
+                config.get<bool>("opaques_ignore", false));
+
+        list<config_set const*> opaque_defs = config.children("opaques");
+        for (list<config_set const*>::const_iterator it = opaque_defs.begin(); it != opaque_defs.end(); ++it)
+        {
+            reader.defineOpaqueAlignment((*it)->get<string>("name"),
+                    (*it)->get<size_t>("alignment"));
+        }
+
         reader.init();
         reader.translation_unit();
     }

@@ -164,9 +164,22 @@ namespace {
 using std::cout;
 using std::endl;
 
-int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_field)
+int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_field, size_t packing)
 {
     int base_offset = last_field.getOffset() + last_field.getType().getSize();
+    return (base_offset + (packing - 1)) / packing * packing;
+}
+int Typelib::Packing::getOffsetOf(Compound const& compound, const Type& append_field, size_t packing)
+{
+    Compound::FieldList const& fields(compound.getFields());
+    if (fields.empty())
+        return 0;
+
+    return getOffsetOf(fields.back(), append_field, packing);
+}
+
+int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_field)
+{
 
     GetPackingSize visitor(append_field);
     size_t const size(visitor.size);
@@ -174,10 +187,7 @@ int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_fi
     for (int i = 0; i < packing_info_size; ++i)
     {
         if (packing_info[i].size == size)
-        {
-            size_t const packing(packing_info[i].packing);
-            return (base_offset + (packing - 1)) / packing * packing;
-        }
+            return getOffsetOf(last_field, append_field, packing_info[i].packing);
     }
 
     CollectionPackingInfo collection_packing_info[] = {
@@ -192,10 +202,7 @@ int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_fi
         for (CollectionPackingInfo* info = collection_packing_info; info->name; ++info)
         {
             if (info->name == std::string(append_field.getName(), 0, std::string(info->name).size()))
-            {
-                size_t const packing = info->packing;
-                return (base_offset + (packing - 1)) / packing * packing;
-            }
+                return getOffsetOf(last_field, append_field, info->packing);
         }
     }
 
