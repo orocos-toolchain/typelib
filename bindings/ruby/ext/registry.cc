@@ -114,10 +114,27 @@ void setup_configset_from_option_array(config_set& config, VALUE options)
 	VALUE k = RARRAY(entry)->ptr[0];
 	VALUE v = RARRAY(entry)->ptr[1];
 
-	if ( TYPE(v) == T_ARRAY )
+	if ( rb_obj_is_kind_of(v, rb_cArray) )
 	{
-	    for (int j = 0; j < RARRAY(v)->len; ++j)
-		config.insert(StringValuePtr(k), StringValuePtr( RARRAY(v)->ptr[j] ));
+            VALUE first_el = rb_ary_entry(v, 0);
+            if (rb_obj_is_kind_of(first_el, rb_cArray))
+            {
+                // We are building recursive config sets
+                for (int j = 0; j < RARRAY_LEN(v); ++j)
+                {
+                    config_set* child = new config_set;
+                    setup_configset_from_option_array(*child, rb_ary_entry(v, j));
+                    config.insert(StringValuePtr(k), child);
+                }
+            }
+            else
+            {
+                for (int j = 0; j < RARRAY_LEN(v); ++j)
+                {
+                    VALUE value = rb_ary_entry(v, j);
+                    config.insert(StringValuePtr(k), StringValuePtr(value));
+                }
+            }
 	}
 	else if (TYPE(v) == T_TRUE || TYPE(v) == T_FALSE)
 	    config.set(StringValuePtr(k), RTEST(v) ? "true" : "false");

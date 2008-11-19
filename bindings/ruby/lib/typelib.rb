@@ -487,7 +487,15 @@ module Typelib
 	# Format +option_hash+ to the form expected by do_import
 	# (Yes, I'm lazy and don't want to handles hashes in C)
         def self.format_options(option_hash) # :nodoc:
-            option_hash.to_a.collect { |opt| [ opt[0].to_s, opt[1] ] }
+            option_hash.to_a.collect do |opt|
+                if opt[1].kind_of?(Array) && opt[1].first.kind_of?(Hash)
+                    [ opt[0].to_s, opt[1].map { |child| format_options(child) } ]
+                elsif opt[1].kind_of?(Hash)
+                    [ opt[0].to_s, format_options(opt[1]) ]
+                else
+                    [ opt[0].to_s, opt[1].to_s ]
+                end
+            end
         end
 
         # Shortcut for
