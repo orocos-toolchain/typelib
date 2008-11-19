@@ -83,10 +83,18 @@ bool MemLayout::Visitor::visit_ (Pointer const& type)
         throw NoLayout(type, "is a pointer");
 }
 bool MemLayout::Visitor::visit_ (OpaqueType const& type)
-{ throw NoLayout(type, "is an opaque type"); }
+{
+    if (accept_opaques)
+    {
+        skip(type.getSize());
+        return true;
+    }
+    else
+        throw NoLayout(type, "is an opaque type with no specified size");
+}
 
-MemLayout::Visitor::Visitor(MemoryLayout& ops, bool accept_pointers)
-    : ops(ops), accept_pointers(accept_pointers), current_memcpy(0) {}
+MemLayout::Visitor::Visitor(MemoryLayout& ops, bool accept_pointers, bool accept_opaques)
+    : ops(ops), accept_pointers(accept_pointers), accept_opaques(accept_opaques), current_memcpy(0) {}
 
 void MemLayout::Visitor::apply(Type const& type)
 {

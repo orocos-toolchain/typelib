@@ -53,6 +53,7 @@ namespace Typelib
         private:
             MemoryLayout& ops;
             bool   accept_pointers;
+            bool   accept_opaques;
             size_t current_memcpy;
 
         protected:
@@ -68,7 +69,7 @@ namespace Typelib
             bool visit_ (OpaqueType const& type);
 
         public:
-            Visitor(MemoryLayout& ops, bool accept_pointers = false);
+            Visitor(MemoryLayout& ops, bool accept_pointers = false, bool accept_opaques = false);
 
             void apply(Type const& type);
         };
@@ -79,10 +80,10 @@ namespace Typelib
                 MemoryLayout::const_iterator end);
     }
 
-    inline MemoryLayout layout_of(Type const& t, bool accept_pointers = false)
+    inline MemoryLayout layout_of(Type const& t, bool accept_pointers = false, bool accept_opaques = false)
     {
         MemoryLayout ret;
-        MemLayout::Visitor visitor(ret, accept_pointers);
+        MemLayout::Visitor visitor(ret, accept_pointers, accept_opaques);
         visitor.apply(t);
         return ret;
     }
