@@ -90,7 +90,7 @@ bool MemLayout::Visitor::visit_ (OpaqueType const& type)
         return true;
     }
     else
-        throw NoLayout(type, "is an opaque type with no specified size");
+        throw NoLayout(type, "is an opaque type");
 }
 
 MemLayout::Visitor::Visitor(MemoryLayout& ops, bool accept_pointers, bool accept_opaques)
