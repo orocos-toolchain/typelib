@@ -168,6 +168,7 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE opt
 	return Qnil;
     }
     catch(std::runtime_error const& e) { error_string = e.what(); }
+    catch(boost::bad_lexical_cast e)   { error_string = e.what(); }
 
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
@@ -312,9 +313,9 @@ VALUE registry_from_xml(VALUE mod, VALUE xml)
     config_set config;
     try { PluginManager::load("tlb", istream, config, registry); }
     catch(std::runtime_error e)
-    {
-        rb_raise(rb_eArgError, "cannot load xml: %s", e.what());
-    }
+    { rb_raise(rb_eArgError, "cannot load xml: %s", e.what()); }
+    catch(boost::bad_lexical_cast e)
+    { rb_raise(rb_eArgError, "cannot load xml: %s", e.what()); }
 
     return rb_registry;
 }
