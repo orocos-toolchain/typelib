@@ -99,8 +99,16 @@ module Typelib
 		ns
 	    end
 
+            def basename(separator = Typelib::NAMESPACE_SEPARATOR)
+                name = do_basename
+		if separator && separator != Typelib::NAMESPACE_SEPARATOR
+		    name.gsub!(Typelib::NAMESPACE_SEPARATOR, separator)
+		end
+		name
+            end
+
 	    def full_name(separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
-		result = namespace(separator, remove_leading) + basename
+		result = namespace(separator, remove_leading) + basename(separator)
 	    end
 
 	    def to_s; "#<#{superclass.name}: #{name}>" end

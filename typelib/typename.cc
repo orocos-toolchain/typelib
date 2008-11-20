@@ -130,7 +130,8 @@ namespace Typelib
 
     std::string getTypename(const std::string& name)
     {
-        size_t position = name.rfind(NamespaceMark);
+        size_t template_position = name.rfind(TemplateMark);
+        size_t position = name.rfind(NamespaceMark, template_position);
         if (position == string::npos)
             return name;
 
@@ -147,7 +148,8 @@ namespace Typelib
 
     std::string getNamespace(const std::string& name)
     {
-        size_t position = name.rfind(NamespaceMark);
+        size_t template_position = name.rfind(TemplateMark);
+        size_t position = name.rfind(NamespaceMark, template_position);
         if (position == string::npos)
             return name;
 

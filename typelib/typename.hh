@@ -8,6 +8,7 @@ namespace Typelib
 {
     typedef std::string::value_type   NamespaceMarkType;
     static const NamespaceMarkType    NamespaceMark = '/';
+    static const NamespaceMarkType    TemplateMark  = '<';
     static const char*                NamespaceMarkString = "/";
 
     struct NameSeparator : public boost::char_separator<NamespaceMarkType>

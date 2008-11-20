@@ -484,7 +484,7 @@ void Typelib_init_values()
     rb_define_method(cType, "endian_swap",      RUBY_METHOD_FUNC(&value_endian_swap), 0);
     rb_define_method(cType, "endian_swap!",      RUBY_METHOD_FUNC(&value_endian_swap_b), 0);
     rb_define_method(cType, "zone_address", RUBY_METHOD_FUNC(&value_address), 0);
-    rb_define_singleton_method(cType, "basename", RUBY_METHOD_FUNC(type_basename), 0);
+    rb_define_singleton_method(cType, "do_basename", RUBY_METHOD_FUNC(type_basename), 0);
     rb_define_singleton_method(cType, "do_namespace", RUBY_METHOD_FUNC(type_do_namespace), 0);
 
     rb_define_singleton_method(cType, "to_csv", RUBY_METHOD_FUNC(type_to_csv), -1);
