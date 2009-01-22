@@ -17,6 +17,7 @@ library, whose full source code is provided in this release.
 Typelib has been written by Sylvain Joyeux <sylvain.joyeux@m4x.org>
 
 Copyright 2004-2008 LAAS/CNRS <openrobots@laas.fr> and DGA <arnaud.paronian@dga.gouv.fr>
+Copyright 2008-2009 DFKI <sylvain.joyeux@dfki.de>
 
 This software is provided under the CeCILL B License, which gives comparable
 terms of use than the BSD license. See LICENSE.txt or LICENSE.fr.txt provided
@@ -88,6 +89,6 @@ At runtime, the bindings require the following:
    globally (this is the case for Debian's rubygems package)
 
    You can also find the sources at
-     git clone http://www.laas.fr/~sjoyeux/git/utilrb.git
+     git clone git://github.com/doudou/util-rb.git
    read the INSTALL.txt file
 */
