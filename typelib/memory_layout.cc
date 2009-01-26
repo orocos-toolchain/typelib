@@ -127,6 +127,7 @@ MemoryLayout::const_iterator MemLayout::skip_block(
 
             case FLAG_SKIP:
             case FLAG_MEMCPY:
+                ++it;
             default:
                 break;
         }
