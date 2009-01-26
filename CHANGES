@@ -1,33 +1,90 @@
-== Version 1.0rc3
-* core: re-introduced Registry.import as a shortcut for r = Registry.new;
-  r.import
-* core: defined registry.minimal(other): this method computes the minimal
-  registry needed to define the types that are in +registry+ but not in +other+.
-* C importer: accept sizeof(type) and enumeration as integer constants during
-  parsing.
+== Version 1.1
+Markus Eich (3):
+      dist: the BEFORE/AFTER flag is not valid for LINK_DIRECTORIES
+      ruby: RARRAY_LEN and RARRAY_PTR are valid only on >= 1.8.6
+      ruby: fix missing return value
 
-* C importer: replaced the 'keep_cpp_output' flag by a 'debug' flag,
-  and display more debugging information when it is set.
-* C importer: properly handle all kind of GCC __attribute__ specification.
-  Standard headers are parsable again.
-* C importer: do accept the 'rawflags' option. Due to a misspelling,
-  'rawflag' was actually expected. Both are accepted for the sake of
-  backward compatibility.
-* C importer: fixes a bug in which function definitions were not entirely
-  ignored, and as such were "leaking" to the next type definition found.
-* core, C importer: support for recursive types like
-    struct Type {
-        Type* next;
-    };
-  Repositories including recursive types cannot be exported yet though.
-* all: fix problems on x86_64
-* C importer: fix issues with structure calculations. Some compilers may round the
-  structure size to the next native machine word (i.e. 4 on 32bits and 8 on
-  64bits). This was leading to packing calculation problems.
-* all: clean up exception handling. All exceptions now derive from
-  std::runtime_error and provide a developer-understandable message. This
-  also makes the Ruby bindings more robust, as catching runtime_error is now
-  a catch-all.
+Sylvain Joyeux (79):
+      [ruby] resurrect Registry.import
+      [lang_c] properly ignore function definitions
+      [dist] update changelog
+      add some missing headers
+      [typelib] partial support for recursive types
+      [lang,c] support recursive structure definitions
+      [lang,tlb] fix indentation of enum fields
+      [test] remove debugging output
+      [ruby] fix argument passing and return value handling for int on x86_64
+      [ruby,doc] add the kind parameter in Registry#import examples
+      [lang,c] allow using enums to express constant expressions
+      [test] fix test definition in CMakeLists.txt files
+      [lang,c] allow sizeof(type) constructs as integer constants
+      better error reporting
+      [lang,c] properly handle sizeof(typename)
+      [typelib] endian swapping code must reject pointers
+      [ruby,test] increase depth in memory management tests
+      [test,ruby] update enumeration in tests
+      [lang,c] compiler may decide to round struct sizes. Handle this.
+      [typelib] fix crash in construction of UnsupportedType(type, reason)
+      [test,ruby] fix expected value for E_FROM_SIZEOF_SPEC
+      [cimport] fix gcc warnings about char* for string constants
+      [lang,c] properly ignore all GCC __attribute__ specification
+      [lang,c] ignore equivalence between typedef and already existing types
+      [lang,c] remove debugging-related leftovers
+      [core,ruby] implement Registry::minimal
+      [core] cleanup exception definition and handling
+      [cmake] boost/unit_test is optional
+      [cmake] antlr: be more specific about the source of errors
+      [lang,c] fix UTF-8 nonbreakspace character which slipped in
+      [lang,c] define the 'debug' flag and fix the rawflag(s) mess
+      [doc] update changelog
+      [core] update documentation
+      [lang,c] fix exception definition in the packing code
+      [core] properly validate template-like names
+      [core,lang,c] define opaque types
+      [tlb] compound size can be bigger than its fields
+      [lang,tlb] remove BOOST_CHECK_NO_THROW as we have less information by keeping it
+      [core] display compound size in <<
+      [ruby] minimal support for opaque types
+      [lang,idl] handle collections-as-opaque in IDL export
+      lang,c: GCC has attributes for typedefs too
+      lang,c: fix management of the type stack
+      lang,c: detect nested type definitions and raise an error
+      core: "long unsigned int" is a valid name for long
+      lang,c: fix strange crash
+      lang,c: be stricter about type stack management
+      lang,c: shut up Antlr warnings about unused return values
+      core: display only names of pointed-to types to handle recursive types
+      core,test: fix merging of compounds
+      ruby: disable dyncall use on architectures it does not support
+      test: test merging a complex repository
+      dist: fix dyncall-related messages in CMakeLists.txt
+      lang-c: fix handling of nested types
+      core: fix insertion of new types in Registry::add
+      add overloads for PluginManager::load with no config
+      ruby: define CompoundType#has_field?
+      core: properly support skip() at the beginning of the swap
+      tlb: XML-escape all type names
+      tlb: thow if an unknown XML node is encountered
+      [core] preliminary Container support
+      all: improve Container support
+      core: endianness operations now throw on opaque/container types
+      core: greatly improve Container support
+      test: shut up Valgrind by properly initializing/deinitializing containers
+      core,ruby: complete the Container support
+      ruby: define ContainerType.container_kind
+      ruby: define Type.memory_layout
+      core: define untyped version of dump() and load()
+      lang,idl: properly handle Containers as IDL sequences
+      lang,idl: HACK: hard-wire the convertion of std::string into IDL string
+      fix marshalling and unmarshalling of containers in vector<>
+      properly handle empty containers in the various value operations
+      tlb: make sure invalid elements are properly detected during load
+      test: 64bit integer constants need a 'LL' suffix
+      ruby: catch C++ exceptions in Registry#from_xml
+      allow to relax some checks on opaque types
+      move to dyncall 0.3 which supports PPC-Linux
+      test: make the marshalling test independent on the architecture
+
 
 == Version 1.0rc2
 * added a CORBA IDL export plugin

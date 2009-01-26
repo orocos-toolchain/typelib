@@ -3,7 +3,7 @@ if(COMMAND cmake_minimum_required)
 endif(COMMAND cmake_minimum_required)
 
 PROJECT(typeLib)
-SET(PROJECT_VERSION 1.0rc2)
+SET(PROJECT_VERSION 1.1)
 
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 INCLUDE(UsePkgConfig)

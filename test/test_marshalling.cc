@@ -122,6 +122,24 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
     }
 }
 
+template<typename T>
+size_t CHECK_SIMPLE_VALUE(vector<uint8_t> const& buffer, size_t offset, T value)
+{
+    BOOST_REQUIRE_EQUAL(value, *reinterpret_cast<T const*>(&buffer[offset]));
+    return offset + sizeof(T);
+}
+
+template<typename T>
+size_t CHECK_VECTOR_VALUE(vector<uint8_t> const& buffer, size_t offset, vector<T> const& value)
+{
+    // First, check for the size
+    offset = CHECK_SIMPLE_VALUE(buffer, offset, static_cast<uint64_t>(value.size()));
+    // Then for the elements
+    for (size_t i = 0; i < value.size(); ++i)
+        offset = CHECK_SIMPLE_VALUE(buffer, offset, value[i]);
+    return offset;
+}
+
 BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
 {
     // Get the test file into repository
@@ -130,6 +148,13 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
     Importer* importer = manager->importer("c");
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+
+    StdCollections offset_discovery;
+    uint8_t* base_ptr     = reinterpret_cast<uint8_t*>(&offset_discovery);
+    size_t off_dbl_vector = reinterpret_cast<uint8_t*>(&offset_discovery.dbl_vector) - base_ptr;
+    size_t off_v8         = reinterpret_cast<uint8_t*>(&offset_discovery.v8) - base_ptr;
+    size_t off_v_of_v     = reinterpret_cast<uint8_t*>(&offset_discovery.v_of_v) - base_ptr;
+    size_t off_v16        = reinterpret_cast<uint8_t*>(&offset_discovery.v16) - base_ptr;
 
     {
         StdCollections data;
@@ -154,17 +179,14 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
                 sizeof(StdCollections) - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
                 + sizeof(double) * 20 // elements
                 + 7 * sizeof(uint64_t)); // element counts
-        BOOST_REQUIRE(! memcmp(&data.iv, &buffer[0], sizeof(data.iv)));
-        BOOST_REQUIRE_EQUAL(5, *reinterpret_cast<uint64_t*>(&buffer[8]));
-        BOOST_REQUIRE(! memcmp(&data.dbl_vector[0], &buffer[16], sizeof(double) * 5));
 
-        BOOST_REQUIRE_EQUAL(5, *reinterpret_cast<uint64_t*>(&buffer[64]));
+        CHECK_SIMPLE_VALUE(buffer, 0, data.iv);
+        size_t pos = CHECK_VECTOR_VALUE(buffer, off_dbl_vector, data.dbl_vector);
+        CHECK_SIMPLE_VALUE(buffer, pos, data.v8);
+
+        pos = CHECK_SIMPLE_VALUE(buffer, pos + off_v_of_v - off_v8, static_cast<uint64_t>(data.v_of_v.size()));
         for (int i = 0; i < 5; ++i)
-        {
-            size_t base_offset = i * (sizeof(double) * 3 + sizeof(uint64_t));
-            BOOST_REQUIRE_EQUAL(3, *reinterpret_cast<uint64_t*>(&buffer[72 + base_offset]));
-            BOOST_REQUIRE(! memcmp(&data.v_of_v[i][0], &buffer[80 + base_offset], sizeof(double) * 3));
-        }
+            pos = CHECK_VECTOR_VALUE(buffer, pos, data.v_of_v[i]);
 
         StdCollections reloaded;
         load(Value(&reloaded, type), buffer);
@@ -189,14 +211,14 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
         BOOST_REQUIRE_EQUAL( buffer.size(),
                 sizeof(StdCollections) - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
                 + 7 * sizeof(uint64_t)); // element counts
-        BOOST_REQUIRE(! memcmp(&data.iv, &buffer[0], sizeof(data.iv)));
-        BOOST_REQUIRE_EQUAL(0, *reinterpret_cast<uint64_t*>(&buffer[8]));
-        BOOST_REQUIRE_EQUAL(5, *reinterpret_cast<uint64_t*>(&buffer[24]));
+
+        CHECK_SIMPLE_VALUE(buffer, 0, data.iv);
+        size_t pos = CHECK_VECTOR_VALUE(buffer, off_dbl_vector, data.dbl_vector);
+        CHECK_SIMPLE_VALUE(buffer, pos, data.v8);
+
+        pos = CHECK_SIMPLE_VALUE(buffer, pos + off_v_of_v - off_v8, static_cast<uint64_t>(data.v_of_v.size()));
         for (int i = 0; i < 5; ++i)
-        {
-            size_t base_offset = i * sizeof(uint64_t);
-            BOOST_REQUIRE_EQUAL(0, *reinterpret_cast<uint64_t*>(&buffer[32 + base_offset]));
-        }
+            pos = CHECK_VECTOR_VALUE(buffer, pos, data.v_of_v[i]);
     }
 }
 

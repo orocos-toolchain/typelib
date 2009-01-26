@@ -293,6 +293,13 @@ module Typelib
                 end
             end
 
+            def offset_of(fieldname)
+                get_fields.each do |name, offset, _|
+                    return offset if name == fieldname
+                end
+                raise "no such field #{fieldname} in #{self}"
+            end
+
 	    # The list of fields
             attr_reader :fields
 	    # Returns the type of +name+
