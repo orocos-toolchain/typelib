@@ -349,7 +349,7 @@ VALUE value_to_byte_array(VALUE self)
 {
     Value& value = rb2cxx::object<Value>(self);
     vector<uint8_t> buffer = Typelib::dump(value);
-    return rb_str_new(reinterpret_cast<char*>(&buffer[0]), value.getType().getSize());
+    return rb_str_new(reinterpret_cast<char*>(&buffer[0]), buffer.size());
 }
 
 VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)
