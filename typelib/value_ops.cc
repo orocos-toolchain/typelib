@@ -227,7 +227,7 @@ tuple<uint8_t*, MemoryLayout::const_iterator>
             {
                 Container const* type = reinterpret_cast<Container const*>(*(++it));
                 type->init(buffer);
-                it = MemLayout::skip_block(it, end);
+                it = MemLayout::skip_block(++it, end);
                 buffer += type->getSize();
                 break;
             }
