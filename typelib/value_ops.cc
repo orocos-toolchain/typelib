@@ -1,8 +1,10 @@
 #include <typelib/value_ops.hh>
 #include <string.h>
+#include <boost/lexical_cast.hpp>
 
 using namespace Typelib;
 using namespace boost;
+using namespace std;
 
 tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
         uint8_t* data, size_t in_offset,
@@ -450,7 +452,8 @@ void Typelib::load(uint8_t* v, std::vector<uint8_t> const& buffer, MemoryLayout 
     if (it != ops.end())
         throw std::runtime_error("internal error in the memory layout");
     if (in_offset != buffer.size())
-        throw std::runtime_error("parts of the provided buffer has not been used");
+        throw std::runtime_error("parts of the provided buffer has not been used (" + 
+                lexical_cast<string>(in_offset) + " != " + lexical_cast<string>(buffer.size()) + ")");
 }
 
 
