@@ -503,8 +503,12 @@ module Typelib
 	# (Yes, I'm lazy and don't want to handles hashes in C)
         def self.format_options(option_hash) # :nodoc:
             option_hash.to_a.collect do |opt|
-                if opt[1].kind_of?(Array) && opt[1].first.kind_of?(Hash)
-                    [ opt[0].to_s, opt[1].map { |child| format_options(child) } ]
+                if opt[1].kind_of?(Array)
+                    if opt[1].first.kind_of?(Hash)
+                        [ opt[0].to_s, opt[1].map { |child| format_options(child) } ]
+                    else
+                        [ opt[0].to_s, opt[1].map { |child| child.to_s } ]
+                    end
                 elsif opt[1].kind_of?(Hash)
                     [ opt[0].to_s, format_options(opt[1]) ]
                 else
