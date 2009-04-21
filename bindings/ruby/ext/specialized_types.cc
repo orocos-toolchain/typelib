@@ -84,7 +84,11 @@ static VALUE pointer_deference(VALUE self)
     
     VALUE registry = value_get_registry(self);
 
-    Value new_value( *reinterpret_cast<void**>(value.getData()), indirect.getIndirection() );
+    void* ptr_value = *reinterpret_cast<void**>(value.getData());
+    if (!ptr_value)
+        rb_raise(rb_eArgError, "cannot deference a NULL pointer");
+
+    Value new_value(ptr_value, indirect.getIndirection() );
     VALUE ptr = memory_wrap(new_value.getData());
     return typelib_to_ruby(new_value, registry, Qnil);
 }

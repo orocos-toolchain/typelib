@@ -86,6 +86,7 @@ class TC_Value < Test::Unit::TestCase
         type = Registry.new.build("/int*")
 	value = type.new
 	value.zero!
+        assert_raises(ArgumentError) { value.deference }
 	assert(value.null?)
 	assert_equal(nil, value.to_ruby)
 
