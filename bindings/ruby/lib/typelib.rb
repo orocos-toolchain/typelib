@@ -610,9 +610,16 @@ module Typelib
 
 	# Open the library at +libname+, associated with the type registry
 	# +registry+. This returns a Library object.
-	def self.open(libname, registry)
+        #
+        # If no registry a given, an empty one is created.
+        #
+        # If auto_unload is true (the default), the shared object gets unloaded
+        # when the Library object is deleted. Otherwise, it will never be
+        # unloaded.
+	def self.open(libname, registry = nil, auto_unload = true)
 	    libname = File.expand_path(libname)
-	    lib = wrap(libname)
+	    lib = wrap(libname, auto_unload)
+            registry ||= Registry.new
 	    lib.instance_variable_set("@name", libname)
 	    lib.instance_variable_set("@registry", registry)
 	    lib

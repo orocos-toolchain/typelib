@@ -10,14 +10,16 @@ static VALUE cFunction;
 using namespace Typelib;
 
 static VALUE
-library_wrap(VALUE self, VALUE name)
+library_wrap(VALUE self, VALUE name, VALUE auto_unload)
 {
     void* libhandle = dlLoadLibrary(StringValuePtr(name));
     if (!libhandle)
 	rb_raise(rb_eArgError, "cannot load library %s", StringValue(name));
 
-    return Data_Wrap_Struct(cLibrary, 0, dlFreeLibrary, libhandle);
-
+    if (RTEST(auto_unload))
+        return Data_Wrap_Struct(cLibrary, 0, dlFreeLibrary, libhandle);
+    else
+        return Data_Wrap_Struct(cLibrary, 0, 0, libhandle);
 }
 
 /* call-seq:
@@ -320,7 +322,7 @@ void Typelib_init_functions()
     rb_define_singleton_method(mTypelib, "filter_value_arg", RUBY_METHOD_FUNC(filter_value_arg), 2);
 
     cLibrary = rb_define_class_under(mTypelib, "Library", rb_cObject);
-    rb_define_singleton_method(cLibrary, "wrap", RUBY_METHOD_FUNC(library_wrap), 1);
+    rb_define_singleton_method(cLibrary, "wrap", RUBY_METHOD_FUNC(library_wrap), 2);
     rb_define_method(cLibrary, "find", RUBY_METHOD_FUNC(library_find), 1);
 
     cFunction = rb_define_class_under(mTypelib, "Function", rb_cObject);
