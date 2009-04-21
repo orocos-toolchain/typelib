@@ -852,6 +852,21 @@ module Typelib
 	filtered
     end
 
+    def self.from_ruby(arg, expected_type)
+        if expected_type < CompoundType
+            if arg.kind_of?(expected_type) then arg
+            elsif arg.kind_of?(Hash) then expected_type.new(arg)
+            else
+                raise ArgumentError, "cannot initialize a value of type #{expected_type} from #{arg}"
+            end
+        else
+            filtered = filter_argument(arg, expected_type)
+            if !filtered.kind_of?(Typelib::Type)
+                expected_type.new.from_ruby(filtered)
+            end
+        end
+    end
+
     # Creates an array of objects that can safely be passed to function call mechanism
     def self.filter_function_args(args, function) # :nodoc:
         # Check we have the right count of arguments
