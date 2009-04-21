@@ -436,6 +436,12 @@ module Typelib
     class PointerType < IndirectType
         @writable = false
 
+        def self.create_null
+            result = new
+            result.zero!
+            result
+        end
+
 	# Returns 
 	# * nil if this is a NULL pointer, and a string
 	# * a String object if it is a pointer to a string. 
