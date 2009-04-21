@@ -1,6 +1,7 @@
 require 'test_config'
 
 class TC_Registry < Test::Unit::TestCase
+    Registry = Typelib::Registry
     def test_aliasing
 	registry = Registry.new
 	registry.alias "/my_own_and_only_int", "/int"
@@ -32,6 +33,16 @@ class TC_Registry < Test::Unit::TestCase
         }
 	assert_raises(RuntimeError) { registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ]) }
     end
+
+    def make_registry
+        registry = Typelib::Registry.new
+        testfile = File.join(SRCDIR, "test_cimport.1")
+        assert_raises(RuntimeError) { registry.import( testfile  ) }
+        registry.import( testfile, "c" )
+
+        registry
+    end
+
 
     def test_registry_iteration
 	reg = make_registry
