@@ -825,6 +825,8 @@ module Typelib
 			    arg
 			elsif Type === arg
 			    filter_value_arg(arg, expected_type)
+                        elsif arg.nil?
+                            expected_type.create_null
 			elsif expected_type.deference.name == "/char" && arg.respond_to?(:to_str)
 			    # Ruby strings ARE null-terminated
 			    # The thing which is not checked here is that there is no NULL bytes
