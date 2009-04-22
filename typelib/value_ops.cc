@@ -168,6 +168,12 @@ void Typelib::destroy(Value v)
     ValueOps::destroy(buffer, ops.begin(), ops.end());
 }
 
+void Typelib::destroy(Value v, MemoryLayout const& ops)
+{
+    ValueOps::destroy(reinterpret_cast<uint8_t*>(v.getData()),
+            ops.begin(), ops.end());
+}
+
 void Typelib::copy(Value dst, Value src)
 {
     if (dst.getType() != src.getType())

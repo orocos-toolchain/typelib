@@ -40,6 +40,7 @@ namespace Typelib
 
     void init(Value v);
     void destroy(Value v);
+    void destroy(Value v, MemoryLayout const& ops);
     void copy(Value dst, Value src);
     bool compare(Value dst, Value src);
 

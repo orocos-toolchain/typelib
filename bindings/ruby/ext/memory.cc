@@ -31,15 +31,27 @@ static struct st_hash_type memory_table_type = {
     (int (*)())memory_table_hash
 };
 
-typedef std::map<void*, VALUE> MemoryTypes;
+// MemoryTypes actually holds the memory layout of each memory zone. We cannot
+// simply use the Type object as, at exit, the Ruby GC do not order finalization
+// and therefore the registry can be deleted before the Type instances.
+typedef std::map< void const*, void const* > MemoryTypes;
+typedef std::map< void const*, pair<int, MemoryLayout> > TypeLayouts;
 MemoryTypes memory_types;
-
+TypeLayouts memory_layouts;
 
 static void
 memory_unref(void *ptr)
 {
     st_delete(MemoryTable, (st_data_t*)&ptr, 0);
-    memory_types.erase(ptr);
+
+    MemoryTypes::iterator type_it = memory_types.find(ptr);
+    if (type_it != memory_types.end())
+    {
+        TypeLayouts::iterator layout_it = memory_layouts.find(type_it->second);
+        if (0 == --layout_it->second.first)
+            memory_layouts.erase(layout_it);
+        memory_types.erase(type_it);
+    }
 }
 
 static void
@@ -48,8 +60,13 @@ memory_delete(void *ptr)
     MemoryTypes::iterator it = memory_types.find(ptr);
     if (it != memory_types.end())
     {
-        Type const& type = rb2cxx::object<Type>(it->second);
-        Typelib::destroy(Value(ptr, type));
+        TypeLayouts::iterator layout_it = memory_layouts.find(it->second);
+        if (layout_it != memory_layouts.end())
+        {
+            Typelib::ValueOps::destroy(
+                    static_cast<uint8_t*>(ptr),
+                    layout_it->second.second.begin(), layout_it->second.second.end());
+        }
     }
 
     free(ptr);
@@ -100,9 +117,19 @@ memory_init(VALUE ptr, VALUE type)
         rb_raise(rb_eArgError, "memory zone already initialized");
 
     // For deinitialization later
+    // Get or register the type's layout
     Type const& t(rb2cxx::object<Type>(type));
-    memory_types.insert( make_pair(cptr, type) );
-    Typelib::init(Value(cptr, t));
+    TypeLayouts::iterator layout_it = memory_layouts.find(&t);
+    if (layout_it == memory_layouts.end())
+    {
+        layout_it = memory_layouts.insert( make_pair(
+                    &t, make_pair(0, layout_of(t, true)))).first;
+    }
+    ++layout_it->second.first;
+    MemoryLayout& layout = layout_it->second.second;
+
+    memory_types.insert( make_pair(cptr, &t) );
+    Typelib::ValueOps::init(static_cast<uint8_t*>(cptr), layout.begin(), layout.end());
 }
 
 VALUE
@@ -167,8 +194,6 @@ string_to_memory_ptr(VALUE self)
 
 void memory_table_mark(void* ptr)
 {
-    for (MemoryTypes::iterator it = memory_types.begin(); it != memory_types.end(); ++it)
-        rb_gc_mark(it->second);
 }
 
 void Typelib_init_memory()
