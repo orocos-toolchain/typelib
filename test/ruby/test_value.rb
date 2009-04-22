@@ -138,8 +138,20 @@ class TC_Value < Test::Unit::TestCase
         value.a.b = 20;
         value.a.c = 'b';
         value.a.d = 42;
-        assert_equal("0 1 2 3 1.1 2.2 10 20 b 42 OUTPUT", value.to_csv)
-        assert_equal("0,1,2,3,1.1,2.2,10,20,b,42,OUTPUT", value.to_csv(','))
+
+        space_sep = value.to_csv.split(" ")
+        assert_in_delta(1.1, Float(space_sep[4]), 0.00001)
+        assert_in_delta(2.2, Float(space_sep[5]), 0.00001)
+        space_sep[4] = "1.1"
+        space_sep[5] = "2.2"
+        assert_equal("0 1 2 3 1.1 2.2 10 20 b 42 OUTPUT", space_sep.join(" "))
+
+        comma_sep = value.to_csv(",").split(",")
+        assert_in_delta(1.1, Float(space_sep[4]), 0.00001)
+        assert_in_delta(2.2, Float(space_sep[5]), 0.00001)
+        comma_sep[4] = "1.1"
+        comma_sep[5] = "2.2"
+        assert_equal("0,1,2,3,1.1,2.2,10,20,b,42,OUTPUT", comma_sep.join(","))
     end
 	
 
