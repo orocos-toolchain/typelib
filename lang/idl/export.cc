@@ -359,9 +359,12 @@ void IDLExport::save
 	}
 	else
 	{
+            std::string old_namespace = m_namespace;
+            m_namespace = target_namespace;
 	    std::ostringstream temp_stream;
 	    IDLExportVisitor exporter(type.getRegistry(), *this, temp_stream, indent_string, m_opaque_as_any);
 	    exporter.apply(*type);
+            m_namespace = old_namespace;
 
 	    string result = temp_stream.str();
 	    if (! result.empty())
