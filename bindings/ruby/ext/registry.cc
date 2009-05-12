@@ -320,6 +320,22 @@ VALUE registry_from_xml(VALUE mod, VALUE xml)
     return rb_registry;
 }
 
+/*
+ * call-seq:
+ *  registry.define_container(kind, element) => new_type
+ *
+ * Defines a new container instance with the given container kind and element
+ * type.
+ */
+static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element)
+{
+    Registry& reg = rb2cxx::object<Registry>(registry);
+    Type const& element_type(rb2cxx::object<Type>(element));
+    Container const& new_type = Container::createContainer(reg, StringValuePtr(kind), element_type);
+
+    return cxx2rb::type_wrap(new_type, registry);
+}
+
 void Typelib_init_registry()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
@@ -337,5 +353,7 @@ void Typelib_init_registry()
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
     rb_define_method(cRegistry, "merge", RUBY_METHOD_FUNC(registry_merge), 1);
     rb_define_method(cRegistry, "minimal", RUBY_METHOD_FUNC(registry_minimal), 1);
+
+    rb_define_method(cRegistry, "define_container", RUBY_METHOD_FUNC(registry_define_container), 2);
 }
 

@@ -327,5 +327,16 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_kind_of(Typelib::ContainerType, elements[0])
         assert_equal([10], elements[0].to_a)
     end
+
+    def test_define_container
+        reg = make_registry
+        assert_raises(ArgumentError) { reg.define_container("/blabla") }
+        cont = reg.define_container "/std/vector", reg.get("DisplayTest")
+
+        assert(cont < Typelib::ContainerType)
+        assert_equal("/std/vector", cont.container_kind)
+        assert_equal(reg.get("DisplayTest"), cont.deference)
+        assert_equal("/std/vector</DisplayTest>", cont.name)
+    end
 end
 
