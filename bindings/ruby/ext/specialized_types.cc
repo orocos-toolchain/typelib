@@ -147,6 +147,41 @@ VALUE enum_keys(VALUE self)
     return keys;
 }
 
+/* call-seq:
+ *  enum.value_of(name) => integer
+ *
+ * Returns the integral value asoociated with the given name.
+ */
+static VALUE enum_value_of(VALUE self, VALUE name)
+{
+    Enum const& type = static_cast<Enum const&>(rb2cxx::object<Type>(self));
+
+    try {
+        int value = type.get(StringValuePtr(name));
+        return INT2NUM(value);
+    } catch (Enum::SymbolNotFound) {
+        rb_raise(rb_eArgError, "this enumeration has no value for %s", StringValuePtr(name));
+    }
+}
+
+/* call-seq:
+ *  enum.name_of(integer) => key
+ *
+ * Returns the symbolic name of +integer+ in this enumeration, or raises
+ * ArgumentError if there is no matching name.
+ */
+static VALUE enum_name_of(VALUE self, VALUE integer)
+{
+    Enum const& type = static_cast<Enum const&>(rb2cxx::object<Type>(self));
+
+    try {
+        std::string name = type.get(NUM2INT(integer));
+        return rb_str_new2(name.c_str());
+    } catch (Enum::ValueNotFound) {
+        rb_raise(rb_eArgError, "this enumeration has no name for %i", NUM2INT(integer));
+    }
+}
+
 /**********************************************
  * Typelib::Pointer
  */
@@ -543,6 +578,8 @@ void Typelib_init_specialized_types()
 
     cEnum = rb_define_class_under(mTypelib, "EnumType", cType);
     rb_define_singleton_method(cEnum, "keys", RUBY_METHOD_FUNC(enum_keys), 0);
+    rb_define_singleton_method(cEnum, "value_of",      RUBY_METHOD_FUNC(enum_value_of), 1);
+    rb_define_singleton_method(cEnum, "name_of",      RUBY_METHOD_FUNC(enum_name_of), 1);
 
     cArray    = rb_define_class_under(mTypelib, "ArrayType", cIndirect);
     rb_define_singleton_method(cArray, "length", RUBY_METHOD_FUNC(array_class_length), 0);
