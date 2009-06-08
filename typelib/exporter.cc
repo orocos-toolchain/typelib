@@ -2,11 +2,14 @@
 #include "registry.hh"
 #include "registryiterator.hh"
 #include <utilmm/configfile/configset.hh>
+#include <utilmm/stringtools.hh>
 #include <typelib/typevisitor.hh>
 #include <set>
 #include <fstream>
 
 using namespace Typelib;
+using namespace std;
+using utilmm::join;
 
 void Exporter::save(std::string const& file_name, utilmm::config_set const& config, Registry const& registry)
 {
@@ -57,7 +60,17 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
     }
 
     if (done.size() != registry.size())
-        throw ExportError("recursive type found, not supported yet");
+    {
+        list<string> remaining;
+	RegistryIterator const it_end(registry.end());
+	for (RegistryIterator it = registry.begin(); it != it_end; ++it)
+	{
+	    if (done.find(it.getName()) == done.end())
+                remaining.push_back(it.getName());
+        }
+
+        throw ExportError(join(remaining) + " seem to be (a) recursive type(s). Exporting them is not supported yet");
+    }
 
     end(stream, registry);
 }
