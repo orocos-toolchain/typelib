@@ -26,7 +26,7 @@ namespace Typelib
     /** Generic error for problems during export */
     struct ExportError : std::runtime_error
     { 
-        ExportError(char const* msg) : std::runtime_error(msg) {}
+        ExportError(std::string const& msg) : std::runtime_error(msg) {}
     };
 
     /** The plugin manager 
