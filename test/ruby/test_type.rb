@@ -44,12 +44,12 @@ class TC_Type < Test::Unit::TestCase
 	assert_equal("NS1/Bla/Test", bla.full_name(Typelib::NAMESPACE_SEPARATOR, true))
 	assert_equal("NS1::Bla::Test", bla.full_name('::', true))
 
-        test_data = "<typelib><opaque name=\"/Bla/Blo&lt;/Template&gt;\" size=\"0\" /></typelib>"
+        test_data = "<typelib><opaque name=\"/Bla/Blo&lt;/Template&lt;/Inside&gt;&gt;\" size=\"0\" /></typelib>"
         registry = Registry.from_xml(test_data)
-        type     = registry.get("/Bla/Blo</Template>")
+        type     = registry.get("/Bla/Blo</Template</Inside>>")
         assert_equal("/Bla/", type.namespace)
-        assert_equal("Blo</Template>", type.basename)
-        assert_equal("::Bla::Blo<::Template>", type.full_name("::", false))
+        assert_equal("Blo</Template</Inside>>", type.basename)
+        assert_equal("::Bla::Blo<::Template<::Inside>>", type.full_name("::", false))
     end
 
     def test_pointer
