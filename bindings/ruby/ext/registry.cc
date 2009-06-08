@@ -191,7 +191,7 @@ VALUE registry_export(VALUE self, VALUE kind, VALUE options)
 	return rb_str_new(exported.c_str(), exported.length());
     }
     catch (std::runtime_error e) { error_message = e.what(); }
-    rb_raise(rb_eTypeError, error_message.c_str());
+    rb_raise(rb_eRuntimeError, error_message.c_str());
 }
 
 
