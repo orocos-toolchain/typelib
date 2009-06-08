@@ -283,21 +283,6 @@ VALUE registry_each_type(int argc, VALUE* argv, VALUE self)
 }
 
 /* call-seq:
- *  registry.to_xml => string
- *
- * Export the given registry into xml. The returned string can be imported back
- * into a Registry object through Registry#from_xml
- */
-static
-VALUE registry_to_xml(VALUE self)
-{
-    Registry& registry = rb2cxx::object<Registry>(self);
-    
-    std::string as_xml = PluginManager::save("tlb", registry);
-    return rb_str_new(as_xml.c_str(), as_xml.length());
-}
-
-/* call-seq:
  *  Registry.from_xml => string
  * 
  * Build a registry from a string, which is formatted as Typelib's own XML
@@ -348,7 +333,6 @@ void Typelib_init_registry()
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 4);
     rb_define_method(cRegistry, "do_export", RUBY_METHOD_FUNC(registry_export), 2);
-    rb_define_method(cRegistry, "to_xml", RUBY_METHOD_FUNC(registry_to_xml), 0);
     rb_define_singleton_method(cRegistry, "from_xml", RUBY_METHOD_FUNC(registry_from_xml), 1);
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
     rb_define_method(cRegistry, "merge", RUBY_METHOD_FUNC(registry_merge), 1);

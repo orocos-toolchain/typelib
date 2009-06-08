@@ -590,6 +590,11 @@ module Typelib
             options = Registry.format_options(options)
             do_export(kind, options)
 	end
+
+        # Export the registry into Typelib's own XML format
+        def to_xml
+            export('tlb')
+        end
     end
 end
 
