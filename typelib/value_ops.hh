@@ -13,7 +13,7 @@ namespace Typelib
     namespace ValueOps
     {
         boost::tuple<size_t, MemoryLayout::const_iterator>
-            dump(uint8_t* data, size_t in_offset,
+            dump(uint8_t const* data, size_t in_offset,
                 std::vector<uint8_t>& buffer,
                 MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end);
         boost::tuple<size_t, size_t, MemoryLayout::const_iterator>
@@ -49,7 +49,7 @@ namespace Typelib
     void dump(Value v, std::vector<uint8_t>& buffer, MemoryLayout const& ops);
     void load(Value v, std::vector<uint8_t> const& buffer);
     void load(Value v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops);
-    void dump(uint8_t* v, std::vector<uint8_t>& buffer, MemoryLayout const& ops);
+    void dump(uint8_t const* v, std::vector<uint8_t>& buffer, MemoryLayout const& ops);
     void load(uint8_t* v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops);
 }
 

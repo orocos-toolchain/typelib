@@ -7,7 +7,7 @@ using namespace boost;
 using namespace std;
 
 tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
-        uint8_t* data, size_t in_offset,
+        uint8_t const* data, size_t in_offset,
         std::vector<uint8_t>& buffer,
         MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
 {
@@ -52,7 +52,7 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
             {
                 Container const* type = reinterpret_cast<Container const*>(*(++it));
                 // First, dump the element count into the stream
-                void* container_ptr  = data + in_offset;
+                void const* container_ptr  = data + in_offset;
                 in_offset += type->getSize();
 
                 size_t element_count = type->getElementCount(container_ptr);
@@ -429,10 +429,10 @@ void Typelib::dump(Value v, std::vector<uint8_t>& buffer)
 
 void Typelib::dump(Value v, std::vector<uint8_t>& buffer, MemoryLayout const& ops)
 {
-    dump(reinterpret_cast<uint8_t*>(v.getData()), buffer, ops);
+    dump(reinterpret_cast<uint8_t const*>(v.getData()), buffer, ops);
 }
 
-void Typelib::dump(uint8_t* v, std::vector<uint8_t>& buffer, MemoryLayout const& ops)
+void Typelib::dump(uint8_t const* v, std::vector<uint8_t>& buffer, MemoryLayout const& ops)
 {
     MemoryLayout::const_iterator end = ValueOps::dump(
             v, 0, buffer, ops.begin(), ops.end()).get<1>();

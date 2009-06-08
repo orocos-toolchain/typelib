@@ -17,9 +17,9 @@ public:
     Vector(Type const& on)
         : Container("/std/vector", fullName(on), sizeof(std::vector<void*>), on) {}
 
-    size_t getElementCount(void* ptr) const
+    size_t getElementCount(void const* ptr) const
     {
-        size_t byte_count = reinterpret_cast< std::vector<int8_t>* >(ptr)->size();
+        size_t byte_count = reinterpret_cast< std::vector<int8_t> const* >(ptr)->size();
         return byte_count / getIndirection().getSize();
     }
     void init(void* ptr) const
@@ -173,11 +173,11 @@ public:
     }
 
     MarshalOps::const_iterator dump(
-            void* container_ptr, size_t element_count, std::vector<uint8_t>& buffer,
+            void const* container_ptr, size_t element_count, std::vector<uint8_t>& buffer,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const
     {
-        std::vector<uint8_t>* vector_ptr =
-            reinterpret_cast< std::vector<uint8_t>* >(container_ptr);
+        std::vector<uint8_t> const* vector_ptr =
+            reinterpret_cast< std::vector<uint8_t> const* >(container_ptr);
 
         MarshalOps::const_iterator it = begin;
         if (isElementMemcpy(begin, end))

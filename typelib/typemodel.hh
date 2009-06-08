@@ -374,7 +374,7 @@ namespace Typelib
             delete_if_impl(ptr, predicate);
         }
 
-        virtual size_t getElementCount(void* ptr) const = 0;
+        virtual size_t getElementCount(void const* ptr) const = 0;
 
         /** The marshalling process calls this method so that the contents of
          * the container are dumped into the provided buffer.
@@ -394,7 +394,7 @@ namespace Typelib
          *   (i.e. *retval == FLAG_END is a postcondition of this method)
          */
         virtual MarshalOps::const_iterator dump(
-            void* container_ptr, size_t element_count,
+            void const* container_ptr, size_t element_count,
             std::vector<uint8_t>& buffer,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const = 0;
 
