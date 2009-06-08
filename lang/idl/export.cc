@@ -334,6 +334,12 @@ void IDLExport::save
 		    << getIDLAbsoluteTypename(array_t.getIndirection()) 
 		    << " " << type.getBasename() << "[" << array_t.getDimension() << "];\n";
 	    }
+            else if (type->getCategory() == Type::Container)
+            {
+                // Generate a sequence, regardless of the actual container type
+                Container const& container_t = dynamic_cast<Container const&>(*type);
+                stream << "sequence<" << getIDLAbsoluteTypename(container_t.getIndirection()) << "> " << type.getBasename() << ";\n";
+            }
 	    else
 		stream << getIDLAbsoluteTypename(*type) << " " << type.getBasename() << ";\n";
 	}
