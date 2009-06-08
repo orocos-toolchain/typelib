@@ -211,6 +211,9 @@ namespace Typelib
          * the method will return false.
          */
         bool isSame(Registry const& other) const;
+
+        /** Returns true if +type+ is a type included in this registry */
+        bool isIncluded(Type const& type) const;
         
     public:
         enum DumpMode

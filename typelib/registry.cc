@@ -183,6 +183,13 @@ namespace Typelib
         }
     }
 
+    /** Returns true if +type+ is a type included in this registry */
+    bool Registry::isIncluded(Type const& type) const
+    {
+        Type const* this_type = get(type.getName());
+        return (this_type == &type);
+    }
+
     void Registry::merge(Registry const& registry)
     {
 	// Merge non aliased types. Aliases are never used by type model classes
