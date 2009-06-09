@@ -316,8 +316,12 @@ static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element
     if (!reg.isIncluded(element_type))
         rb_raise(rb_eArgError, "the provided element type is not part of this registry");
 
-    Container const& new_type = Container::createContainer(reg, StringValuePtr(kind), element_type);
-    return cxx2rb::type_wrap(new_type, registry);
+    try {
+        Container const& new_type = Container::createContainer(reg, StringValuePtr(kind), element_type);
+        return cxx2rb::type_wrap(new_type, registry);
+    } catch(Typelib::UnknownContainer) {
+        rb_raise(eNotFound, "%s is not a known container type", StringValuePtr(kind));
+    }
 }
 
 void Typelib_init_registry()
