@@ -58,6 +58,14 @@ VALUE registry_alloc(VALUE klass)
 
 
 static
+VALUE registry_includes_p(VALUE self, VALUE name)
+{
+    Registry& registry = rb2cxx::object<Registry>(self);
+    Type const* type = registry.get( StringValuePtr(name) );
+    return type ? Qtrue : Qfalse;
+}
+
+static
 VALUE registry_do_get(VALUE self, VALUE name)
 {
     Registry& registry = rb2cxx::object<Registry>(self);
@@ -346,6 +354,7 @@ void Typelib_init_registry()
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
     rb_define_method(cRegistry, "merge", RUBY_METHOD_FUNC(registry_merge), 1);
     rb_define_method(cRegistry, "minimal", RUBY_METHOD_FUNC(registry_minimal), 1);
+    rb_define_method(cRegistry, "includes?", RUBY_METHOD_FUNC(registry_includes_p), 1);
 
     rb_define_method(cRegistry, "define_container", RUBY_METHOD_FUNC(registry_define_container), 2);
 }
