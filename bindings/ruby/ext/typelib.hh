@@ -17,6 +17,8 @@ extern VALUE cNumeric;
 extern VALUE cEnum;
 extern VALUE cContainer;
 
+extern VALUE eNotFound;
+
 /** Initialization routines */
 extern void Typelib_init_memory();
 extern void Typelib_init_values();

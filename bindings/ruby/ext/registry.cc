@@ -11,6 +11,8 @@ using utilmm::config_set;
 using std::string;
 
 static VALUE cRegistry = Qnil;
+VALUE eNotFound = Qnil;
+
 namespace cxx2rb {
     template<> VALUE class_of<Registry>() { return cRegistry; }
 }
@@ -61,7 +63,8 @@ VALUE registry_do_get(VALUE self, VALUE name)
     Registry& registry = rb2cxx::object<Registry>(self);
     Type const* type = registry.get( StringValuePtr(name) );
 
-    if (! type) return Qnil;
+    if (! type)
+        rb_raise(eNotFound, "there is no type in this registry with the name '%s'", StringValuePtr(name));
     return cxx2rb::type_wrap(*type, self);
 }
 
@@ -72,7 +75,7 @@ VALUE registry_do_build(VALUE self, VALUE name)
     Type const* type = registry.build( StringValuePtr(name) );
 
     if (! type) 
-        rb_raise(rb_eTypeError, "invalid type %s", StringValuePtr(name));
+        rb_raise(eNotFound, "cannot build %s. Its base type is probably not in the registry.", StringValuePtr(name));
     return cxx2rb::type_wrap(*type, self);
 }
 
@@ -91,18 +94,11 @@ VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
     try { 
 	registry.alias(StringValuePtr(aliased), StringValuePtr(name)); 
 	return self;
+    } catch(BadName) {
+        rb_raise(rb_eArgError, "invalid type name %s", StringValuePtr(name));
+    } catch(Undefined) {
+        rb_raise(eNotFound, "there is not type in this registry with the name '%s'", StringValuePtr(aliased));
     }
-    catch(BadName)   { error = 0; }
-    catch(Undefined) { error = 1; }
-    switch(error)
-    {
-	case 0: rb_raise(rb_eArgError, "invalid type name %s", StringValuePtr(name));
-	case 1: rb_raise(rb_eArgError, "no such type %s", StringValuePtr(aliased));
-    }
-
-    // never reached
-    assert(false);
-    return Qnil;
 }
 
 static
@@ -328,6 +324,7 @@ void Typelib_init_registry()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     cRegistry = rb_define_class_under(mTypelib, "Registry", rb_cObject);
+    eNotFound = rb_define_class_under(mTypelib, "NotFound", rb_eRuntimeError);
     rb_define_alloc_func(cRegistry, registry_alloc);
     rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_do_get), 1);
     rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_do_build), 1);
