@@ -303,10 +303,15 @@ VALUE registry_from_xml(VALUE mod, VALUE xml)
 
 /*
  * call-seq:
- *  registry.define_container(kind, element) => new_type
+ *  registry.define_container(kind, element_type) => new_type
  *
  * Defines a new container instance with the given container kind and element
- * type.
+ * type. +element_type+ is a type object, i.e. a subclass of Type, that has to
+ * be part of +registry+ (obtained through registry.get or registry.build). If
+ * +element_type+ comes from another registry object, the method raises
+ * ArgumentError.
+ *
+ * Moreover, the method raises NotFound if +kind+ is not a known container name.
  */
 static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element)
 {
@@ -314,7 +319,7 @@ static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element
     Type const& element_type(rb2cxx::object<Type>(element));
     // Check that +reg+ contains +element_type+
     if (!reg.isIncluded(element_type))
-        rb_raise(rb_eArgError, "the provided element type is not part of this registry");
+        rb_raise(rb_eArgError, "the given type object comes from a different type registry");
 
     try {
         Container const& new_type = Container::createContainer(reg, StringValuePtr(kind), element_type);
