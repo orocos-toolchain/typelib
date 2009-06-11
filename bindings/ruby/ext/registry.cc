@@ -83,7 +83,7 @@ VALUE registry_do_build(VALUE self, VALUE name)
     Type const* type = registry.build( StringValuePtr(name) );
 
     if (! type) 
-        rb_raise(eNotFound, "cannot build %s. Its base type is probably not in the registry.", StringValuePtr(name));
+        rb_raise(eNotFound, "cannot find %s in registry", StringValuePtr(name));
     return cxx2rb::type_wrap(*type, self);
 }
 
