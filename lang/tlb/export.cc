@@ -195,8 +195,8 @@ void TlbExport::save
     if (type.isAlias())
     {
         stream << "  <alias "
-            "name=\"" << type.getName() << "\" "
-            "source=\"" << type->getName() << "\"/>\n";
+            "name=\"" << xmlEscape(type.getName()) << "\" "
+            "source=\"" << xmlEscape(type->getName()) << "\"/>\n";
     }
     else
     {
