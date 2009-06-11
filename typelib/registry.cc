@@ -181,6 +181,9 @@ namespace Typelib
             add(new Numeric("/"  + suffix, sizes[i], Numeric::SInt));
             add(new Numeric("/u" + suffix, sizes[i], Numeric::UInt));
         }
+
+        // Finally, add definition for boolean types
+        add(new Numeric("/bool", sizeof(bool), Numeric::UInt), s_stdsource);
     }
 
     /** Returns true if +type+ is a type included in this registry */

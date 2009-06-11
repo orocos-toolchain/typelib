@@ -271,6 +271,8 @@ std::string IDLExport::getIDLTypename(Type const& type)
 std::string IDLExport::getIDLBaseType(Numeric const& type)
 {
     std::string idl_name;
+    if (type.getName() == "/bool")
+        return "boolean";
     if (type.getNumericCategory() != Numeric::Float)
     {
 	if (type.getNumericCategory() == Numeric::UInt && type.getSize() != 1)
