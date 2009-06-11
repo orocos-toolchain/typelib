@@ -178,8 +178,8 @@ namespace Typelib
         for (int i = 0; i < 4; ++i)
         {
             string suffix = "int" + lexical_cast<string>(sizes[i] * 8) + "_t";
-            add(new Numeric("/"  + suffix, sizes[i], Numeric::SInt));
-            add(new Numeric("/u" + suffix, sizes[i], Numeric::UInt));
+            add(new Numeric("/"  + suffix, sizes[i], Numeric::SInt), s_stdsource);
+            add(new Numeric("/u" + suffix, sizes[i], Numeric::UInt), s_stdsource);
         }
 
         // Finally, add definition for boolean types
