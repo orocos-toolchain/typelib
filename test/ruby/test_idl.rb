@@ -10,15 +10,15 @@ class TC_IDL < Test::Unit::TestCase
 
         registry = Registry.new
         registry.import( test_file, "c", :define => 'IDL_POINTER_ALIAS' )
-	assert_raises(TypeError) { registry.export("idl") }
+	assert_raises(RuntimeError) { registry.export("idl") }
 
         registry = Registry.new
         registry.import( test_file, "c", :define => 'IDL_POINTER_IN_STRUCT' )
-	assert_raises(TypeError) { registry.export("idl") }
+	assert_raises(RuntimeError) { registry.export("idl") }
 
         registry = Registry.new
         registry.import( test_file, "c", :define => 'IDL_MULTI_ARRAY' )
-	assert_raises(TypeError) { registry.export("idl") }
+	assert_raises(RuntimeError) { registry.export("idl") }
     end
 
     def check_export(input_name, output_name = input_name, options = {})
