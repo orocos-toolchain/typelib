@@ -17,6 +17,7 @@ namespace typelib_ruby {
     extern VALUE cNumeric;
     extern VALUE cEnum;
     extern VALUE cContainer;
+    extern VALUE cRegistry;
 
     extern VALUE eNotFound;
 
@@ -32,14 +33,25 @@ namespace typelib_ruby {
 
     namespace cxx2rb {
         using namespace Typelib;
+        typedef std::map<Type const*, VALUE> WrapperMap;
+
+        struct RbRegistry
+        {
+            boost::shared_ptr<Typelib::Registry> registry;
+            cxx2rb::WrapperMap wrappers;
+
+            RbRegistry(Typelib::Registry* registry)
+                : registry(registry) {}
+            ~RbRegistry() {}
+        };
 
         VALUE class_of(Type const& type);
 
         template<typename T> VALUE class_of();
         template<> inline VALUE class_of<Value>()    { return cType; }
         template<> inline VALUE class_of<Type>()     { return rb_cClass; }
+        template<> inline VALUE class_of<RbRegistry>() { return cRegistry; }
 
-        typedef std::map<Type const*, VALUE> WrapperMap;
         VALUE type_wrap(Type const& type, VALUE registry);
 
         /* Get the Ruby symbol associated with a C enum, or nil
@@ -79,6 +91,11 @@ namespace typelib_ruby {
         {
             check_is_kind_of(self, cxx2rb::class_of<T>());
             return get_wrapped<T>(self);
+        }
+
+        template<> inline Registry& object(VALUE self)
+        {
+            return *object<cxx2rb::RbRegistry>(self).registry;
         }
 
         template<>

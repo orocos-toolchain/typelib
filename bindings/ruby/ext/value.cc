@@ -76,13 +76,9 @@ VALUE cxx2rb::class_of(Typelib::Type const& type)
 
 VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
 {
-    VALUE known_types = rb_iv_get(registry, "@wrappers");
-    if (NIL_P(known_types))
-	rb_raise(rb_eArgError, "@wrappers is uninitialized");
-
     // Type objects are unique, we can register Ruby wrappers based
     // on the type pointer (instead of using names)
-    WrapperMap& wrappers = rb2cxx::get_wrapped<WrapperMap>(known_types);
+    WrapperMap& wrappers = rb2cxx::object<RbRegistry>(registry).wrappers;
 
     WrapperMap::const_iterator it = wrappers.find(&type);
     if (it != wrappers.end())

@@ -32,11 +32,23 @@ static struct st_hash_type memory_table_type = {
     (int (*)())memory_table_hash
 };
 
+struct RbMemoryLayout
+{
+    int refcount;
+    MemoryLayout layout;
+    boost::shared_ptr<Registry> registry;
+
+    RbMemoryLayout()
+        : refcount(0) {}
+    RbMemoryLayout(MemoryLayout const& layout, boost::shared_ptr<Registry> registry)
+        : layout(layout), registry(registry) {}
+};
+
 // MemoryTypes actually holds the memory layout of each memory zone. We cannot
 // simply use the Type object as, at exit, the Ruby GC do not order finalization
 // and therefore the registry can be deleted before the Type instances.
 typedef std::map< void const*, void const* > MemoryTypes;
-typedef std::map< void const*, pair<int, MemoryLayout> > TypeLayouts;
+typedef std::map< void const*, RbMemoryLayout > TypeLayouts;
 MemoryTypes memory_types;
 TypeLayouts memory_layouts;
 
@@ -49,7 +61,8 @@ memory_unref(void *ptr)
     if (type_it != memory_types.end())
     {
         TypeLayouts::iterator layout_it = memory_layouts.find(type_it->second);
-        if (0 == --layout_it->second.first)
+        RbMemoryLayout& layout = layout_it->second;
+        if (0 == --layout.refcount)
             memory_layouts.erase(layout_it);
         memory_types.erase(type_it);
     }
@@ -64,9 +77,10 @@ memory_delete(void *ptr)
         TypeLayouts::iterator layout_it = memory_layouts.find(it->second);
         if (layout_it != memory_layouts.end())
         {
+            RbMemoryLayout& layout = layout_it->second;
             Typelib::ValueOps::destroy(
                     static_cast<uint8_t*>(ptr),
-                    layout_it->second.second.begin(), layout_it->second.second.end());
+                    layout.layout.begin(), layout.layout.end());
         }
     }
 
@@ -117,20 +131,21 @@ typelib_ruby::memory_init(VALUE ptr, VALUE type)
     if (it != memory_types.end())
         rb_raise(rb_eArgError, "memory zone already initialized");
 
-    // For deinitialization later
-    // Get or register the type's layout
+    // For deinitialization later, get or register the type's layout
     Type const& t(rb2cxx::object<Type>(type));
     TypeLayouts::iterator layout_it = memory_layouts.find(&t);
     if (layout_it == memory_layouts.end())
     {
-        layout_it = memory_layouts.insert( make_pair(
-                    &t, make_pair(0, layout_of(t, true)))).first;
+        cxx2rb::RbRegistry& registry = rb2cxx::object<cxx2rb::RbRegistry>(type_get_registry(type));
+        layout_it = memory_layouts.insert(
+            make_pair( &t, RbMemoryLayout(layout_of(t, true), registry.registry) )
+            ).first;
     }
-    ++layout_it->second.first;
-    MemoryLayout& layout = layout_it->second.second;
+    RbMemoryLayout& layout = layout_it->second;
+    ++layout.refcount;
 
     memory_types.insert( make_pair(cptr, &t) );
-    Typelib::ValueOps::init(static_cast<uint8_t*>(cptr), layout.begin(), layout.end());
+    Typelib::ValueOps::init(static_cast<uint8_t*>(cptr), layout.layout.begin(), layout.layout.end());
 }
 
 VALUE

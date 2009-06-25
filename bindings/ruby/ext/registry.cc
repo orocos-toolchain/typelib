@@ -10,15 +10,12 @@ using namespace Typelib;
 using utilmm::config_set;
 using std::string;
 using namespace typelib_ruby;
+using cxx2rb::RbRegistry;
 
-static VALUE cRegistry = Qnil;
 
 namespace typelib_ruby {
+    VALUE cRegistry = Qnil;
     VALUE eNotFound = Qnil;
-
-    namespace cxx2rb {
-        template<> VALUE class_of<Registry>() { return cRegistry; }
-    }
 }
 
 /***********************************************************************************
@@ -29,28 +26,20 @@ namespace typelib_ruby {
 
 
 static 
-void registry_free(void* ptr) { delete reinterpret_cast<Registry*>(ptr); }
+void registry_free(void* ptr) { delete reinterpret_cast<RbRegistry*>(ptr); }
 static
-void wrappers_mark(void* ptr)
+void registry_mark(void* ptr)
 {
     using cxx2rb::WrapperMap;
-    WrapperMap const& wrappers = *reinterpret_cast<WrapperMap const*>(ptr);
+    WrapperMap const& wrappers = reinterpret_cast<RbRegistry const*>(ptr)->wrappers;
     for (WrapperMap::const_iterator it = wrappers.begin(); it != wrappers.end(); ++it)
 	rb_gc_mark(it->second);
 }
 
 static
-void wrappers_free(void* ptr) { delete reinterpret_cast<cxx2rb::WrapperMap*>(ptr); }
-
-static
 VALUE registry_wrap(VALUE klass, Registry* registry)
 {
-    VALUE rb_registry = Data_Wrap_Struct(klass, 0, registry_free, registry);
-
-    cxx2rb::WrapperMap *wrappers = new cxx2rb::WrapperMap;
-    VALUE rb_wrappers = Data_Wrap_Struct(rb_cObject, wrappers_mark, wrappers_free, wrappers);
-    rb_iv_set(rb_registry, "@wrappers", rb_wrappers);
-    return rb_registry;
+    return Data_Wrap_Struct(klass, registry_mark, registry_free, new RbRegistry(registry));
 }
 
 static
