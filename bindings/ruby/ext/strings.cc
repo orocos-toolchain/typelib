@@ -3,6 +3,7 @@
 
 using namespace Typelib;
 using std::string;
+using namespace typelib_ruby;
 
 static bool is_string_handler(Type const& type, bool known_size = false)
 {
@@ -98,7 +99,7 @@ static VALUE value_to_string(VALUE mod, VALUE self)
     }
 }
 
-void Typelib_init_strings()
+void typelib_ruby::Typelib_init_strings()
 {
     rb_define_singleton_method(cType, "to_string",    RUBY_METHOD_FUNC(&value_to_string), 1);
     rb_define_singleton_method(cType, "from_string",  RUBY_METHOD_FUNC(&value_from_string), 2);

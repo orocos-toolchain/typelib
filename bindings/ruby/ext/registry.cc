@@ -9,12 +9,16 @@
 using namespace Typelib;
 using utilmm::config_set;
 using std::string;
+using namespace typelib_ruby;
 
 static VALUE cRegistry = Qnil;
-VALUE eNotFound = Qnil;
 
-namespace cxx2rb {
-    template<> VALUE class_of<Registry>() { return cRegistry; }
+namespace typelib_ruby {
+    VALUE eNotFound = Qnil;
+
+    namespace cxx2rb {
+        template<> VALUE class_of<Registry>() { return cRegistry; }
+    }
 }
 
 /***********************************************************************************
@@ -337,7 +341,7 @@ static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element
     }
 }
 
-void Typelib_init_registry()
+void typelib_ruby::Typelib_init_registry()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     cRegistry = rb_define_class_under(mTypelib, "Registry", rb_cObject);

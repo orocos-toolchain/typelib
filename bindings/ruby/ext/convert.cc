@@ -3,6 +3,7 @@
 #include <typelib/value_ops.hh>
 
 using namespace Typelib;
+using namespace typelib_ruby;
 
 /**********
  *  Define typelib_(to|from)_ruby

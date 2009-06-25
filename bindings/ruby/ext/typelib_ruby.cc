@@ -9,6 +9,7 @@ using namespace Typelib;
 using utilmm::config_set;
 using std::string;
 
+using namespace typelib_ruby;
 static VALUE mTypelib   = Qnil;
 
 /**********************************************************************

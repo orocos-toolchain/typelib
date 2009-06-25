@@ -7,6 +7,7 @@ extern "C" {
 
 using namespace Typelib;
 using namespace std;
+using namespace typelib_ruby;
 #undef VERBOSE
 
 static VALUE cMemoryZone;
@@ -97,7 +98,7 @@ memory_aset(void *ptr, VALUE obj)
 }
 
 VALUE
-memory_allocate(size_t size)
+typelib_ruby::memory_allocate(size_t size)
 {
     void* ptr = malloc(size);
     VALUE zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_delete, ptr);
@@ -109,7 +110,7 @@ memory_allocate(size_t size)
 }
 
 void
-memory_init(VALUE ptr, VALUE type)
+typelib_ruby::memory_init(VALUE ptr, VALUE type)
 {
     void* cptr = memory_cptr(ptr);
     MemoryTypes::iterator it = memory_types.find(cptr);
@@ -133,7 +134,7 @@ memory_init(VALUE ptr, VALUE type)
 }
 
 VALUE
-memory_wrap(void* ptr)
+typelib_ruby::memory_wrap(void* ptr)
 {
     VALUE zone = memory_aref(ptr);
     if (NIL_P(zone))
@@ -156,7 +157,7 @@ memory_wrap(void* ptr)
 }
 
 void*
-memory_cptr(VALUE ptr)
+typelib_ruby::memory_cptr(VALUE ptr)
 {
     void* cptr;
     Data_Get_Struct(ptr, void, cptr);
@@ -196,7 +197,7 @@ void memory_table_mark(void* ptr)
 {
 }
 
-void Typelib_init_memory()
+void typelib_ruby::Typelib_init_memory()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     MemoryTable     = st_init_table(&memory_table_type);

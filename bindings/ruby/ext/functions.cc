@@ -8,6 +8,7 @@ static VALUE cLibrary;
 static VALUE cFunction;
 
 using namespace Typelib;
+using namespace typelib_ruby;
 
 static VALUE
 library_wrap(VALUE self, VALUE name, VALUE auto_unload)
@@ -315,7 +316,7 @@ VALUE typelib_call_function(VALUE klass, VALUE wrapper, VALUE args, VALUE return
     return ret;
 }
 
-void Typelib_init_functions()
+void typelib_ruby::Typelib_init_functions()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     rb_define_singleton_method(mTypelib, "filter_numeric_arg", RUBY_METHOD_FUNC(filter_numeric_arg), 2);

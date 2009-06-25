@@ -15,49 +15,50 @@
 using namespace Typelib;
 using std::numeric_limits;
 using std::vector;
+using namespace typelib_ruby;
 
-namespace cxx2rb {
-    /* There are constraints when creating a Ruby wrapper for a Type, mainly
-     * for avoiding GC issues. This function does the work.
-     *
-     * The main issue is that Ruby/DL does not keep refcounters on memory.
-     * Instead, it returns always the same DLPtr object for a given memory
-     * pointer. Problems arise when one of the two following situations are met:
-     * * we reference a memory zone inside another memory zone (for instance,
-     *   an array element or a structure field). In that case, the DLPtr object
-     *   must not free the allocated zone. 
-     * * two Typelib objects reference the same memory zone (first array
-     *   element or first field of a structure). In that case, we must reuse the
-     *   same DLPtr object, or DL will override the free function of the other
-     *   DLPtr object -- which is obviously wrong, but nevertheless done.
-     */
-    VALUE value_wrap(Value v, VALUE registry, VALUE parent)
-    {
-        VALUE type = type_wrap(v.getType(), registry);
-	VALUE ptr  = memory_wrap(v.getData());
-        VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, ptr);
-	rb_iv_set(wrapper, "@parent", parent);
-	return wrapper;
-    }
-
-    VALUE value_allocate(Type const& type, VALUE registry)
-    {
-        VALUE rb_type = type_wrap(type, registry);
-	VALUE ptr     = memory_allocate(type.getSize());
-        memory_init(ptr, rb_type);
-        VALUE wrapper = rb_funcall(rb_type, rb_intern("wrap"), 1, ptr);
-	return wrapper;
-    }
+/* There are constraints when creating a Ruby wrapper for a Type, mainly
+ * for avoiding GC issues. This function does the work.
+ *
+ * The main issue is that Ruby/DL does not keep refcounters on memory.
+ * Instead, it returns always the same DLPtr object for a given memory
+ * pointer. Problems arise when one of the two following situations are met:
+ * * we reference a memory zone inside another memory zone (for instance,
+ *   an array element or a structure field). In that case, the DLPtr object
+ *   must not free the allocated zone. 
+ * * two Typelib objects reference the same memory zone (first array
+ *   element or first field of a structure). In that case, we must reuse the
+ *   same DLPtr object, or DL will override the free function of the other
+ *   DLPtr object -- which is obviously wrong, but nevertheless done.
+ */
+VALUE cxx2rb::value_wrap(Value v, VALUE registry, VALUE parent)
+{
+    VALUE type = type_wrap(v.getType(), registry);
+    VALUE ptr  = memory_wrap(v.getData());
+    VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, ptr);
+    rb_iv_set(wrapper, "@parent", parent);
+    return wrapper;
 }
 
-VALUE cType	 = Qnil;
-VALUE cNumeric	 = Qnil;
-VALUE cIndirect  = Qnil;
-VALUE cPointer   = Qnil;
-VALUE cArray     = Qnil;
-VALUE cCompound  = Qnil;
-VALUE cEnum      = Qnil;
-VALUE cContainer = Qnil;
+static VALUE value_allocate(Type const& type, VALUE registry)
+{
+    VALUE rb_type = cxx2rb::type_wrap(type, registry);
+    VALUE ptr     = memory_allocate(type.getSize());
+    memory_init(ptr, rb_type);
+    VALUE wrapper = rb_funcall(rb_type, rb_intern("wrap"), 1, ptr);
+    return wrapper;
+}
+
+namespace typelib_ruby {
+    VALUE cType	 = Qnil;
+    VALUE cNumeric	 = Qnil;
+    VALUE cIndirect  = Qnil;
+    VALUE cPointer   = Qnil;
+    VALUE cArray     = Qnil;
+    VALUE cCompound  = Qnil;
+    VALUE cEnum      = Qnil;
+    VALUE cContainer = Qnil;
+}
 
 VALUE cxx2rb::class_of(Typelib::Type const& type)
 {
@@ -264,7 +265,7 @@ static VALUE type_is_assignable(Type const& type)
     // never reached
 }
 
-VALUE type_get_registry(VALUE self)
+VALUE typelib_ruby::type_get_registry(VALUE self)
 {
     return rb_iv_get(self, "@registry");
 }
@@ -325,7 +326,7 @@ VALUE value_endian_swap(VALUE self)
     compiled.apply(value.getType());
 
     VALUE registry = rb_iv_get(rb_class_of(self), "@registry");
-    VALUE result   = cxx2rb::value_allocate(value.getType(), registry);
+    VALUE result   = value_allocate(value.getType(), registry);
     compiled.swap(value, rb2cxx::object<Value>(result));
     return result;
 }
@@ -365,7 +366,7 @@ VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)
     return memcmp(self.getData(), with.getData(), type.getSize()) == 0 ? Qtrue : Qfalse;
 }
 
-VALUE value_get_registry(VALUE self)
+VALUE typelib_ruby::value_get_registry(VALUE self)
 {
     VALUE type = rb_class_of(self);
     return rb_iv_get(type, "@registry");
@@ -486,7 +487,7 @@ static VALUE typelib_memcpy(VALUE, VALUE to, VALUE from, VALUE size)
     return to;
 }
 
-void Typelib_init_values()
+void typelib_ruby::Typelib_init_values()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     rb_define_singleton_method(mTypelib, "memcpy", RUBY_METHOD_FUNC(typelib_memcpy), 3);

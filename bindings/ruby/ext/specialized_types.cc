@@ -6,6 +6,7 @@
 
 using namespace Typelib;
 using std::vector;
+using namespace typelib_ruby;
 
 /**********************************************
  * Typelib::Compound
@@ -94,34 +95,32 @@ static VALUE pointer_deference(VALUE self)
 }
 
 
-namespace rb2cxx {
-    /* Get the C value associated with a ruby representation of an enum
-     * Valid ruby representations are: symbols, strings and integer
-     */
-    Enum::integral_type enum_value(VALUE rb_value, Enum const& e)
+/* Get the C value associated with a ruby representation of an enum
+ * Valid ruby representations are: symbols, strings and integer
+ */
+Enum::integral_type rb2cxx::enum_value(VALUE rb_value, Enum const& e)
+{
+    // m_value can be either an integer, a symbol or a string
+    if (TYPE(rb_value) == T_FIXNUM)
     {
-        // m_value can be either an integer, a symbol or a string
-        if (TYPE(rb_value) == T_FIXNUM)
-        {
-            Enum::integral_type value = FIX2INT(rb_value);
-            try { 
-		e.get(value); 
-		return value;
-	    }
-            catch(Enum::ValueNotFound) {  }
-	    rb_raise(rb_eArgError, "%i is not a valid value for %s", value, e.getName().c_str());
+        Enum::integral_type value = FIX2INT(rb_value);
+        try { 
+            e.get(value); 
+            return value;
         }
-
-        char const* name;
-        if (SYMBOL_P(rb_value))
-            name = rb_id2name(SYM2ID(rb_value));
-        else
-            name = StringValuePtr(rb_value);
-
-        try { return e.get(name); }
-        catch(Enum::SymbolNotFound) {  }
-	rb_raise(rb_eArgError, "%s is not a valid symbol for %s", name, e.getName().c_str());
+        catch(Enum::ValueNotFound) {  }
+        rb_raise(rb_eArgError, "%i is not a valid value for %s", value, e.getName().c_str());
     }
+
+    char const* name;
+    if (SYMBOL_P(rb_value))
+        name = rb_id2name(SYM2ID(rb_value));
+    else
+        name = StringValuePtr(rb_value);
+
+    try { return e.get(name); }
+    catch(Enum::SymbolNotFound) {  }
+    rb_raise(rb_eArgError, "%s is not a valid symbol for %s", name, e.getName().c_str());
 }
 
 /* call-seq:
@@ -200,26 +199,23 @@ static VALUE indirect_type_deference(VALUE self)
 }
 
 
-namespace cxx2rb
+static Value array_element(VALUE rbarray, VALUE rbindex)
 {
-    static Value array_element(VALUE rbarray, VALUE rbindex)
+    Value& value(rb2cxx::object<Value>(rbarray));
+    Array const& array(static_cast<Array const&>(value.getType()));
+    size_t index = NUM2INT(rbindex);
+    
+    if (index >= array.getDimension())
     {
-        Value& value(rb2cxx::object<Value>(rbarray));
-        Array const& array(static_cast<Array const&>(value.getType()));
-        size_t index = NUM2INT(rbindex);
-        
-        if (index >= array.getDimension())
-        {
-            rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index, array.getDimension());
-            return Value();
-        }
-
-        Type const& array_type(array.getIndirection());
-
-        int8_t* data = reinterpret_cast<int8_t*>(value.getData());
-        data += array_type.getSize() * index;
-        return Value(data, array_type);
+        rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index, array.getDimension());
+        return Value();
     }
+
+    Type const& array_type(array.getIndirection());
+
+    int8_t* data = reinterpret_cast<int8_t*>(value.getData());
+    data += array_type.getSize() * index;
+    return Value(data, array_type);
 }
 
 /* call-seq:
@@ -279,7 +275,7 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
  */
 static VALUE array_set(VALUE self, VALUE rbindex, VALUE newvalue)
 { 
-    Value element = cxx2rb::array_element(self, rbindex);
+    Value element = array_element(self, rbindex);
     return typelib_from_ruby(element, newvalue); 
 }
 
@@ -555,7 +551,7 @@ static VALUE container_delete_if(VALUE self)
  * structures have consecutive offsets.
  */
 
-void Typelib_init_specialized_types()
+void typelib_ruby::Typelib_init_specialized_types()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     cNumeric   = rb_define_class_under(mTypelib, "NumericType", cType);
