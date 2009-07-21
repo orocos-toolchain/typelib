@@ -247,7 +247,7 @@ namespace Typelib
 	    if (!it.isAlias()) continue;
             if (auto_types.has(it.getName())) continue;
 
-	    Type const* old_type = get(it.getName());
+	    Type const* old_type = result->get(it.getName());
 	    if (old_type)
 	    {
 		if (!old_type->isSame(*it))
