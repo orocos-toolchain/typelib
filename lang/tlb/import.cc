@@ -161,8 +161,21 @@ namespace
         string indirect_name = getAttribute<string>(node.xml, "of");
         Type const* indirect = factory.build(indirect_name);
         string kind          = getAttribute<string>(node.xml, "kind");
+        bool has_size = false;
+        int size;
+        try { 
+            size = getAttribute<int>(node.xml, "size");
+            has_size = true;
+        }
+        catch(Parsing::MissingAttribute) {}
 
         Type const* container = &Container::createContainer(factory.getRegistry(), kind, *indirect);
+        if (has_size)
+        {
+            // Update the size to match the one saved in the registry. This is to
+            // allow a proper call to resize() later if needed.
+            factory.getRegistry().get_(*container).setSize(size);
+        }
         return container;
     }
     Type const* load_enum(TypeNode const& node, Factory& factory)

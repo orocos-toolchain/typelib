@@ -146,7 +146,10 @@ namespace
     { 
         m_stream << "<container ";
         indirect(m_stream, type);
-        m_stream << " kind=\"" << xmlEscape(type.kind()) << "\" />";
+        m_stream
+            << " size=\"" << type.getSize() << "\""
+            << " kind=\"" << xmlEscape(type.kind()) << "\""
+            << "/>";
         return true;
     }
 
