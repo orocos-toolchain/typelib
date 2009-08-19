@@ -577,6 +577,26 @@ module Typelib
             do_import(file, kind, do_merge, options)
         end
 
+        # Resizes the given type to the given size, while updating the rest of
+        # the registry to keep it consistent
+        def resize_type(type, to_size)
+            resize(type.name => to_size)
+        end
+
+        # Resize a set of types, while updating the rest of the registry to keep
+        # it consistent
+        def resize(typemap)
+            new_sizes = typemap.map do |type, size|
+                if type.respond_to?(:name)
+                    [type.name, size]
+                else
+                    [type.to_str, size]
+                end
+            end
+
+            do_resize(new_sizes)
+            nil
+        end
 
 	# Exports the registry in the provided format, into a Ruby string. The
 	# following formats are allowed as +format+:

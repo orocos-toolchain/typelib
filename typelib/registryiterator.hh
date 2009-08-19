@@ -41,6 +41,8 @@ namespace Typelib
 
         Registry const& getRegistry() const { return m_registry; }
 
+        Type& get_() { return *m_iter->second.type; }
+
     private:
         typedef Registry::TypeMap::const_iterator BaseIter;
         Registry const& m_registry;

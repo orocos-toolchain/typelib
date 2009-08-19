@@ -112,9 +112,6 @@ namespace Typelib
         static bool isPersistent(std::string const& name, Type const& type, std::string const& source_id);
         void add(std::string const& name, Type* new_type, std::string const& source_id);
 
-        /* Internal version to get a non-const Type object */
-        Type* get_(const std::string& name);
-
     public:
 	typedef RegistryIterator Iterator;
 
@@ -161,6 +158,16 @@ namespace Typelib
          */
         Type const* get(const std::string& name) const;  
 
+        /* Internal version to get a non-const Type object
+         *
+         * You should not be using it. This is for internal Typelib use only */
+        Type* get_(const std::string& name);
+
+        /* Internal version to get a non-const Type object
+         *
+         * You should not be using it. This is for internal Typelib use only */
+        Type& get_(Type const& type);
+
         /** Adds a new type
          * @return true on success, false if the type was already
          * defined in the registry
@@ -198,6 +205,11 @@ namespace Typelib
 
 	/** Merges the content of \c registry into this object */
 	void merge(Registry const& registry);
+
+        /** Modifies the size of a subset of the types, and propagate this size
+         * change to the other types
+         */
+        void resize(std::map<std::string, size_t> const& new_sizes);
 
         /** Returns a registry containing the minimal set of types needed to
          * define the types that are in \c this and not in \c auto_types */

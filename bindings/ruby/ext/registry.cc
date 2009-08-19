@@ -213,6 +213,38 @@ VALUE registry_merge(VALUE self, VALUE rb_merged)
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
 
+
+/*
+ * call-seq:
+ *   resize(new_sizes) => nil
+ *
+ * Changes the size of some types, while modifying the types that depend on
+ * them to keep the registry consistent.
+ */
+static
+VALUE registry_resize(VALUE self, VALUE new_sizes)
+{
+    Registry& registry = rb2cxx::object<Registry>(self);
+
+    std::map<std::string, size_t> sizes;
+    size_t map_size   = RARRAY_LEN(new_sizes);
+    VALUE* map_values = RARRAY_PTR(new_sizes);
+    for (int i = 0; i < map_size; ++i)
+    {
+        VALUE* pair = RARRAY_PTR(map_values[i]);
+        sizes.insert(std::make_pair(
+                StringValuePtr(pair[0]),
+                NUM2INT(pair[1])));
+    }
+    try { 
+	registry.resize(sizes);
+	return Qnil;
+    }
+    catch(std::runtime_error& e) {
+        rb_raise(rb_eRuntimeError, "%s", e.what());
+    }
+}
+
 /* call-seq:
  *  minimal(auto_types) => registry
  *
@@ -348,6 +380,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "merge", RUBY_METHOD_FUNC(registry_merge), 1);
     rb_define_method(cRegistry, "minimal", RUBY_METHOD_FUNC(registry_minimal), 1);
     rb_define_method(cRegistry, "includes?", RUBY_METHOD_FUNC(registry_includes_p), 1);
+    rb_define_method(cRegistry, "do_resize", RUBY_METHOD_FUNC(registry_resize), 1);
 
     rb_define_method(cRegistry, "define_container", RUBY_METHOD_FUNC(registry_define_container), 2);
 }

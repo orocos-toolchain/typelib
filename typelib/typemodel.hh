@@ -90,6 +90,16 @@ namespace Typelib
 
         virtual Type const& merge(Registry& registry, RecursionStack& stack) const;
 
+        /** Update this type to reflect a type resize. The default
+         * implementation will resize *this if it is listed in \c new_sizes.
+         * new_sizes gets updated with the types that are modified.
+         *
+         * This is not to be called directly. Only use Registry::resize().
+         *
+         * @return true if this type has been modified, and false otherwise.
+         */
+        virtual bool resize(Registry& registry, std::map<std::string, size_t>& new_sizes);
+
     protected:
 	virtual bool do_isSame(Type const& other, std::map<Type const*, Type const*>& stack) const;
 
@@ -103,6 +113,9 @@ namespace Typelib
 	 * the definitions found in \c registry
 	 */
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const = 0;
+
+        /** Implementation of the actual resizing. Called by resize() */
+        virtual bool do_resize(Registry& into, std::map<std::string, size_t>& new_sizes);
     };
 
     class NullType : public Type
@@ -244,6 +257,7 @@ namespace Typelib
     private:
 	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
+        bool do_resize(Registry& registry, std::map<std::string, size_t>& new_sizes);
         FieldList m_fields;
     };
 
@@ -282,6 +296,7 @@ namespace Typelib
     private:
 	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
+        virtual bool do_resize(Registry& into, std::map<std::string, size_t>& new_sizes);
         size_t m_dimension;
     };
 

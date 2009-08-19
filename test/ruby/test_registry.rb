@@ -43,6 +43,23 @@ class TC_Registry < Test::Unit::TestCase
         registry
     end
 
+    def test_resize
+        reg = make_registry
+
+        container = reg.get('std/vector</double>')
+
+        test_type = reg.get('StdCollections')
+        old_size   = test_type.size
+        old_layout = test_type.enum_for(:get_fields).to_a.dup
+
+        assert_not_equal(old_size, 64)
+        reg.resize(container => 64)
+        new_layout = test_type.enum_for(:get_fields).to_a.dup
+
+        (2...new_layout.size).each do |i|
+            assert_equal(new_layout[i][1], old_layout[i][1] + 64 - old_size)
+        end
+    end
 
     def test_registry_iteration
 	reg = make_registry

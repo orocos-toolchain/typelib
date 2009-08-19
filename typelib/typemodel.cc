@@ -85,7 +85,31 @@ namespace Typelib
 	return *new_type;
     }
 
+    bool Type::resize(Registry& registry, std::map<std::string, size_t>& new_sizes)
+    {
+        if (do_resize(registry, new_sizes))
+        {
+            new_sizes.insert(make_pair(getName(), getSize()));
+            return true;
+        }
+        else
+            return false;
+    }
 
+    bool Type::do_resize(Registry& into, std::map<std::string, size_t>& new_sizes)
+    {
+        map<std::string, size_t>::const_iterator it =
+            new_sizes.find(getName());
+        if (it != new_sizes.end())
+        {
+            if (getSize() != it->second)
+            {
+                setSize(it->second);
+                return true;
+            }
+        }
+        return false;
+    }
 
     Numeric::Numeric(std::string const& name, size_t size, NumericCategory category)
         : Type(name, size, Type::Numeric), m_category(category) {}
@@ -190,6 +214,26 @@ namespace Typelib
 	return result;
     }
 
+    bool Compound::do_resize(Registry& registry, std::map<std::string, size_t>& new_sizes)
+    {
+        size_t global_offset = 0;
+        for (FieldList::iterator it = m_fields.begin(); it != m_fields.end(); ++it)
+        {
+            it->setOffset(it->getOffset() + global_offset);
+
+            Type& field_type = registry.get_(it->getType());
+            size_t old_size = field_type.getSize();
+            if (field_type.resize(registry, new_sizes))
+                global_offset += field_type.getSize() - old_size;
+        }
+        if (global_offset != 0)
+        {
+            setSize(getSize() + global_offset);
+            return true;
+        }
+        return false;
+    }
+
     namespace
     {
         enum FindSizeOfEnum { EnumField };
@@ -266,6 +310,15 @@ namespace Typelib
         // Indirect::merge, so we don't have to worry.
         Type const& indirect_type = getIndirection().merge(registry, stack);
         return new Array(indirect_type, m_dimension);
+    }
+
+    bool Array::do_resize(Registry& registry, std::map<std::string, size_t>& new_sizes)
+    {
+        if (!registry.get_(getIndirection()).resize(registry, new_sizes))
+            return false;
+
+        setSize(getDimension() * getIndirection().getSize());
+        return true;
     }
 
     Pointer::Pointer(const Type& on)

@@ -293,6 +293,9 @@ namespace Typelib
         return 0;
     }
 
+    Type& Registry::get_(Type const& type)
+    { return *get_(type.getName()); }
+
     const Type* Registry::get(const std::string& name) const
     {
         NameMap::const_iterator it = m_current.find(name);
@@ -471,5 +474,20 @@ namespace Typelib
         return true;
     }
 
+    void Registry::resize(std::map<std::string, size_t> const& new_sizes)
+    {
+        typedef std::map<std::string, size_t> SizeMap;
+        // First, do a copy of new_sizes for our own use. Most importantly, we
+        // resolve aliases
+        SizeMap sizes;
+        for (SizeMap::const_iterator it = new_sizes.begin(); it != new_sizes.end(); ++it)
+            sizes.insert(make_pair(get(it->first)->getName(), it->second));
+
+	for(Iterator it = begin(); it != end(); ++it)
+	{
+	    if (it.isAlias()) continue;
+	    it.get_().resize(*this, sizes);
+	}
+    }
 }; // namespace Typelib
 
