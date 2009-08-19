@@ -15,7 +15,7 @@ public:
     { return "/std/vector<" + on.getName() + ">"; }
 
     Vector(Type const& on)
-        : Container("/std/vector", fullName(on), sizeof(std::vector<void*>), on) {}
+        : Container("/std/vector", fullName(on), getNaturalSize(), on) {}
 
     size_t getElementCount(void const* ptr) const
     {
@@ -29,6 +29,11 @@ public:
     void destroy(void* ptr) const
     {
         reinterpret_cast< std::vector<int8_t>* >(ptr)->~vector<int8_t>();
+    }
+
+    long getNaturalSize() const
+    {
+        return sizeof(std::vector<void*>);
     }
 
     void insert(void* ptr, Value v) const

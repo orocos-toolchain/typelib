@@ -400,6 +400,20 @@ static VALUE container_kind(VALUE self)
 
 /*
  * call-seq:
+ *  container.natural_size => a_number
+ *
+ * Returns the container's size on the local machine. This can be different from
+ * the value returned by size() in case a registry has been generated on a
+ * different architecture.
+ */
+static VALUE container_natural_size(VALUE self)
+{
+    Container const& type(dynamic_cast<Container const&>(rb2cxx::object<Type>(self)));
+    return INT2FIX(type.getNaturalSize());
+}
+
+/*
+ * call-seq:
  *  container.length => value
  *
  * Returns the count of elements in +container+
@@ -586,6 +600,7 @@ void typelib_ruby::Typelib_init_specialized_types()
 
     cContainer = rb_define_class_under(mTypelib, "ContainerType", cIndirect);
     rb_define_singleton_method(cContainer, "container_kind", RUBY_METHOD_FUNC(container_kind), 0);
+    rb_define_singleton_method(cContainer, "natural_size",   RUBY_METHOD_FUNC(container_natural_size), 0);
     rb_define_method(cContainer, "length",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "insert",    RUBY_METHOD_FUNC(container_insert), 1);
     rb_define_method(cContainer, "each",      RUBY_METHOD_FUNC(container_each), 0);

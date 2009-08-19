@@ -409,6 +409,12 @@ namespace Typelib
          */
         virtual void copy(void* dst, void* src) const = 0;
 
+        /** Called to return the natural size of the container, i.e. the size it
+         * has on this particular machine. This can be different than getSize()
+         * in case of registries generated on other machines.
+         */
+        virtual long getNaturalSize() const = 0;
+
         template<typename Pred>
         void delete_if(void* ptr, Pred pred) const
         {
