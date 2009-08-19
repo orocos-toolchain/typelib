@@ -9,28 +9,46 @@ class TC_Registry < Test::Unit::TestCase
 	assert_equal("/int", registry.get("/my_own_and_only_int").name)
     end
 
-    def test_registry
+    def test_guess_type
         assert_raises(RuntimeError) { Registry.guess_type("bla.1") }
         assert_equal("c", Registry.guess_type("blo.c"))
         assert_equal("c", Registry.guess_type("blo.h"))
         assert_equal("tlb", Registry.guess_type("blo.tlb"))
+    end
 
+    def test_import_fails_if_files_does_not_exist
         assert_raises(RuntimeError) { Registry.new.import("bla.c") }
+    end
 
+    def test_import_raises_if_import_has_errors
         registry = Registry.new
         testfile = File.join(SRCDIR, "test_cimport.h")
         assert_raises(RuntimeError) { registry.import(testfile) }
-        assert_nothing_raised {
-            registry.import(testfile, nil, :include => [ File.join(SRCDIR, '..') ], :define => [ 'GOOD' ])
-        }
+    end
 
+    def test_import_include_option
         registry = Registry.new
-        assert_nothing_raised {
-            registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
-        }
-        assert_nothing_raised {
-            registry.import(testfile, nil, :merge => true, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
-        }
+        testfile = File.join(SRCDIR, "test_cimport.h")
+        registry.import(testfile, nil, :include => [ File.join(SRCDIR, '..') ], :define => [ 'GOOD' ])
+    end
+
+    def test_import_raw_option
+        registry = Registry.new
+        testfile = File.join(SRCDIR, "test_cimport.h")
+        registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
+    end
+
+    def test_import_merge
+        registry = Registry.new
+        testfile = File.join(SRCDIR, "test_cimport.h")
+        registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
+        registry.import(testfile, nil, :merge => true, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
+    end
+
+    def test_import_fails_if_merge_is_required_but_not_present
+        registry = Registry.new
+        testfile = File.join(SRCDIR, "test_cimport.h")
+	registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
 	assert_raises(RuntimeError) { registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ]) }
     end
 
