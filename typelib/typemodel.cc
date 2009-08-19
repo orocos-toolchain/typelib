@@ -43,7 +43,14 @@ namespace Typelib
     {
         RecursionStack::const_iterator it = stack.find(&left);
         if (it != stack.end())
+        {
+            /** One type cannot be equal to two different types. So either we
+             * are already comparing left and right and it is fine (return
+             * true). Or we are comparing it with a different type and that
+             * means the two types are different (return false)
+             */
             return (&right == it->second);
+        }
 
         RecursionStack::iterator new_it = stack.insert( make_pair(&left, &right) ).first;
         bool result = left.do_isSame(right, stack);

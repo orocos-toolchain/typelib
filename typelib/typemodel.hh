@@ -88,6 +88,12 @@ namespace Typelib
 	 */
 	Type const& merge(Registry& registry) const;
 
+        /** Base merge method. The default implementation should be fine for
+         * most types.
+         *
+         * Call try_merge to check if a type equivalent to *this exists in \c
+         * registry, and do_merge to create a copy of *this in \c registry.
+         */
         virtual Type const& merge(Registry& registry, RecursionStack& stack) const;
 
         /** Update this type to reflect a type resize. The default
@@ -101,16 +107,37 @@ namespace Typelib
         virtual bool resize(Registry& registry, std::map<std::string, size_t>& new_sizes);
 
     protected:
+        /** Method that is implemeted by type definitions to check if *this is
+         * the same type than \c other.
+         *
+         * It must use rec_isSame to check for indirections (i.e. for
+         * recursive calls).
+         *
+         * The base definition compares the name, size and category of the
+         * types.
+         */
 	virtual bool do_isSame(Type const& other, std::map<Type const*, Type const*>& stack) const;
 
+        /** Called by do_isSame to compare +left+ to +right+. This method takes
+         * into account potential loops in the recursion
+         */
         bool rec_isSame(Type const& left, Type const& right, RecursionStack& stack) const;
 
-
+        /** Checks if there is already a type with the same name and definition
+         * than *this in \c registry. If that is the case, returns it, otherwise
+         * returns NULL;
+         *
+         * If there is a type with the same name, but whose definition
+         * mismatches, throws DefinitionMismatch
+         */
         Type const* try_merge(Registry& registry, RecursionStack& stack) const;
-	/** Called by Type::merge when the type does not exist
-	 * in \c registry already. This is needed for types
-	 * to update their subtypes (pointed-to type, ...) to
-	 * the definitions found in \c registry
+
+        /** Called by Type::merge when the type does not exist in \c registry
+         * already. This method has to create a new type in registry that
+         * matches the type definition of *this.
+         *
+         * All types referenced by *this must be moved to their equivalent in \c
+         * registry.
 	 */
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const = 0;
 
