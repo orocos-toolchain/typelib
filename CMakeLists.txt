@@ -2,8 +2,9 @@ if(COMMAND cmake_minimum_required)
     cmake_minimum_required(VERSION 2.4)
 endif(COMMAND cmake_minimum_required)
 
-PROJECT(typeLib)
+PROJECT(typelib)
 SET(PROJECT_VERSION 1.1)
+SET(API_VERSION 1)
 
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 INCLUDE(UsePkgConfig)

@@ -4,8 +4,14 @@ ADD_LIBRARY(typeLib SHARED
     importer.cc csvoutput.cc endianness.cc memory_layout.cc value_ops.cc)
 TARGET_LINK_LIBRARIES(typeLib typeLang_c typeLang_tlb typeLang_idl)
 
-INSTALL(TARGETS typeLib
+install(TARGETS typeLib
     LIBRARY DESTINATION lib)
+set_target_properties(typeLib PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${API_VERSION})
+set_target_properties(typeLib
+    PROPERTIES LINK_INTERFACE_LIBRARIES "")
+
 INSTALL(FILES exporter.hh importer.hh ioplugins.hh manip.hh pluginmanager.hh
     registry.hh registryiterator.hh typebuilder.hh typedisplay.hh typemodel.hh
     typename.hh typevisitor.hh value.hh csvoutput.hh endianness.hh
