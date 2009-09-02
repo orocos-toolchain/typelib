@@ -62,6 +62,7 @@
 
 #include <string>
 #include <stdlib.h>
+#include <stdio.h>
 #include "Dictionary.hh"
 
 /* Hashing function described in                   */

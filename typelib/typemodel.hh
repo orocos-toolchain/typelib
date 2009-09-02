@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <boost/tuple/tuple.hpp>
+#include <stdint.h>
 
 #include "typename.hh"
   
