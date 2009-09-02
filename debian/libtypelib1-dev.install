@@ -1,0 +1,3 @@
+usr/include/typelib
+usr/lib/libtypeLib.so
+usr/lib/pkgconfig/typelib.pc
