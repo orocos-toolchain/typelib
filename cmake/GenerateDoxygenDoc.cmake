@@ -8,5 +8,8 @@ IF (DOXYGEN_FOUND)
     ENDIF(DOXYGEN_DOT_EXECUTABLE)
     CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
     ADD_CUSTOM_TARGET(doc doxygen Doxyfile)
+
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/html/ DESTINATION
+        share/doc/${PROJECT_NAME}/html)
 ENDIF(DOXYGEN_FOUND)
  
