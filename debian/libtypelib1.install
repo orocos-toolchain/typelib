@@ -1,2 +1,2 @@
-usr/lib/libtypeLib.so.*
-usr/lib/typelib/
+usr/lib/libtypeLib.so.*         usr/lib
+usr/lib/typelib                 usr/lib
