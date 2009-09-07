@@ -3,9 +3,13 @@
 #include "importer.hh"
 #include "exporter.hh"
 
+#include <boost/filesystem.hpp>
+#include <dlfcn.h>
+
 using namespace std;
 using namespace Typelib;
 using namespace utilmm;
+using namespace boost::filesystem;
 
 namespace
 {
@@ -35,13 +39,47 @@ namespace
 
 PluginManager::PluginManager()
 {
-    registerIOPlugins(*this);
+    // Load plugins from standard path
+    if (! exists(TYPELIB_PLUGIN_PATH))
+        return;
+    path plugin_dir(TYPELIB_PLUGIN_PATH);
+
+    directory_iterator end_it;
+    for (directory_iterator it(plugin_dir); it != end_it; ++it)
+    {
+        if (it->path().extension() == ".so")
+            loadPlugin(it->path().file_string());
+    }
 }
 
 PluginManager::~PluginManager()
 {
     clear(m_importers);
     clear(m_exporters);
+    //for (vector<void*>::iterator it = m_library_handles.begin(); it != m_library_handles.end(); ++it)
+    //    dlclose(*it);
+}
+
+bool PluginManager::loadPlugin(std::string const& path)
+{
+    void* libhandle = dlopen(path.c_str(), RTLD_LAZY);
+    if (!libhandle)
+    {
+        cerr << "typelib: cannot load plugin " << path << ": " << dlerror() << endl;
+        return false;
+    }
+
+    void* libentry  = dlsym(libhandle, "registerPlugins");
+    if (!libentry)
+    {
+        cerr << "typelib: " << libentry << " does not seem to be a valid typelib plugin" << endl;
+        return false;
+    }
+
+    PluginEntryPoint function = reinterpret_cast<PluginEntryPoint>(libentry);
+    function(*this);
+    m_library_handles.push_back(libhandle);
+    return true;
 }
 
 bool PluginManager::add(ExportPlugin* plugin)

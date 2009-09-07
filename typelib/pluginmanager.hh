@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 #include <utilmm/singleton/use.hh>
 #include <utilmm/configfile/configset.hh>
 #include <stdexcept>
@@ -46,6 +47,10 @@ namespace Typelib
     {
         std::map<std::string, ExportPlugin*> m_exporters;
         std::map<std::string, ImportPlugin*> m_importers;
+        std::vector<void*> m_library_handles;
+        bool loadPlugin(std::string const& path);
+
+        typedef void (*PluginEntryPoint)(PluginManager&);
 
         PluginManager();
         ~PluginManager();

@@ -35,9 +35,15 @@ namespace Typelib
         typename plugin_traits<Type>::object_base* create()
         { return new Type; }
     };
+}
 
-    class PluginManager;
-    void registerIOPlugins(PluginManager& manager);
+#define TYPELIB_REGISTER_IO2(name, klass1, klass2) extern "C" void registerPlugins(Typelib::PluginManager& manager) {\
+    manager.add(new Typelib::GenericIOPlugin<klass1>(#name)); \
+    manager.add(new Typelib::GenericIOPlugin<klass2>(#name)); \
+}
+
+#define TYPELIB_REGISTER_IO1(name, klass1) extern "C" void registerPlugins(Typelib::PluginManager& manager) {\
+    manager.add(new Typelib::GenericIOPlugin<klass1>(#name)); \
 }
 
 #endif

@@ -3,6 +3,8 @@
 #include <utilmm/stringtools.hh>
 
 #include <typelib/typevisitor.hh>
+#include <typelib/ioplugins.hh>
+
 
 namespace
 {
@@ -394,4 +396,6 @@ void IDLExport::save
 	}
     }
 }
+
+TYPELIB_REGISTER_IO1(idl, IDLExport)
 

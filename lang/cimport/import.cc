@@ -3,6 +3,7 @@
 #include <CPPLexer.hpp>
 #include "typesolver.hh"
 #include "import.hh"
+#include <typelib/ioplugins.hh>
 
 #include <fstream>
 #include <iostream>
@@ -12,8 +13,7 @@
 #include <utilmm/system/process.hh>
 #include <utilmm/system/system.hh>
 
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace std;
 using namespace antlr;
@@ -142,3 +142,4 @@ void CImport::load
     }
 }
 
+TYPELIB_REGISTER_IO1(c, CImport)
