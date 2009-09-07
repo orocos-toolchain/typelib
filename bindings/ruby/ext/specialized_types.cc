@@ -90,7 +90,6 @@ static VALUE pointer_deference(VALUE self)
         rb_raise(rb_eArgError, "cannot deference a NULL pointer");
 
     Value new_value(ptr_value, indirect.getIndirection() );
-    VALUE ptr = memory_wrap(new_value.getData());
     return typelib_to_ruby(new_value, registry, Qnil);
 }
 
