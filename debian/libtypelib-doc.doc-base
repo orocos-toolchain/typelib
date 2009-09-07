@@ -2,9 +2,9 @@ Document: typelib
 Title: typelib Manual
 Author: Sylvain Joyeux
 Abstract: typelib is a C/C++ value introspection library,
-  which allows to represent and manipulate in-memory data
-  dynamically
-Section: libs
+ which allows to represent and manipulate in-memory data
+ dynamically
+Section: Programming
 
 Format: HTML
 Index: /usr/share/doc/typelib/html/index.html
