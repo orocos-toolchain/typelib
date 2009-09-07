@@ -21,7 +21,7 @@ namespace Typelib
 
     public:
         RegistryIterator(RegistryIterator const& other)
-            : m_iter(other.m_iter), m_registry(other.m_registry) {}
+            : m_registry(other.m_registry), m_iter(other.m_iter) {}
 
 	/** The type name */
         std::string getName() const { return m_iter->first; }

@@ -64,7 +64,7 @@ public:
 
         uint8_t* base_ptr = &(*vector_ptr)[0];
 
-        for (int i = 0; i < element_count; ++i)
+        for (size_t i = 0; i < element_count; ++i)
         {
             uint8_t* element_ptr = base_ptr + i * element_size;
             Value    element_v(element_ptr, element_t);
@@ -97,7 +97,7 @@ public:
 
         uint8_t* base_a = &(*a_ptr)[0];
         uint8_t* base_b = &(*b_ptr)[0];
-        for (int i = 0; i < element_count; ++i)
+        for (size_t i = 0; i < element_count; ++i)
         {
             if (!Typelib::compare(
                         Value(base_a + i * element_size, element_t),
@@ -121,7 +121,7 @@ public:
 
         uint8_t* base_src = &(*src_ptr)[0];
         uint8_t* base_dst = &(*dst_ptr)[0];
-        for (int i = 0; i < element_count; ++i)
+        for (size_t i = 0; i < element_count; ++i)
         {
             Typelib::copy(
                     Value(base_dst + i * element_size, element_t),
@@ -137,7 +137,7 @@ public:
         size_t   element_size  = getIndirection().getSize();
         size_t   element_count = getElementCount(vector_ptr);
 
-        for (int i = 0; i < element_count; ++i)
+        for (size_t i = 0; i < element_count; ++i)
             visitor.dispatch(Value(base + i * element_size, getIndirection()));
 
         return true;
@@ -153,7 +153,7 @@ public:
         size_t   element_size  = element_t.getSize();
 
         uint8_t* base = &(*vector_ptr)[0];
-        for (int i = 0; i < element_count; )
+        for (size_t i = 0; i < element_count; )
         {
             uint8_t* element_ptr = base + i * element_size;
             Value    element_v(element_ptr, element_t);
@@ -198,7 +198,7 @@ public:
         {
             MarshalOps::const_iterator it_end = begin;
             size_t in_offset = 0;
-            for (int i = 0; i < element_count; ++i)
+            for (size_t i = 0; i < element_count; ++i)
             {
                 boost::tie(in_offset, it_end) = ValueOps::dump(
                         &(*vector_ptr)[i * getIndirection().getSize()], 0,
@@ -220,7 +220,7 @@ public:
         size_t      element_size = element_t.getSize();
         vector_ptr->resize(element_count * element_size);
 
-        for (int i = 0; i < element_count; ++i)
+        for (size_t i = 0; i < element_count; ++i)
             Typelib::init(Value(&(*vector_ptr)[i * element_size], element_t));
 
         MarshalOps::const_iterator it = begin;
@@ -234,7 +234,7 @@ public:
         {
             MarshalOps::const_iterator it_end;
             size_t out_offset = 0;
-            for (int i = 0; i < element_count; ++i)
+            for (size_t i = 0; i < element_count; ++i)
             {
                 boost::tie(out_offset, in_offset, it_end) =
                     ValueOps::load(&(*vector_ptr)[i * element_size], 0,

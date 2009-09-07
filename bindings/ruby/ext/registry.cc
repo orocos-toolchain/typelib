@@ -91,7 +91,6 @@ VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
 {
     Registry& registry = rb2cxx::object<Registry>(self);
 
-    int error;
     try { 
 	registry.alias(StringValuePtr(aliased), StringValuePtr(name)); 
 	return self;
@@ -229,7 +228,7 @@ VALUE registry_resize(VALUE self, VALUE new_sizes)
     std::map<std::string, size_t> sizes;
     size_t map_size   = RARRAY_LEN(new_sizes);
     VALUE* map_values = RARRAY_PTR(new_sizes);
-    for (int i = 0; i < map_size; ++i)
+    for (size_t i = 0; i < map_size; ++i)
     {
         VALUE* pair = RARRAY_PTR(map_values[i]);
         sizes.insert(std::make_pair(

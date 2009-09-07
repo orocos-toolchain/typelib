@@ -74,7 +74,7 @@ namespace
     template<> struct StructSizeDiscovery<13> { int64_t x; int32_t a; int8_t b; };
     template<> struct StructSizeDiscovery<14> { int64_t x; int32_t a; int16_t b; };
     template<> struct StructSizeDiscovery<15> { int64_t x; int32_t a; int16_t b; int8_t c; };
-    static const int STRUCT_SIZE_DISCOVERY_LAST = 15;
+    static const size_t STRUCT_SIZE_DISCOVERY_LAST = 15;
 
     /** These two following structures are to check the rounding after 16 (i.e.
      * how 17 is packed determines how the whole thing will work from now on)

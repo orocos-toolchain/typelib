@@ -319,10 +319,7 @@ void CPPParser::classForwardDeclaration(TypeSpecifier ts, DeclSpecifier ds, cons
     // classes by entering a new scope, but our limited
     // example basically keeps all types globally visible.
     if ( symbols->lookup(tag)!=NULL )
-    {
-        CPPSymbol *cs = (CPPSymbol *) symbols->lookup(tag);
         return;
-    }
 
     switch (ts)
     {
@@ -366,6 +363,8 @@ void CPPParser::beginClassDefinition(TypeSpecifier ts,const std::string& tag)
         case tsCLASS:
             c = new CPPSymbol(tag, CPPSymbol::otClass);
             break;
+        default:
+            throw std::runtime_error("unexpected TypeSpecifier in CPPParser::beginClassDefinition");
     }
     symbols->defineInScope(tag, c, externalScope);
     qualifierPrefix += tag;

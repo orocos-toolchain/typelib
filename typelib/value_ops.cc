@@ -33,7 +33,7 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
                     it = MemLayout::skip_block(element_it, end);
                 else
                 {
-                    for (int i = 0; i < element_count; ++i)
+                    for (size_t i = 0; i < element_count; ++i)
                         tie(in_offset, it) = dump(data, in_offset, buffer, element_it, end);
                 }
 
@@ -108,7 +108,7 @@ tuple<size_t, size_t, MemoryLayout::const_iterator> ValueOps::load(
                     it = MemLayout::skip_block(element_it, end);
                 else
                 {
-                    for (int i = 0; i < element_count; ++i)
+                    for (size_t i = 0; i < element_count; ++i)
                         tie(out_offset, in_offset, it) =
                             load(data, out_offset, buffer, in_offset, element_it, end);
                 }
@@ -221,7 +221,7 @@ tuple<uint8_t*, MemoryLayout::const_iterator>
             {
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
-                for (int i = 0; i < element_count; ++i)
+                for (size_t i = 0; i < element_count; ++i)
                     tie(buffer, it) = init(buffer, element_it, end);
 
                 if (it == end || *it != MemLayout::FLAG_END)
@@ -267,7 +267,7 @@ tuple<uint8_t*, MemoryLayout::const_iterator>
             {
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
-                for (int i = 0; i < element_count; ++i)
+                for (size_t i = 0; i < element_count; ++i)
                     tie(buffer, it) = destroy(buffer, element_it, end);
 
                 if (it == end || *it != MemLayout::FLAG_END)
@@ -322,7 +322,7 @@ tuple<uint8_t*, uint8_t*, MemoryLayout::const_iterator>
             {
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
-                for (int i = 0; i < element_count; ++i)
+                for (size_t i = 0; i < element_count; ++i)
                     tie(out_buffer, in_buffer, it) =
                         copy(out_buffer, in_buffer, element_it, end);
 
@@ -379,7 +379,7 @@ tuple<bool, uint8_t*, uint8_t*, MemoryLayout::const_iterator>
             {
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
-                for (int i = 0; i < element_count; ++i)
+                for (size_t i = 0; i < element_count; ++i)
                 {
                     bool is_equal;
                     tie(is_equal, out_buffer, in_buffer, it) =
@@ -452,7 +452,7 @@ void Typelib::load(Value v, std::vector<uint8_t> const& buffer, MemoryLayout con
 void Typelib::load(uint8_t* v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops)
 {
     MemoryLayout::const_iterator it;
-    int in_offset, out_offset;
+    size_t in_offset, out_offset;
     tie(out_offset, in_offset, it) =
         ValueOps::load(v, 0, buffer, 0, ops.begin(), ops.end());
     if (it != ops.end())

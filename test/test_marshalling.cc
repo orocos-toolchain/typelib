@@ -154,7 +154,6 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
     size_t off_dbl_vector = reinterpret_cast<uint8_t*>(&offset_discovery.dbl_vector) - base_ptr;
     size_t off_v8         = reinterpret_cast<uint8_t*>(&offset_discovery.v8) - base_ptr;
     size_t off_v_of_v     = reinterpret_cast<uint8_t*>(&offset_discovery.v_of_v) - base_ptr;
-    size_t off_v16        = reinterpret_cast<uint8_t*>(&offset_discovery.v16) - base_ptr;
 
     {
         StdCollections data;

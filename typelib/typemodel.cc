@@ -144,7 +144,9 @@ namespace Typelib
     {
         Type const* old_type = try_merge(registry, stack);
         if (old_type) return *old_type;
-        Type const& indirect_type = getIndirection().merge(registry, stack);
+        // First, make sure the indirection is already merged and then merge
+        // this type
+        getIndirection().merge(registry, stack);
 
         return Type::merge(registry, stack);
     }

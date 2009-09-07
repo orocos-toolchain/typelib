@@ -120,7 +120,7 @@ function_compile(VALUE self, VALUE filtered_args)
     size_t argc = RARRAY(argument_types)->len;
     VALUE* argv = RARRAY(argument_types)->ptr;
 
-    for (int i = 0; i < argc; ++i)
+    for (size_t i = 0; i < argc; ++i)
 	PrepareVM::append(vm, rb2cxx::object<Type>(argv[i]), RARRAY(filtered_args)->ptr[i]);
 
     return rb_vm;
@@ -291,29 +291,6 @@ VALUE filter_value_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
 	    return Qnil;
 	return rb_funcall(arg, rb_intern("to_memory_ptr"), 0);
     }
-}
-
-static
-VALUE typelib_call_function(VALUE klass, VALUE wrapper, VALUE args, VALUE return_type, VALUE arg_types)
-{
-    Check_Type(args,  T_ARRAY);
-    Check_Type(arg_types, T_ARRAY);
-
-    // Call the function via DL and get the real return value
-    VALUE ret = rb_funcall3(wrapper, rb_intern("call"), RARRAY(args)->len, RARRAY(args)->ptr);
-
-    VALUE return_value = rb_ary_entry(ret, 0);
-    if (!NIL_P(return_value))
-    {
-        Type const& rettype(rb2cxx::object<Type>(return_type));
-        if (rettype.getCategory() == Type::Enum)
-        {
-            Enum const& ret_enum(static_cast<Enum const&>(rettype));
-            rb_ary_store(ret, 0, cxx2rb::enum_symbol(ret, ret_enum));
-        }
-    }
-
-    return ret;
 }
 
 void typelib_ruby::Typelib_init_functions()

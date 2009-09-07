@@ -485,8 +485,6 @@ struct ContainerIterator : public RubyGetter
 static VALUE container_each(VALUE self)
 {
     Value value = rb2cxx::object<Value>(self);
-    Container const& type(dynamic_cast<Container const&>(value.getType()));
-
     VALUE registry = value_get_registry(self);
     ContainerIterator iterator;
     iterator.apply(value, registry, self);

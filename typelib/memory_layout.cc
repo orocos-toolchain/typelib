@@ -46,6 +46,7 @@ bool MemLayout::Visitor::visit_ (Array   const& type)
         ops.insert(ops.end(), subops.begin(), subops.end());
         ops.push_back(FLAG_END);
     }
+    return true;
 }
 bool MemLayout::Visitor::visit_ (Container const& type)
 {
