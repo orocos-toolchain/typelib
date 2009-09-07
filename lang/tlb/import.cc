@@ -170,7 +170,9 @@ namespace
         catch(Parsing::MissingAttribute) {}
 
         Type const* container = &Container::createContainer(factory.getRegistry(), kind, *indirect);
-        if (has_size)
+        // We use zero size to indicate that the natural platform size should be
+        // used
+        if (has_size && size != 0)
         {
             // Update the size to match the one saved in the registry. This is to
             // allow a proper call to resize() later if needed.
