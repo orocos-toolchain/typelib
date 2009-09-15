@@ -24,6 +24,8 @@ class IDLExport : public Typelib::Exporter
     int m_blob_threshold;
     bool m_opaque_as_any;
 
+    std::set<std::string> m_selected_types;
+
     void closeNamespaces(std::ostream& stream, int levels);
     void adaptNamespace(std::ostream& stream, std::string const& ns);
 

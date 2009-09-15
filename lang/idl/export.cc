@@ -306,6 +306,8 @@ void IDLExport::save
     m_ns_suffix = config.get<std::string>("namespace_suffix", "");
     m_blob_threshold = config.get<int>("blob_threshold", 0);
     m_opaque_as_any  = config.get<bool>("opaque_as_any", false);
+    list<string> selection = config.get< list<string> >("selected");
+    m_selected_types = set<string>(selection.begin(), selection.end());
     return Exporter::save(stream, config, type);
 }
 
@@ -314,6 +316,15 @@ void IDLExport::save
     ( ostream& stream
     , Typelib::RegistryIterator const& type )
 {
+    if (! m_selected_types.empty())
+    {
+        if (m_selected_types.count(type->getName()) == 0)
+        {
+            cerr << "rejected " << type->getName() << endl;
+            return;
+        }
+    }
+
     if (type.isAlias())
     {
 	// IDL has C++-like rules for struct and enums. Do not alias a "struct A" to "A";
