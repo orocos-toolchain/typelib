@@ -269,6 +269,7 @@ VALUE registry_minimal(VALUE self, VALUE rb_auto)
 
 /*
  * each_type(include_alias = false) { |type| ... }
+ * each_type(include_alias = true)  { |name, type| ... }
  *
  * Iterates on the types found in this registry. If include_alias is true, also
  * yield the aliased types.
