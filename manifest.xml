@@ -1,0 +1,6 @@
+<package>
+    <depend package="utilmm" />
+    <depend package="utilrb" />
+    <rosdep name="boost" />
+    <rosdep name="antlr" />
+</package>
