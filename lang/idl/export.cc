@@ -322,7 +322,6 @@ void IDLExport::save
     {
         if (m_selected_types.count(type->getName()) == 0)
         {
-            cerr << "rejected " << type->getName() << endl;
             return;
         }
     }
