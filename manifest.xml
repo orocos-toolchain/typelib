@@ -1,9 +1,26 @@
 <package>
-    <depend package="utilmm" />
-    <depend package="utilrb" />
-    <rosdep name="boost" />
-    <rosdep name="antlr" />
-    <rosdep name="doxygen" type="doc" />
-    <rosdep name="rdoc" type="doc" />
+  <description brief="type introspection library for C++">
+      This library offers an introspection mechanism for C/C++ value-types. I.e.
+      it offers a way to represent types, and to manipulate in-memory values
+      that are instances of those types.
+
+      A Ruby binding is included, which gives a fast and transparent
+      modification of C/C++ in-memory types from Ruby, and an associated
+      interface to call C functions from shared libraries.
+  </description>
+  <author>Sylvain Joyeux/sylvain.joyeux@m4x.org</author>
+  <copyright>
+      LAAS-CNRS/openrobots@laas.fr
+      DFKI/robotik@dfki.de
+      Sylvain Joyeux/sylvain.joyeux@m4x.org
+  </copyright>
+  <license>CeCILL-B (BSD-like)</license>
+
+  <depend package="utilmm" />
+  <depend package="utilrb" />
+  <rosdep name="boost" />
+  <rosdep name="antlr" />
+  <rosdep name="doxygen" type="doc" />
+  <rosdep name="rdoc" type="doc" />
 </package>
 
