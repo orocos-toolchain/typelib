@@ -35,12 +35,18 @@ namespace Typelib
     bool   Type::operator == (Type const& with) const { return (this == &with); }
     bool   Type::isSame(Type const& with) const
     { 
+        if (this == &with)
+            return true;
+
         RecursionStack stack;
         stack.insert(make_pair(this, &with));
         return do_isSame(with, stack);
     }
     bool Type::rec_isSame(Type const& left, Type const& right, RecursionStack& stack) const
     {
+        if (&left == &right)
+            return true;
+
         RecursionStack::const_iterator it = stack.find(&left);
         if (it != stack.end())
         {
@@ -74,7 +80,7 @@ namespace Typelib
 	Type const* old_type = registry.get(getName());
 	if (old_type)
 	{
-	    if (old_type->isSame(*this))
+            if (old_type->isSame(*this))
 		return old_type;
 	    else
 		throw DefinitionMismatch(getName());
