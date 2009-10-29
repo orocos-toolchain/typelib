@@ -249,6 +249,14 @@ namespace Typelib
         return false;
     }
 
+
+    Enum::AlreadyExists::AlreadyExists(Type const& type, std::string const& name)
+        : std::runtime_error("enumeration symbol " + name + " is already used in " + type.getName()) {}
+    Enum::SymbolNotFound::SymbolNotFound(Type const& type, std::string const& name)
+            : std::runtime_error("enumeration symbol " + name + " does not exist in " + type.getName()) {}
+    Enum::ValueNotFound::ValueNotFound(Type const& type, int value)
+            : std::runtime_error("no symbol associated with " + boost::lexical_cast<std::string>(value)  + " in " + type.getName()) {}
+
     namespace
     {
         enum FindSizeOfEnum { EnumField };
@@ -268,14 +276,14 @@ namespace Typelib
         std::pair<ValueMap::iterator, bool> inserted;
         inserted = m_values.insert( make_pair(name, value) );
         if (!inserted.second && inserted.first->second != value)
-            throw AlreadyExists();
+            throw AlreadyExists(*this, name);
         m_last_value = value;
     }
     Enum::integral_type  Enum::get(std::string const& name) const
     {
         ValueMap::const_iterator it = m_values.find(name);
         if (it == m_values.end())
-            throw SymbolNotFound();
+            throw SymbolNotFound(*this, name);
         else
             return it->second;
     }
@@ -287,7 +295,7 @@ namespace Typelib
             if (it->second == value)
                 return it->first;
         }
-        throw ValueNotFound();
+        throw ValueNotFound(*this, value);
     }
     std::list<std::string> Enum::names() const
     {

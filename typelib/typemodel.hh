@@ -202,9 +202,21 @@ namespace Typelib
         typedef int integral_type;
         typedef std::map<std::string, int> ValueMap;
 
-        class AlreadyExists  {};
-        class SymbolNotFound {};
-        class ValueNotFound  {};
+        class AlreadyExists : public std::runtime_error
+        {
+        public:
+            AlreadyExists(Type const& type, std::string const& name);
+        };
+        class SymbolNotFound : public std::runtime_error
+        {
+        public:
+            SymbolNotFound(Type const& type, std::string const& name);
+        };
+        class ValueNotFound : public std::runtime_error
+        {
+        public:
+            ValueNotFound(Type const& type, int value);
+        };
         
         Enum(const std::string& name, Enum::integral_type initial_value = 0);
 	/** Add a new definition */
