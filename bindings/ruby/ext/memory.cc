@@ -126,26 +126,30 @@ typelib_ruby::memory_allocate(size_t size)
 void
 typelib_ruby::memory_init(VALUE ptr, VALUE type)
 {
-    void* cptr = memory_cptr(ptr);
-    MemoryTypes::iterator it = memory_types.find(cptr);
-    if (it != memory_types.end())
-        rb_raise(rb_eArgError, "memory zone already initialized");
+    try {
+        void* cptr = memory_cptr(ptr);
+        MemoryTypes::iterator it = memory_types.find(cptr);
+        if (it != memory_types.end())
+            rb_raise(rb_eArgError, "memory zone already initialized");
 
-    // For deinitialization later, get or register the type's layout
-    Type const& t(rb2cxx::object<Type>(type));
-    TypeLayouts::iterator layout_it = memory_layouts.find(&t);
-    if (layout_it == memory_layouts.end())
-    {
-        cxx2rb::RbRegistry& registry = rb2cxx::object<cxx2rb::RbRegistry>(type_get_registry(type));
-        layout_it = memory_layouts.insert(
-            make_pair( &t, RbMemoryLayout(layout_of(t, true), registry.registry) )
-            ).first;
+        // For deinitialization later, get or register the type's layout
+        Type const& t(rb2cxx::object<Type>(type));
+        TypeLayouts::iterator layout_it = memory_layouts.find(&t);
+        if (layout_it == memory_layouts.end())
+        {
+            cxx2rb::RbRegistry& registry = rb2cxx::object<cxx2rb::RbRegistry>(type_get_registry(type));
+            layout_it = memory_layouts.insert(
+                make_pair( &t, RbMemoryLayout(layout_of(t, true), registry.registry) )
+                ).first;
+        }
+        RbMemoryLayout& layout = layout_it->second;
+        ++layout.refcount;
+
+        memory_types.insert( make_pair(cptr, &t) );
+        Typelib::ValueOps::init(static_cast<uint8_t*>(cptr), layout.layout.begin(), layout.layout.end());
+    } catch(std::runtime_error const& e) {
+        rb_raise(rb_eArgError, "internal error: %s", e.what());
     }
-    RbMemoryLayout& layout = layout_it->second;
-    ++layout.refcount;
-
-    memory_types.insert( make_pair(cptr, &t) );
-    Typelib::ValueOps::init(static_cast<uint8_t*>(cptr), layout.layout.begin(), layout.layout.end());
 }
 
 VALUE
