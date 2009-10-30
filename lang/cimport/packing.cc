@@ -51,50 +51,44 @@ namespace
         size_t packing;
     };
 
-    /** Try to determine some structure size rounding rules */
-    struct CompoundSizeInfo
-    {
-        size_t base_size;
-        size_t rounded_size;
-    };
-    template<int i> struct StructSizeDiscovery;
-    template<> struct StructSizeDiscovery<0> { };
-    template<> struct StructSizeDiscovery<1> { int8_t a; };
-    template<> struct StructSizeDiscovery<2> { short a; };
-    template<> struct StructSizeDiscovery<3> { short a; int8_t b; };
-    template<> struct StructSizeDiscovery<4> { int32_t a; };
-    template<> struct StructSizeDiscovery<5> { int32_t a; int8_t b; };
-    template<> struct StructSizeDiscovery<6> { int32_t a; int16_t b; };
-    template<> struct StructSizeDiscovery<7> { int32_t a; int16_t b; int8_t c; };
-    template<> struct StructSizeDiscovery<8> { int32_t a; int32_t d; };
-    template<> struct StructSizeDiscovery<9> { int64_t x; int8_t a; };
-    template<> struct StructSizeDiscovery<10> { int64_t x; short a; };
-    template<> struct StructSizeDiscovery<11> { int64_t x; short a; int8_t b; };
-    template<> struct StructSizeDiscovery<12> { int64_t x; int32_t a; };
-    template<> struct StructSizeDiscovery<13> { int64_t x; int32_t a; int8_t b; };
-    template<> struct StructSizeDiscovery<14> { int64_t x; int32_t a; int16_t b; };
-    template<> struct StructSizeDiscovery<15> { int64_t x; int32_t a; int16_t b; int8_t c; };
-    static const size_t STRUCT_SIZE_DISCOVERY_LAST = 15;
-
-    /** These two following structures are to check the rounding after 16 (i.e.
-     * how 17 is packed determines how the whole thing will work from now on)
+    /** It seems that the following rule apply with struct size rounding: the
+     * size is rounded so that the next element of the same type in an array
+     * will be aligned properly.
+     *
+     * Meaning that, below
+     *   sizeof(StructSizeDiscovery1) should be 24 (starts with an int64_t)
+     *   sizeof(StructSizeDiscovery2) should be 20 (starts with an int32_t)
+     *   sizeof(StructSizeDiscovery3) should be 18 (starts with an int16_t)
+     *   sizeof(StructSizeDiscovery4) should be 17 (starts with an int8_t)
      */
-    template<> struct StructSizeDiscovery<17> { int64_t x; int64_t b; int8_t c; };
-    static const size_t STRUCT_SIZE_BASE_SIZE = sizeof(StructSizeDiscovery<17>) - 16;
 
-    CompoundSizeInfo compound_size_info[STRUCT_SIZE_DISCOVERY_LAST + 1];
-    template <int i>
-    struct doStructSizeDiscovery : doStructSizeDiscovery<i - 1>
-    {
-        doStructSizeDiscovery()
-        {
-            compound_size_info[i].base_size = i;
-            compound_size_info[i].rounded_size = sizeof(StructSizeDiscovery<i>);
-        }
-    };
-    template<> struct doStructSizeDiscovery<-1> { };
+    // To get the size of an empty struct
+    struct EmptyStruct { };
+    // Rounded size is 24
+    struct StructSizeDiscovery1 { int64_t a; int64_t z; int8_t end; };
+    struct StructSizeDiscovery2 { int32_t a; int32_t b; int64_t z; int8_t end; };
+    // Rounded size is 20
+    struct StructSizeDiscovery3 { int32_t a; int32_t b; int32_t c; int32_t d; int8_t end; };
+    struct StructSizeDiscovery4 { int32_t a[4]; int8_t end; };
+    struct StructSizeDiscovery5 { int16_t a[2]; int32_t b[3]; int8_t end; };
+    // Rounded size is 18
+    struct StructSizeDiscovery6 { int16_t a[2]; int16_t b[6]; int8_t end; };
+    struct StructSizeDiscovery7 { int8_t a[4]; int16_t b[6]; int8_t end; };
+    // Rounded size is 17
+    struct StructSizeDiscovery8 { int8_t a[4]; int8_t b[12]; int8_t end; };
 
-    doStructSizeDiscovery<STRUCT_SIZE_DISCOVERY_LAST> do_it_now;
+    BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery1) == 24);
+    BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery2) == 24);
+
+    BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery3) == 20);
+    BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery4) == 20);
+    BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery5) == 20);
+
+    BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery6) == 18);
+    BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery7) == 18);
+
+    BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery8) == 17);
+
 }
 #include "packing/build_packing_info.tcc"
 
@@ -219,9 +213,18 @@ int Typelib::Packing::getOffsetOf(const Compound& current, const Type& append_fi
 
 int Typelib::Packing::getSizeOfCompound(Compound const& compound)
 {
-    if (compound.getSize() <= STRUCT_SIZE_DISCOVERY_LAST)
-        return compound_size_info[compound.getSize()].rounded_size;
+    // Find the biggest type in the compound
+    Compound::FieldList const& fields(compound.getFields());
+    if (fields.empty())
+        return sizeof(EmptyStruct);
 
-    return (compound.getSize() + STRUCT_SIZE_BASE_SIZE - 1) / STRUCT_SIZE_BASE_SIZE * STRUCT_SIZE_BASE_SIZE;
+    Type const* biggest_type = NULL;
+    for (Compound::FieldList::const_iterator it = fields.begin(); it != fields.end(); ++it)
+    {
+        if (!biggest_type || biggest_type->getSize() < it->getType().getSize())
+            biggest_type = &it->getType();
+    }
+
+    return getOffsetOf(compound, *biggest_type);
 }
 
