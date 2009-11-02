@@ -240,7 +240,6 @@ struct AlignmentBaseTypeVisitor : public TypeVisitor
     }
 };
 
-#include <iostream>
 int Typelib::Packing::getSizeOfCompound(Compound const& compound)
 {
     // Find the biggest type in the compound
@@ -250,7 +249,6 @@ int Typelib::Packing::getSizeOfCompound(Compound const& compound)
 
     Type const* biggest_type = AlignmentBaseTypeVisitor::find(compound);
 
-    std::cerr << "biggest type in " << compound.getName() << " is " << biggest_type->getName() << std::endl;
     return getOffsetOf(compound, *biggest_type);
 }
 
