@@ -116,18 +116,14 @@ namespace {
         { apply(base_type); }
 
         bool visit_(Numeric const& value) 
-        { return false; }
+        { size = value.getSize();
+            return false; }
         bool visit_(Enum const& value)
-        { return false; }
+        { size = value.getSize();
+            return false; }
         bool visit_(Pointer const& value)
-        { return false; }
-        bool visit_(OpaqueType const& value)
-        { return false; }
-        bool visit_(Array const& value)
-        { 
-            size = value.getIndirection().getSize();
-            return TypeVisitor::visit_(value);
-        }
+        { size = value.getSize();
+            return false; }
         bool visit_(Compound const& value)
         { 
             typedef Compound::FieldList Fields;
@@ -144,7 +140,6 @@ namespace {
                 if (it->getOffset() != 0)
                     continue;
 
-                size = it->getType().getSize();
                 TypeVisitor::visit_(value);
                 max_size = std::max(max_size, size);
             }

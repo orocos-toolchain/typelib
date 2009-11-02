@@ -4,6 +4,7 @@
 #include <typelib/registry.hh>
 #include <utilmm/stringtools.hh>
 #include "packing.hh"
+#include <typelib/typevisitor.hh>
 
 #include <iostream>
 #include <numeric>
@@ -356,11 +357,22 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
                 }
 
                 compound.addField( name, field_type, offset );
+
+                size_t size = 0;
+                try {
+                    size = Packing::getSizeOfCompound(compound);
+                    compound.setSize(size);
+                }
+                catch(Typelib::UnsupportedType)
+                {
+                    // If opaques_ignore is set, just simply let it be.
+                    if (!m_opaques_ignore)
+                        throw;
+                }
             }
             else 
                 throw UnsupportedClassType(m_class_type);
 
-            compound.setSize( Packing::getSizeOfCompound(compound) );
             def.pointer_level = 0;
             def.array.clear();
             m_current.push_front(def);
