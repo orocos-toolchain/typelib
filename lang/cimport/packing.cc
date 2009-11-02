@@ -211,6 +211,36 @@ int Typelib::Packing::getOffsetOf(const Compound& current, const Type& append_fi
     return getOffsetOf(fields.back(), append_field);
 }
 
+struct AlignmentBaseTypeVisitor : public TypeVisitor
+{
+    Type const* result;
+
+    bool handleType(Type const& type)
+    {
+        if (!result || result->getSize() < type.getSize())
+            result = &type;
+        return true;
+    }
+
+    virtual bool visit_ (NullType const& type) { throw UnsupportedType(type, "cannot represent alignment of null types"); }
+    virtual bool visit_ (OpaqueType const& type) { throw UnsupportedType(type, "cannot represent alignment of opaque types"); };
+    virtual bool visit_ (Numeric const& type) { handleType(type); }
+    virtual bool visit_ (Enum const& type) { handleType(type); }
+
+    virtual bool visit_ (Pointer const& type) { handleType(type); }
+    virtual bool visit_ (Container const& type) { handleType(type); }
+    // arrays and compound are handled recursively
+
+    static Type const* find(Type const& type)
+    {
+        AlignmentBaseTypeVisitor visitor;
+        visitor.result = NULL;
+        visitor.apply(type);
+        return visitor.result;
+    }
+};
+
+#include <iostream>
 int Typelib::Packing::getSizeOfCompound(Compound const& compound)
 {
     // Find the biggest type in the compound
@@ -218,13 +248,9 @@ int Typelib::Packing::getSizeOfCompound(Compound const& compound)
     if (fields.empty())
         return sizeof(EmptyStruct);
 
-    Type const* biggest_type = NULL;
-    for (Compound::FieldList::const_iterator it = fields.begin(); it != fields.end(); ++it)
-    {
-        if (!biggest_type || biggest_type->getSize() < it->getType().getSize())
-            biggest_type = &it->getType();
-    }
+    Type const* biggest_type = AlignmentBaseTypeVisitor::find(compound);
 
+    std::cerr << "biggest type in " << compound.getName() << " is " << biggest_type->getName() << std::endl;
     return getOffsetOf(compound, *biggest_type);
 }
 
