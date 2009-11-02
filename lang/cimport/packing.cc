@@ -109,10 +109,10 @@ namespace {
 
     struct GetPackingSize : public TypeVisitor
     {
-        size_t size;
+        int size;
 
         GetPackingSize(Type const& base_type)
-            : size(base_type.getSize())
+            : size(-1)
         { apply(base_type); }
 
         bool visit_(Numeric const& value) 
@@ -138,7 +138,7 @@ namespace {
             // TODO: add a static check for this
             // we assume that unions are packed as their biggest field
             
-            size_t max_size = 0;
+            int max_size = 0;
             for (Fields::const_iterator it = fields.begin(); it != fields.end(); ++it)
             {
                 if (it->getOffset() != 0)
@@ -175,32 +175,38 @@ int Typelib::Packing::getOffsetOf(Compound const& compound, const Type& append_f
 int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_field)
 {
 
-    GetPackingSize visitor(append_field);
-    size_t const size(visitor.size);
-
-    for (int i = 0; i < packing_info_size; ++i)
-    {
-        if (packing_info[i].size == size)
-            return getOffsetOf(last_field, append_field, packing_info[i].packing);
-    }
-
-    CollectionPackingInfo collection_packing_info[] = {
-        { "/std/vector", DiscoverCollectionPacking< std::vector<uint8_t> >::get() },
-        { "/std/set",    DiscoverCollectionPacking< std::set<uint8_t> >::get() },
-        { "/std/map",    DiscoverCollectionPacking< std::map<uint8_t, uint8_t> >::get() },
-        { 0, 0 }
-    };
-
     if (append_field.getCategory() == Type::Container)
     {
+        CollectionPackingInfo collection_packing_info[] = {
+            { "/std/vector", DiscoverCollectionPacking< std::vector<uint16_t> >::get() },
+            { "/std/set",    DiscoverCollectionPacking< std::set<uint8_t> >::get() },
+            { "/std/map",    DiscoverCollectionPacking< std::map<uint8_t, uint8_t> >::get() },
+            { 0, 0 }
+        };
+
         for (CollectionPackingInfo* info = collection_packing_info; info->name; ++info)
         {
             if (info->name == std::string(append_field.getName(), 0, std::string(info->name).size()))
                 return getOffsetOf(last_field, append_field, info->packing);
         }
-    }
 
-    throw PackingUnknown("cannot compute the packing of " + boost::lexical_cast<std::string>(append_field));
+        throw PackingUnknown("cannot compute the packing of " + boost::lexical_cast<std::string>(append_field));
+    }
+    else
+    {
+        GetPackingSize visitor(append_field);
+        if (visitor.size == -1)
+            throw PackingUnknown("cannot compute the packing of " + boost::lexical_cast<std::string>(append_field));
+            
+        size_t const size(visitor.size);
+
+        for (int i = 0; i < packing_info_size; ++i)
+        {
+            if (packing_info[i].size == size)
+                return getOffsetOf(last_field, append_field, packing_info[i].packing);
+        }
+        throw PackingUnknown("cannot compute the packing of " + boost::lexical_cast<std::string>(append_field));
+    }
 }
 int Typelib::Packing::getOffsetOf(const Compound& current, const Type& append_field)
 {
