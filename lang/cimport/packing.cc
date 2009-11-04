@@ -77,8 +77,12 @@ namespace
     // Rounded size is 17
     struct StructSizeDiscovery8 { int8_t a[4]; int8_t b[12]; int8_t end; };
 
-    BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery1) == 24);
-    BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery2) == 24);
+    BOOST_STATIC_ASSERT(
+			(sizeof(long) == 8 && sizeof(StructSizeDiscovery1) == 24) ||
+			(sizeof(long) == 4 && sizeof(StructSizeDiscovery1) == 20));
+    BOOST_STATIC_ASSERT(
+			(sizeof(long) == 8 && sizeof(StructSizeDiscovery2) == 24) ||
+			(sizeof(long) == 4 && sizeof(StructSizeDiscovery2) == 20));
 
     BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery3) == 20);
     BOOST_STATIC_ASSERT(sizeof(StructSizeDiscovery4) == 20);
