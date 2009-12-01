@@ -26,8 +26,17 @@ class IDLExport : public Typelib::Exporter
 
     std::set<std::string> m_selected_types;
 
+    struct TypedefSpec
+    {
+        std::string name_space;
+        std::string declaration;
+    };
+    typedef std::map<std::string, std::list<std::string> > TypedefMap;
+    TypedefMap m_typedefs;
+
     void closeNamespaces(std::ostream& stream, int levels);
     void adaptNamespace(std::ostream& stream, std::string const& ns);
+    void generateTypedefs(std::ostream& stream);
 
 protected:
     /** Called by save to add data after saving all registry types */
@@ -54,6 +63,11 @@ public:
      * the type basename is returned instead.
      */
     std::string getIDLAbsoluteTypename(Typelib::Type const& type) const;
+    /** Returns the absolute name (including the full namespace) to reference
+     * +type+ in the IDL file. If +type+ is in current_namespace, the type
+     * basename is returned instead.
+     */
+    std::string getIDLAbsoluteTypename(Typelib::Type const& type, std::string const& current_namespace) const;
 
     virtual void save
         ( std::ostream& stream

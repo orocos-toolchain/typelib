@@ -175,6 +175,8 @@ void IDLExport::end
     ( ostream& stream
     , Typelib::Registry const& /*registry*/ )
 {
+    generateTypedefs(stream);
+
     // Close the remaining namespaces
     utilmm::stringlist
 	ns_levels = utilmm::split(m_namespace, "/");
@@ -241,13 +243,18 @@ std::string IDLExport::getExportNamespace(std::string const& type_ns) const
 
 std::string IDLExport::getIDLAbsoluteTypename(Type const& type) const
 {
+    return getIDLAbsoluteTypename(type, m_namespace);
+}
+
+std::string IDLExport::getIDLAbsoluteTypename(Type const& type, std::string const& current_namespace) const
+{
     string result;
 
     if (type.getName() == "std::string")
         return "string";
 
     string type_ns = getExportNamespace(type.getNamespace());
-    if (type_ns != m_namespace && type.getCategory() != Type::Numeric)
+    if (type_ns != current_namespace && type.getCategory() != Type::Numeric)
     {
 	result = utilmm::join(utilmm::split(type_ns, "/"), "::");
 	if (!result.empty())
@@ -313,6 +320,18 @@ void IDLExport::save
     return Exporter::save(stream, config, type);
 }
 
+void IDLExport::generateTypedefs(ostream& stream)
+{
+    for (TypedefMap::const_iterator it = m_typedefs.begin();
+            it != m_typedefs.end(); ++it)
+    {
+        adaptNamespace(stream, it->first);
+
+        list<string> const& lines = it->second;
+        for (list<string>::const_iterator str_it = lines.begin(); str_it != lines.end(); ++str_it)
+            stream << m_indent << "typedef " << *str_it << std::endl;
+    }
+}
 
 void IDLExport::save
     ( ostream& stream
@@ -336,26 +355,29 @@ void IDLExport::save
 		    && type.getBasename() != "enum " + type->getBasename()))
 	{
 	    IDLExport::checkType(*type);
+            ostringstream stream;
 
-	    adaptNamespace(stream, getExportNamespace(type.getNamespace()));
+            std::string type_namespace = getExportNamespace(type.getNamespace());
+
 	    // Alias types using typedef, taking into account that the aliased type
 	    // may not be in the same module than the new alias.
-	    stream << m_indent << "typedef ";
 	    if (type->getCategory() == Type::Array)
 	    {
 		Array const& array_t = dynamic_cast<Array const&>(*type);
 		stream 
-		    << getIDLAbsoluteTypename(array_t.getIndirection()) 
-		    << " " << type.getBasename() << "[" << array_t.getDimension() << "];\n";
+		    << getIDLAbsoluteTypename(array_t.getIndirection(), type_namespace) 
+		    << " " << type.getBasename() << "[" << array_t.getDimension() << "];";
 	    }
             else if (type->getCategory() == Type::Container)
             {
                 // Generate a sequence, regardless of the actual container type
                 Container const& container_t = dynamic_cast<Container const&>(*type);
-                stream << "sequence<" << getIDLAbsoluteTypename(container_t.getIndirection()) << "> " << type.getBasename() << ";\n";
+                stream << "sequence<" << getIDLAbsoluteTypename(container_t.getIndirection(), type_namespace) << "> " << type.getBasename() << ";";
             }
 	    else
-		stream << getIDLAbsoluteTypename(*type) << " " << type.getBasename() << ";\n";
+		stream << getIDLAbsoluteTypename(*type, type_namespace) << " " << type.getBasename() << ";";
+
+            m_typedefs[type_namespace].push_back(stream.str());
 	}
     }
     else
