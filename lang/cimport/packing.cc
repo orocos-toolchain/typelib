@@ -52,14 +52,8 @@ namespace
     };
 
     /** It seems that the following rule apply with struct size rounding: the
-     * size is rounded so that the next element of the same type in an array
-     * will be aligned properly.
-     *
-     * Meaning that, below
-     *   sizeof(StructSizeDiscovery1) should be 24 (starts with an int64_t)
-     *   sizeof(StructSizeDiscovery2) should be 20 (starts with an int32_t)
-     *   sizeof(StructSizeDiscovery3) should be 18 (starts with an int16_t)
-     *   sizeof(StructSizeDiscovery4) should be 17 (starts with an int8_t)
+     * size is rounded so that the biggest element in the structure is properly
+     * aligned.
      */
 
     // To get the size of an empty struct
