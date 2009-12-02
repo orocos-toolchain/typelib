@@ -171,6 +171,22 @@ Type& TypeSolver::buildClassObject()
     CurrentTypeDefinition& def = pushNewType();
     def.name.push_back(m_class_object->getName());
 
+    if (m_class_type == tsSTRUCT)
+    {
+        size_t size = 0;
+        Compound& compound(dynamic_cast<Compound&>(*m_class_object));
+        try {
+            size = Packing::getSizeOfCompound(compound);
+            compound.setSize(size);
+        }
+        catch(Typelib::UnsupportedType)
+        {
+            // If opaques_ignore is set, just simply let it be.
+            if (!m_opaques_ignore)
+                throw;
+        }
+    }
+
     Type* object = m_class_object;
     m_class_object = 0;
     m_class_type = 0;
@@ -357,18 +373,6 @@ void TypeSolver::declaratorID(const std::string& name, QualifiedItem qi)
                 }
 
                 compound.addField( name, field_type, offset );
-
-                size_t size = 0;
-                try {
-                    size = Packing::getSizeOfCompound(compound);
-                    compound.setSize(size);
-                }
-                catch(Typelib::UnsupportedType)
-                {
-                    // If opaques_ignore is set, just simply let it be.
-                    if (!m_opaques_ignore)
-                        throw;
-                }
             }
             else 
                 throw UnsupportedClassType(m_class_type);
