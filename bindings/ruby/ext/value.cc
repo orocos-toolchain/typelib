@@ -186,6 +186,26 @@ static VALUE type_size(VALUE self)
 }
 
 /* call-seq:
+ *  type.dependencies => set_of_type
+ *
+ * Returns the set of Type subclasses that represent the types needed to build
+ * +type+.
+ */
+static VALUE type_dependencies(VALUE self)
+{
+    Type const& type(rb2cxx::object<Type>(self));
+
+    typedef std::set<Type const*> TypeSet;
+    TypeSet dependencies = type.dependsOn();
+    VALUE registry = type_get_registry(self);
+
+    VALUE result = rb_ary_new();
+    for (TypeSet::const_iterator it = dependencies.begin(); it != dependencies.end(); ++it)
+        rb_ary_push(result, cxx2rb::type_wrap(type, registry));
+    return result;
+}
+
+/* call-seq:
  *  type.memory_layout(VALUE with_pointers) => [operations]
  *
  * Returns a representation of the MemoryLayout for this type. If
@@ -493,6 +513,7 @@ void typelib_ruby::Typelib_init_values()
     rb_define_singleton_method(cType, "==",	       RUBY_METHOD_FUNC(type_equal_operator), 1);
     rb_define_singleton_method(cType, "size",          RUBY_METHOD_FUNC(&type_size), 0);
     rb_define_singleton_method(cType, "memory_layout", RUBY_METHOD_FUNC(&type_memory_layout), 0);
+    rb_define_singleton_method(cType, "dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
     rb_define_method(cType, "__initialize__",   RUBY_METHOD_FUNC(&value_initialize), 1);
     rb_define_method(cType, "to_ruby",      RUBY_METHOD_FUNC(&value_to_ruby), 0);
     rb_define_method(cType, "from_ruby", RUBY_METHOD_FUNC(&value_from_ruby), 1);
