@@ -205,5 +205,16 @@ class TC_Value < Test::Unit::TestCase
 	assert_raises(ArgumentError) { Typelib.memcpy(buffer, str, 8) }
     end
 
+    def test_nan_handling
+        registry = make_registry
+        lib = Library.open('libtest_ruby.so', registry)
+        wrapper = lib.find('generate_nand').
+            returns(nil).returns('double*')
+	assert_equal(1.0/0.0, wrapper.call);
+        wrapper = lib.find('generate_nanf').
+            returns(nil).returns('float*')
+	assert_equal(1.0/0.0, wrapper.call);
+    end
+
 end
 

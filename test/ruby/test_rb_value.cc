@@ -102,6 +102,10 @@ extern "C" {
 
     void test_simple_function_call() { }
 
+    void generate_nand(double* value)
+    { *value = 1.0/0.0; }
+    void generate_nanf(float* value)
+    { *value = 1.0f/0.0f; }
     void test_numeric_argument_passing(char a, short b, int c, long d, long long e, float f, double g)
     {
 	if (a != 1 || b != 2 || c != 3 || d != 4 || e != 5 || f != 6 || g != 7)
