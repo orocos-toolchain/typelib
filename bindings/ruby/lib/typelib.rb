@@ -69,6 +69,7 @@ module Typelib
 	    new = self.class.new
 	    Typelib.memcpy(new, self, self.class.size)
 	end
+        alias clone dup
 
         class << self
 	    # The type registry we belong to
