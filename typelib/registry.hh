@@ -212,6 +212,10 @@ namespace Typelib
         void resize(std::map<std::string, size_t> const& new_sizes);
 
         /** Returns a registry containing the minimal set of types needed to
+         * define \c name */
+        Registry* minimal(std::string const& name) const;
+
+        /** Returns a registry containing the minimal set of types needed to
          * define the types that are in \c this and not in \c auto_types */
         Registry* minimal(Registry const& auto_types) const;
 

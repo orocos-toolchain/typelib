@@ -225,6 +225,16 @@ namespace Typelib
 	}
     }
 
+    Registry* Registry::minimal(std::string const& name) const
+    {
+        auto_ptr<Registry> result(new Registry);
+        Type const* type = get(name);
+        if (!type)
+            throw std::runtime_error("there is not type '" + name + "' in this registry");
+
+        type->merge(*result);
+        return result.release();
+    }
 
     Registry* Registry::minimal(Registry const& auto_types) const
     {

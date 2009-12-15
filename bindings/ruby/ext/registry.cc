@@ -254,15 +254,27 @@ static
 VALUE registry_minimal(VALUE self, VALUE rb_auto)
 {
     std::string error_string;
-
     Registry& registry   = rb2cxx::object<Registry>(self);
-    Registry& auto_types = rb2cxx::object<Registry>(rb_auto);
-    try { 
-	Registry* result = registry.minimal(auto_types);
-        return registry_wrap(cRegistry, result);
+
+    if (rb_obj_is_kind_of(rb_auto, rb_cString))
+    {
+        try { 
+            Registry* result = registry.minimal(StringValuePtr(rb_auto));
+            return registry_wrap(cRegistry, result);
+        }
+        catch(std::runtime_error e)
+        { rb_raise(rb_eRuntimeError, "%s", e.what()); }
     }
-    catch(std::runtime_error e) { error_string = e.what(); }
-    rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
+    else
+    {
+        Registry& auto_types = rb2cxx::object<Registry>(rb_auto);
+        try { 
+            Registry* result = registry.minimal(auto_types);
+            return registry_wrap(cRegistry, result);
+        }
+        catch(std::runtime_error e)
+        { rb_raise(rb_eRuntimeError, "%s", e.what()); }
+    }
 }
 
 
