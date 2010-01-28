@@ -852,7 +852,7 @@ module Typelib
 	if !(expected_type < IndirectType) && !(Kernel.immediate?(arg) || Kernel.numeric?(arg))
 	    raise TypeError, "#{arg.inspect} cannot be used for #{expected_type.name} arguments"
 	end
-
+   
 	filtered =  if expected_type < IndirectType
 			if MemoryZone === arg
 			    arg
@@ -873,15 +873,16 @@ module Typelib
 	end
 
 	if !filtered
-	    raise TypeError, "cannot use #{arg.inspect} for a #{expected_type.name} argument"
+          raise TypeError, "cannot use #{arg.inspect} for a #{expected_type.inspect} argument. Object ID for argument #{arg.class.object_id}, object ID for expected type #{expected_type.object_id}"
 	end
 	filtered
     end
 
-    def self.from_ruby(arg, expected_type)
-        if expected_type < CompoundType
-            if arg.kind_of?(expected_type) then arg
-            elsif arg.kind_of?(Hash) then expected_type.new(arg)
+    def self.from_ruby(arg, expected_type)      
+        if arg.kind_of?(expected_type) 
+            return arg
+        elsif expected_type < CompoundType
+            if arg.kind_of?(Hash) then expected_type.new(arg)
             else
                 raise ArgumentError, "cannot initialize a value of type #{expected_type} from #{arg}"
             end
