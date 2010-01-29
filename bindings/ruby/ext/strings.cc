@@ -61,7 +61,7 @@ static VALUE value_from_string(VALUE mod, VALUE self, VALUE from)
 
     string::size_type from_length = RSTRING(StringValue(from))->len;
     if ((buffer_size - 1) < from_length)
-        rb_raise(rb_eArgError, "array to small: %i, while %i was needed", buffer_size, from_length + 1);
+        rb_raise(rb_eArgError, "array to small: %lu, while %lu was needed", buffer_size, from_length + 1);
 
     strncpy(buffer, StringValueCStr(from), buffer_size);
     buffer[buffer_size - 1] = 0;

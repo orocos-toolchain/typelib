@@ -206,7 +206,7 @@ static Value array_element(VALUE rbarray, VALUE rbindex)
     
     if (index >= array.getDimension())
     {
-        rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index, array.getDimension());
+        rb_raise(rb_eIndexError, "Out of bounds: %lu > %lu", index, array.getDimension());
         return Value();
     }
 
@@ -237,7 +237,7 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
     int8_t* data = reinterpret_cast<int8_t*>(value.getData());
     size_t index = NUM2INT(argv[0]);
     if (index >= array.getDimension())
-	rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index, array.getDimension());
+	rb_raise(rb_eIndexError, "Out of bounds: %li > %li", index, array.getDimension());
 
     if (argc == 1)
     {
@@ -249,7 +249,7 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
 	VALUE ret = rb_ary_new();
 	size_t size = NUM2INT(argv[1]);
 	if (index + size > array.getDimension())
-	    rb_raise(rb_eIndexError, "Out of bounds: %i > %i", index + size - 1, array.getDimension());
+	    rb_raise(rb_eIndexError, "Out of bounds: %li > %li", index + size - 1, array.getDimension());
 
 	for (size_t i = index; i < index + size; ++i)
 	{

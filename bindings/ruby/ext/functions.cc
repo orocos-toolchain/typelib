@@ -15,7 +15,7 @@ library_wrap(VALUE self, VALUE name, VALUE auto_unload)
 {
     void* libhandle = dlLoadLibrary(StringValuePtr(name));
     if (!libhandle)
-	rb_raise(rb_eArgError, "cannot load library %s", StringValue(name));
+	rb_raise(rb_eArgError, "cannot load library %s", StringValuePtr(name));
 
     if (RTEST(auto_unload))
         return Data_Wrap_Struct(cLibrary, 0, dlFreeLibrary, libhandle);

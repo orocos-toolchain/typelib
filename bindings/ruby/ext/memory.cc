@@ -106,7 +106,7 @@ static void
 memory_aset(void *ptr, VALUE obj)
 {
     if (! NIL_P(memory_aref(ptr)))
-	rb_raise(rb_eArgError, "there is already a wrapper for %x", ptr);
+	rb_raise(rb_eArgError, "there is already a wrapper for %p", ptr);
 
     st_insert(MemoryTable, (st_data_t)ptr, obj);
 }
