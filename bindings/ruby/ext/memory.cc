@@ -1,9 +1,11 @@
 #include "typelib.hh"
 #include <typelib/value_ops.hh>
 #include <ruby.h>
+#ifndef RUBY_19
 extern "C" {
 #include <st.h>
 }
+#endif
 
 using namespace Typelib;
 using namespace std;
@@ -27,10 +29,17 @@ static int memory_table_hash(void* a)
     return (long)a;
 }
 
+#ifdef RUBY_19
+static struct st_hash_type memory_table_type = {
+    (int (*)(...))memory_table_compare,
+    (int (*)(...))memory_table_hash
+};
+#else
 static struct st_hash_type memory_table_type = {
     (int (*)())memory_table_compare,
     (int (*)())memory_table_hash
 };
+#endif
 
 struct RbMemoryLayout
 {

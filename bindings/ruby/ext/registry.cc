@@ -104,11 +104,12 @@ VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
 static
 void setup_configset_from_option_array(config_set& config, VALUE options)
 {
-    for (int i = 0; i < RARRAY(options)->len; ++i)
+    int options_length = RARRAY_LEN(options);
+    for (int i = 0; i < options_length; ++i)
     {
-	VALUE entry = RARRAY(options)->ptr[i];
-	VALUE k = RARRAY(entry)->ptr[0];
-	VALUE v = RARRAY(entry)->ptr[1];
+	VALUE entry = RARRAY_PTR(options)[i];
+	VALUE k = RARRAY_PTR(entry)[0];
+	VALUE v = RARRAY_PTR(entry)[1];
 
 	if ( rb_obj_is_kind_of(v, rb_cArray) )
 	{

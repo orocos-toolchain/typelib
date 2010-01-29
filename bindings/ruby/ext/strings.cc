@@ -59,7 +59,7 @@ static VALUE value_from_string(VALUE mod, VALUE self, VALUE from)
     string::size_type buffer_size;
     string_buffer_get(value, buffer, buffer_size);
 
-    string::size_type from_length = RSTRING(StringValue(from))->len;
+    string::size_type from_length = RSTRING_LEN(StringValue(from));
     if ((buffer_size - 1) < from_length)
         rb_raise(rb_eArgError, "array to small: %lu, while %lu was needed", buffer_size, from_length + 1);
 
