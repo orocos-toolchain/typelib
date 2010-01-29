@@ -458,8 +458,8 @@ void Typelib::load(uint8_t* v, std::vector<uint8_t> const& buffer, MemoryLayout 
     if (it != ops.end())
         throw std::runtime_error("internal error in the memory layout");
     if (in_offset != buffer.size())
-        throw std::runtime_error("parts of the provided buffer has not been used (" + 
-                lexical_cast<string>(in_offset) + " != " + lexical_cast<string>(buffer.size()) + ")");
+        throw std::runtime_error("parts of the provided buffer has not been used (used " + 
+                lexical_cast<string>(in_offset) + " bytes, got " + lexical_cast<string>(buffer.size()) + "as input)");
 }
 
 
