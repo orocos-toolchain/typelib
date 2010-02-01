@@ -220,9 +220,6 @@ public:
         size_t      element_size = element_t.getSize();
         vector_ptr->resize(element_count * element_size);
 
-        for (size_t i = 0; i < element_count; ++i)
-            Typelib::init(Value(&(*vector_ptr)[i * element_size], element_t));
-
         MarshalOps::const_iterator it = begin;
         if (isElementMemcpy(begin, end))
         {
@@ -232,6 +229,9 @@ public:
         }
         else
         {
+            for (size_t i = 0; i < element_count; ++i)
+                Typelib::init(Value(&(*vector_ptr)[i * element_size], element_t));
+
             MarshalOps::const_iterator it_end;
             size_t out_offset = 0;
             for (size_t i = 0; i < element_count; ++i)
