@@ -441,7 +441,7 @@ namespace Typelib
          * the container are dumped into the provided buffer.
          *
          * In the marshalled stream, all containers are dumped as
-         *   <element-count [65 bits]> <elements>
+         *   <element-count [64 bits]> <elements>
          *
          * @arg container_ptr the pointer to the container data
          * @arg element_count the count of elements in the container. This is
@@ -463,7 +463,7 @@ namespace Typelib
          * the container are loaded from the provided buffer.
          *
          * In the marshalled stream, all containers are dumped as
-         *   <element-count [65 bits]> <elements>
+         *   <element-count [64 bits]> <elements>
          *
          * @arg container_ptr the pointer to the container data
          * @arg element_count the count of elements in the container, loaded from the stream.
