@@ -306,6 +306,7 @@ VALUE value_initialize(VALUE self, VALUE ptr)
     if (NIL_P(ptr) || rb_obj_is_kind_of(ptr, rb_cString))
     {
         VALUE buffer = memory_allocate(t.getSize());
+        memory_init(buffer, rb_class_of(self));
 	if (! NIL_P(ptr))
 	{
             char* ruby_buffer = StringValuePtr(ptr);
@@ -314,8 +315,6 @@ VALUE value_initialize(VALUE self, VALUE ptr)
             catch(std::runtime_error e)
             { rb_raise(rb_eArgError, e.what()); }
 	}
-        else
-            memory_init(buffer, rb_class_of(self));
 
 	ptr = buffer;
     }
