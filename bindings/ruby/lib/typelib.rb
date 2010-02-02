@@ -580,7 +580,12 @@ module Typelib
         def import(file, kind = 'auto', options = {})
 	    file = File.expand_path(file)
             kind    = Registry.guess_type(file) if !kind || kind == 'auto'
-	    do_merge = options.delete(:merge) || options.delete('merge')
+            do_merge = 
+                if options.has_key?('merge') then options.delete('merge')
+                elsif options.has_key?(:merge) then options.delete(:merge)
+                else true
+                end
+
             options = Registry.format_options(options)
 
             do_import(file, kind, do_merge, options)
