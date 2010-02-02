@@ -406,7 +406,9 @@ namespace Typelib
         Type const& indirect_type = getIndirection().merge(registry, stack);
         std::list<Type const*> on;
         on.push_back(&indirect_type);
-        return const_cast<Container*>(&(*getFactory())(registry, on));
+        Container* result = const_cast<Container*>(&(*getFactory())(registry, on));
+        result->setSize(getSize());
+        return result;
     }
 
 
