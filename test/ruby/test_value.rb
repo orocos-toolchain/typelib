@@ -39,6 +39,14 @@ class TC_Value < Test::Unit::TestCase
 	assert_equal(value.zone_address, ptr.zone_address)
     end
 
+    def test_wrap_argument_check
+        registry = make_registry
+        type = Registry.new.build("/int")
+
+        assert_raises(ArgumentError) { type.wrap(nil) }
+        assert_raises(ArgumentError) { type.wrap(10) }
+    end
+
     def test_value_equality
         type = Registry.new.build("/int")
 	v1 = type.new.zero!

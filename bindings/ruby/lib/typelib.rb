@@ -141,6 +141,8 @@ module Typelib
             def wrap(ptr)
 		if null?
 		    raise TypeError, "this is a null type"
+                elsif !(ptr.kind_of?(String) || ptr.kind_of?(MemoryZone))
+                    raise ArgumentError, "can only wrap strings and memory zones"
 		end
 	       	__real_new__(ptr) 
 	    end
@@ -265,7 +267,13 @@ module Typelib
 
         class << self
             def new(*init);         __real_new__(nil, *init) end
-            def wrap(ptr, *init);   __real_new__(ptr, *init) end
+            def wrap(ptr, *init)
+                if !(ptr.kind_of?(String) || ptr.kind_of?(MemoryZone))
+                    raise ArgumentError, "can only wrap strings and memory zones"
+                end
+
+                __real_new__(ptr, *init)
+            end
 
 	    # Check if this type can be used in place of +typename+
 	    # In case of compound types, we check that either self, or

@@ -297,10 +297,10 @@ BOOST_AUTO_TEST_CASE( test_import_problematic_headers )
         delete manager->load("c", test_file, config);
     }
 
-    {
-        static const char* test_file = TEST_DATA_PATH("data/stdheaders.h");
-        delete manager->load("c", test_file, config);
-    }
+    // {
+    //     static const char* test_file = TEST_DATA_PATH("data/stdheaders.h");
+    //     delete manager->load("c", test_file, config);
+    // }
 }
 
 BOOST_AUTO_TEST_CASE( test_import_and_merge )
