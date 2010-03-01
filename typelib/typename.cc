@@ -53,17 +53,19 @@ namespace Typelib
         if (name.empty())
             return false;
 
-        stringlist with_templates = utilmm::split(name, "<");
-        if (with_templates.size() > 1)
+        typedef string::size_type size_t;
+        size_t template_start = name.find("<");
+        if (template_start != string::npos)
         {
-            if (*with_templates.back().rbegin() != '>')
+            size_t template_end = name.rfind(">");
+            if (template_end == string::npos)
                 return false;
 
-            if (!isValidTypename(with_templates.front(), absolute))
+            if (!isValidTypename(string(name, 0, template_start), absolute))
                 return false;
 
-            string template_args = with_templates.back();
-            stringlist args = split(string(template_args, 0, template_args.size() - 1), ",");
+            string template_args = string(name, template_start + 1, template_end - template_start - 1);
+            stringlist args = split(string(template_args, 0, template_args.size()), ",");
             for (stringlist::const_iterator it = args.begin(); it != args.end(); ++it)
             {
                 if (!isValidTypename(*it, absolute))
@@ -73,9 +75,8 @@ namespace Typelib
             return true;
         }
 
-        size_t const npos = string::npos;
         size_t last_mark = name.rfind(NamespaceMark);
-        if (last_mark == npos)
+        if (last_mark == string::npos)
 	{
 	    if (absolute)
 		return false;
@@ -88,7 +89,7 @@ namespace Typelib
         std::string type_part = string(name, last_mark + 1);
         // a valid type is a valid identifier followed by modifiers
         size_t modifiers = type_part.find_first_of("*[");
-        if (modifiers != npos)
+        if (modifiers != string::npos)
             type_part = string(type_part, 0, modifiers);
         return isValidIdentifier(type_part);
     }

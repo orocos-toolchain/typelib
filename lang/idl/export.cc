@@ -10,10 +10,76 @@ namespace
 {
     using namespace std;
     using namespace Typelib;
+
+    class IDLTypeIdentifierVisitor : public TypeVisitor
+    {
+    public:
+	IDLExport const& m_exporter;
+        string    m_front, m_back;
+        bool      m_opaque_as_any;
+
+        bool visit_(OpaqueType const& type);
+        bool visit_(NullType const& type);
+        bool visit_(Container const& type);
+        bool visit_(Compound const& type);
+
+        bool visit_(Numeric const& type);
+
+        bool visit_(Pointer const& type);
+        bool visit_(Array const& type);
+
+        bool visit_(Enum const& type);
+
+        IDLTypeIdentifierVisitor(IDLExport const& exporter, bool opaque_as_any)
+            : m_exporter(exporter), m_opaque_as_any(opaque_as_any) {}
+    };
+    static string idl_type_identifier(Type const& type, IDLExport const& exporter, bool opaque_as_any, std::string const& field_name = std::string())
+    {
+        IDLTypeIdentifierVisitor visitor(exporter, opaque_as_any);
+        visitor.apply(type);
+        if (field_name.empty())
+            return visitor.m_front + visitor.m_back;
+        else
+            return visitor.m_front + " " + field_name + visitor.m_back;
+    }
+
+    bool IDLTypeIdentifierVisitor::visit_(OpaqueType const& type)
+    {
+        if (type.getName() == "/std/string")
+            m_front = "string";
+        else if (m_opaque_as_any)
+            m_front = "any";
+        else
+            throw UnsupportedType(type, "opaque types are not allowed in IDL");
+
+        return true;
+    }
+    bool IDLTypeIdentifierVisitor::visit_(NullType const& type)
+    { throw UnsupportedType(type, "null types are not supported for export in IDL"); }
+    bool IDLTypeIdentifierVisitor::visit_(Container const& type)
+    { m_front = "sequence<" + idl_type_identifier(type.getIndirection(), m_exporter, m_opaque_as_any) + ">";
+        return true; }
+    bool IDLTypeIdentifierVisitor::visit_(Compound const& type)
+    { m_front = m_exporter.getIDLAbsoluteTypename(type);
+        return true; }
+    bool IDLTypeIdentifierVisitor::visit_(Numeric const& type)
+    { m_front = m_exporter.getIDLAbsoluteTypename(type);
+        return true; }
+    bool IDLTypeIdentifierVisitor::visit_(Pointer const& type)
+    { throw UnsupportedType(type, "pointer types are not supported for export in IDL"); }
+    bool IDLTypeIdentifierVisitor::visit_(Array const& type)
+    {
+        m_front = idl_type_identifier(type.getIndirection(), m_exporter, m_opaque_as_any);
+        m_back = "[" + boost::lexical_cast<string>(type.getDimension()) + "]";
+        return true;
+    }
+    bool IDLTypeIdentifierVisitor::visit_(Enum const& type)
+    { m_front = m_exporter.getIDLAbsoluteTypename(type);
+        return true; }
+
     class IDLExportVisitor : public TypeVisitor
     {
     public:
-	Registry const& m_registry;
 	IDLExport const& m_exporter;
         ostream&  m_stream;
         string    m_indent;
@@ -47,7 +113,7 @@ namespace
 
     IDLExportVisitor::IDLExportVisitor(Registry const& registry, IDLExport const& exporter,
 	    ostream& stream, string const& base_indent, bool opaque_as_any)
-        : m_registry(registry), m_exporter(exporter), m_stream(stream), m_indent(base_indent)
+        : m_exporter(exporter), m_stream(stream), m_indent(base_indent)
         , m_opaque_as_any(opaque_as_any) {}
 
     bool IDLExportVisitor::visit_(Compound const& type)
@@ -65,51 +131,11 @@ namespace
     }
     bool IDLExportVisitor::visit_(Compound const& type, Field const& field)
     { 
-	IDLExport::checkType(field.getType());
-
         Type const& field_type(field.getType());
-
-	if (field_type.getCategory() == Type::Array)
-	{
-	    Array const& array_type = static_cast<Array const&>(field.getType());
-	    IDLExport::checkType(array_type);
-	    m_stream
-		<< m_indent
-		<< m_exporter.getIDLAbsoluteTypename(array_type.getIndirection())
-		<< " "
-		<< field.getName()
-		<< "[" << array_type.getDimension() << "];\n";
-	}
-        else if (field_type.getCategory() == Type::Container)
-	{
-            Type const& element_type = static_cast<Indirect const&>(field_type).getIndirection();
-            IDLExport::checkType(element_type);
-
-            m_stream
-                << m_indent
-                << "sequence<" + m_exporter.getIDLAbsoluteTypename(element_type) + ">"
-                << " "
-                << field.getName() << ";\n";
-        }
-	else
-	{
-            if (field_type.getName() == "/std/string")
-                m_stream << m_indent << "string " << field.getName() << ";\n";
-            else if (field_type.getCategory() == Type::Opaque)
-            {
-                if (m_opaque_as_any)
-                    m_stream << m_indent << "any " << field.getName() << ";\n";
-                else
-                    throw UnsupportedType(type, "opaque types are not allowed in IDL");
-            }
-            else
-            {
-                m_stream 
-                    << m_indent
-                    << m_exporter.getIDLAbsoluteTypename(field.getType()) << " "
-                    << field.getName() << ";\n";
-            }
-	}
+        m_stream
+            << m_indent
+            << idl_type_identifier(field.getType(), m_exporter, m_opaque_as_any, field.getName())
+            << ";\n";
 
         return true;
     }
