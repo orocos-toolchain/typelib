@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( test_vector_assumptions )
         for (int i = 0; i < 10; ++i)
             values[i].resize(i + 1);
 
-        memcpy(&values[5], &values[6], sizeof(vector<int32_t>) * 4);
+        memmove(&values[5], &values[6], sizeof(vector<int32_t>) * 4);
 
         {
             vector<uint8_t>* raw_values = reinterpret_cast< vector<uint8_t>* >(&values);

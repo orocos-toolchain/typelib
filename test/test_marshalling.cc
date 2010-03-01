@@ -99,6 +99,9 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
     // And now check the array semantics
     {
         B b;
+        for (int i = 0; i < sizeof(b); ++i)
+            reinterpret_cast<uint8_t*>(&b)[i] = rand();
+
         size_t raw_ops[] = {
             MemLayout::FLAG_MEMCPY, offsetof(B, c),
             MemLayout::FLAG_ARRAY, 100,
