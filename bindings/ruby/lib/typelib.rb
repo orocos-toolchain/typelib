@@ -525,6 +525,16 @@ module Typelib
         end
     end
 
+    convert_from_ruby String, '/std/string' do |value, typelib_type|
+        typelib_type.wrap([value.length, value].pack("QA#{value.length}"))
+    end
+
+    specialize '/std/string' do
+        def to_ruby
+            to_byte_array[8..-1]
+        end
+    end
+
     class Registry
         TYPE_BY_EXT = {
             ".c" => "c",

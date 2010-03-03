@@ -43,11 +43,11 @@ BOOST_AUTO_TEST_CASE( test_tlb_idempotent )
     }
 
     string result;
-    BOOST_REQUIRE_NO_THROW(result = manager->save("tlb", registry));
+    result = manager->save("tlb", registry);
     istringstream io(result);
     utilmm::config_set config;
     Registry* reloaded = NULL;
-    BOOST_REQUIRE_NO_THROW(reloaded = manager->load("tlb", io, config));
+    reloaded = manager->load("tlb", io, config);
 
     if (!registry.isSame(*reloaded))
     {

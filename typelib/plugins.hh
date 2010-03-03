@@ -35,6 +35,12 @@ namespace Typelib
         typename plugin_traits<Type>::object_base* create()
         { return new Type; }
     };
+
+    class TypeDefinitionPlugin
+    {
+    public:
+        virtual void registerTypes(Typelib::Registry& registry) = 0;
+    };
 }
 
 #define TYPELIB_REGISTER_IO2(name, klass1, klass2) extern "C" void registerPlugins(Typelib::PluginManager& manager) {\

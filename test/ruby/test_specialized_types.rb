@@ -338,5 +338,19 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal(reg.get("DisplayTest"), cont.deference)
         assert_equal("/std/vector</DisplayTest>", cont.name)
     end
+
+    def test_std_string
+        reg   = make_registry
+        type  = reg.get("/std/string")
+        value = type.new
+
+        assert value.empty?
+        assert_equal 0, value.length
+
+        value.insert(?a)
+        assert_equal "a", value.to_ruby
+
+        assert_equal "a_string", Typelib.from_ruby("a_string", reg.get("/std/string")).to_ruby
+    end
 end
 

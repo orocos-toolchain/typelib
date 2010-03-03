@@ -256,6 +256,17 @@ BOOST_AUTO_TEST_CASE( test_std_collections )
     //         field->getType().getName());
 }
 
+BOOST_AUTO_TEST_CASE( test_string_handling )
+{
+    Registry registry;
+    import_test_types(registry);
+
+    CHECK_TYPE(StringHandling);
+    CHECK_FIELD(StringHandling, a, char, 0);
+    CHECK_FIELD(StringHandling, b, std::string, "/std/string");
+    CHECK_FIELD(StringHandling, c, short, 0);
+}
+
 BOOST_AUTO_TEST_CASE( test_c_array_typedefs )
 {
     Registry registry;

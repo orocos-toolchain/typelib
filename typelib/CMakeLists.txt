@@ -17,7 +17,7 @@ set_target_properties(typeLib PROPERTIES
 set_target_properties(typeLib
     PROPERTIES LINK_INTERFACE_LIBRARIES ${Utilmm_LIBRARIES})
 
-INSTALL(FILES exporter.hh importer.hh ioplugins.hh manip.hh pluginmanager.hh
+INSTALL(FILES exporter.hh importer.hh plugins.hh manip.hh pluginmanager.hh
     registry.hh registryiterator.hh typebuilder.hh typedisplay.hh typemodel.hh
     typename.hh typevisitor.hh value.hh csvoutput.hh endianness.hh
     normalized_numerics.hh memory_layout.hh value_ops.hh DESTINATION include/typelib)

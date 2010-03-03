@@ -69,7 +69,7 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
                 remaining.push_back(it.getName());
         }
 
-        throw ExportError(join(remaining) + " seem to be (a) recursive type(s). Exporting them is not supported yet");
+        throw ExportError(join(remaining) + " seem to be recursive type(s). Exporting them is not supported yet");
     }
 
     end(stream, registry);

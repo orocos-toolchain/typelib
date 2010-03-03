@@ -17,6 +17,8 @@ namespace Typelib
 
     class Importer;
     class ImportPlugin;
+
+    class TypeDefinitionPlugin;
     
     /** Exception thrown when an unknown plugin is found */
     struct PluginNotFound : std::runtime_error
@@ -47,6 +49,7 @@ namespace Typelib
     {
         std::map<std::string, ExportPlugin*> m_exporters;
         std::map<std::string, ImportPlugin*> m_importers;
+        std::vector<TypeDefinitionPlugin*> m_definition_plugins;
         std::vector<void*> m_library_handles;
         bool loadPlugin(std::string const& path);
 
@@ -69,6 +72,16 @@ namespace Typelib
 	/** Build a new export plugin from its plugin name 
 	 * @throws PluginNotFound */
         Exporter* exporter(std::string const& name) const;
+
+        /** Adds a type definition plugin. A type definition plugin defines a
+         * set of "default" types that gets added automatically to new
+         * registries
+         */
+        void add(TypeDefinitionPlugin* plugin);
+
+        /** Adds the types from the type definition plugins to \c registry
+         */
+        void registerPluginTypes(Registry& registry);
 
 	/** \overload
 	 * This is provided for backward compatibility only

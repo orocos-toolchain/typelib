@@ -14,6 +14,8 @@ using namespace std;
 #include <boost/lexical_cast.hpp>
 using boost::lexical_cast;
 
+#include <typelib/pluginmanager.hh>
+
 using namespace Typelib;
 
 namespace 
@@ -66,6 +68,8 @@ namespace Typelib
         : m_global(sort_names)
     { 
         addStandardTypes();
+        PluginManager::self manager;
+        manager->registerPluginTypes(*this);
         setDefaultNamespace("/");
     }
     Registry::~Registry() { clear(); }

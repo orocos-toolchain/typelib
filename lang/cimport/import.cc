@@ -3,7 +3,6 @@
 #include <CPPLexer.hpp>
 #include "typesolver.hh"
 #include "import.hh"
-#include <typelib/ioplugins.hh>
 
 #include <fstream>
 #include <iostream>
@@ -142,4 +141,3 @@ void CImport::load
     }
 }
 
-TYPELIB_REGISTER_IO1(c, CImport)

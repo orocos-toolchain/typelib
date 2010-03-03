@@ -45,9 +45,7 @@ namespace
 
     bool IDLTypeIdentifierVisitor::visit_(OpaqueType const& type)
     {
-        if (type.getName() == "/std/string")
-            m_front = "string";
-        else if (m_opaque_as_any)
+        if (m_opaque_as_any)
             m_front = "any";
         else
             throw UnsupportedType(type, "opaque types are not allowed in IDL");
@@ -57,8 +55,14 @@ namespace
     bool IDLTypeIdentifierVisitor::visit_(NullType const& type)
     { throw UnsupportedType(type, "null types are not supported for export in IDL"); }
     bool IDLTypeIdentifierVisitor::visit_(Container const& type)
-    { m_front = "sequence<" + idl_type_identifier(type.getIndirection(), m_exporter, m_opaque_as_any) + ">";
-        return true; }
+    {
+        if (type.getName() == "/std/string")
+            m_front = "string";
+        else
+            m_front = "sequence<" + idl_type_identifier(type.getIndirection(), m_exporter, m_opaque_as_any) + ">";
+
+        return true;
+    }
     bool IDLTypeIdentifierVisitor::visit_(Compound const& type)
     { m_front = m_exporter.getIDLAbsoluteTypename(type);
         return true; }
@@ -86,7 +90,6 @@ namespace
         bool      m_opaque_as_any;
 
         bool visit_(OpaqueType const& type);
-        bool visit_(NullType const& type);
         bool visit_(Container const& type);
         bool visit_(Compound const& type);
         bool visit_(Compound const& type, Field const& field);
@@ -178,15 +181,9 @@ namespace
         // are already handled in visit_(Compound, Field)
         return true;
     }
-    bool IDLExportVisitor::visit_(NullType const& type)
-    {
-        if (type.getName() != "/std/string")
-            TypeVisitor::visit_(type);
-        return true;
-    }
     bool IDLExportVisitor::visit_(OpaqueType const& type)
     {
-        if (type.getName() == "/std/string" || m_opaque_as_any)
+        if (m_opaque_as_any)
             return true;
 
         throw UnsupportedType(type, "opaque types are not supported for export in IDL");

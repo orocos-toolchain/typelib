@@ -1,5 +1,5 @@
 #include "pluginmanager.hh"
-#include "ioplugins.hh"
+#include "plugins.hh"
 #include "importer.hh"
 #include "exporter.hh"
 
@@ -86,6 +86,17 @@ bool PluginManager::add(ExportPlugin* plugin)
 { return add_plugin(m_exporters, plugin); }
 bool PluginManager::add(ImportPlugin* plugin)
 { return add_plugin(m_importers, plugin); }
+void PluginManager::add(TypeDefinitionPlugin* plugin)
+{ return m_definition_plugins.push_back(plugin); }
+
+void PluginManager::registerPluginTypes(Registry& registry)
+{
+    for (vector<TypeDefinitionPlugin*>::iterator it = m_definition_plugins.begin();
+            it != m_definition_plugins.end(); ++it)
+    {
+        (*it)->registerTypes(registry);
+    }
+}
 
 Importer* PluginManager::importer(std::string const& name) const
 { return get_plugin(m_importers, name)->create(); }
