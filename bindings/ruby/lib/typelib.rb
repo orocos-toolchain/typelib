@@ -26,6 +26,28 @@ end
 
 
 module Typelib
+    class << self
+        attr_reader :value_specializations
+        attr_reader :type_specializations
+        attr_reader :convertions
+    end
+
+    @value_specializations = Hash.new
+    @type_specializations = Hash.new
+    @convertions    = Hash.new
+
+    def self.specialize_model(name, &block)
+        type_specializations[name] ||= Array.new
+        type_specializations[name] << Module.new(&block)
+    end
+    def self.specialize(name, &block)
+        value_specializations[name] ||= Array.new
+        value_specializations[name] << Module.new(&block)
+    end
+    def self.convert_from_ruby(ruby_class, typename, &block)
+        convertions[[ruby_class, typename]] = lambda(&block)
+    end 
+
     @remote_registries = Hash.new
     class << self
 	attr_reader :remote_registries
@@ -64,6 +86,16 @@ module Typelib
 
 	    type.wrap(data)
 	end
+
+        def self.subclass_initialize
+            if mods = Typelib.type_specializations[name]
+                mods.each { |m| extend m }
+            end
+            if mods = Typelib.value_specializations[name]
+                mods.each { |m| include m }
+            end
+            super if defined? super
+        end
 
 	def dup
 	    new = self.class.new
@@ -300,6 +332,8 @@ module Typelib
 
                     [name, type]
                 end
+
+                super if defined? super
             end
 
             def offset_of(fieldname)
@@ -898,6 +932,8 @@ module Typelib
     def self.from_ruby(arg, expected_type)      
         if arg.kind_of?(expected_type) 
             return arg
+        elsif converter = convertions[[arg.class, expected_type.name]]
+            converter.call(arg, expected_type)
         elsif expected_type < CompoundType
             if arg.kind_of?(Hash) then expected_type.new(arg)
             else
