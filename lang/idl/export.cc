@@ -3,7 +3,7 @@
 #include <utilmm/stringtools.hh>
 
 #include <typelib/typevisitor.hh>
-#include <typelib/ioplugins.hh>
+#include <typelib/plugins.hh>
 
 
 namespace
