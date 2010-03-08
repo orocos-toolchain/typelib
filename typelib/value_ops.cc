@@ -6,6 +6,54 @@ using namespace Typelib;
 using namespace boost;
 using namespace std;
 
+void Typelib::display(std::ostream& io, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
+{
+    io << "displaying memory layout of size " << end - begin << "\n";
+    int line = 0;
+    for (MemoryLayout::const_iterator it = begin; it != end; ++it)
+    {
+        switch(*it)
+        {
+            case MemLayout::FLAG_MEMCPY:
+            {
+                size_t size = *(++it);
+                io << "MEMCPY " << size << "\n";
+                break;
+            }
+            case MemLayout::FLAG_ARRAY:
+            {
+                size_t element_count = *(++it);
+                io << "ARRAY " << element_count << "\n";
+                break;
+            }
+            case MemLayout::FLAG_SKIP:
+            {
+                size_t size  = *(++it);
+                io << "SKIP " << size << "\n";
+                break;
+            }
+            case MemLayout::FLAG_CONTAINER:
+            {
+                Container const* type = reinterpret_cast<Container const*>(*(++it));
+                io << "CONTAINER " << type->getName() << "\n";
+                break;
+            }
+            case MemLayout::FLAG_END:
+            {
+                io << "END\n";
+                break;
+            }
+            default:
+            {
+                io << "unrecognized marshalling bytecode " << *it << " at " << (it - begin) << "\n";
+                throw UnknownLayoutBytecode();
+            }
+        }
+    }
+
+}
+
+
 tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
         uint8_t const* data, size_t in_offset,
         std::vector<uint8_t>& buffer,

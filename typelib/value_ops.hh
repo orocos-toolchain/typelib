@@ -4,6 +4,7 @@
 #include <typelib/memory_layout.hh>
 #include <typelib/value.hh>
 #include <boost/tuple/tuple.hpp>
+#include <iosfwd>
 
 namespace Typelib
 {
@@ -43,6 +44,8 @@ namespace Typelib
     void destroy(Value v, MemoryLayout const& ops);
     void copy(Value dst, Value src);
     bool compare(Value dst, Value src);
+    void display(std::ostream& io,
+            MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end);
 
     std::vector<uint8_t> dump(Value v);
     void dump(Value v, std::vector<uint8_t>& buffer);
