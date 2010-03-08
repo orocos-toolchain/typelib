@@ -117,6 +117,7 @@ MemoryLayout::const_iterator MemLayout::skip_block(
         {
             case FLAG_ARRAY:
             case FLAG_CONTAINER:
+                ++it;
                 ++nesting;
                 break;
 
