@@ -599,6 +599,7 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_singleton_method(cContainer, "container_kind", RUBY_METHOD_FUNC(container_kind), 0);
     rb_define_singleton_method(cContainer, "natural_size",   RUBY_METHOD_FUNC(container_natural_size), 0);
     rb_define_method(cContainer, "length",    RUBY_METHOD_FUNC(container_length), 0);
+    rb_define_method(cContainer, "size",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "insert",    RUBY_METHOD_FUNC(container_insert), 1);
     rb_define_method(cContainer, "each",      RUBY_METHOD_FUNC(container_each), 0);
     rb_define_method(cContainer, "erase",     RUBY_METHOD_FUNC(container_erase), 1);
