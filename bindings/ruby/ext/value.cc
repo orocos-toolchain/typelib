@@ -359,6 +359,15 @@ VALUE value_endian_swap_b(VALUE self, VALUE rb_compile)
  *
  * Returns a string whose content is a marshalled representation of the memory
  * hold by +obj+
+ *
+ * This can be used to create a new object later by using value_type.wrap, where
+ * +value_type+ is the object returned by Registry#get. Example:
+ *
+ *   # Do complex computation
+ *   marshalled_data = result.to_byte_array
+ *
+ *   # Later on ...
+ *   value = my_registry.get('/base/Type').wrap(marshalled_data)
  */
 static
 VALUE value_to_byte_array(VALUE self)
