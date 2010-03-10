@@ -501,6 +501,8 @@ module Typelib
     class ContainerType < IndirectType
         include Enumerable
         def empty?; length == 0 end
+
+        def <<(value); insert(value) end
     end
 
     # Base class for all enumeration types. Enumerations
