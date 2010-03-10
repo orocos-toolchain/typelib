@@ -411,11 +411,14 @@ module Typelib
 	# compound type and initialize it using the
 	# keys of +value+ as field names
         def []=(name, value)
+            name = name.to_s
+            attribute = get_field(name)
 	    if Hash === value
-		attribute = get_field(name)
 		value.each { |k, v| attribute[k] = v }
+            elsif attribute.respond_to?(:set_values)
+                attribute.set_values(value)
 	    else
-		set_field(name.to_s, value) 
+		set_field(name, value) 
 	    end
 
 	rescue ArgumentError => e
@@ -464,6 +467,12 @@ module Typelib
 	    pp.text ']'
 	end
 
+        def set_values(enumerable)
+            enumerable.each_with_index do |value, i|
+                self[i] = value
+            end
+        end
+
 	# Returns the pointed-to type (defined for consistency reasons)
 	def self.[](index); deference end
 
@@ -503,6 +512,13 @@ module Typelib
         def empty?; length == 0 end
 
         def <<(value); insert(value) end
+
+        def set_values(enumerable)
+            clear
+            enumerable.each do |value|
+                insert(value)
+            end
+        end
     end
 
     # Base class for all enumeration types. Enumerations
