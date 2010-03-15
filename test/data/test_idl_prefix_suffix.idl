@@ -9,7 +9,6 @@ module CorbaPrefix {
                     octet c;
                     long array[10];
                 };
-                typedef TestEnum EnumAlias;
 
             };
 
@@ -22,16 +21,6 @@ module CorbaPrefix {
                             long a;
                             short b;
                         };
-
-                    };
-
-                };
-
-            };
-            module NS1_2 {
-                module CorbaSuffix {
-                    module TestSuffix {
-                        typedef CorbaPrefix::TestPrefix::NS1::NS1_1::CorbaSuffix::TestSuffix::Test Test;
 
                     };
 
@@ -51,9 +40,23 @@ module CorbaPrefix {
         };
         module CorbaSuffix {
             module TestSuffix {
-                typedef TestEnum OtherEnum;
                 struct CompoundInCompound {
                     Compound test[10];
+                };
+                typedef TestEnum EnumAlias;
+                typedef TestEnum OtherEnum;
+
+            };
+
+        };
+        module NS1 {
+            module NS1_2 {
+                module CorbaSuffix {
+                    module TestSuffix {
+                        typedef CorbaPrefix::TestPrefix::NS1::NS1_1::CorbaSuffix::TestSuffix::Test Test;
+
+                    };
+
                 };
 
             };
