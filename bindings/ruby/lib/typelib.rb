@@ -74,6 +74,17 @@ module Typelib
     class Type
         @writable = true
 	
+        def self.from_ruby(arg)
+            filtered = Typelib.filter_argument(arg, self)
+            if filtered.kind_of?(Typelib::Type)
+                filtered
+            else
+                result = new
+                result.initialize_from_ruby(filtered)
+                result
+            end
+        end
+
 	# Marshals this value for communication in a DRb context. It is not
 	# suitable for use to save in a file.
 	def _dump(lvl)
@@ -297,6 +308,13 @@ module Typelib
             end
         end
 
+        def self.from_ruby(arg)
+            if arg.kind_of?(Hash) then new(arg)
+            else
+                raise ArgumentError, "cannot initialize a value of type #{expected_type} from #{arg}"
+            end
+        end
+
         class << self
             def new(*init);         __real_new__(nil, *init) end
             def wrap(ptr, *init)
@@ -418,7 +436,7 @@ module Typelib
             elsif attribute.respond_to?(:set_values)
                 attribute.set_values(value)
 	    else
-		set_field(name, value) 
+		set_field(name, Typelib.from_ruby(value, self.class[name])) 
 	    end
 
 	rescue ArgumentError => e
@@ -438,7 +456,12 @@ module Typelib
 		    @fields[name] = value
 		end
 	    end
-	    value
+            field_type = self.class[name]
+            if field_type.respond_to?(:to_ruby)
+                field_type.to_ruby(value)
+            else
+                value
+            end
 	end
         def to_ruby; self end
     end
@@ -524,6 +547,12 @@ module Typelib
     # Base class for all enumeration types. Enumerations
     # are mappings from strings to integers
     class EnumType < Type
+        def self.from_ruby(value)
+            result = new
+            result.initialize_from_ruby(value)
+            result
+        end
+
         class << self
 	    # a value => key hash for each enumeration values
             attr_reader :values
@@ -546,7 +575,25 @@ module Typelib
     convert_from_ruby String, '/std/string' do |value, typelib_type|
         typelib_type.wrap([value.length, value].pack("QA#{value.length}"))
     end
-
+    convert_from_ruby TrueClass, '/bool' do |value, typelib_type|
+        Typelib.from_ruby(1, typelib_type)
+    end
+    convert_from_ruby FalseClass, '/bool' do |value, typelib_type|
+        Typelib.from_ruby(0, typelib_type)
+    end
+    convert_from_ruby String, '/char' do |value, typelib_type|
+        Typelib.from_ruby(value[0], typelib_type)
+    end
+    specialize_model '/bool' do
+        def to_ruby(value)
+            value == 1
+        end
+    end
+    specialize '/bool' do
+        def to_ruby
+            super == 1
+        end
+    end
     specialize '/std/string' do
         def to_ruby
             to_byte_array[8..-1]
@@ -962,16 +1009,8 @@ module Typelib
             return arg
         elsif converter = convertions[[arg.class, expected_type.name]]
             converter.call(arg, expected_type)
-        elsif expected_type < CompoundType
-            if arg.kind_of?(Hash) then expected_type.new(arg)
-            else
-                raise ArgumentError, "cannot initialize a value of type #{expected_type} from #{arg}"
-            end
-        else
-            filtered = filter_argument(arg, expected_type)
-            if !filtered.kind_of?(Typelib::Type)
-                expected_type.new.from_ruby(filtered)
-            end
+        elsif expected_type.respond_to?(:from_ruby)
+            expected_type.from_ruby(arg)
         end
     end
 

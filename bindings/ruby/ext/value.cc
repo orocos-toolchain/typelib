@@ -524,7 +524,7 @@ void typelib_ruby::Typelib_init_values()
     rb_define_singleton_method(cType, "dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
     rb_define_method(cType, "__initialize__",   RUBY_METHOD_FUNC(&value_initialize), 1);
     rb_define_method(cType, "to_ruby",      RUBY_METHOD_FUNC(&value_to_ruby), 0);
-    rb_define_method(cType, "from_ruby", RUBY_METHOD_FUNC(&value_from_ruby), 1);
+    rb_define_method(cType, "initialize_from_ruby", RUBY_METHOD_FUNC(&value_from_ruby), 1);
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
     rb_define_method(cType, "memory_eql?",      RUBY_METHOD_FUNC(&value_memory_eql_p), 1);
     rb_define_method(cType, "endian_swap",      RUBY_METHOD_FUNC(&value_endian_swap), 0);

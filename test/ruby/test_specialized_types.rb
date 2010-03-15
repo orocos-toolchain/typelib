@@ -352,5 +352,39 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 
         assert_equal "a_string", Typelib.from_ruby("a_string", reg.get("/std/string")).to_ruby
     end
+
+    def test_boolean
+        reg = make_registry
+
+        type = reg.get "bool"
+
+        v = Typelib.from_ruby(true, type)
+        assert_kind_of type, v
+        assert_equal true, v.to_ruby
+        
+
+        v = Typelib.from_ruby(false, type)
+        assert_kind_of type, v
+        assert_equal false, v.to_ruby
+    end
+
+    def test_boolean_in_struct
+        reg = make_registry
+
+        type = reg.get "BoolHandling"
+        value = type.new
+
+        value.value = true
+        assert_equal true, value.value
+
+        value.value = false
+        assert_equal false, value.value
+    end
+
+    def test_char
+        reg = make_registry
+
+        type = reg.get "BoolHandling"
+    end
 end
 

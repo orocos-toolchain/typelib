@@ -180,6 +180,11 @@ static VALUE enum_name_of(VALUE self, VALUE integer)
     }
 }
 
+static VALUE enum_initialize_from_ruby(VALUE self, VALUE rbvalue)
+{
+    return typelib_from_ruby(rb2cxx::object<Value>(self), rbvalue);
+}
+
 /**********************************************
  * Typelib::Pointer
  */
@@ -587,6 +592,7 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_singleton_method(cEnum, "keys", RUBY_METHOD_FUNC(enum_keys), 0);
     rb_define_singleton_method(cEnum, "value_of",      RUBY_METHOD_FUNC(enum_value_of), 1);
     rb_define_singleton_method(cEnum, "name_of",      RUBY_METHOD_FUNC(enum_name_of), 1);
+    rb_define_method(cEnum, "initialize_from_ruby",  RUBY_METHOD_FUNC(enum_initialize_from_ruby), 1);
 
     cArray    = rb_define_class_under(mTypelib, "ArrayType", cIndirect);
     rb_define_singleton_method(cArray, "length", RUBY_METHOD_FUNC(array_class_length), 0);
