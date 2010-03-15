@@ -73,6 +73,9 @@ namespace
     { throw UnsupportedType(type, "pointer types are not supported for export in IDL"); }
     bool IDLTypeIdentifierVisitor::visit_(Array const& type)
     {
+        if (type.getIndirection().getCategory() == Type::Array)
+            throw UnsupportedType(type, "multi-dimensional arrays are not supported in IDL");
+
         m_front = idl_type_identifier(type.getIndirection(), m_exporter, m_opaque_as_any);
         m_back = "[" + boost::lexical_cast<string>(type.getDimension()) + "]";
         return true;
