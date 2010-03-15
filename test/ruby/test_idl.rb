@@ -21,6 +21,14 @@ class TC_IDL < Test::Unit::TestCase
 	assert_raises(RuntimeError) { registry.export("idl") }
     end
 
+    def verify_expected_idl(output, expected_filename)
+        expected = File.read(expected_filename)
+        if expected != output
+            File.open('output.idl', 'w') { |io| io.write(output) }
+        end
+	assert(expected == output, "generated and expected IDL mismatches. Expected IDL is in #{expected_filename}, generated is in output.idl")
+    end
+
     def check_export(input_name, output_name = input_name, options = {})
 	registry = Registry.new
 	registry.import( File.join(SRCDIR, "data", "#{input_name}.h"), "c" )
@@ -30,8 +38,7 @@ class TC_IDL < Test::Unit::TestCase
 		    registry.export("idl", options)
 		end
 
-	expected = File.read(File.join(SRCDIR, "data", "#{output_name}.idl"))
-	assert(expected == output, "output: #{output.inspect}\nexpected: #{expected.inspect}")
+        verify_expected_idl(output, File.join(SRCDIR, "data", "#{output_name}.idl"))
     end
 
     def test_export_output
