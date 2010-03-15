@@ -49,7 +49,7 @@ class TC_Registry < Test::Unit::TestCase
         registry = Registry.new
         testfile = File.join(SRCDIR, "test_cimport.h")
 	registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
-	assert_raises(RuntimeError) { registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ]) }
+	assert_raises(RuntimeError) { registry.import(testfile, nil, :merge => false, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ]) }
     end
 
     def make_registry
