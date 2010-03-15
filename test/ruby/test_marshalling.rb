@@ -31,21 +31,21 @@ class TC_Marshalling  < Test::Unit::TestCase
         um_t = Marshal.load(StringIO.new(m_t))
     end
 
-    def test_marshal_value
-        registry = Registry.new
-        registry.import( File.join(SRCDIR, "test_cimport.1"), "c" )
+    # def test_marshal_value
+    #     registry = Registry.new
+    #     registry.import( File.join(SRCDIR, "test_cimport.1"), "c" )
 
-        DRb.start_service
-        t = registry.get("/struct A")
-        v = t.new :a => 10, :b => 20, :c => 30, :d => 40
-        assert_nothing_raised { m_v = Marshal.dump(v) }
-        um_v = Marshal.load(StringIO.new(m_v))
+    #     DRb.start_service
+    #     t = registry.get("/struct A")
+    #     v = t.new :a => 10, :b => 20, :c => 30, :d => 40
+    #     assert_nothing_raised { m_v = Marshal.dump(v) }
+    #     um_v = Marshal.load(StringIO.new(m_v))
 
-        assert_equal(10, um_v.a)
-        assert_equal(20, um_v.b)
-        assert_equal(30, um_v.c)
-        assert_equal(40, um_v.d)
-    end
+    #     assert_equal(10, um_v.a)
+    #     assert_equal(20, um_v.b)
+    #     assert_equal(30, um_v.c)
+    #     assert_equal(40, um_v.d)
+    # end
 
     def test_drb
         pid = fork do
