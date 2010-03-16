@@ -177,7 +177,7 @@ bool Vector::isElementMemcpy(MarshalOps::const_iterator begin, MarshalOps::const
 }
 
 Container::MarshalOps::const_iterator Vector::dump(
-        void const* container_ptr, size_t element_count, std::vector<uint8_t>& buffer,
+        void const* container_ptr, size_t element_count, ValueOps::OutputStream& stream,
         MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const
 {
     std::vector<uint8_t> const* vector_ptr =
@@ -188,9 +188,7 @@ Container::MarshalOps::const_iterator Vector::dump(
     {
         // optimize a bit: do a huge memcpy if possible
         size_t size       = *(++it) * element_count;
-        size_t out_offset = buffer.size();
-        buffer.resize( out_offset + size );
-        memcpy(&buffer[out_offset], &(*vector_ptr)[0], size);
+        stream.write(&(*vector_ptr)[0], size);
         return begin + 2;
     }
     else
@@ -201,15 +199,15 @@ Container::MarshalOps::const_iterator Vector::dump(
         {
             boost::tie(in_offset, it_end) = ValueOps::dump(
                     &(*vector_ptr)[i * getIndirection().getSize()], 0,
-                    buffer, begin, end);
+                    stream, begin, end);
         }
         return it_end;
     }
 }
 
-boost::tuple<size_t, Container::MarshalOps::const_iterator> Vector::load(
+Container::MarshalOps::const_iterator Vector::load(
         void* container_ptr, size_t element_count,
-        std::vector<uint8_t> const& buffer, size_t in_offset,
+        ValueOps::InputStream& stream,
         MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const
 {
     std::vector<uint8_t>* vector_ptr =
@@ -223,8 +221,8 @@ boost::tuple<size_t, Container::MarshalOps::const_iterator> Vector::load(
     if (isElementMemcpy(begin, end))
     {
         size_t size       = *(++it) * element_count;
-        memcpy(&(*vector_ptr)[0], &buffer[in_offset], size);
-        return boost::make_tuple(in_offset + size, begin + 2);
+        stream.read(&(*vector_ptr)[0], size);
+        return begin + 2;
     }
     else
     {
@@ -235,11 +233,11 @@ boost::tuple<size_t, Container::MarshalOps::const_iterator> Vector::load(
         size_t out_offset = 0;
         for (size_t i = 0; i < element_count; ++i)
         {
-            boost::tie(out_offset, in_offset, it_end) =
+            boost::tie(out_offset, it_end) =
                 ValueOps::load(&(*vector_ptr)[i * element_size], 0,
-                    buffer, in_offset, begin, end);
+                    stream, begin, end);
         }
-        return boost::make_tuple(in_offset, it_end);
+        return it_end;
     }
 }
 
@@ -330,28 +328,29 @@ bool String::visit(void* ptr, ValueVisitor& visitor) const
 }
 
 Container::MarshalOps::const_iterator String::dump(
-        void const* container_ptr, size_t element_count, std::vector<uint8_t>& buffer,
+        void const* container_ptr, size_t element_count, ValueOps::OutputStream& stream,
         MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const
 {
     const std::string* string_ptr =
         reinterpret_cast< const std::string* >(container_ptr);
 
-    size_t out_offset = buffer.size();
-    buffer.resize( out_offset + element_count );
-    memcpy(&buffer[out_offset], string_ptr->c_str(), element_count);
+    stream.write(reinterpret_cast<uint8_t const*>(string_ptr->c_str()), element_count);
     return begin + 2;
 }
 
-boost::tuple<size_t, Container::MarshalOps::const_iterator> String::load(
+Container::MarshalOps::const_iterator String::load(
         void* container_ptr, size_t element_count,
-        std::vector<uint8_t> const& buffer, size_t in_offset,
+        ValueOps::InputStream& stream,
         MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const
 {
     std::string* string_ptr =
         reinterpret_cast< std::string* >(container_ptr);
 
-    (*string_ptr).append(reinterpret_cast<const char*>(&buffer[in_offset]), element_count);
-    return boost::make_tuple(in_offset + element_count, begin + 2);
+    std::vector<uint8_t> buffer;
+    buffer.resize(element_count);
+    stream.read(&buffer[0], element_count);
+    (*string_ptr).append(reinterpret_cast<const char*>(&buffer[0]), element_count);
+    return begin + 2;
 }
 void String::delete_if_impl(void* ptr, DeleteIfPredicate& pred) const
 {}

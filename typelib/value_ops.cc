@@ -56,8 +56,7 @@ void Typelib::display(std::ostream& io, MemoryLayout::const_iterator const begin
 
 tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
         uint8_t const* data, size_t in_offset,
-        std::vector<uint8_t>& buffer,
-        MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
+        ValueOps::OutputStream& stream, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
 {
     MemoryLayout::const_iterator it;
     for (it = begin; it != end && *it != MemLayout::FLAG_END; ++it)
@@ -67,9 +66,7 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
             case MemLayout::FLAG_MEMCPY:
             {
                 size_t size = *(++it);
-                int out_offset  = buffer.size();
-                buffer.resize( out_offset + size );
-                memcpy( &buffer[out_offset], data + in_offset, size);
+                stream.write(data + in_offset, size);
                 in_offset += size;
                 break;
             }
@@ -82,7 +79,7 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
                 else
                 {
                     for (size_t i = 0; i < element_count; ++i)
-                        tie(in_offset, it) = dump(data, in_offset, buffer, element_it, end);
+                        tie(in_offset, it) = dump(data, in_offset, stream, element_it, end);
                 }
 
                 if (it == end || *it != MemLayout::FLAG_END)
@@ -103,16 +100,13 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
                 void const* container_ptr  = data + in_offset;
                 in_offset += type->getSize();
 
-                size_t element_count = type->getElementCount(container_ptr);
-
-                int out_offset = buffer.size();
-                buffer.resize( out_offset + sizeof(uint64_t) );
-                reinterpret_cast<uint64_t&>(buffer[out_offset]) = element_count;
+                uint64_t element_count = type->getElementCount(container_ptr);
+                stream.write(reinterpret_cast<uint8_t*>(&element_count), sizeof(element_count));
 
                 if (element_count == 0)
                     it = MemLayout::skip_block(++it, end);
                 else
-                    it = type->dump(container_ptr, element_count, buffer, ++it, end);
+                    it = type->dump(container_ptr, element_count, stream, ++it, end);
 
                 if (it == end || *it != MemLayout::FLAG_END)
                     throw std::runtime_error("error in bytecode while dumping: container does not end with FLAG_END");
@@ -126,10 +120,9 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
     return make_tuple(in_offset, it);
 }
 
-tuple<size_t, size_t, MemoryLayout::const_iterator> ValueOps::load(
+tuple<size_t, MemoryLayout::const_iterator> ValueOps::load(
         uint8_t* data, size_t out_offset,
-        std::vector<uint8_t> const& buffer, size_t in_offset,
-        MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
+        InputStream& stream, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
 {
     MemoryLayout::const_iterator it;
     for (it = begin; it != end && *it != MemLayout::FLAG_END; ++it)
@@ -139,11 +132,7 @@ tuple<size_t, size_t, MemoryLayout::const_iterator> ValueOps::load(
             case MemLayout::FLAG_MEMCPY:
             {
                 size_t size = *(++it);
-                if (in_offset + size > buffer.size())
-                    throw std::runtime_error("in load(): input buffer too small");
-
-                memcpy(data + out_offset, &buffer[in_offset], size);
-                in_offset  += size;
+                stream.read(data + out_offset, size);
                 out_offset += size;
                 break;
             }
@@ -157,8 +146,8 @@ tuple<size_t, size_t, MemoryLayout::const_iterator> ValueOps::load(
                 else
                 {
                     for (size_t i = 0; i < element_count; ++i)
-                        tie(out_offset, in_offset, it) =
-                            load(data, out_offset, buffer, in_offset, element_it, end);
+                        tie(out_offset, it) =
+                            load(data, out_offset, stream, element_it, end);
                 }
 
                 if (*it != MemLayout::FLAG_END)
@@ -179,14 +168,13 @@ tuple<size_t, size_t, MemoryLayout::const_iterator> ValueOps::load(
                 type->init(container_ptr);
                 out_offset += type->getSize();
 
-                size_t element_count = reinterpret_cast<uint64_t const&>(buffer[in_offset]);
-                in_offset += sizeof(uint64_t);
+                uint64_t element_count;
+                stream.read(reinterpret_cast<uint8_t*>(&element_count), sizeof(uint64_t));
                 if (element_count == 0)
                     it = MemLayout::skip_block(++it, end);
                 else
                 {
-                    tie(in_offset, it) =
-                        type->load(container_ptr, element_count, buffer, in_offset, ++it, end);
+                    it = type->load(container_ptr, element_count, stream, ++it, end);
                 }
 
                 if (it == end || *it != MemLayout::FLAG_END)
@@ -198,28 +186,42 @@ tuple<size_t, size_t, MemoryLayout::const_iterator> ValueOps::load(
         }
     }
 
-    return make_tuple(out_offset, in_offset, it);
+    return make_tuple(out_offset, it);
 }
 
 
 void Typelib::init(Value v)
 {
-    uint8_t* buffer = reinterpret_cast<uint8_t*>(v.getData());
     MemoryLayout ops = layout_of(v.getType(), true);
-    ValueOps::init(buffer, ops.begin(), ops.end());
+    init(v, ops);
+}
+
+void Typelib::init(Value v, MemoryLayout const& ops)
+{
+    uint8_t* buffer = reinterpret_cast<uint8_t*>(v.getData());
+    init(buffer, ops);
+}
+
+void Typelib::init(uint8_t* data, MemoryLayout const& ops)
+{
+    ValueOps::init(data, ops.begin(), ops.end());
 }
 
 void Typelib::destroy(Value v)
 {
     uint8_t* buffer = reinterpret_cast<uint8_t*>(v.getData());
     MemoryLayout ops = layout_of(v.getType(), true);
-    ValueOps::destroy(buffer, ops.begin(), ops.end());
+    destroy(buffer, ops);
 }
 
 void Typelib::destroy(Value v, MemoryLayout const& ops)
 {
-    ValueOps::destroy(reinterpret_cast<uint8_t*>(v.getData()),
-            ops.begin(), ops.end());
+    destroy(reinterpret_cast<uint8_t*>(v.getData()), ops);
+}
+
+void Typelib::destroy(uint8_t* data, MemoryLayout const& ops)
+{
+    ValueOps::destroy(data, ops.begin(), ops.end());
 }
 
 void Typelib::copy(Value dst, Value src)
@@ -480,13 +482,142 @@ void Typelib::dump(Value v, std::vector<uint8_t>& buffer, MemoryLayout const& op
     dump(reinterpret_cast<uint8_t const*>(v.getData()), buffer, ops);
 }
 
+struct VectorInputStream : public ValueOps::InputStream
+{
+    std::vector<uint8_t> const& buffer;
+    size_t in_index;
+
+    VectorInputStream(std::vector<uint8_t> const& buffer)
+        : buffer(buffer), in_index(0) {}
+
+    void read(uint8_t* out_buffer, size_t size)
+    {
+        if (size + in_index > buffer.size())
+            throw std::runtime_error("error in load(): buffer too small");
+
+        memcpy(&out_buffer[0], &buffer[in_index], size);
+        in_index += size;
+    }
+};
+
+struct VectorOutputStream : public ValueOps::OutputStream
+{
+    std::vector<uint8_t>& buffer;
+    VectorOutputStream(std::vector<uint8_t>& buffer)
+        : buffer(buffer) {}
+
+    void write(uint8_t const* data, size_t size)
+    {
+        size_t out_index = buffer.size(); buffer.resize(out_index + size);
+        memcpy(&buffer[out_index], data, size);
+    }
+};
+
 void Typelib::dump(uint8_t const* v, std::vector<uint8_t>& buffer, MemoryLayout const& ops)
 {
+    VectorOutputStream stream(buffer);
     MemoryLayout::const_iterator end = ValueOps::dump(
-            v, 0, buffer, ops.begin(), ops.end()).get<1>();
+            v, 0, stream, ops.begin(), ops.end()).get<1>();
     if (end != ops.end())
         throw std::runtime_error("internal error in the marshalling process");
 }
+
+
+void Typelib::dump(Value v, std::ostream& stream)
+{
+    MemoryLayout ops;
+    MemLayout::Visitor visitor(ops);
+    visitor.apply(v.getType());
+    return dump(v, stream, ops);
+}
+
+void Typelib::dump(Value v, std::ostream& stream, MemoryLayout const& ops)
+{
+    dump(reinterpret_cast<uint8_t const*>(v.getData()), stream, ops);
+}
+
+struct OstreamOutputStream : public ValueOps::OutputStream
+{
+    std::ostream& stream;
+    OstreamOutputStream(std::ostream& stream)
+        : stream(stream) {}
+
+    void write(uint8_t const* data, size_t size)
+    {
+        stream.write(reinterpret_cast<char const*>(data), size);
+    }
+};
+
+void Typelib::dump(uint8_t const* v, std::ostream& ostream, MemoryLayout const& ops)
+{
+    OstreamOutputStream stream(ostream);
+    MemoryLayout::const_iterator end = ValueOps::dump(
+            v, 0, stream, ops.begin(), ops.end()).get<1>();
+    if (end != ops.end())
+        throw std::runtime_error("internal error in the marshalling process");
+}
+
+void Typelib::dump(Value v, int fd)
+{
+    MemoryLayout ops;
+    MemLayout::Visitor visitor(ops);
+    visitor.apply(v.getType());
+    return dump(v, fd, ops);
+}
+
+void Typelib::dump(Value v, int fd, MemoryLayout const& ops)
+{
+    dump(reinterpret_cast<uint8_t const*>(v.getData()), fd, ops);
+}
+
+struct FDOutputStream : public ValueOps::OutputStream
+{
+    int fd;
+    FDOutputStream(int fd)
+        : fd(fd) {}
+
+    void write(uint8_t const* data, size_t size)
+    {
+        ::write(fd, data, size);
+    }
+};
+
+void Typelib::dump(uint8_t const* v, int fd, MemoryLayout const& ops)
+{
+    FDOutputStream stream(fd);
+    MemoryLayout::const_iterator end = ValueOps::dump(
+            v, 0, stream, ops.begin(), ops.end()).get<1>();
+    if (end != ops.end())
+        throw std::runtime_error("internal error in the marshalling process");
+}
+
+
+struct ByteCounterStream : public ValueOps::OutputStream
+{
+    size_t result;
+    ByteCounterStream()
+        : result(0) {}
+
+    void write(uint8_t const* data, size_t size)
+    { result += size; }
+};
+
+size_t Typelib::getDumpSize(Value v)
+{ 
+    MemoryLayout ops;
+    MemLayout::Visitor visitor(ops);
+    visitor.apply(v.getType());
+    return getDumpSize(v, ops);
+}
+size_t Typelib::getDumpSize(Value v, MemoryLayout const& ops)
+{ return getDumpSize(reinterpret_cast<uint8_t const*>(v.getData()), ops); }
+size_t Typelib::getDumpSize(uint8_t const* v, MemoryLayout const& ops)
+{
+    ByteCounterStream counter;
+    ValueOps::dump(v, 0, counter, ops.begin(), ops.end());
+    return counter.result;
+}
+
 
 void Typelib::load(Value v, std::vector<uint8_t> const& buffer)
 {
@@ -500,14 +631,16 @@ void Typelib::load(Value v, std::vector<uint8_t> const& buffer, MemoryLayout con
 void Typelib::load(uint8_t* v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops)
 {
     MemoryLayout::const_iterator it;
-    size_t in_offset, out_offset;
-    tie(out_offset, in_offset, it) =
-        ValueOps::load(v, 0, buffer, 0, ops.begin(), ops.end());
+    VectorInputStream stream(buffer);
+
+    size_t out_offset;
+    tie(out_offset, it) =
+        ValueOps::load(v, 0, stream, ops.begin(), ops.end());
     if (it != ops.end())
         throw std::runtime_error("internal error in the memory layout");
-    if (in_offset != buffer.size())
+    if (stream.in_index != buffer.size())
         throw std::runtime_error("parts of the provided buffer has not been used (used " + 
-                lexical_cast<string>(in_offset) + " bytes, got " + lexical_cast<string>(buffer.size()) + "as input)");
+                lexical_cast<string>(stream.in_index) + " bytes, got " + lexical_cast<string>(buffer.size()) + "as input)");
 }
 
 

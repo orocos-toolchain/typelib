@@ -23,12 +23,12 @@ public:
     bool isElementMemcpy(MarshalOps::const_iterator begin, MarshalOps::const_iterator end) const;
 
     MarshalOps::const_iterator dump(
-            void const* container_ptr, size_t element_count, std::vector<uint8_t>& buffer,
+            void const* container_ptr, size_t element_count, Typelib::ValueOps::OutputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const;
 
-    boost::tuple<size_t, MarshalOps::const_iterator> load(
+    MarshalOps::const_iterator load(
             void* container_ptr, size_t element_count,
-            std::vector<uint8_t> const& buffer, size_t in_offset,
+            Typelib::ValueOps::InputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const;
 
     static Container const& factory(Typelib::Registry& registry, std::list<Typelib::Type const*> const& on);
@@ -57,13 +57,14 @@ public:
     bool visit(void* ptr, Typelib::ValueVisitor& visitor) const;
 
     MarshalOps::const_iterator dump(
-            void const* container_ptr, size_t element_count, std::vector<uint8_t>& buffer,
+            void const* container_ptr, size_t element_count, Typelib::ValueOps::OutputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const;
 
-    boost::tuple<size_t, MarshalOps::const_iterator> load(
+    MarshalOps::const_iterator load(
             void* container_ptr, size_t element_count,
-            std::vector<uint8_t> const& buffer, size_t in_offset,
+            Typelib::ValueOps::InputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const;
+
     void delete_if_impl(void* ptr, DeleteIfPredicate& pred) const;
 
     static Container const& factory(Typelib::Registry& registry, std::list<Type const*> const& on);

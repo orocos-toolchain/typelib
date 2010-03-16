@@ -12,6 +12,14 @@
   
 namespace Typelib
 {
+    namespace ValueOps
+    {
+        // Forward declarations for load/dump support in containers
+
+        struct OutputStream;
+        struct InputStream;
+    }
+
     class Registry;
 
     /** Base class for all type definitions */
@@ -447,7 +455,7 @@ namespace Typelib
          * @arg element_count the count of elements in the container. This is
          *   passed here to avoid costly computations: getElementCount is already
          *   called by the marshalling code itself.
-         * @arg buffer the memory buffer to which the elements should be appended
+         * @arg stream the stream that will be used to dump the data
          * @arg begin the marshalling code that describes the marshalling process for one element
          * @arg end end of the marshalling code that describes the marshalling process for one element
          * @return the marshalling process should end at the first FLAG_END found in [begin, end)
@@ -456,7 +464,7 @@ namespace Typelib
          */
         virtual MarshalOps::const_iterator dump(
             void const* container_ptr, size_t element_count,
-            std::vector<uint8_t>& buffer,
+            ValueOps::OutputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const = 0;
 
         /** The marshalling process calls this method so that the contents of
@@ -467,7 +475,7 @@ namespace Typelib
          *
          * @arg container_ptr the pointer to the container data
          * @arg element_count the count of elements in the container, loaded from the stream.
-         * @arg buffer the memory buffer from which the elements should be loaded
+         * @arg stream the stream from which the data will be read
          * @arg in_offset the offset in \c buffer of the first element of the container
          * @arg begin the marshalling code that describes the loading process for one element
          * @arg end end of the marshalling code that describes the loading process for one element
@@ -475,9 +483,9 @@ namespace Typelib
          *   (with nesting taken into account). The first element of the returned value is the iterator on this FLAG_END element
          *   (i.e. *retval == FLAG_END is a postcondition of this method). The second element is the new value of \c in_offset
          */
-        virtual boost::tuple<size_t, MarshalOps::const_iterator> load(
+        virtual MarshalOps::const_iterator load(
             void* container_ptr, size_t element_count,
-            std::vector<uint8_t> const& buffer, size_t in_offset,
+            ValueOps::InputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const = 0;
 
         typedef Container const& (*ContainerFactory)(Registry& r, std::list<Type const*> const& base_type);
