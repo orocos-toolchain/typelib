@@ -45,7 +45,7 @@ void Typelib::display(std::ostream& io, MemoryLayout::const_iterator const begin
             }
             default:
             {
-                io << "unrecognized marshalling bytecode " << *it << " at " << (it - begin) << "\n";
+                io << "in display(): unrecognized marshalling bytecode " << *it << " at " << (it - begin) << "\n";
                 throw UnknownLayoutBytecode();
             }
         }
