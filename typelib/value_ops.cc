@@ -45,7 +45,7 @@ void Typelib::display(std::ostream& io, MemoryLayout::const_iterator const begin
             }
             default:
             {
-                io << "unrecognized marshalling bytecode " << *it << " at " << (it - begin) << "\n";
+                io << "in display(): unrecognized marshalling bytecode " << *it << " at " << (it - begin) << "\n";
                 throw UnknownLayoutBytecode();
             }
         }
@@ -287,7 +287,7 @@ tuple<uint8_t*, MemoryLayout::const_iterator>
             }
 
             default:
-                throw std::runtime_error("unrecognized marshalling bytecode");
+                throw std::runtime_error("in init(): unrecognized marshalling bytecode");
         }
     }
 
