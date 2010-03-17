@@ -45,7 +45,7 @@ void Typelib::display(std::ostream& io, MemoryLayout::const_iterator const begin
             }
             default:
             {
-                io << "in display(): unrecognized marshalling bytecode " << *it << " at " << (it - begin) << "\n";
+                io << "unrecognized marshalling bytecode " << *it << " at " << (it - begin) << "\n";
                 throw UnknownLayoutBytecode();
             }
         }
@@ -254,7 +254,7 @@ tuple<uint8_t*, MemoryLayout::const_iterator>
 {
 
     MemoryLayout::const_iterator it;
-    for (it = begin; it != end; ++it)
+    for (it = begin; it != end && *it != MemLayout::FLAG_END; ++it)
     {
         switch(*it)
         {
