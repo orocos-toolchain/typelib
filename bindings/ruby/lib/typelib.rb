@@ -311,7 +311,7 @@ module Typelib
         def self.from_ruby(arg)
             if arg.kind_of?(Hash) then new(arg)
             else
-                raise ArgumentError, "cannot initialize a value of type #{expected_type} from #{arg}"
+                raise ArgumentError, "cannot initialize a value of type #{self} from #{arg.inspect}"
             end
         end
 
