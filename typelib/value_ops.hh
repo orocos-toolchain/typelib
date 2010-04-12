@@ -1,5 +1,5 @@
 #ifndef TYPELIB_VALUE_OPS_HH
-#define TYPELIB_VALUE_OPS_CC
+#define TYPELIB_VALUE_OPS_HH
 
 #include <typelib/memory_layout.hh>
 #include <typelib/value.hh>
