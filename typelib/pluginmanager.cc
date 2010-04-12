@@ -56,6 +56,10 @@ PluginManager::~PluginManager()
 {
     clear(m_importers);
     clear(m_exporters);
+    for (std::vector<TypeDefinitionPlugin*>::iterator it = m_definition_plugins.begin();
+            it != m_definition_plugins.end(); ++it)
+        delete *it;
+    m_definition_plugins.clear();
     //for (vector<void*>::iterator it = m_library_handles.begin(); it != m_library_handles.end(); ++it)
     //    dlclose(*it);
 }
@@ -157,7 +161,7 @@ Registry* PluginManager::load(std::string const& kind, std::istream& stream, uti
 void PluginManager::load(std::string const& kind, std::istream& stream, utilmm::config_set const& config
         , Registry& into )
 {
-    Importer* importer = PluginManager::self()->importer(kind);
+    std::auto_ptr<Importer> importer(PluginManager::self()->importer(kind));
     importer->load(stream, config, into);
 }
 Registry* PluginManager::load(std::string const& kind, std::string const& file, utilmm::config_set const& config)
@@ -169,7 +173,7 @@ Registry* PluginManager::load(std::string const& kind, std::string const& file, 
 void PluginManager::load(std::string const& kind, std::string const& file, utilmm::config_set const& config
         , Registry& into)
 {
-    Importer* importer = PluginManager::self()->importer(kind);
+    auto_ptr<Importer> importer(PluginManager::self()->importer(kind));
     importer->load(file, config, into);
 }
 
