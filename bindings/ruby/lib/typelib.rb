@@ -572,6 +572,14 @@ module Typelib
         end
     end
 
+    def self.to_ruby(value)
+        if value.respond_to?(:to_ruby)
+            value.to_ruby
+        else
+            value
+        end
+    end
+
     convert_from_ruby String, '/std/string' do |value, typelib_type|
         typelib_type.wrap([value.length, value].pack("QA#{value.length}"))
     end
