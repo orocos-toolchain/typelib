@@ -27,7 +27,7 @@ static VALUE kernel_is_immediate(VALUE klass, VALUE object)
  */
 static VALUE kernel_is_numeric(VALUE klass, VALUE object)
 { 
-    return (FIXNUM_P(object) || TYPE(object) == T_FLOAT) ? Qtrue : Qfalse;
+    return (FIXNUM_P(object) || TYPE(object) == T_FLOAT || TYPE(object) == T_BIGNUM) ? Qtrue : Qfalse;
 }
 
 
