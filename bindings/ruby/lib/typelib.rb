@@ -288,9 +288,6 @@ module Typelib
             init = init.first if init.size == 1 && Hash === init.first
 
 	    fields = self.class.fields
-	    if fields.size != init.size
-		raise ArgumentError, "wrong number of arguments (#{init.size} for #{fields.size})"
-	    end
 	    
             # init is either an array of values (the fields in order) or a hash
             # (named parameters)

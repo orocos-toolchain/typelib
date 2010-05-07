@@ -66,9 +66,6 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal(30, a.b)
         assert_equal(20, a.c)
         assert_equal(10, a.d)
-
-	assert_raises(ArgumentError) { a_type.new :b => 10 }
-	assert_raises(ArgumentError) { a_type.new 10 }
     end
 
     def test_compound_get
