@@ -339,6 +339,15 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal([10], elements[0].to_a)
     end
 
+    def test_container_clear
+        value = make_registry.get("StdCollections").new
+
+        value.dbl_vector.insert(10)
+        assert(!value.dbl_vector.empty?)
+        value.dbl_vector.clear
+        assert(value.dbl_vector.empty?)
+    end
+
     def test_define_container
         reg = make_registry
         assert_raises(ArgumentError) { reg.define_container("/blabla") }
