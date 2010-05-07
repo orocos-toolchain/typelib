@@ -1023,6 +1023,10 @@ module Typelib
     def self.from_ruby(arg, expected_type)      
         if arg.kind_of?(expected_type) 
             return arg
+        elsif arg.class == expected_type
+            value = expected_type.new
+            Typelib.copy(value, arg)
+            value
         elsif converter = convertions[[arg.class, expected_type.name]]
             converter.call(arg, expected_type)
         elsif expected_type.respond_to?(:from_ruby)

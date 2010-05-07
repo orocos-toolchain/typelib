@@ -135,6 +135,9 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         b0.f = array
 
         assert_equal [0, 1, 2], b0.f.to_a
+
+        a = make_registry.get("/struct A").new
+        b0.a = a
     end
 
     def test_array_def
