@@ -408,6 +408,10 @@ namespace Typelib
         virtual void destroy(void* ptr) const = 0;
         virtual bool visit(void* ptr, ValueVisitor& visitor) const = 0;
 
+        /** Removes all elements from this container
+         */
+        virtual void clear(void* ptr) const = 0;
+
         /** Insert the given element \c v into the container at +ptr+
          */
         virtual void insert(void* ptr, Value v) const = 0;

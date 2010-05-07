@@ -12,6 +12,7 @@ public:
     size_t getElementCount(void const* ptr) const;
     void init(void* ptr) const;
     void destroy(void* ptr) const;
+    void clear(void*) const;
     long getNaturalSize() const;
     void insert(void* ptr, Typelib::Value v) const;
     bool erase(void* ptr, Typelib::Value v) const;
@@ -43,6 +44,7 @@ public:
     size_t getElementCount(void const* ptr) const;
     void init(void* ptr) const;
     void destroy(void* ptr) const;
+    void clear(void*) const;
 
     long getNaturalSize() const;
 

@@ -29,6 +29,10 @@ void Vector::destroy(void* ptr) const
 {
     reinterpret_cast< std::vector<int8_t>* >(ptr)->~vector<int8_t>();
 }
+void Vector::clear(void* ptr) const
+{
+    reinterpret_cast< std::vector<int8_t>* >(ptr)->clear();
+}
 
 long Vector::getNaturalSize() const
 {
@@ -278,6 +282,11 @@ void String::destroy(void* ptr) const
 {
     reinterpret_cast< std::string* >(ptr)->~string();
 }
+void String::clear(void* ptr) const
+{
+    reinterpret_cast< std::string* >(ptr)->clear();
+}
+
 
 long String::getNaturalSize() const
 {

@@ -432,6 +432,21 @@ static VALUE container_length(VALUE self)
 
 /*
  * call-seq:
+ *  container.clear => value
+ *
+ * Removes all elements from that container
+ */
+static VALUE container_clear(VALUE self)
+{
+    Value value = rb2cxx::object<Value>(self);
+    Container const& type(dynamic_cast<Container const&>(value.getType()));
+
+    type.clear(value.getData());
+    return Qnil;
+}
+
+/*
+ * call-seq:
  *  container.insert(element) => container
  *
  * Inserts a new element in the container
@@ -606,6 +621,7 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_singleton_method(cContainer, "natural_size",   RUBY_METHOD_FUNC(container_natural_size), 0);
     rb_define_method(cContainer, "length",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "size",    RUBY_METHOD_FUNC(container_length), 0);
+    rb_define_method(cContainer, "clear",    RUBY_METHOD_FUNC(container_clear), 0);
     rb_define_method(cContainer, "insert",    RUBY_METHOD_FUNC(container_insert), 1);
     rb_define_method(cContainer, "each",      RUBY_METHOD_FUNC(container_each), 0);
     rb_define_method(cContainer, "erase",     RUBY_METHOD_FUNC(container_erase), 1);
