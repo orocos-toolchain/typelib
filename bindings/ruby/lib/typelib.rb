@@ -449,12 +449,12 @@ module Typelib
 
 	rescue ArgumentError => e
 	    if e.message =~ /^no field \w+ in /
-		raise e, (e.message + " in #{name}(#{self.class.name})")
+		raise e, (e.message + " in #{name}(#{self.class.name})"), e.backtrace
 	    else
-		raise e, "no field #{name} in #{self.class.name}"
+		raise e, (e.message + " while setting #{name} in #{self.class.name}"), e.backtrace
 	    end
 	rescue TypeError => e
-	    raise e, "#{e.message} for #{self.class.name}.#{name}"
+	    raise e, "#{e.message} for #{self.class.name}.#{name}", e.backtrace
 	end
 	# Returns the value of the field +name+
         def [](name)
