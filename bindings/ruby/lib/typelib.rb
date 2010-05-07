@@ -340,9 +340,7 @@ module Typelib
                 @fields = get_fields.map! do |name, offset, type|
                     if !method_defined?(name)
 			define_method(name) { self[name] }
-                        if type.writable? || type < CompoundType
-                            define_method("#{name}=") { |value| self[name] = value }
-                        end
+                        define_method("#{name}=") { |value| self[name] = value }
                     end
                     if !singleton_class.method_defined?(name)
                         singleton_class.send(:define_method, name) { || type }
@@ -432,11 +430,21 @@ module Typelib
             name = name.to_s
             attribute = get_field(name)
 	    if Hash === value
-		value.each { |k, v| attribute[k] = v }
-            elsif attribute.respond_to?(:set_values)
+		return value.each { |k, v| attribute[k] = v }
+            end
+
+            # Now, try other methods. Either delegate to the subclass if the
+            # subclass wants it, or convert the type from Ruby and copy
+            if attribute.respond_to?(:set_values)
                 attribute.set_values(value)
 	    else
-		set_field(name, Typelib.from_ruby(value, self.class[name])) 
+                value = Typelib.from_ruby(value, self.class[name])
+
+                # If +value+ is already a typelib value, try to copy the attribute
+                if attribute.kind_of?(Typelib::Type) && value.kind_of?(Typelib::Type)
+                    return Typelib.copy(attribute, value)
+                end
+		set_field(name, value)
 	    end
 
 	rescue ArgumentError => e

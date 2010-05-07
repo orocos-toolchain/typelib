@@ -47,7 +47,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 
 	b = make_registry.get("/struct B").new
         assert(b.respond_to?(:h))
-        assert(! b.respond_to?(:h=))
+        assert(b.respond_to?(:h=))
         assert(b.h.kind_of?(Typelib::ArrayType))
         assert(b.respond_to?(:a))
         assert(b.respond_to?(:a=))
@@ -124,6 +124,17 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal(30, b.a.b)
         assert_equal(20, b.a.c)
         assert_equal(10, b.a.d)
+    end
+
+    def test_compound_complex_field_assignment
+        b0 = make_registry.get("/struct B").new
+        array = make_registry.get("/float[3]").new
+        3.times do |i|
+            array[i] = i
+        end
+        b0.f = array
+
+        assert_equal [0, 1, 2], b0.f.to_a
     end
 
     def test_array_def
