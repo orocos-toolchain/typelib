@@ -62,6 +62,7 @@ namespace Typelib
     void destroy(uint8_t* data, MemoryLayout const& ops);
 
     void copy(Value dst, Value src);
+    void copy(void* dst, void* src, Type const& type);
     bool compare(Value dst, Value src);
     void display(std::ostream& io,
             MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end);

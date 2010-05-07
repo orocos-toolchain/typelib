@@ -227,6 +227,20 @@ class TC_Value < Test::Unit::TestCase
 	assert_raises(ArgumentError) { Typelib.memcpy(buffer, str, 8) }
     end
 
+    def test_copy
+        r0 = make_registry
+        r1 = make_registry
+
+        type0 = r0.get "/struct B"
+        type1 = r1.get "/struct B"
+
+        v0 = type0.new({:a => {:a => 20, :b => 50, :c => 4, :d => 30}, :x => 230})
+        v1 = type1.new
+        assert !v1.memory_eql?(v0)
+        Typelib.copy(v1, v0)
+        assert v1.memory_eql?(v0)
+    end
+
     def test_nan_handling
         registry = make_registry
         lib = Library.open('libtest_ruby.so', registry)

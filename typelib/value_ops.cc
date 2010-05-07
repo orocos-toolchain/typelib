@@ -229,9 +229,14 @@ void Typelib::copy(Value dst, Value src)
     if (dst.getType() != src.getType())
         throw std::runtime_error("requested copy with incompatible types");
 
-    uint8_t* out_buffer = reinterpret_cast<uint8_t*>(dst.getData());
-    uint8_t* in_buffer  = reinterpret_cast<uint8_t*>(src.getData());
-    MemoryLayout ops = layout_of(dst.getType());
+    copy(dst.getData(), src.getData(), src.getType());
+}
+
+void Typelib::copy(void* dst, void* src, Type const& type)
+{
+    uint8_t* out_buffer = reinterpret_cast<uint8_t*>(dst);
+    uint8_t* in_buffer  = reinterpret_cast<uint8_t*>(src);
+    MemoryLayout ops = layout_of(type);
     ValueOps::copy(out_buffer, in_buffer, ops.begin(), ops.end());
 }
 

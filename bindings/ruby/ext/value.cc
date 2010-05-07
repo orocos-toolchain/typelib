@@ -475,6 +475,28 @@ static void typelib_validate_value_arg(VALUE arg, void*& data, size_t& size)
 }
 
 /* call-seq:
+ *  Typelib.copy(to, from) => to
+ *
+ * Proper copy of a value to another. +to+ and +from+ do not have to be from the
+ * same registry, as long as the types match
+ */
+static VALUE typelib_copy(VALUE, VALUE to, VALUE from)
+{
+    Value v_from = rb2cxx::object<Value>(from);
+    Value v_to   = rb2cxx::object<Value>(to);
+
+    if (v_from.getType() != v_to.getType())
+    {
+        // Do a deep check for type equality
+        if (!v_from.getType().isSame(v_to.getType()))
+            rb_raise(rb_eArgError, "cannot copy: types are not compatible");
+    }
+    Typelib::copy(v_to.getData(), v_from.getData(), v_from.getType());
+    return Qnil;
+}
+
+
+/* call-seq:
  *  Typelib.memcpy(to, from, size) => to
  *
  * Copies +size+ bytes from the memory in +to+ to the memory in +from+.  +to+
@@ -514,6 +536,7 @@ static VALUE typelib_memcpy(VALUE, VALUE to, VALUE from, VALUE size)
 void typelib_ruby::Typelib_init_values()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
+    rb_define_singleton_method(mTypelib, "copy", RUBY_METHOD_FUNC(typelib_copy), 2);
     rb_define_singleton_method(mTypelib, "memcpy", RUBY_METHOD_FUNC(typelib_memcpy), 3);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
