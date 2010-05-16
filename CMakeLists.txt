@@ -18,6 +18,7 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 OLD)
 endif(COMMAND cmake_policy)
 
+add_definitions(-Wall)
 CMAKE_USE_FULL_RPATH("${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib/typelib")
 
 PKGCONFIG(utilmm Utilmm_INCLUDE_DIR Utilmm_LINK_DIR Utilmm_LIBRARIES Utilmm_CFLAGS)
