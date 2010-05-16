@@ -595,6 +595,40 @@ void Typelib::dump(uint8_t const* v, int fd, MemoryLayout const& ops)
         throw std::runtime_error("internal error in the marshalling process");
 }
 
+void Typelib::dump(Value v, FILE* fd)
+{
+    MemoryLayout ops;
+    MemLayout::Visitor visitor(ops);
+    visitor.apply(v.getType());
+    return dump(v, fd, ops);
+}
+
+void Typelib::dump(Value v, FILE* fd, MemoryLayout const& ops)
+{
+    dump(reinterpret_cast<uint8_t const*>(v.getData()), fd, ops);
+}
+
+struct FileOutputStream : public ValueOps::OutputStream
+{
+    FILE* fd;
+    FileOutputStream(FILE* fd)
+        : fd(fd) {}
+
+    void write(uint8_t const* data, size_t size)
+    {
+        ::fwrite(data, size, 1, fd);
+    }
+};
+
+void Typelib::dump(uint8_t const* v, FILE* fd, MemoryLayout const& ops)
+{
+    FileOutputStream stream(fd);
+    MemoryLayout::const_iterator end = ValueOps::dump(
+            v, 0, stream, ops.begin(), ops.end()).get<1>();
+    if (end != ops.end())
+        throw std::runtime_error("internal error in the marshalling process");
+}
+
 
 struct ByteCounterStream : public ValueOps::OutputStream
 {

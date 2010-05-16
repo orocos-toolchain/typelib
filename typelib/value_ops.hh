@@ -5,6 +5,7 @@
 #include <typelib/value.hh>
 #include <boost/tuple/tuple.hpp>
 #include <iosfwd>
+#include <stdio.h>
 
 namespace Typelib
 {
@@ -79,6 +80,10 @@ namespace Typelib
     void dump(Value v, int fd);
     void dump(Value v, int fd, MemoryLayout const& ops);
     void dump(uint8_t const* v, int fd, MemoryLayout const& ops);
+
+    void dump(Value v, FILE* fd);
+    void dump(Value v, FILE* fd, MemoryLayout const& ops);
+    void dump(uint8_t const* v, FILE* fd, MemoryLayout const& ops);
 
     size_t getDumpSize(Value v);
     size_t getDumpSize(Value v, MemoryLayout const& ops);
