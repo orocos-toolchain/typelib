@@ -224,11 +224,11 @@ struct AlignmentBaseTypeVisitor : public TypeVisitor
 
     virtual bool visit_ (NullType const& type) { throw UnsupportedType(type, "cannot represent alignment of null types"); }
     virtual bool visit_ (OpaqueType const& type) { throw UnsupportedType(type, "cannot represent alignment of opaque types"); };
-    virtual bool visit_ (Numeric const& type) { handleType(type); }
-    virtual bool visit_ (Enum const& type) { handleType(type); }
+    virtual bool visit_ (Numeric const& type) { return handleType(type); }
+    virtual bool visit_ (Enum const& type)    { return handleType(type); }
 
-    virtual bool visit_ (Pointer const& type) { handleType(type); }
-    virtual bool visit_ (Container const& type) { handleType(type); }
+    virtual bool visit_ (Pointer const& type) { return handleType(type); }
+    virtual bool visit_ (Container const& type) { return handleType(type); }
     // arrays and compound are handled recursively
 
     static Type const* find(Type const& type)
