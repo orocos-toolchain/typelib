@@ -9,7 +9,6 @@ using namespace std;
 void Typelib::display(std::ostream& io, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
 {
     io << "displaying memory layout of size " << end - begin << "\n";
-    int line = 0;
     for (MemoryLayout::const_iterator it = begin; it != end; ++it)
     {
         switch(*it)

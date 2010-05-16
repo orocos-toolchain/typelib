@@ -137,7 +137,6 @@ namespace
     }
     bool IDLExportVisitor::visit_(Compound const& type, Field const& field)
     { 
-        Type const& field_type(field.getType());
         m_stream
             << m_indent
             << idl_type_identifier(field.getType(), m_exporter, m_opaque_as_any, field.getName())
@@ -420,7 +419,7 @@ void IDLExport::save
 	size_t ns_size = utilmm::split(target_namespace, "/").size();
 	string indent_string = string(ns_size * 4, ' ');
 
-	if (m_blob_threshold && type->getSize() > m_blob_threshold)
+	if (m_blob_threshold && static_cast<int>(type->getSize()) > m_blob_threshold)
 	{
 	    adaptNamespace(stream, target_namespace);
 	    stream << indent_string << "typedef sequence<octet> " << type->getBasename() << ";\n";
