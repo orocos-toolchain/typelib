@@ -6,6 +6,9 @@ ADD_LIBRARY(typeLib SHARED
 set_source_files_properties(pluginmanager.cc PROPERTIES
    COMPILE_FLAGS -DTYPELIB_PLUGIN_PATH="\\"${CMAKE_INSTALL_PREFIX}/lib/typelib\\"")
 
+set_source_files_properties(endianness.cc PROPERTIES
+    COMPILE_FLAGS -fno-strict-aliasing)
+
 target_link_libraries(typeLib ${Utilmm_LIBRARIES} ${CMAKE_DL_LIBS})
 #TARGET_LINK_LIBRARIES(typeLib typeLang_c typeLang_tlb typeLang_idl)
 
