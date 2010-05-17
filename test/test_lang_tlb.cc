@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE( test_tlb_idempotent )
 BOOST_AUTO_TEST_CASE( test_tlb_import )
 {
     PluginManager::self manager;
-    Importer* importer = manager->importer("tlb");
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
 
     {

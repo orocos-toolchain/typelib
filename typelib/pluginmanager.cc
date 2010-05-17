@@ -127,7 +127,7 @@ void PluginManager::save(std::string const& kind, Registry const& registry, std:
 }
 void PluginManager::save(std::string const& kind, utilmm::config_set const& config, Registry const& registry, std::ostream& into)
 {
-    Exporter* exporter = PluginManager::self()->exporter(kind);
+    auto_ptr<Exporter> exporter(PluginManager::self()->exporter(kind));
     exporter->save(into, config, registry);
 }
 

@@ -62,7 +62,7 @@ static void import_test_types(Registry& registry)
 
     utilmm::config_set config;
     PluginManager::self manager;
-    Importer* importer = manager->importer("c");
+    auto_ptr<Importer> importer(manager->importer("c"));
     config.set("include", TEST_DATA_PATH(".."));
     config.set("define", "GOOD");
     BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );

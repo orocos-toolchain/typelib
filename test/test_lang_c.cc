@@ -14,7 +14,7 @@
 
 #include <antlr/ANTLRException.hpp>
 using namespace Typelib;
-using std::string;
+using namespace std;
 using utilmm::split;
 using utilmm::join;
 
@@ -24,7 +24,7 @@ static void import_test_types(Registry& registry)
 
     utilmm::config_set config;
     PluginManager::self manager;
-    Importer* importer = manager->importer("c");
+    auto_ptr<Importer> importer(manager->importer("c"));
     config.set("include", TEST_DATA_PATH(".."));
     config.set("define", "GOOD");
     importer->load(test_file, config, registry);
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE( test_strict_c_import )
 {
     static const char* test_file = TEST_DATA_PATH("test_cimport.h");
     PluginManager::self manager;
-    Importer* importer = manager->importer("c");
+    auto_ptr<Importer> importer(manager->importer("c"));
 
     utilmm::config_set config;
     config.set("cxx", "false");
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE( test_c_import )
     static const char* test_file = TEST_DATA_PATH("test_cimport.h");
 
     PluginManager::self manager;
-    Importer* importer = manager->importer("c");
+    auto_ptr<Importer> importer(manager->importer("c"));
 
     {
 	Registry temp_registry;

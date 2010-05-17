@@ -9,6 +9,7 @@
 #include <typelib/value.hh>
 #include <typelib/endianness.hh>
 using namespace Typelib;
+using namespace std;
 
 #include "test_cimport.1"
 
@@ -33,7 +34,7 @@ BOOST_AUTO_TEST_CASE( test_value_struct )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    Importer* importer = manager->importer("c");
+    auto_ptr<Importer> importer(manager->importer("c"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
@@ -102,7 +103,7 @@ BOOST_AUTO_TEST_CASE( test_value_endian_swap )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    Importer* importer = manager->importer("c");
+    auto_ptr<Importer> importer(manager->importer("c"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
@@ -137,7 +138,7 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    Importer* importer = manager->importer("c");
+    auto_ptr<Importer> importer(manager->importer("c"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
@@ -233,7 +234,7 @@ BOOST_AUTO_TEST_CASE( test_apply_endian_swap )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    Importer* importer = manager->importer("c");
+    auto_ptr<Importer> importer(manager->importer("c"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
