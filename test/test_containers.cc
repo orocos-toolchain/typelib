@@ -9,6 +9,7 @@
 #include <typelib/typemodel.hh>
 #include <typelib/registry.hh>
 #include <typelib/value.hh>
+#include <typelib/value_ops.hh>
 #include "test_cimport.1"
 #include <string.h>
 using namespace Typelib;
@@ -31,28 +32,6 @@ BOOST_AUTO_TEST_CASE( test_vector_assumptions )
         values.resize(10);
         BOOST_REQUIRE_EQUAL(10, values.size());
         BOOST_REQUIRE_EQUAL(10 * sizeof(vector<double>), reinterpret_cast< vector<int8_t>& >(values).size());
-    }
-
-    // It is expected that some byte-copies operations are valid with vectors
-    // The test do not really do anything by itself. Result should be checked
-    // with Valgrind
-    {
-        vector< vector<int32_t> > values;
-        values.resize(10);
-        for (int i = 0; i < 10; ++i)
-            values[i].resize(i + 1);
-
-        memmove(&values[5], &values[6], sizeof(vector<int32_t>) * 4);
-
-        {
-            vector<uint8_t>* raw_values = reinterpret_cast< vector<uint8_t>* >(&values);
-            raw_values->resize(raw_values->size() - sizeof(vector<int32_t>));
-        }
-
-        for (int i = 0; i < 5; ++i)
-            BOOST_REQUIRE_EQUAL(i + 1, values[i].size());
-        for (int i = 5; i < 9; ++i)
-            BOOST_REQUIRE_EQUAL(i + 2, values[i].size());
     }
 }
 
@@ -187,5 +166,65 @@ BOOST_AUTO_TEST_CASE( test_vector_visit )
     BOOST_REQUIRE_EQUAL(10, visitor.values.size());
     for (int i = 0; i < 10; ++i)
         BOOST_REQUIRE_EQUAL(i, visitor.values[i]);
+}
+
+BOOST_AUTO_TEST_CASE( test_erase_collection_of_collections )
+{
+    Registry registry;
+    import_test_types(registry);
+    Container const& inside = Container::createContainer(registry, "/std/vector", *registry.get("int32_t"));
+    Container const& container = Container::createContainer(registry, "/std/vector", inside);
+
+    std::vector< std::vector<int32_t> > v;
+    v.resize(10);
+    for (int i = 0; i < 10; ++i)
+    {
+        v[i].resize(10);
+        for (int j = 0; j < 10; ++j)
+            v[i][j] = i * 100 + j;
+    }
+    std::vector<int32_t> new_element;
+    new_element.push_back(1000);
+    v.insert(v.begin() + 5, new_element);
+
+    BOOST_REQUIRE(container.erase(&v, Value(&new_element, inside)));
+
+    BOOST_REQUIRE_EQUAL(10, v.size());
+
+    for (int i = 0; i < 10; ++i)
+    {
+        BOOST_REQUIRE_EQUAL(10, v[i].size());
+        for (int j = 0; j < 10; ++j)
+            BOOST_REQUIRE_EQUAL(i * 100 + j, v[i][j]);
+    }
+}
+
+BOOST_AUTO_TEST_CASE( test_copy_collection_of_collections )
+{
+    Registry registry;
+    import_test_types(registry);
+    Container const& inside = Container::createContainer(registry, "/std/vector", *registry.get("int32_t"));
+    Container const& container = Container::createContainer(registry, "/std/vector", inside);
+
+    std::vector< std::vector<int32_t> > v;
+    v.resize(10);
+    for (int i = 0; i < 10; ++i)
+    {
+        v[i].resize(10);
+        for (int j = 0; j < 10; ++j)
+            v[i][j] = i * 100 + j;
+    }
+
+    std::vector< std::vector<int32_t> > copy;
+    Typelib::copy(Value(&copy, container), Value(&v, container));
+
+    for (int i = 0; i < 10; ++i)
+    {
+        BOOST_REQUIRE_EQUAL(10, v[i].size());
+        for (int j = 0; j < 10; ++j)
+            BOOST_REQUIRE_EQUAL(i * 100 + j, v[i][j]);
+    }
+
+    BOOST_REQUIRE( Typelib::compare(Value(&copy, container), Value(&v, container)) );
 }
 

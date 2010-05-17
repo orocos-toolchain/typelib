@@ -5,6 +5,11 @@
 
 class Vector : public Typelib::Container
 {
+    bool is_memcpy;
+    void resize(std::vector<uint8_t>* ptr, size_t new_size) const;
+    void copy(std::vector<uint8_t>* dst_ptr, size_t dst_idx, std::vector<uint8_t>* src_ptr, size_t src_idx, size_t count) const;
+    void erase(std::vector<uint8_t>* ptr, size_t idx) const;
+
 public:
     static std::string fullName(Typelib::Type const& on);
     Vector(Typelib::Type const& on);

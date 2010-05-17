@@ -14,7 +14,11 @@ string Vector::fullName(Type const& on)
 { return "/std/vector<" + on.getName() + ">"; }
 
 Vector::Vector(Type const& on)
-    : Container("/std/vector", fullName(on), getNaturalSize(), on) {}
+    : Container("/std/vector", fullName(on), getNaturalSize(), on)
+{
+    MemoryLayout ops = Typelib::layout_of(on);
+    is_memcpy = isElementMemcpy(ops.begin(), ops.end());
+}
 
 size_t Vector::getElementCount(void const* ptr) const
 {
@@ -27,16 +31,47 @@ void Vector::init(void* ptr) const
 }
 void Vector::destroy(void* ptr) const
 {
-    reinterpret_cast< std::vector<int8_t>* >(ptr)->~vector<int8_t>();
+    std::vector<uint8_t>* vector_ptr =
+        reinterpret_cast< std::vector<uint8_t>* >(ptr);
+    resize(vector_ptr, 0);
+    vector_ptr->~vector<uint8_t>();
 }
 void Vector::clear(void* ptr) const
 {
-    reinterpret_cast< std::vector<int8_t>* >(ptr)->clear();
+    std::vector<uint8_t>* vector_ptr =
+        reinterpret_cast< std::vector<uint8_t>* >(ptr);
+    resize(vector_ptr, 0);
 }
 
 long Vector::getNaturalSize() const
 {
     return sizeof(std::vector<void*>);
+}
+
+void Vector::resize(std::vector<uint8_t>* ptr, size_t new_size) const
+{
+    Type const& element_t = getIndirection();
+    size_t element_size = getIndirection().getSize();
+
+    size_t old_raw_size   = ptr->size();
+    size_t old_size       = getElementCount(ptr);
+    size_t new_raw_size   = new_size * element_size;
+
+    if (!is_memcpy && old_size > new_size)
+    {
+        // Need to destroy the old elements
+        for (size_t i = new_raw_size; i < old_raw_size; i += element_size)
+            Typelib::destroy(Value(&(*ptr)[i], element_t));
+    }
+
+    ptr->resize(new_raw_size);
+
+    if (!is_memcpy && old_size < new_size)
+    {
+        // Need to initialize the new elements
+        for (size_t i = old_raw_size; i < new_raw_size; i += element_size)
+            Typelib::init(Value(&(*ptr)[i], element_t));
+    }
 }
 
 void Vector::insert(void* ptr, Value v) const
@@ -47,10 +82,10 @@ void Vector::insert(void* ptr, Value v) const
     std::vector<uint8_t>* vector_ptr =
         reinterpret_cast< std::vector<uint8_t>* >(ptr);
 
-    size_t offset = vector_ptr->size();
-    vector_ptr->resize(offset + getIndirection().getSize());
+    size_t size = getElementCount(ptr);
+    resize(vector_ptr, size + 1);
     Typelib::copy(
-            Value(&(*vector_ptr)[offset], getIndirection()),
+            Value(&(*vector_ptr)[size * getIndirection().getSize()], getIndirection()),
             v);
 }
 
@@ -73,16 +108,22 @@ bool Vector::erase(void* ptr, Value v) const
         Value    element_v(element_ptr, element_t);
         if (Typelib::compare(element_v, v))
         {
-            // First, destroy the object at this place
-            Typelib::destroy(element_v);
-            // Then shrink the vector
-            vector<uint8_t>::iterator element_it =
-                vector_ptr->begin() + i * element_size;
-            vector_ptr->erase(element_it, element_it + element_size);
+            erase(vector_ptr, i);
             return true;
         }
     }
     return false;
+}
+
+void Vector::erase(std::vector<uint8_t>* ptr, size_t idx) const
+{
+    // Copy the remaining elements to the right place
+    size_t element_count = getElementCount(ptr);
+    if (element_count > idx + 1)
+        copy(ptr, idx, ptr, idx + 1, element_count - idx - 1);
+
+    // Then shrink the vector
+    resize(ptr, element_count - 1);
 }
 
 bool Vector::compare(void* ptr, void* other) const
@@ -117,20 +158,35 @@ void Vector::copy(void* dst, void* src) const
     std::vector<uint8_t>* src_ptr =
         reinterpret_cast< std::vector<uint8_t>* >(src);
 
-    Type const& element_t = getIndirection();
     size_t element_count = getElementCount(src_ptr);
-    size_t element_size  = element_t.getSize();
-    dst_ptr->resize(element_t.getSize() * element_count);
+    resize(dst_ptr, element_count);
+    copy(dst_ptr, 0, src_ptr, 0, element_count);
+}
 
-    uint8_t* base_src = &(*src_ptr)[0];
-    uint8_t* base_dst = &(*dst_ptr)[0];
-    for (size_t i = 0; i < element_count; ++i)
+void Vector::copy(std::vector<uint8_t>* dst_ptr, size_t dst_idx, std::vector<uint8_t>* src_ptr, size_t src_idx, size_t count) const
+{
+    Type const& element_t = getIndirection();
+    size_t element_size = element_t.getSize();
+    uint8_t* base_src = &(*src_ptr)[src_idx * element_size];
+    uint8_t* base_dst = &(*dst_ptr)[dst_idx * element_size];
+    if (is_memcpy)
     {
-        Typelib::copy(
-                Value(base_dst + i * element_size, element_t),
-                Value(base_src + i * element_size, element_t));
+        if (dst_ptr == src_ptr)
+            memmove(base_dst, base_src, element_size * count);
+        else
+            memcpy(base_dst, base_src, element_size * count);
+    }
+    else
+    {
+        for (size_t i = 0; i < count; ++i)
+        {
+            Typelib::copy(
+                    Value(base_dst + i * element_size, element_t),
+                    Value(base_src + i * element_size, element_t));
+        }
     }
 }
+
 
 bool Vector::visit(void* ptr, ValueVisitor& visitor) const
 {
@@ -162,10 +218,7 @@ void Vector::delete_if_impl(void* ptr, DeleteIfPredicate& pred) const
         Value    element_v(element_ptr, element_t);
         if (pred.should_delete(element_v))
         {
-            Typelib::destroy(element_v);
-            vector<uint8_t>::iterator element_it =
-                vector_ptr->begin() + i * element_size;
-            vector_ptr->erase(element_it, element_it + element_size);
+            erase(vector_ptr, i);
             element_count--;
         }
         else
@@ -219,10 +272,10 @@ Container::MarshalOps::const_iterator Vector::load(
 
     Type const& element_t = getIndirection();
     size_t      element_size = element_t.getSize();
-    vector_ptr->resize(element_count * element_size);
+    resize(vector_ptr, element_count);
 
     MarshalOps::const_iterator it = begin;
-    if (isElementMemcpy(begin, end))
+    if (is_memcpy)
     {
         size_t size       = *(++it) * element_count;
         stream.read(&(*vector_ptr)[0], size);
@@ -230,9 +283,6 @@ Container::MarshalOps::const_iterator Vector::load(
     }
     else
     {
-        for (size_t i = 0; i < element_count; ++i)
-            Typelib::init(Value(&(*vector_ptr)[i * element_size], element_t));
-
         MarshalOps::const_iterator it_end;
         size_t out_offset = 0;
         for (size_t i = 0; i < element_count; ++i)
