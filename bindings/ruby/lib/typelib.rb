@@ -5,8 +5,14 @@ require 'pp'
 
 module Typelib
     class << self
+        # A type name to module mapping of the specializations defined by
+        # Typelib.specialize
         attr_reader :value_specializations
+        # A type name to module mapping of the specializations defined by
+        # Typelib.specialize_model
         attr_reader :type_specializations
+        # A [ruby class, type name] to block mapping of the custom convertions
+        # defined by Typelib.convert_from_ruby
         attr_reader :convertions
     end
 
@@ -14,14 +20,94 @@ module Typelib
     @type_specializations = Hash.new
     @convertions    = Hash.new
 
+    # Adds methods to the type objects.
+    #
+    # The objects returned by registry.get(type_name) are themselves classes.
+    # This method allows to define singleton methods, i.e. methods that will be
+    # available on the type objects returned by Registry#get
+    #
+    # It can be for instance used to convert a typelib value into the
+    # corresponding Ruby type (if there is one).
+    #
+    # For instance, given a hypothetical timeval type that would be defined (in
+    # C) by
+    #
+    #   struct timeval
+    #   {
+    #       int32_t seconds;
+    #       uint32_t microseconds;
+    #   };
+    #
+    # one could make sure that timeval values get automatically converted to
+    # Ruby's Time with
+    #
+    #   Typelib.specialize_model '/timeval' do
+    #     def to_ruby(value)
+    #       Time.at(value.seconds, value.microseconds)
+    #     end
+    #   end
+    #
+    # See Typelib.specialize to add instance methods to the values of a given
+    # Typelib type
     def self.specialize_model(name, &block)
         type_specializations[name] ||= Array.new
         type_specializations[name] << Module.new(&block)
     end
+
+    # Extends instances of a given Typelib type
+    #
+    # This method allows to add methods that are then available on Typelib
+    # values.
+    #
+    # For instance, if we assume that a Vector3 type is defined by
+    #
+    #   struct Vector3
+    #   {
+    #     double data[3];
+    #   };
+    #
+    # Then
+    #
+    #   Typelib.specialize '/Vector3' do
+    #     def +(other_v)
+    #       result = new
+    #       3.times do |i|
+    #         result.data[i] = data[i] + other_v.data[i]
+    #       end
+    #     end
+    #   end
+    #
+    # will make it possible to add two values of the Vector3 type in Ruby
     def self.specialize(name, &block)
         value_specializations[name] ||= Array.new
         value_specializations[name] << Module.new(&block)
     end
+
+    # Define specialized convertions from Ruby objects to Typelib-managed
+    # values.
+    #
+    # For instance, to allow the usage of Time instances to initialize structure
+    # fields of the timeval type presented in Typelib.specialize_model, one
+    # would do
+    #
+    #   Typelib.convert_from_ruby Time, '/timeval' do |value, typelib_type|
+    #     v = typelib_type.new
+    #     v.seconds      = value.tv_sec
+    #     v.microseconds = value.tv_usec
+    #   end
+    #
+    # It will then be possible to do
+    #
+    #   a.time = Time.now
+    #
+    # where 'a' is a value of a structure that has a 'time' field of the timeval
+    # type, as for instance
+    #
+    #   struct A
+    #   {
+    #     timeval time;
+    #   };
+    #
     def self.convert_from_ruby(ruby_class, typename, &block)
         convertions[[ruby_class, typename]] = lambda(&block)
     end 
@@ -37,6 +123,10 @@ module Typelib
     class Type
         # Creates an instance of Type (or one of its subclasses) that represents
         # +arg+.
+        #
+        # If +arg+ is already a Typelib value of the right type, it will be
+        # returned. In other words, it is not guaranteed that the return value
+        # is different from +arg+ itself.
         def self.from_ruby(arg)
             filtered = Typelib.filter_argument(arg, self)
             if filtered.kind_of?(Typelib::Type)
@@ -48,6 +138,7 @@ module Typelib
             end
         end
 
+        # Called by Typelib when a subclass is created.
         def self.subclass_initialize
             if mods = Typelib.type_specializations[name]
                 mods.each { |m| extend m }
@@ -64,6 +155,12 @@ module Typelib
         # It raises ArgumentError if the cast is invalid.
         #
         # The ability to cast can be checked beforehand by using Type.casts_to?
+        #
+        # Note that the return value might be +self+, and that both objects
+        # refer to the same memory zone. Therefore, if one of the two value
+        # objects is used to modify the underlying value, that will be reflected
+        # in the other. Moreover, both values should not be modified in two
+        # different threads without proper locking.
         def cast(target_type)
             if !self.class.casts_to?(target_type)
                 raise ArgumentError, "cannot cast #{self} to #{target_type}"
@@ -71,6 +168,10 @@ module Typelib
             do_cast(target_type)
         end
 
+        # Creates a deep copy of this value.
+        #
+        # It is guaranteed that this value will be referring to a different
+        # memory zone than +self+
 	def dup
 	    new = self.class.new
 	    Typelib.memcpy(new, self, self.class.size)
@@ -78,7 +179,7 @@ module Typelib
         alias clone dup
 
         class << self
-	    # The type registry we belong to
+	    # The Typelib::Registry this type belongs to
             attr_reader :registry
 
 	    # The type's full name (i.e. name and namespace). In typelib,
@@ -106,6 +207,8 @@ module Typelib
 		ns
 	    end
 
+            # Returns the basename part of the type's name, i.e. the type name
+            # without the namespace part.
             def basename(separator = Typelib::NAMESPACE_SEPARATOR)
                 name = do_basename
 		if separator && separator != Typelib::NAMESPACE_SEPARATOR
@@ -114,6 +217,16 @@ module Typelib
 		name
             end
 
+            # Returns the complete name for the type (both namespace and
+            # basename). If +separator+ is set to a value different than
+            # Typelib::NAMESPACE_SEPARATOR, Typelib's namespace separator will
+            # be replaced by the one given in argument.
+            #
+            # For instance,
+            #
+            #   type_t.full_name('::')
+            #
+            # will return the C++ name for the given type
 	    def full_name(separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
 		result = namespace(separator, remove_leading) + basename(separator)
 	    end
@@ -122,9 +235,14 @@ module Typelib
 
 	    # are we a null type ?
 	    def null?; @null end
-            # are we an opaque type ?
+            # True if this type is opaque
+            #
+            # Values from opaque types cannot be manipulated by Typelib. They
+            # are usually used to refer to fields that will be converted first
+            # (by some unspecified means) to a value that Typelib can manipulate
             def opaque?; @opaque end
-	    # returns the pointer-to-self type
+
+	    # Returns the pointer-to-self type
             def to_ptr; registry.build(name + "*") end
 
             def pretty_print(pp) # :nodoc:
@@ -132,6 +250,27 @@ module Typelib
 	    end
 
             alias :__real_new__ :new
+
+            # Creates a new value from either a MemoryZone instance (i.e. a
+            # pointer), or from a marshalled version of a value.
+            #
+            # This is usually used to reload a value marshalled with
+            # to_byte_array
+            #
+            # For instance,
+            #
+            #   type = registry.get 'A'
+            #   value = type.new
+            #   # modify +value+
+            #   marshalled = value.to_byte_array
+            #   # save +marshalled+ to a file (for instance)
+            #
+            # Later on ...
+            #
+            #   # load +marshalled+ from the file
+            #   type = registry.get 'A'
+            #   value = type.wrap(marshalled)
+            #
             def wrap(ptr)
 		if null?
 		    raise TypeError, "this is a null type"
@@ -140,6 +279,11 @@ module Typelib
 		end
 	       	__real_new__(ptr) 
 	    end
+
+            # Creates a new value of the given type.
+            #
+            # Note that the value is *not* initialized. To initialize a value to
+            # zero, one can call Type#zero!
             def new; __real_new__(nil) end
 
 	    # Check if this type is a +typename+. If +typename+
