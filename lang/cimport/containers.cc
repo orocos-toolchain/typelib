@@ -15,9 +15,17 @@ string Vector::fullName(Type const& on)
 
 Vector::Vector(Type const& on)
     : Container("/std/vector", fullName(on), getNaturalSize(), on)
+    , is_memcpy(false)
 {
-    MemoryLayout ops = Typelib::layout_of(on);
-    is_memcpy = isElementMemcpy(ops.begin(), ops.end());
+    try {
+        MemoryLayout ops = Typelib::layout_of(on);
+        is_memcpy = isElementMemcpy(ops.begin(), ops.end());
+    }
+    catch(std::runtime_error)
+    {
+        // No layout for this type. Simply disable memcpy
+        is_memcpy = false;
+    }
 }
 
 size_t Vector::getElementCount(void const* ptr) const
