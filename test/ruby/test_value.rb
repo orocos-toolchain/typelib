@@ -86,7 +86,10 @@ class TC_Value < Test::Unit::TestCase
 	assert_equal(2, as_string.size)
 	assert_equal(5, as_string.unpack('S').first)
 
-        a = make_registry.get('ADef').new :a => 10, :b => 20, :c => 30, :d => 40
+        a = make_registry.get('ADef')
+        # The following line will lead to valgrind complaining. This is
+        # harmless: we access the attribute values before we assign them.
+        a = a.new :a => 10, :b => 20, :c => 30, :d => 40
 	assert_equal([10, 20, 30, 40], a.to_byte_array.unpack('Qicxs'))
     end
 
