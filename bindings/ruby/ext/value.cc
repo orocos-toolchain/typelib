@@ -506,7 +506,7 @@ static void typelib_validate_value_arg(VALUE arg, void*& data, size_t& size)
  *  Typelib.copy(to, from) => to
  *
  * Proper copy of a value to another. +to+ and +from+ do not have to be from the
- * same registry, as long as the types match
+ * same registry, as long as the types can be casted into each other
  */
 static VALUE typelib_copy(VALUE, VALUE to, VALUE from)
 {
@@ -516,7 +516,7 @@ static VALUE typelib_copy(VALUE, VALUE to, VALUE from)
     if (v_from.getType() != v_to.getType())
     {
         // Do a deep check for type equality
-        if (!v_from.getType().isSame(v_to.getType()))
+        if (!v_from.getType().canCastTo(v_to.getType()))
             rb_raise(rb_eArgError, "cannot copy: types are not compatible");
     }
     Typelib::copy(v_to.getData(), v_from.getData(), v_from.getType());
