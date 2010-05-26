@@ -35,8 +35,6 @@ module Typelib
     #
     # Value objects are wrapped into instances of these classes
     class Type
-        @writable = true
-	
         # Creates an instance of Type (or one of its subclasses) that represents
         # +arg+.
         def self.from_ruby(arg)
@@ -122,14 +120,6 @@ module Typelib
 
 	    def to_s; "#<#{superclass.name}: #{name}>" end
 
-	    # check if this is writable
-            def writable?
-                if !defined?(@writable)
-                    superclass.writable?
-                else
-                    @writable
-                end
-            end
 	    # are we a null type ?
 	    def null?; @null end
             # are we an opaque type ?
@@ -233,7 +223,6 @@ module Typelib
 
     # Base class for compound types (structs, unions)
     class CompoundType < Type
-        @writable = false
 	# Initializes this object to the pointer +ptr+, and initializes it
 	# to +init+. Valid values for +init+ are:
 	# * a hash, in which case it is a { field_name => field_value } hash
@@ -433,13 +422,10 @@ module Typelib
     end
 
     class IndirectType < Type
-        @writable = false
     end
 
     # Base class for all arrays
     class ArrayType < IndirectType
-        @writable = false
-
 	def pretty_print(pp) # :nodoc:
 	    all_fields = enum_for(:each_with_index).to_a
 
@@ -475,8 +461,6 @@ module Typelib
 
     # Base class for all pointers
     class PointerType < IndirectType
-        @writable = false
-
         def self.create_null
             result = new
             result.zero!

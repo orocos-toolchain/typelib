@@ -599,7 +599,6 @@ void typelib_ruby::Typelib_init_specialized_types()
     
     cCompound = rb_define_class_under(mTypelib, "CompoundType", cType);
     rb_define_singleton_method(cCompound, "get_fields",   RUBY_METHOD_FUNC(compound_get_fields), 0);
-// rb_define_singleton_method(cCompound, "writable?",  RUBY_METHOD_FUNC(compound_field_is_writable), 1);
     rb_define_method(cCompound, "get_field", RUBY_METHOD_FUNC(compound_field_get), 1);
     rb_define_method(cCompound, "set_field", RUBY_METHOD_FUNC(compound_field_set), 2);
 
