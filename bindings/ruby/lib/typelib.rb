@@ -507,6 +507,10 @@ module Typelib
 		return value.each { |k, v| attribute[k] = v }
             end
 
+            if attribute.kind_of?(Typelib::Type) && value.kind_of?(Typelib::Type)
+                return Typelib.copy(attribute, value)
+            end
+
             # Now, try other methods. Either delegate to the subclass if the
             # subclass wants it, or convert the type from Ruby and copy
             if attribute.respond_to?(:set_values)
