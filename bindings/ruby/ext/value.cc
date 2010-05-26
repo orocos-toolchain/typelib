@@ -206,6 +206,19 @@ static VALUE type_dependencies(VALUE self)
 }
 
 /* call-seq:
+ *  type.casts_to?(other_type) => true or false
+ *
+ * Returns true if a value that is described by +type+ can be manipulated using
+ * +other_type+. This is a weak form of equality
+ */
+static VALUE type_can_cast_to(VALUE self, VALUE to)
+{
+    Type const& from_type(rb2cxx::object<Type>(self));
+    Type const& to_type(rb2cxx::object<Type>(to));
+    return from_type.canCastTo(to_type) ? Qtrue : Qfalse;
+}
+
+/* call-seq:
  *  type.memory_layout(VALUE with_pointers) => [operations]
  *
  * Returns a representation of the MemoryLayout for this type. If
@@ -353,6 +366,21 @@ VALUE value_endian_swap_b(VALUE self, VALUE rb_compile)
     endian_swap(value);
     return self;
 }
+
+static
+VALUE value_do_cast(VALUE self, VALUE target_type)
+{
+    Value& value = rb2cxx::object<Value>(self);
+    Type const& to_type(rb2cxx::object<Type>(target_type));
+
+    if (value.getType() == to_type)
+        return self;
+
+    VALUE registry = rb_iv_get(target_type, "@registry");
+    Value casted(value.getData(), to_type);
+    return cxx2rb::value_wrap(casted, registry, self);
+}
+
 
 /* call-seq:
  *  obj.to_byte_array => a_string
@@ -545,6 +573,7 @@ void typelib_ruby::Typelib_init_values()
     rb_define_singleton_method(cType, "size",          RUBY_METHOD_FUNC(&type_size), 0);
     rb_define_singleton_method(cType, "memory_layout", RUBY_METHOD_FUNC(&type_memory_layout), 0);
     rb_define_singleton_method(cType, "dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
+    rb_define_singleton_method(cType, "casts_to?",     RUBY_METHOD_FUNC(&type_can_cast_to), 1);
     rb_define_method(cType, "__initialize__",   RUBY_METHOD_FUNC(&value_initialize), 1);
     rb_define_method(cType, "to_ruby",      RUBY_METHOD_FUNC(&value_to_ruby), 0);
     rb_define_method(cType, "initialize_from_ruby", RUBY_METHOD_FUNC(&value_from_ruby), 1);
@@ -553,6 +582,7 @@ void typelib_ruby::Typelib_init_values()
     rb_define_method(cType, "endian_swap",      RUBY_METHOD_FUNC(&value_endian_swap), 0);
     rb_define_method(cType, "endian_swap!",      RUBY_METHOD_FUNC(&value_endian_swap_b), 0);
     rb_define_method(cType, "zone_address", RUBY_METHOD_FUNC(&value_address), 0);
+    rb_define_method(cType, "do_cast", RUBY_METHOD_FUNC(&value_do_cast), 1);
     rb_define_singleton_method(cType, "do_basename", RUBY_METHOD_FUNC(type_basename), 0);
     rb_define_singleton_method(cType, "do_namespace", RUBY_METHOD_FUNC(type_do_namespace), 0);
 

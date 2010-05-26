@@ -79,6 +79,23 @@ class TC_Value < Test::Unit::TestCase
 	assert_not_equal(a1, v1)
     end
 
+    def test_value_cast
+        r0 = make_registry
+        r1 = make_registry
+        t0 = r0.get 'StdCollections'
+        t1 = r1.get 'StdCollections'
+
+        v0 = t0.new
+        assert_same v0, v0.cast(t0)
+        v1 = v0.cast(t1)
+
+        assert_not_same v0, v1
+        assert(t0 == t1)
+
+        wrong_type = r1.get 'A'
+        assert_raises(ArgumentError) { v0.cast(wrong_type) }
+    end
+
     def test_byte_array
 	as_string = [5].pack('S')
 	long_t = Registry.new.build("/short")

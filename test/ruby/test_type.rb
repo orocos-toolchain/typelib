@@ -32,6 +32,17 @@ class TC_Type < Test::Unit::TestCase
         assert(type != nil)
     end
 
+    def test_casts_to
+        r0 = make_registry
+        r1 = make_registry
+        t0 = r0.get 'StdCollections'
+        t1 = r1.get 'StdCollections'
+        wrong_type = r1.get 'A'
+        assert t0.casts_to?(t1)
+        assert !t0.casts_to?(wrong_type)
+    end
+
+
     def test_type_names
 	registry = make_registry
 	bla = registry.get "/NS1/Bla/Test"

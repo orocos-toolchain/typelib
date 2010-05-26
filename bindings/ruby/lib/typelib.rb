@@ -74,6 +74,8 @@ module Typelib
     class Type
         @writable = true
 	
+        # Creates an instance of Type (or one of its subclasses) that represents
+        # +arg+.
         def self.from_ruby(arg)
             filtered = Typelib.filter_argument(arg, self)
             if filtered.kind_of?(Typelib::Type)
@@ -106,6 +108,19 @@ module Typelib
                 mods.each { |m| include m }
             end
             super if defined? super
+        end
+
+        # Returns a new Type instance that contains the same value, but using a
+        # different type object
+        #
+        # It raises ArgumentError if the cast is invalid.
+        #
+        # The ability to cast can be checked beforehand by using Type.casts_to?
+        def cast(target_type)
+            if !self.class.casts_to?(target_type)
+                raise ArgumentError, "cannot cast #{self} to #{target_type}"
+            end
+            do_cast(target_type)
         end
 
 	def dup
@@ -1020,10 +1035,8 @@ module Typelib
     def self.from_ruby(arg, expected_type)      
         if arg.kind_of?(expected_type) 
             return arg
-        elsif arg.class == expected_type
-            value = expected_type.new
-            Typelib.copy(value, arg)
-            value
+        elsif arg.class < Type && arg.class.casts_to?(expected_type)
+            arg.cast(expected_type)
         elsif converter = convertions[[arg.class, expected_type.name]]
             converter.call(arg, expected_type)
         elsif expected_type.respond_to?(:from_ruby)
