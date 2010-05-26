@@ -370,8 +370,8 @@ module Typelib
 	    def pretty_print_common(pp) # :nodoc:
                 pp.group(2, '{') do
 		    pp.breakable
-                    all_fields = enum_for(:each_field).
-                        collect { |name, field| [name,field] }
+                    all_fields = get_fields.
+                        collect { |name, offset, type| [name, offset, type] }
                     
                     pp.seplist(all_fields) do |field|
 			yield(*field)
@@ -384,9 +384,9 @@ module Typelib
             def pretty_print(pp) # :nodoc:
 		super
 		pp.text ' '
-		pretty_print_common(pp) do |name, type|
+		pretty_print_common(pp) do |name, offset, type|
 		    pp.text name
-		    pp.text ' <'
+		    pp.text "[#{offset}] <"
 		    pp.nest(2) do
 			pp.pp type
 		    end
@@ -396,7 +396,7 @@ module Typelib
         end
 
 	def pretty_print(pp) # :nodoc:
-	    self.class.pretty_print_common(pp) do |name, type|
+	    self.class.pretty_print_common(pp) do |name, offset, type|
 		pp.text name
 		pp.text "="
 		pp.pp self[name]
