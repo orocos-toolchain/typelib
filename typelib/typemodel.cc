@@ -193,16 +193,11 @@ namespace Typelib
         Compound const& right_type = static_cast<Compound const&>(type);
         if (m_fields.size() != right_type.getFields().size())
             return false;
-        if (m_fields.empty())
-            return true;
 
         FieldList::const_iterator left_it = m_fields.begin(),
             left_end = m_fields.end(),
             right_it = right_type.getFields().begin(),
             right_end = right_type.getFields().end();
-
-        FieldList::const_iterator last_left_field = left_end;
-        --last_left_field;
 
         while (left_it != left_end)
         {
