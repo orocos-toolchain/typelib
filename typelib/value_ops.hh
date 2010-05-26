@@ -47,7 +47,10 @@ namespace Typelib
             init(uint8_t* buffer,
                     MemoryLayout::const_iterator it,
                     MemoryLayout::const_iterator end);
-
+        boost::tuple<uint8_t*, MemoryLayout::const_iterator>
+            zero(uint8_t* buffer,
+                    MemoryLayout::const_iterator it,
+                    MemoryLayout::const_iterator end);
         boost::tuple<size_t, MemoryLayout::const_iterator>
             getDumpSize(uint8_t* buffer,
                     MemoryLayout::const_iterator it,
@@ -57,6 +60,10 @@ namespace Typelib
     void init(Value v);
     void init(Value v, MemoryLayout const& ops);
     void init(uint8_t* data, MemoryLayout const& ops);
+
+    void zero(Value v);
+    void zero(Value v, MemoryLayout const& ops);
+    void zero(uint8_t* data, MemoryLayout const& ops);
 
     void destroy(Value v);
     void destroy(Value v, MemoryLayout const& ops);

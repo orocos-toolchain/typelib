@@ -486,7 +486,7 @@ static VALUE value_to_csv(int argc, VALUE* argv, VALUE self)
 static VALUE value_zero(VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));
-    memset(value.getData(), 0, value.getType().getSize());
+    Typelib::zero(value);
     return self;
 }
 

@@ -206,6 +206,23 @@ void Typelib::init(uint8_t* data, MemoryLayout const& ops)
     ValueOps::init(data, ops.begin(), ops.end());
 }
 
+void Typelib::zero(Value v)
+{
+    MemoryLayout ops = layout_of(v.getType(), true);
+    zero(v, ops);
+}
+
+void Typelib::zero(Value v, MemoryLayout const& ops)
+{
+    uint8_t* buffer = reinterpret_cast<uint8_t*>(v.getData());
+    zero(buffer, ops);
+}
+
+void Typelib::zero(uint8_t* data, MemoryLayout const& ops)
+{
+    ValueOps::zero(data, ops.begin(), ops.end());
+}
+
 void Typelib::destroy(Value v)
 {
     uint8_t* buffer = reinterpret_cast<uint8_t*>(v.getData());
@@ -252,6 +269,55 @@ bool Typelib::compare(Value dst, Value src)
     tie(is_equal, tuples::ignore, tuples::ignore, tuples::ignore) =
         ValueOps::compare(out_buffer, in_buffer, ops.begin(), ops.end());
     return is_equal;
+}
+
+tuple<uint8_t*, MemoryLayout::const_iterator>
+    Typelib::ValueOps::zero(uint8_t* buffer,
+        MemoryLayout::const_iterator begin,
+        MemoryLayout::const_iterator end)
+{
+
+    MemoryLayout::const_iterator it;
+    for (it = begin; it != end && *it != MemLayout::FLAG_END; ++it)
+    {
+        switch(*it)
+        {
+            case MemLayout::FLAG_MEMCPY:
+            case MemLayout::FLAG_SKIP:
+            {
+                size_t size = *(++it);
+                memset(buffer, 0, size);
+                buffer += size;
+                break;
+            }
+
+            case MemLayout::FLAG_ARRAY:
+            {
+                size_t element_count = *(++it);
+                MemoryLayout::const_iterator element_it = ++it;
+                for (size_t i = 0; i < element_count; ++i)
+                    tie(buffer, it) = zero(buffer, element_it, end);
+
+                if (it == end || *it != MemLayout::FLAG_END)
+                    throw std::runtime_error("error in the marshalling bytecode at array end");
+                break;
+            }
+
+            case MemLayout::FLAG_CONTAINER:
+            {
+                Container const* type = reinterpret_cast<Container const*>(*(++it));
+                type->clear(buffer);
+                it = MemLayout::skip_block(++it, end);
+                buffer += type->getSize();
+                break;
+            }
+
+            default:
+                throw std::runtime_error("in init(): unrecognized marshalling bytecode");
+        }
+    }
+
+    return make_tuple(buffer, it);
 }
 tuple<uint8_t*, MemoryLayout::const_iterator>
     Typelib::ValueOps::init(uint8_t* buffer,
