@@ -50,7 +50,7 @@ struct RbMemoryLayout
     RbMemoryLayout()
         : refcount(0) {}
     RbMemoryLayout(MemoryLayout const& layout, boost::shared_ptr<Registry> registry)
-        : layout(layout), registry(registry) {}
+        : refcount(0), layout(layout), registry(registry) {}
 };
 
 // MemoryTypes actually holds the memory layout of each memory zone. We cannot
