@@ -3,28 +3,6 @@ require 'utilrb/object/singleton_class'
 require 'delegate'
 require 'pp'
 
-class Class
-    if method_defined?(:_load)
-	alias :__typelib_load__ :_load
-    end
-
-    def _load(str)
-	data = Marshal.load(str)
-	if data.kind_of?(Array) && data[0] == :typelib
-	    _, reg, name = *data
-	    if reg.kind_of?(DRbObject)
-		reg  = remote_registry(reg)
-	    end
-	    reg.get(name)
-	else
-	    if respond_to?(:__typelib_load__)
-		__typelib_load__(str)
-	    end
-	end
-    end
-end
-
-
 module Typelib
     class << self
         attr_reader :value_specializations
@@ -47,21 +25,6 @@ module Typelib
     def self.convert_from_ruby(ruby_class, typename, &block)
         convertions[[ruby_class, typename]] = lambda(&block)
     end 
-
-    @remote_registries = Hash.new
-    class << self
-	attr_reader :remote_registries
-
-	def remote_registry(drb_object)
-	    if reg = remote_registries[drb_object]
-		return reg
-	    else
-		reg = Registry.new
-		reg.import 
-		remote_registries[drb_object] = Registry.from_xml(drb_object.to_xml)
-	    end
-	end
-    end
 
     # The namespace separator character used by Typelib
     NAMESPACE_SEPARATOR = '/'
@@ -86,19 +49,6 @@ module Typelib
                 result
             end
         end
-
-	# Marshals this value for communication in a DRb context. It is not
-	# suitable for use to save in a file.
-	def _dump(lvl)
-	    Marshal.dump([to_byte_array, DRbObject.new(self.class.registry), self.class.name])
-	end
-
-	# Reloads a value saved by _dump
-	def self._load(str)
-	    data, reg, name = Marshal.load(str)
-
-	    type.wrap(data)
-	end
 
         def self.subclass_initialize
             if mods = Typelib.type_specializations[name]
@@ -171,10 +121,6 @@ module Typelib
 	    end
 
 	    def to_s; "#<#{superclass.name}: #{name}>" end
-
-	    def _dump(lvl)
-		Marshal.dump([:typelib, DRbObject.new(registry), name])
-	    end
 
 	    # check if this is writable
             def writable?
