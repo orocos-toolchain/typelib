@@ -178,8 +178,7 @@ module Typelib
 	    # check basic constraints before trying conversion
 	    # to Ruby objects
             if Type === other
-		return false unless self.class.eql?(other.class)
-		return memory_eql?(other)
+		return Typelib.compare(self, other)
 	    else
 		if (ruby_value = self.to_ruby).eql?(self)
 		    return false
@@ -350,22 +349,6 @@ module Typelib
 		pp.text name
 		pp.text "="
 		pp.pp self[name]
-	    end
-	end
-
-	def ==(other)
-	    # If other is also a type object, we first check basic constraints
-	    # before trying conversion to Ruby objects
-            if Type === other
-		return false unless self.class.eql?(other.class)
-		self.class.each_field do |name, _|
-		    if self[name] != other[name]
-			return false
-		    end
-		end
-		true
-	    else
-		false
 	    end
 	end
 

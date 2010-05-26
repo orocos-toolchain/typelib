@@ -71,7 +71,10 @@ namespace Typelib
 
     void copy(Value dst, Value src);
     void copy(void* dst, void* src, Type const& type);
+
     bool compare(Value dst, Value src);
+    bool compare(void* dst, void* src, Type const& type);
+
     void display(std::ostream& io,
             MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end);
 

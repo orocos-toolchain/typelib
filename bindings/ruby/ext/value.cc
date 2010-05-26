@@ -523,6 +523,29 @@ static VALUE typelib_copy(VALUE, VALUE to, VALUE from)
     return Qnil;
 }
 
+/* call-seq:
+ *  Typelib.compare(to, from) => nil
+ *
+ * Proper comparison of two values. +to+ and +from+'s types do not have to be of
+ * the same registries, as long as the types can be cast'ed into each other.
+ */
+static VALUE typelib_compare(VALUE, VALUE to, VALUE from)
+{
+    Value v_from = rb2cxx::object<Value>(from);
+    Value v_to   = rb2cxx::object<Value>(to);
+
+    if (v_from.getType() != v_to.getType())
+    {
+        // Do a deep check for type equality
+        if (!v_from.getType().canCastTo(v_to.getType()))
+            rb_raise(rb_eArgError, "cannot compare: %s and %s are not compatible types",
+                    v_from.getType().getName().c_str(),
+                    v_to.getType().getName().c_str());
+    }
+    bool result = Typelib::compare(v_to.getData(), v_from.getData(), v_from.getType());
+    return result ? Qtrue : Qfalse;
+}
+
 
 /* call-seq:
  *  Typelib.memcpy(to, from, size) => to
@@ -565,6 +588,7 @@ void typelib_ruby::Typelib_init_values()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     rb_define_singleton_method(mTypelib, "copy", RUBY_METHOD_FUNC(typelib_copy), 2);
+    rb_define_singleton_method(mTypelib, "compare", RUBY_METHOD_FUNC(typelib_compare), 2);
     rb_define_singleton_method(mTypelib, "memcpy", RUBY_METHOD_FUNC(typelib_memcpy), 3);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);

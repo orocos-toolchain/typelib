@@ -56,11 +56,14 @@ namespace Typelib
             MemoryLayout& ops;
             bool   accept_pointers;
             bool   accept_opaques;
-            size_t current_memcpy;
+            size_t current_op;
+            size_t current_op_count;
 
         protected:
-            void push_current_memcpy();
+            void push_current_op();
             void skip(size_t count);
+            void memcpy(size_t count);
+            void add_generic_op(size_t op, size_t count);
             bool generic_visit(Type const& value);
             bool visit_ (Numeric const& type);
             bool visit_ (Enum    const& type);
@@ -70,10 +73,12 @@ namespace Typelib
             bool visit_ (Pointer const& type);
             bool visit_ (OpaqueType const& type);
 
+            void merge_skips_and_copies();
+
         public:
             Visitor(MemoryLayout& ops, bool accept_pointers = false, bool accept_opaques = false);
 
-            void apply(Type const& type);
+            void apply(Type const& type, bool merge_skip_copy = true);
         };
 
         /** Returns the iterator on the next FLAG_END, taking into account nesting */

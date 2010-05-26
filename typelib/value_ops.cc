@@ -258,16 +258,24 @@ void Typelib::copy(void* dst, void* src, Type const& type)
 
 bool Typelib::compare(Value dst, Value src)
 {
-    if (dst.getType() != src.getType())
+    if (!dst.getType().canCastTo(src.getType()))
         return false;
 
-    uint8_t* out_buffer = reinterpret_cast<uint8_t*>(dst.getData());
-    uint8_t* in_buffer  = reinterpret_cast<uint8_t*>(src.getData());
-    MemoryLayout ops = layout_of(dst.getType());
+    return compare(dst.getData(), src.getData(), dst.getType());
+}
+
+bool Typelib::compare(void* dst, void* src, Type const& type)
+{
+    uint8_t* out_buffer = reinterpret_cast<uint8_t*>(dst);
+    uint8_t* in_buffer  = reinterpret_cast<uint8_t*>(src);
+
+    MemoryLayout ret;
+    MemLayout::Visitor visitor(ret);
+    visitor.apply(type, false);
 
     bool is_equal;
     tie(is_equal, tuples::ignore, tuples::ignore, tuples::ignore) =
-        ValueOps::compare(out_buffer, in_buffer, ops.begin(), ops.end());
+        ValueOps::compare(out_buffer, in_buffer, ret.begin(), ret.end());
     return is_equal;
 }
 

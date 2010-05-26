@@ -76,7 +76,7 @@ class TC_Value < Test::Unit::TestCase
 	a2.d = 50
 	assert_not_equal(a1, a2)
 
-	assert_not_equal(a1, v1)
+	assert_raises(ArgumentError) { a1 == v1 }
     end
 
     def test_value_cast
@@ -268,7 +268,7 @@ class TC_Value < Test::Unit::TestCase
         v0.x = 230
         assert !v1.memory_eql?(v0)
         Typelib.copy(v1, v0)
-        assert(v1.memory_eql?(v0), "copy failed: memory is not equal")
+        assert(v1 == v0, "copy failed: memory is not equal")
     end
 
     def test_nan_handling

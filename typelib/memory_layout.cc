@@ -1,27 +1,34 @@
 #include "memory_layout.hh"
 using namespace Typelib;
 
-void MemLayout::Visitor::push_current_memcpy()
+void MemLayout::Visitor::push_current_op()
 {
-    if (current_memcpy)
+    if (current_op_count)
     {
-        ops.push_back(FLAG_MEMCPY);
-        ops.push_back(current_memcpy);
-        current_memcpy = 0;
+        ops.push_back(current_op);
+        ops.push_back(current_op_count);
+        current_op_count = 0;
     }
 }
 void MemLayout::Visitor::skip(size_t count)
-{
-    if (count == 0)
-        return;
+{ add_generic_op(FLAG_SKIP, count); }
+void MemLayout::Visitor::memcpy(size_t count)
+{ add_generic_op(FLAG_MEMCPY, count); }
 
-    push_current_memcpy();
-    ops.push_back(FLAG_SKIP);
-    ops.push_back(count);
+void MemLayout::Visitor::add_generic_op(size_t op, size_t size)
+{
+    if (size == 0)
+        return;
+    if (current_op != op)
+        push_current_op();
+
+    current_op = op;
+    current_op_count += size;
 }
+
 bool MemLayout::Visitor::generic_visit(Type const& value)
 {
-    current_memcpy += value.getSize();
+    memcpy(value.getSize());
     return true;
 };
 bool MemLayout::Visitor::visit_ (Numeric const& type) { return generic_visit(type); }
@@ -33,10 +40,10 @@ bool MemLayout::Visitor::visit_ (Array   const& type)
     array_visitor.apply(type.getIndirection());
 
     if (subops.size() == 2 && subops.front() == FLAG_MEMCPY)
-        current_memcpy += subops.back() * type.getDimension();
+        memcpy(subops.back() * type.getDimension());
     else
     {
-        push_current_memcpy();
+        push_current_op();
         ops.push_back(FLAG_ARRAY);
         ops.push_back(type.getDimension());
         ops.insert(ops.end(), subops.begin(), subops.end());
@@ -46,7 +53,7 @@ bool MemLayout::Visitor::visit_ (Array   const& type)
 }
 bool MemLayout::Visitor::visit_ (Container const& type)
 {
-    push_current_memcpy();
+    push_current_op();
     ops.push_back(FLAG_CONTAINER);
     ops.push_back(reinterpret_cast<size_t>(&type));
 
@@ -91,13 +98,15 @@ bool MemLayout::Visitor::visit_ (OpaqueType const& type)
 }
 
 MemLayout::Visitor::Visitor(MemoryLayout& ops, bool accept_pointers, bool accept_opaques)
-    : ops(ops), accept_pointers(accept_pointers), accept_opaques(accept_opaques), current_memcpy(0) {}
+    : ops(ops), accept_pointers(accept_pointers), accept_opaques(accept_opaques)
+    , current_op(FLAG_MEMCPY), current_op_count(0) {}
 
-void MemLayout::Visitor::apply(Type const& type)
+void MemLayout::Visitor::apply(Type const& type, bool merge_skip_copy)
 {
-    current_memcpy = 0;
+    current_op = FLAG_MEMCPY;
+    current_op_count = 0;
     TypeVisitor::apply(type);
-    push_current_memcpy();
+    push_current_op();
 
     // Remove trailing skips, they are useless
     while (ops.size() > 2 && ops[ops.size() - 2] == FLAG_SKIP)
@@ -106,6 +115,12 @@ void MemLayout::Visitor::apply(Type const& type)
         ops.pop_back();
     }
 
+    if (merge_skip_copy)
+        merge_skips_and_copies();
+}
+
+void MemLayout::Visitor::merge_skips_and_copies()
+{
     // Merge skips and memcpy: if a skip is preceded by a memcpy (or another
     // skip), simply merge the counts.
     MemoryLayout merged;
