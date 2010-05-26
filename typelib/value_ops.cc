@@ -681,4 +681,3 @@ void Typelib::load(uint8_t* v, std::vector<uint8_t> const& buffer, MemoryLayout 
                 lexical_cast<string>(stream.in_index) + " bytes, got " + lexical_cast<string>(buffer.size()) + "as input)");
 }
 
-

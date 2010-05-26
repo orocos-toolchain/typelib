@@ -91,6 +91,11 @@ namespace Typelib
 	 */
 	bool isSame(Type const& other) const;
 
+        /** Returns true if \c to can be used to manipulate a value that is
+         * described by \c from
+         */
+        bool canCastTo(Type const& to) const;
+
         /** Merges this type into \c registry: creates a type equivalent to
          * this one in the target registry, reusing possible equivalent types
          * already present in +registry+.
@@ -116,21 +121,32 @@ namespace Typelib
         virtual bool resize(Registry& registry, std::map<std::string, size_t>& new_sizes);
 
     protected:
-        /** Method that is implemeted by type definitions to check if *this is
-         * the same type than \c other.
+        /** Method that is implemented by type definitions to compare *this with
+         * \c other.
          *
-         * It must use rec_isSame to check for indirections (i.e. for
+         * If \c equality is true, the method must check for strict equality. If
+         * it is false, it must check if \c other can be used to manipulate
+         * values of type \c *this.
+         *
+         * For instance, let's consider a compound that has padding bytes, and
+         * assume that *this and \c other have different padding (but are the
+         * same on every other aspects). do_compare should then return true if
+         * equality is false, and false if equality is true.
+         *
+         * It must use rec_compare to check for indirections (i.e. for
          * recursive calls).
          *
          * The base definition compares the name, size and category of the
          * types.
          */
-	virtual bool do_isSame(Type const& other, std::map<Type const*, Type const*>& stack) const;
+	virtual bool do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const;
 
-        /** Called by do_isSame to compare +left+ to +right+. This method takes
+        /** Called by do_compare to compare +left+ to +right+. This method takes
          * into account potential loops in the recursion
+         *
+         * See do_compare for a description of the equality flag.
          */
-        bool rec_isSame(Type const& left, Type const& right, RecursionStack& stack) const;
+        bool rec_compare(Type const& left, Type const& right, bool equality, RecursionStack& stack) const;
 
         /** Checks if there is already a type with the same name and definition
          * than *this in \c registry. If that is the case, returns it, otherwise
@@ -198,7 +214,7 @@ namespace Typelib
 	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
 
     private:
-	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
+	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         NumericCategory m_category;
     };
@@ -248,7 +264,7 @@ namespace Typelib
         Enum::integral_type getNextValue() const;
 
     private:
-	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
+	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         integral_type m_last_value;
         ValueMap m_values;
@@ -303,7 +319,7 @@ namespace Typelib
 	virtual std::set<Type const*> dependsOn() const;
 
     private:
-	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
+	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         bool do_resize(Registry& registry, std::map<std::string, size_t>& new_sizes);
         FieldList m_fields;
@@ -324,7 +340,7 @@ namespace Typelib
         virtual Type const& merge(Registry& registry, RecursionStack& stack) const;
 
     protected:
-	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
+	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
 
     private:
         Type const& m_indirection;
@@ -342,7 +358,7 @@ namespace Typelib
         static std::string getArrayName(std::string const& base, size_t new_dim);
 
     private:
-	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
+	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         virtual bool do_resize(Registry& into, std::map<std::string, size_t>& new_sizes);
         size_t m_dimension;
@@ -501,7 +517,7 @@ namespace Typelib
         static Container const& createContainer(Registry& r, std::string const& name, std::list<Type const*> const& on);
 
     protected:
-	virtual bool do_isSame(Type const& other, RecursionStack& stack) const;
+	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
         virtual ContainerFactory getFactory() const = 0;
         Type* do_merge(Registry& registry, RecursionStack& stack) const;
 

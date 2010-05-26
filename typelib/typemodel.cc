@@ -40,9 +40,19 @@ namespace Typelib
 
         RecursionStack stack;
         stack.insert(make_pair(this, &with));
-        return do_isSame(with, stack);
+        return do_compare(with, true, stack);
     }
-    bool Type::rec_isSame(Type const& left, Type const& right, RecursionStack& stack) const
+    bool   Type::canCastTo(Type const& with) const
+    {
+        if (this == &with)
+            return true;
+
+        RecursionStack stack;
+        stack.insert(make_pair(this, &with));
+        return do_compare(with, false, stack);
+    }
+
+    bool Type::rec_compare(Type const& left, Type const& right, bool equality, RecursionStack& stack) const
     {
         if (&left == &right)
             return true;
@@ -59,12 +69,12 @@ namespace Typelib
         }
 
         RecursionStack::iterator new_it = stack.insert( make_pair(&left, &right) ).first;
-        bool result = left.do_isSame(right, stack);
+        bool result = left.do_compare(right, equality, stack);
         stack.erase(new_it);
         return result;
     }
-    bool Type::do_isSame(Type const& other, RecursionStack& stack) const
-    { return (getSize() == other.getSize() && getCategory() == other.getCategory() && getName() == other.getName()); }
+    bool Type::do_compare(Type const& other, bool equality, RecursionStack& stack) const
+    { return (getSize() == other.getSize() && getCategory() == other.getCategory()); }
 
     Type const& Type::merge(Registry& registry) const
     {
@@ -127,7 +137,7 @@ namespace Typelib
     Numeric::Numeric(std::string const& name, size_t size, NumericCategory category)
         : Type(name, size, Type::Numeric), m_category(category) {}
     Numeric::NumericCategory Numeric::getNumericCategory() const { return m_category; }
-    bool Numeric::do_isSame(Type const& type, RecursionStack& stack) const 
+    bool Numeric::do_compare(Type const& type, bool equality, RecursionStack& stack) const 
     { return getSize() == type.getSize() && getCategory() == type.getCategory() && 
 	m_category == static_cast<Numeric const&>(type).m_category; }
     Type* Numeric::do_merge(Registry& registry, RecursionStack& stack) const
@@ -137,9 +147,9 @@ namespace Typelib
         : Type(name, size, category)
         , m_indirection(on) {}
     Type const& Indirect::getIndirection() const { return m_indirection; }
-    bool Indirect::do_isSame(Type const& type, RecursionStack& stack) const
-    { return Type::do_isSame(type, stack) &&
-        rec_isSame(m_indirection, static_cast<Indirect const&>(type).m_indirection, stack); }
+    bool Indirect::do_compare(Type const& type, bool equality, RecursionStack& stack) const
+    { return Type::do_compare(type, equality, stack) &&
+        rec_compare(m_indirection, static_cast<Indirect const&>(type).m_indirection, equality, stack); }
     std::set<Type const*> Indirect::dependsOn() const
     {
 	std::set<Type const*> result;
@@ -170,19 +180,26 @@ namespace Typelib
         }
         return 0;
     }
-    bool Compound::do_isSame(Type const& type, RecursionStack& stack) const
+    bool Compound::do_compare(Type const& type, bool equality, RecursionStack& stack) const
     { 
-        if (!Type::do_isSame(type, stack))
+        if (type.getCategory() != Type::Compound)
+            return false;
+        if (equality && !Type::do_compare(type, true, stack))
             return false;
 
         Compound const& right_type = static_cast<Compound const&>(type);
         if (m_fields.size() != right_type.getFields().size())
             return false;
+        if (m_fields.empty())
+            return true;
 
         FieldList::const_iterator left_it = m_fields.begin(),
             left_end = m_fields.end(),
             right_it = right_type.getFields().begin(),
             right_end = right_type.getFields().end();
+
+        FieldList::const_iterator last_left_field = left_end;
+        --last_left_field;
 
         while (left_it != left_end)
         {
@@ -191,7 +208,7 @@ namespace Typelib
                     || left_it->m_name != right_it->m_name)
                 return false;
 
-            if (!rec_isSame(left_it->getType(), right_it->getType(), stack))
+            if (!rec_compare(left_it->getType(), right_it->getType(), equality, stack))
                 return false;
             ++left_it; ++right_it;
         }
@@ -266,8 +283,8 @@ namespace Typelib
         : Type (name, sizeof(FindSizeOfEnum), Type::Enum)
         , m_last_value(initial_value - 1) { }
     Enum::ValueMap const& Enum::values() const { return m_values; }
-    bool Enum::do_isSame(Type const& type, RecursionStack& stack) const
-    { return Type::do_isSame(type, stack) &&
+    bool Enum::do_compare(Type const& type, bool equality, RecursionStack& stack) const
+    { return Type::do_compare(type, equality, stack) &&
 	m_values == static_cast<Enum const&>(type).m_values; }
 
     Enum::integral_type Enum::getNextValue() const { return m_last_value + 1; }
@@ -319,13 +336,13 @@ namespace Typelib
         return stream.str();
     }
     size_t  Array::getDimension() const { return m_dimension; }
-    bool Array::do_isSame(Type const& type, RecursionStack& stack) const
+    bool Array::do_compare(Type const& type, bool equality, RecursionStack& stack) const
     {
-	if (!Type::do_isSame(type, stack))
+	if (!Type::do_compare(type, equality, stack))
 	    return false;
 
 	Array const& array = static_cast<Array const&>(type);
-	return (m_dimension == array.m_dimension) && Indirect::do_isSame(type, stack);
+	return (m_dimension == array.m_dimension) && Indirect::do_compare(type, true, stack);
     }
     Type* Array::do_merge(Registry& registry, RecursionStack& stack) const
     {
@@ -390,13 +407,13 @@ namespace Typelib
         return (*it->second)(r, on);
     }
 
-    bool Container::do_isSame(Type const& other, RecursionStack& stack) const
+    bool Container::do_compare(Type const& other, bool equality, RecursionStack& stack) const
     {
-	if (!Type::do_isSame(other, stack))
+	if (!Type::do_compare(other, true, stack))
 	    return false;
 
 	Container const& container = static_cast<Container const&>(other);
-	return (getFactory() == container.getFactory()) && Indirect::do_isSame(other, stack);
+	return (getFactory() == container.getFactory()) && Indirect::do_compare(other, true, stack);
     }
 
     Type* Container::do_merge(Registry& registry, RecursionStack& stack) const
