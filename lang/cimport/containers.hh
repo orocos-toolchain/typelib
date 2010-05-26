@@ -26,8 +26,6 @@ public:
     bool visit(void* ptr, Typelib::ValueVisitor& visitor) const;
     void delete_if_impl(void* ptr, DeleteIfPredicate& pred) const;
 
-    bool isElementMemcpy(MarshalOps::const_iterator begin, MarshalOps::const_iterator end) const;
-
     MarshalOps::const_iterator dump(
             void const* container_ptr, size_t element_count, Typelib::ValueOps::OutputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const;

@@ -19,7 +19,7 @@ Vector::Vector(Type const& on)
 {
     try {
         MemoryLayout ops = Typelib::layout_of(on);
-        is_memcpy = isElementMemcpy(ops.begin(), ops.end());
+        is_memcpy = (ops.size() == 2 && ops[0] == MemLayout::FLAG_MEMCPY);
     }
     catch(std::runtime_error)
     {
@@ -234,13 +234,6 @@ void Vector::delete_if_impl(void* ptr, DeleteIfPredicate& pred) const
     }
 }
 
-bool Vector::isElementMemcpy(MarshalOps::const_iterator begin, MarshalOps::const_iterator end) const
-{
-    return (end - begin >= 3 &&
-            *begin == MemLayout::FLAG_MEMCPY &&
-            *(begin + 2) == MemLayout::FLAG_END);
-}
-
 Container::MarshalOps::const_iterator Vector::dump(
         void const* container_ptr, size_t element_count, ValueOps::OutputStream& stream,
         MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const
@@ -249,7 +242,7 @@ Container::MarshalOps::const_iterator Vector::dump(
         reinterpret_cast< std::vector<uint8_t> const* >(container_ptr);
 
     MarshalOps::const_iterator it = begin;
-    if (isElementMemcpy(begin, end))
+    if (is_memcpy)
     {
         // optimize a bit: do a huge memcpy if possible
         size_t size       = *(++it) * element_count;
