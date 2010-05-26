@@ -28,7 +28,10 @@ class TC_Value < Test::Unit::TestCase
 	assert_equal(0, int.to_ruby)
 
 	str = Registry.new.build("/char[20]").new
-	assert( String === str.to_ruby )
+        20.times do |i|
+            str[i] = ?a + i
+        end
+	assert_kind_of(String, str.to_ruby)
     end
 
     def test_value_init
