@@ -520,7 +520,7 @@ static VALUE typelib_copy(VALUE, VALUE to, VALUE from)
             rb_raise(rb_eArgError, "cannot copy: types are not compatible");
     }
     Typelib::copy(v_to.getData(), v_from.getData(), v_from.getType());
-    return Qnil;
+    return to;
 }
 
 /* call-seq:
