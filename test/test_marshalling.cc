@@ -35,12 +35,13 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
         a.d = 10;
         vector<uint8_t> buffer = dump(Value(&a, type));
 
-        BOOST_REQUIRE_EQUAL( buffer.size(), sizeof(a));
-        BOOST_REQUIRE( !memcmp(&buffer[0], &a, sizeof(a)) );
+        size_t expected_dump_size = offsetof(A, d) + sizeof(a.d);
+        BOOST_REQUIRE_EQUAL( buffer.size(), expected_dump_size);
+        BOOST_REQUIRE( !memcmp(&buffer[0], &a, expected_dump_size) );
 
         A reloaded;
         load(Value(&reloaded, type), buffer);
-        BOOST_REQUIRE( !memcmp(&reloaded, &a, sizeof(a)) );
+        BOOST_REQUIRE( !memcmp(&reloaded, &a, expected_dump_size) );
 
         // Try (in order)
         //  - smaller type

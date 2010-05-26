@@ -31,7 +31,8 @@ BOOST_AUTO_TEST_CASE( test_layout_simple )
 
         BOOST_REQUIRE_EQUAL(2U, ops.size());
         BOOST_REQUIRE_EQUAL(MemLayout::FLAG_MEMCPY, ops[0]);
-        BOOST_REQUIRE_EQUAL(sizeof(A), ops[1]);
+        A data;
+        BOOST_REQUIRE_EQUAL(offsetof(A, d) + sizeof(data.d), ops[1]);
     }
 
     /* Check handling of simple arrays */
@@ -51,7 +52,8 @@ BOOST_AUTO_TEST_CASE( test_layout_simple )
 
         BOOST_REQUIRE_EQUAL(2U, ops.size());
         BOOST_REQUIRE_EQUAL(MemLayout::FLAG_MEMCPY, ops[0]);
-        BOOST_REQUIRE_EQUAL(type.getSize(), ops[1]);
+        B data;
+        BOOST_REQUIRE_EQUAL(offsetof(B, z) + sizeof(data.z), ops[1]);
     }
 
     /* Check a multidimensional array */
@@ -73,7 +75,8 @@ BOOST_AUTO_TEST_CASE( test_layout_simple )
         MemoryLayout ops = Typelib::layout_of(type, true);
         BOOST_REQUIRE_EQUAL(2, ops.size());
         BOOST_REQUIRE_EQUAL(MemLayout::FLAG_MEMCPY, ops[0]);
-        BOOST_REQUIRE_EQUAL(sizeof(C), ops[1]);
+        C data;
+        BOOST_REQUIRE_EQUAL(offsetof(C, z) + sizeof(data.z), ops[1]);
     }
  
     // Check an opaque type

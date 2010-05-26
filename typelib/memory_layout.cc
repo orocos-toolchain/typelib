@@ -15,13 +15,9 @@ void MemLayout::Visitor::skip(size_t count)
     if (count == 0)
         return;
 
-    if (current_memcpy)
-        current_memcpy += count;
-    else
-    {
-        ops.push_back(FLAG_SKIP);
-        ops.push_back(count);
-    }
+    push_current_memcpy();
+    ops.push_back(FLAG_SKIP);
+    ops.push_back(count);
 }
 bool MemLayout::Visitor::generic_visit(Type const& value)
 {
@@ -102,6 +98,50 @@ void MemLayout::Visitor::apply(Type const& type)
     current_memcpy = 0;
     TypeVisitor::apply(type);
     push_current_memcpy();
+
+    // Remove trailing skips, they are useless
+    while (ops.size() > 2 && ops[ops.size() - 2] == FLAG_SKIP)
+    {
+        ops.pop_back();
+        ops.pop_back();
+    }
+
+    // Merge skips and memcpy: if a skip is preceded by a memcpy (or another
+    // skip), simply merge the counts.
+    MemoryLayout merged;
+    size_t ops_idx = 0;
+    while (ops_idx < ops.size())
+    {
+        size_t op   = ops[ops_idx];
+        if (op != FLAG_SKIP && op != FLAG_MEMCPY)
+        {
+            merged.push_back(op);
+            ++ops_idx;
+
+            // Copy the flag argument if it has one
+            if (op != FLAG_END)
+                merged.push_back(ops[ops_idx++]);
+            continue;
+        }
+
+        // Merge following FLAG_MEMCPY and FLAG_SKIP operations
+        size_t size = ops[ops_idx + 1];
+        ops_idx += 2;
+
+        while (ops_idx < ops.size())
+        {
+            if (ops[ops_idx] == FLAG_MEMCPY)
+                op = FLAG_MEMCPY;
+            else if (ops[ops_idx] != FLAG_SKIP)
+                break;
+
+            size += ops[ops_idx + 1];
+            ops_idx += 2;
+        }
+        merged.push_back(op);
+        merged.push_back(size);
+    }
+    ops = merged;
 }
 
 

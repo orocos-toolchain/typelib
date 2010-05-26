@@ -47,7 +47,9 @@ namespace Typelib
             FLAG_END
         };
 
-        /* This visitor swaps the endianness of the given value in-place */
+        /* This visitor computes the memory layout for a given type. This memory
+         * layout is used by quite a few memory operations
+         */
         class Visitor : public TypeVisitor
         {
         private:

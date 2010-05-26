@@ -234,11 +234,18 @@ class TC_Value < Test::Unit::TestCase
         type0 = r0.get "/struct B"
         type1 = r1.get "/struct B"
 
-        v0 = type0.new({:a => {:a => 20, :b => 50, :c => 4, :d => 30}, :x => 230})
+        v0 = type0.new
         v1 = type1.new
+        v0.zero!
+        v1.zero!
+        v0.a.a = 20
+        v0.a.b = 60
+        v0.a.c = 4
+        v0.a.d = 30
+        v0.x = 230
         assert !v1.memory_eql?(v0)
         Typelib.copy(v1, v0)
-        assert v1.memory_eql?(v0)
+        assert(v1.memory_eql?(v0), "copy failed: memory is not equal")
     end
 
     def test_nan_handling
