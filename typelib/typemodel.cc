@@ -134,6 +134,9 @@ namespace Typelib
         return false;
     }
 
+    bool OpaqueType::do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const
+    { return Type::do_compare(other, equality, stack) && getName() == other.getName(); }
+
     Numeric::Numeric(std::string const& name, size_t size, NumericCategory category)
         : Type(name, size, Type::Numeric), m_category(category) {}
     Numeric::NumericCategory Numeric::getNumericCategory() const { return m_category; }
