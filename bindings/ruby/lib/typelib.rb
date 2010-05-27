@@ -3,6 +3,44 @@ require 'utilrb/object/singleton_class'
 require 'delegate'
 require 'pp'
 
+# Typelib is the main module for Ruby-side Typelib functionality.
+#
+# Typelib allows to do two things:
+#  - represent types (it is a <i>type system</i>). These representations will be
+#    referred to as _types_ in the documentation.
+#  - manipulate in-memory values represented by these types. These are
+#    referred to as _values_ in the documentation.
+#
+# As types may depend on each other (for instance, a structure depend on the
+# types used to define its fields), Typelib maintains a consistent set of types
+# in a so-called registry. Types in a registry can only refer to other types in
+# the same registry.
+#
+# On the Ruby side, a _type_ is represented as a subclass of one of the
+# specialized subclasses of Typelib::Type (depending of what kind of type it
+# is). I.e.  a _type_ itself is a class, and the methods that are available on
+# Type objects are the singleton methods of the Type class (or its specialized
+# subclasses).  Then, a value is simply an instance of that same class.
+#
+# Typelib specializes for the following kinds of types:
+# - structures and unions (Typelib::CompoundType)
+# - static length arrays (Typelib::ArrayType)
+# - dynamic containers (Typelib::ContainerType)
+# - mappings from strings to numerical values (Typelib::EnumType)
+#
+# In other words:
+#
+#   registry = <load the registry>
+#   type  = registry.get 'A' # Get the Type subclass that represents the A
+#                            # structure
+#   value = type.new         # Create an uninitialized value of type A
+#
+#   value.class == type # => true
+#   type.ancestors # => [type, Typelib::CompoundType, Typelib::Type]
+#
+# Each class representing a type can be further specialized using
+# Typelib.specialize_model and Typelib.specialize
+# 
 module Typelib
     class << self
         # A type name to module mapping of the specializations defined by
@@ -331,7 +369,7 @@ module Typelib
 	    end
         end
 
-	# returns a PointerType object which points to +self+. Note that
+	# Returns a PointerType object which points to +self+. Note that
 	# to_ptr.deference == self
         def to_ptr
             pointer = self.class.to_ptr.wrap(@ptr.to_ptr)
@@ -340,7 +378,7 @@ module Typelib
         end
 	
 	alias :__to_s__ :to_s
-	def to_s
+	def to_s # :nodoc:
 	    if respond_to?(:to_str)
 		to_str
 	    elsif ! (ruby_value = to_ruby).eql?(self)
@@ -354,7 +392,7 @@ module Typelib
 	    pp.text to_s
 	end
 
-        # get the memory pointer for self
+        # Get the memory pointer for self
         def to_memory_ptr; @ptr end
 
 	def is_a?(typename); self.class.is_a?(typename) end
@@ -365,6 +403,9 @@ module Typelib
     end
 
     # Base class for compound types (structs, unions)
+    #
+    # See the Typelib module documentation for an overview about how types are
+    # values are represented.
     class CompoundType < Type
 	# Initializes this object to the pointer +ptr+, and initializes it
 	# to +init+. Valid values for +init+ are:
@@ -398,6 +439,11 @@ module Typelib
             end
         end
 
+        # Initializes a new structure value from +arg+
+        #
+        # +arg+ can either be a value of this type, or a hash. In the latter
+        # case, each fields of the new value will be initialized one by one
+        # using the hash values.
         def self.from_ruby(arg)
             if arg.kind_of?(Hash) then new(arg)
             else
@@ -406,8 +452,11 @@ module Typelib
         end
 
         class << self
-            def new(*init);         __real_new__(nil, *init) end
-            def wrap(ptr, *init)
+            def new(*init) # :nodoc:
+                __real_new__(nil, *init)
+            end
+
+            def wrap(ptr, *init) # :nodoc:
                 if !(ptr.kind_of?(String) || ptr.kind_of?(MemoryZone))
                     raise ArgumentError, "can only wrap strings and memory zones"
                 end
@@ -442,6 +491,7 @@ module Typelib
                 super if defined? super
             end
 
+            # Returns the offset, in bytes, of the given field
             def offset_of(fieldname)
                 get_fields.each do |name, offset, _|
                     return offset if name == fieldname
@@ -463,8 +513,7 @@ module Typelib
 	    def pretty_print_common(pp) # :nodoc:
                 pp.group(2, '{') do
 		    pp.breakable
-                    all_fields = get_fields.
-                        collect { |name, offset, type| [name, offset, type] }
+                    all_fields = get_fields.to_a
                     
                     pp.seplist(all_fields) do |field|
 			yield(*field)
@@ -496,10 +545,9 @@ module Typelib
 	    end
 	end
 
-	# Sets the value of the field +name+. If +value+
-	# is a hash, we expect that the field is a
-	# compound type and initialize it using the
-	# keys of +value+ as field names
+        # Sets the value of the field +name+. If +value+ is a hash, we expect
+        # that the field is a compound type and initialize it using the keys of
+        # +value+ as field names
         def []=(name, value)
             name = name.to_s
             attribute = get_field(name)
@@ -534,6 +582,7 @@ module Typelib
 	rescue TypeError => e
 	    raise e, "#{e.message} for #{self.class.name}.#{name}", e.backtrace
 	end
+
 	# Returns the value of the field +name+
         def [](name)
 	    if !(value = @fields[name])
@@ -549,13 +598,19 @@ module Typelib
                 value
             end
 	end
-        def to_ruby; self end
+
+        def to_ruby # :nodoc:
+           self
+        end
     end
 
     class IndirectType < Type
     end
 
-    # Base class for all arrays
+    # Base class for static-length arrays
+    #
+    # See the Typelib module documentation for an overview about how types are
+    # values are represented.
     class ArrayType < IndirectType
 	def pretty_print(pp) # :nodoc:
 	    all_fields = enum_for(:each_with_index).to_a
@@ -573,7 +628,8 @@ module Typelib
 	    pp.text ']'
 	end
 
-        def set_values(enumerable)
+        # Used by CompoundType#[] to initialize an array from a Ruby enumerable
+        def set_values(enumerable) # :nodoc:
             enumerable.each_with_index do |value, i|
                 self[i] = value
             end
@@ -582,26 +638,37 @@ module Typelib
 	# Returns the pointed-to type (defined for consistency reasons)
 	def self.[](index); deference end
 
-        def to_ruby
+        def to_ruby # :nodoc:
 	    if respond_to?(:to_str); to_str
 	    else self 
 	    end
 	end
+
         include Enumerable
     end
 
-    # Base class for all pointers
+    # Base class for pointer types
+    #
+    # When returned as fields of a structure, or as return values from a
+    # function, pointers might be converted in the following cases:
+    # * nil if it is NULL
+    # * a String object if it is a pointer to char
+    #
+    # See the Typelib module documentation for an overview about how types are
+    # values are represented.
     class PointerType < IndirectType
+        # Creates and initializes to zero a value of this pointer type
         def self.create_null
             result = new
             result.zero!
             result
         end
 
-	# Returns 
-	# * nil if this is a NULL pointer, and a string
-	# * a String object if it is a pointer to a string. 
-	# * self otherwise
+	# Converts the pointer to its Ruby equivalent.
+        #
+        # Pointers get converted in the following cases:
+        # * nil if it is NULL
+        # * a String object if it is a pointer to char
         def to_ruby
 	    if self.null?; nil
 	    elsif respond_to?(:to_str); to_str
@@ -611,13 +678,20 @@ module Typelib
     end
 
     # Base class for all dynamic containers
+    #
+    # See the Typelib module documentation for an overview about how types are
+    # values are represented.
     class ContainerType < IndirectType
         include Enumerable
+
+        # True if this container is empty
         def empty?; length == 0 end
 
-        def <<(value); insert(value) end
+        # Appends a new element to this container
+        def <<(value); insert(Typelib.from_ruby(value)) end
 
-        def set_values(enumerable)
+        # Used by CompoundType#[] to initialize an array from a Ruby enumerable
+        def set_values(enumerable) # :nodoc:
             clear
             enumerable.each do |value|
                 insert(value)
@@ -627,6 +701,9 @@ module Typelib
 
     # Base class for all enumeration types. Enumerations
     # are mappings from strings to integers
+    #
+    # See the Typelib module documentation for an overview about how types are
+    # values are represented.
     class EnumType < Type
         def self.from_ruby(value)
             result = new
@@ -635,7 +712,7 @@ module Typelib
         end
 
         class << self
-	    # a value => key hash for each enumeration values
+	    # A value => key hash for each enumeration values
             attr_reader :values
 
             def pretty_print(pp) # :nodoc:
@@ -653,6 +730,8 @@ module Typelib
         end
     end
 
+    # Generic method that converts a Typelib value into the corresponding Ruby
+    # value.
     def self.to_ruby(value)
         if value.respond_to?(:to_ruby)
             value.to_ruby
@@ -689,6 +768,18 @@ module Typelib
         end
     end
 
+    # In Typelib, a registry contains a consistent set of types, i.e. the types
+    # are that are related to each other.
+    #
+    # As mentionned in the Typelib module documentation, it is better to
+    # manipulate value objects from types from the same registry. That is more
+    # efficient, as it removes the need to compare the type definitions whenever
+    # the values are manipulated together.
+    #
+    # I.e., it is better to use a global registry to represent all the types
+    # used in your application. In case you need to load different registries,
+    # that can be achieved by +merging+ them together (which will work only if
+    # the type definitions match between the registries).
     class Registry
         TYPE_BY_EXT = {
             ".c" => "c",
@@ -774,6 +865,12 @@ module Typelib
 	# debug::
         #   if true, debugging information is outputted on stdout, and the
         #   preprocessed output is kept.
+        #
+        # merge::
+        #   load the file into its own registry, and merge the result back into
+        #   this one. If it is not set, types defined in +file+ that are already
+        #   defined in +self+ will generate an error, even if the two
+        #   definitions are the same.
 	#
         def import(file, kind = 'auto', options = {})
 	    file = File.expand_path(file)
@@ -791,12 +888,28 @@ module Typelib
 
         # Resizes the given type to the given size, while updating the rest of
         # the registry to keep it consistent
+        #
+        # In practice, it means it modifies the compound field offsets and
+        # sizes, and modifies the array sizes so that it matches the new sizes.
+        #
+        # +type+ must either be a type class or a type name, and to_size the new
+        # size for it.
+        #
+        # See #resize to resize multiple types in one call.
         def resize_type(type, to_size)
-            resize(type.name => to_size)
+            resize(type => to_size)
         end
 
         # Resize a set of types, while updating the rest of the registry to keep
         # it consistent
+        #
+        # In practice, it means it modifies the compound field offsets and
+        # sizes, and modifies the array sizes so that it matches the new sizes.
+        #
+        # The given type map must be a mapping from a type name or type class to
+        # the new size for that type.
+        #
+        # See #resize to resize multiple types in one call.
         def resize(typemap)
             new_sizes = typemap.map do |type, size|
                 if type.respond_to?(:name)
