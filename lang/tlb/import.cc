@@ -7,6 +7,7 @@
 #include <typelib/registry.hh>
 
 #include <iostream>
+#include <fstream>
 
 // Helpers
 namespace 
@@ -326,23 +327,9 @@ void TlbImport::load
     , utilmm::config_set const& config
     , Typelib::Registry& registry)
 {
-    // libxml needs a full path (?)
-    string full_path;
-    if (path[0] != '/')
-    {
-        char cwd[PATH_MAX];
-        getcwd(cwd, PATH_MAX);
-
-        full_path = string(cwd) + "/" + path;
-    } else full_path = path;
-
-    try {
-        parse(full_path, xmlParseFile(path.c_str()), registry);
-    }
-    catch(ImportError& e)
-    { 
-        e.setFile(path);
-        throw;
-    }
+    // Loading from files seams to be broken on some distro's libxml2-packages, 
+    // so we load the whole file into memory before parsing
+    std::ifstream stream(path.c_str());
+    load(stream, config, registry);
 }
 
