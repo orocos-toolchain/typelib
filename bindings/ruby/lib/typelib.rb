@@ -511,7 +511,7 @@ module Typelib
 	    end
 
 	    def pretty_print_common(pp) # :nodoc:
-                pp.group(2, '{') do
+                pp.group(2, '{', '}') do
 		    pp.breakable
                     all_fields = get_fields.to_a
                     
@@ -519,8 +519,6 @@ module Typelib
 			yield(*field)
                     end
                 end
-		pp.breakable
-		pp.text '}'
 	    end
 
             def pretty_print(pp) # :nodoc:
@@ -530,7 +528,7 @@ module Typelib
 		    pp.text name
 		    pp.text "[#{offset}] <"
 		    pp.nest(2) do
-			pp.pp type
+                        type.pretty_print(pp)
 		    end
 		    pp.text '>'
 		end
@@ -541,7 +539,7 @@ module Typelib
 	    self.class.pretty_print_common(pp) do |name, offset, type|
 		pp.text name
 		pp.text "="
-		pp.pp self[name]
+		self[name].pretty_print(pp)
 	    end
 	end
 
@@ -621,7 +619,7 @@ module Typelib
 		pp.seplist(all_fields) do |element|
 		    element, index = *element 
 		    pp.text "[#{index}] = "
-		    pp.pp element
+		    element.pretty_print(pp)
 		end
 	    end
 	    pp.breakable
@@ -696,6 +694,25 @@ module Typelib
             enumerable.each do |value|
                 insert(value)
             end
+        end
+
+        def pretty_print(pp)
+            index = 0
+	    pp.text '['
+	    pp.nest(2) do
+		pp.breakable
+		pp.seplist(enum_for(:each)) do |element|
+		    pp.text "[#{index}] = "
+		    element.pretty_print(pp)
+                    index += 1
+		end
+	    end
+	    pp.breakable
+	    pp.text ']'
+        end
+
+        def to_ruby
+            self
         end
     end
 
