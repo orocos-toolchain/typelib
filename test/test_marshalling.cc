@@ -178,11 +178,14 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
 
         Type const& type       = *registry.get("/struct StdCollections");
         vector<uint8_t> buffer = dump(Value(&data, type));
-        BOOST_REQUIRE_EQUAL( buffer.size(),
-                sizeof(StdCollections) - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
-                - (reinterpret_cast<uint8_t const*>(&data.v64) + sizeof(data.v64) - reinterpret_cast<uint8_t const*>(&data) - sizeof(data))
+
+        size_t size_without_trailing_padding = 
+            reinterpret_cast<uint8_t const*>(&data.padding) + sizeof(data.padding) - reinterpret_cast<uint8_t const*>(&data)
+                - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
                 + sizeof(double) * 20 // elements
-                + 7 * sizeof(uint64_t)); // element counts
+                + 7 * sizeof(uint64_t);
+
+        BOOST_REQUIRE_EQUAL( buffer.size(), size_without_trailing_padding );
 
         CHECK_SIMPLE_VALUE(buffer, 0, data.iv);
         size_t pos = CHECK_VECTOR_VALUE(buffer, off_dbl_vector, data.dbl_vector);
@@ -199,6 +202,27 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
         BOOST_REQUIRE( data.v8         == reloaded.v8 );
         BOOST_REQUIRE( data.v16        == reloaded.v16 );
         BOOST_REQUIRE( data.v64        == reloaded.v64 );
+        BOOST_REQUIRE( data.padding        == reloaded.padding );
+
+        // Now, add the trailing bytes back. The load method should be OK with
+        // it
+        size_t size_with_trailing_padding =
+            sizeof(StdCollections)
+                - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
+                + sizeof(double) * 20 // elements
+                + 7 * sizeof(uint64_t); // element counts
+
+        buffer.insert(buffer.end(), size_with_trailing_padding - size_without_trailing_padding, 0);
+        {
+            StdCollections reloaded;
+            load(Value(&reloaded, type), buffer);
+            BOOST_REQUIRE( data.iv         == reloaded.iv );
+            BOOST_REQUIRE( data.dbl_vector == reloaded.dbl_vector );
+            BOOST_REQUIRE( data.v8         == reloaded.v8 );
+            BOOST_REQUIRE( data.v16        == reloaded.v16 );
+            BOOST_REQUIRE( data.v64        == reloaded.v64 );
+            BOOST_REQUIRE( data.padding        == reloaded.padding );
+        }
     }
 
     {
@@ -212,8 +236,10 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
 
         Type const& type       = *registry.get("/struct StdCollections");
         vector<uint8_t> buffer = dump(Value(&data, type));
+        size_t size_without_trailing_padding = 
+            reinterpret_cast<uint8_t const*>(&data.padding) + sizeof(data.padding) - reinterpret_cast<uint8_t const*>(&data);
         BOOST_REQUIRE_EQUAL( buffer.size(),
-                sizeof(StdCollections) - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
+                size_without_trailing_padding - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
                 + 7 * sizeof(uint64_t)); // element counts
 
         CHECK_SIMPLE_VALUE(buffer, 0, data.iv);

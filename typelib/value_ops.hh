@@ -101,7 +101,7 @@ namespace Typelib
 
     void load(Value v, std::vector<uint8_t> const& buffer);
     void load(Value v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops);
-    void load(uint8_t* v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops);
+    void load(uint8_t* v, Type const& type, std::vector<uint8_t> const& buffer, MemoryLayout const& ops);
 }
 
 #endif

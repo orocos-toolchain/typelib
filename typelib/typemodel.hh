@@ -120,6 +120,10 @@ namespace Typelib
          */
         virtual bool resize(Registry& registry, std::map<std::string, size_t>& new_sizes);
 
+        /** Returns the number of bytes that are unused at the end of the
+         * compound */
+        virtual unsigned int getTrailingPadding() const;
+
     protected:
         /** Method that is implemented by type definitions to compare *this with
          * \c other.
@@ -316,6 +320,10 @@ namespace Typelib
         void              addField(const Field& field, size_t offset);
 	/** Add a new field */
         void              addField(const std::string& name, const Type& type, size_t offset);
+
+        /** Returns the number of bytes that are unused at the end of the
+         * compound */
+        unsigned int getTrailingPadding() const;
 
 	virtual std::set<Type const*> dependsOn() const;
 

@@ -246,6 +246,12 @@ BOOST_AUTO_TEST_CASE( test_std_collections )
     //CHECK_FIELD(StdCollections, float_set, std::set<float>, "/std/set</float>");
     CHECK_FIELD(StdCollections, v16, int16_t, 0);
     CHECK_FIELD(StdCollections, v64, int64_t, 0);
+
+    Compound const& type = dynamic_cast<Compound const&>(*registry.get("/StdCollections"));
+    StdCollections value;
+    int padding = sizeof(StdCollections) -
+        (reinterpret_cast<uint8_t*>(&value.padding) + sizeof(value.padding) - reinterpret_cast<uint8_t*>(&value));
+    BOOST_REQUIRE_EQUAL(padding, type.getTrailingPadding());
     
     // Unfortunately, cannot check this one automatically
     // Compound const& collections = dynamic_cast<Compound const&>(*registry.get("StdCollections"));

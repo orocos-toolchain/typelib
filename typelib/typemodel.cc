@@ -52,6 +52,9 @@ namespace Typelib
         return do_compare(with, false, stack);
     }
 
+    unsigned int Type::getTrailingPadding() const
+    { return 0; }
+
     bool Type::rec_compare(Type const& left, Type const& right, bool equality, RecursionStack& stack) const
     {
         if (&left == &right)
@@ -182,6 +185,23 @@ namespace Typelib
                 return &(*it);
         }
         return 0;
+    }
+    unsigned int Compound::getTrailingPadding() const
+    {
+        if (m_fields.empty())
+            return getSize();
+
+        FieldList::const_iterator it = m_fields.begin();
+        FieldList::const_iterator const end = m_fields.end();
+
+        int max_offset = 0;
+        for (; it != end; ++it)
+        {
+            int offset = it->getOffset() + it->getType().getSize();
+            if (offset > max_offset)
+                max_offset = offset;
+        }
+        return getSize() - max_offset;
     }
     bool Compound::do_compare(Type const& type, bool equality, RecursionStack& stack) const
     { 
