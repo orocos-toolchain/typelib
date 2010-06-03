@@ -524,7 +524,7 @@ static VALUE typelib_copy(VALUE, VALUE to, VALUE from)
 }
 
 /* call-seq:
- *  Typelib.compare(to, from) => nil
+ *  Typelib.compare(to, from) => true or false
  *
  * Proper comparison of two values. +to+ and +from+'s types do not have to be of
  * the same registries, as long as the types can be cast'ed into each other.

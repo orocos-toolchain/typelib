@@ -6,10 +6,11 @@ require 'pp'
 # Typelib is the main module for Ruby-side Typelib functionality.
 #
 # Typelib allows to do two things:
-#  - represent types (it is a <i>type system</i>). These representations will be
-#    referred to as _types_ in the documentation.
-#  - manipulate in-memory values represented by these types. These are
-#    referred to as _values_ in the documentation.
+#
+# * represent types (it is a <i>type system</i>). These representations will be
+#   referred to as _types_ in the documentation.
+# * manipulate in-memory values represented by these types. These are
+#   referred to as _values_ in the documentation.
 #
 # As types may depend on each other (for instance, a structure depend on the
 # types used to define its fields), Typelib maintains a consistent set of types
@@ -23,10 +24,11 @@ require 'pp'
 # subclasses).  Then, a value is simply an instance of that same class.
 #
 # Typelib specializes for the following kinds of types:
-# - structures and unions (Typelib::CompoundType)
-# - static length arrays (Typelib::ArrayType)
-# - dynamic containers (Typelib::ContainerType)
-# - mappings from strings to numerical values (Typelib::EnumType)
+#
+# * structures and unions (Typelib::CompoundType)
+# * static length arrays (Typelib::ArrayType)
+# * dynamic containers (Typelib::ContainerType)
+# * mappings from strings to numerical values (Typelib::EnumType)
 #
 # In other words:
 #
@@ -1223,6 +1225,10 @@ module Typelib
 	filtered
     end
 
+    # Initializes +expected_type+ from +arg+, where +arg+ can either be a value
+    # of expected_type, a value that can be casted into a value of
+    # expected_type, or a Ruby value that can be converted into a value of
+    # +expected_type+.
     def self.from_ruby(arg, expected_type)      
         if arg.kind_of?(expected_type) 
             return arg
