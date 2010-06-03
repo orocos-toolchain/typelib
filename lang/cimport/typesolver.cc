@@ -243,6 +243,7 @@ Typelib::Type const& TypeSolver::buildCurrentType()
         throw TypeStackEmpty("buildCurrentType");
 
     CurrentTypeDefinition type_def = popType();
+    std::auto_ptr<TypeBuilder> builder;
 
     // Check if type_def.name is an allowed container (vector, map, set). If it
     // is the case, make sure that it is already defined in the registry
@@ -267,20 +268,25 @@ Typelib::Type const& TypeSolver::buildCurrentType()
             template_args.push_back( m_registry.build( *it ) );
         }
 
-        return (*factory->second)(m_registry, template_args);
+        Type const* container_t =
+            &(*factory->second)(m_registry, template_args);
+        builder.reset(new TypeBuilder(m_registry, container_t));
+    }
+    else
+    {
+        builder.reset(new TypeBuilder(m_registry, type_def.name));
     }
 
-    TypeBuilder builder(m_registry, type_def.name);
     if (type_def.pointer_level)
-	builder.addPointer(type_def.pointer_level);
+        builder->addPointer(type_def.pointer_level);
 
     while (!type_def.array.empty())
     {
-	builder.addArrayMinor(type_def.array.front());
+	builder->addArrayMinor(type_def.array.front());
 	type_def.array.pop_front();
     }
 
-    Type const& type = builder.getType();
+    Type const& type = builder->getType();
     return type;
 }
 

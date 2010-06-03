@@ -287,6 +287,24 @@ BOOST_AUTO_TEST_CASE( test_c_array_typedefs )
     BOOST_REQUIRE_EQUAL(registry.get("int"), &array_t->getIndirection());
 }
 
+BOOST_AUTO_TEST_CASE( test_arrays_of_containers )
+{
+    Registry registry;
+    import_test_types(registry);
+
+    Compound const& arrays_t =
+        *dynamic_cast<Typelib::Compound const*>(registry.get("Arrays"));
+    Array const& a_v_numeric_t =
+        *dynamic_cast<Typelib::Array const*>(registry.get("/std/vector</double>[10]"));
+    Array const& a_v_struct_t =
+        *dynamic_cast<Typelib::Array const*>(registry.get("/std/vector</NS1/Test>[10]"));
+
+    BOOST_REQUIRE(&a_v_numeric_t);
+    BOOST_REQUIRE(&a_v_struct_t);
+    BOOST_REQUIRE(arrays_t.getField("a_v_numeric")->getType() == a_v_numeric_t);
+    BOOST_REQUIRE(arrays_t.getField("a_v_struct")->getType() == a_v_struct_t);
+}
+
 BOOST_AUTO_TEST_CASE( test_import_validation )
 {
     utilmm::config_set config;

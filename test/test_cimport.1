@@ -154,6 +154,22 @@ struct StdCollections {
      int64_t v64;
 };
 
+struct Collections {
+     std::vector< double >    v_numeric;
+     std::vector< NS1::Test > v_struct;
+     std::vector< std::vector<double> >    v_v_numeric;
+     std::vector< std::vector<NS1::Test> > v_v_struct;
+     char add_padding; // make sure that there will be some padding
+};
+
+struct Arrays {
+     double    a_numeric[10];
+     NS1::Test a_struct[10];
+     std::vector<double>    a_v_numeric[10];
+     std::vector<NS1::Test> a_v_struct[10];
+     char add_padding; // make sure that there will be some padding
+};
+
 struct TemplateArray {
     std::vector<double> dbl_vector_array[10];
 };
