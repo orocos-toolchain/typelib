@@ -287,6 +287,11 @@ BOOST_AUTO_TEST_CASE( test_c_array_typedefs )
     BOOST_REQUIRE_EQUAL(registry.get("int"), &array_t->getIndirection());
 }
 
+typedef double    double_array10[10];
+typedef NS1::Test struct_array10[10];
+typedef std::vector<double> vector_double_array10[10];
+typedef std::vector<NS1::Test> vector_struct_array10[10];
+
 BOOST_AUTO_TEST_CASE( test_arrays_of_containers )
 {
     Registry registry;
@@ -303,6 +308,11 @@ BOOST_AUTO_TEST_CASE( test_arrays_of_containers )
     BOOST_REQUIRE(&a_v_struct_t);
     BOOST_REQUIRE(arrays_t.getField("a_v_numeric")->getType() == a_v_numeric_t);
     BOOST_REQUIRE(arrays_t.getField("a_v_struct")->getType() == a_v_struct_t);
+
+    CHECK_FIELD(Arrays, a_numeric,   double_array10, "/double[10]");
+    CHECK_FIELD(Arrays, a_struct,    struct_array10, "/NS1::Test[10]");
+    CHECK_FIELD(Arrays, a_v_numeric, vector_double_array10, "/std/vector</double>[10]");
+    CHECK_FIELD(Arrays, a_v_struct,  vector_struct_array10, "/std/vector</NS1/Test>[10]");
 }
 
 BOOST_AUTO_TEST_CASE( test_import_validation )

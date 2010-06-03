@@ -156,18 +156,24 @@ struct StdCollections {
 
 struct Collections {
      std::vector< double >    v_numeric;
+     char padding1;
      std::vector< NS1::Test > v_struct;
+     char padding2;
      std::vector< std::vector<double> >    v_v_numeric;
+     char padding3;
      std::vector< std::vector<NS1::Test> > v_v_struct;
-     char add_padding; // make sure that there will be some padding
+     char padding4;
 };
 
 struct Arrays {
      double    a_numeric[10];
+     char padding1;
      NS1::Test a_struct[10];
+     char padding2;
      std::vector<double>    a_v_numeric[10];
+     char padding3;
      std::vector<NS1::Test> a_v_struct[10];
-     char add_padding; // make sure that there will be some padding
+     char padding4;
 };
 
 struct TemplateArray {

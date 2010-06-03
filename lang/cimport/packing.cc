@@ -144,6 +144,27 @@ namespace {
             size = max_size;
             return true;
         }
+        bool visit_(Container const& value)
+        {
+            CollectionPackingInfo collection_packing_info[] = {
+                { "/std/vector", DiscoverCollectionPacking< std::vector<uint16_t> >::get() },
+                { "/std/set",    DiscoverCollectionPacking< std::set<uint8_t> >::get() },
+                { "/std/map",    DiscoverCollectionPacking< std::map<uint8_t, uint8_t> >::get() },
+                { "/std/string", DiscoverCollectionPacking< std::string >::get() },
+                { 0, 0 }
+            };
+
+            for (CollectionPackingInfo* info = collection_packing_info; info->name; ++info)
+            {
+                if (info->name == std::string(value.getName(), 0, std::string(info->name).size()))
+                {
+                    size = info->packing;
+                    return true;
+                }
+            }
+
+            throw Packing::PackingUnknown("cannot compute the packing of " + boost::lexical_cast<std::string>(value.getName()));
+        }
     };
 };
 
@@ -168,39 +189,18 @@ int Typelib::Packing::getOffsetOf(Compound const& compound, const Type& append_f
 int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_field)
 {
 
-    if (append_field.getCategory() == Type::Container)
-    {
-        CollectionPackingInfo collection_packing_info[] = {
-            { "/std/vector", DiscoverCollectionPacking< std::vector<uint16_t> >::get() },
-            { "/std/set",    DiscoverCollectionPacking< std::set<uint8_t> >::get() },
-            { "/std/map",    DiscoverCollectionPacking< std::map<uint8_t, uint8_t> >::get() },
-            { "/std/string", DiscoverCollectionPacking< std::string >::get() },
-            { 0, 0 }
-        };
-
-        for (CollectionPackingInfo* info = collection_packing_info; info->name; ++info)
-        {
-            if (info->name == std::string(append_field.getName(), 0, std::string(info->name).size()))
-                return getOffsetOf(last_field, append_field, info->packing);
-        }
-
+    GetPackingSize visitor(append_field);
+    if (visitor.size == -1)
         throw PackingUnknown("cannot compute the packing of " + boost::lexical_cast<std::string>(append_field.getName()));
-    }
-    else
-    {
-        GetPackingSize visitor(append_field);
-        if (visitor.size == -1)
-            throw PackingUnknown("cannot compute the packing of " + boost::lexical_cast<std::string>(append_field.getName()));
-            
-        size_t const size(visitor.size);
+        
+    size_t const size(visitor.size);
 
-        for (int i = 0; i < packing_info_size; ++i)
-        {
-            if (packing_info[i].size == size)
-                return getOffsetOf(last_field, append_field, packing_info[i].packing);
-        }
-        throw PackingUnknown("cannot compute the packing of " + boost::lexical_cast<std::string>(append_field.getName()));
+    for (int i = 0; i < packing_info_size; ++i)
+    {
+        if (packing_info[i].size == size)
+            return getOffsetOf(last_field, append_field, packing_info[i].packing);
     }
+    throw PackingUnknown("cannot compute the packing of " + boost::lexical_cast<std::string>(append_field.getName()));
 }
 int Typelib::Packing::getOffsetOf(const Compound& current, const Type& append_field)
 {
