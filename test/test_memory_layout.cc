@@ -9,6 +9,8 @@
 #include <typelib/value.hh>
 #include <typelib/memory_layout.hh>
 
+
+#include <typelib/value_ops.hh>
 #include <test/test_cimport.1>
 #include <string.h>
 
@@ -86,6 +88,66 @@ BOOST_AUTO_TEST_CASE( test_layout_simple )
     }
 }
 
+BOOST_AUTO_TEST_CASE(test_layout_arrays)
+{
+    // Get the test file into repository
+    Registry registry;
+    PluginManager::self manager;
+    auto_ptr<Importer> importer(manager->importer("c"));
+    utilmm::config_set config;
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+
+    {
+        Type const& type      = *registry.get("/Arrays");
+        Compound const& str       = static_cast<Compound const&>(*registry.get("/NS1/Test"));
+        BOOST_REQUIRE(str.getSize() != str.getField("b")->getOffset() + str.getField("b")->getType().getSize());
+
+        Type const& v_str   = *registry.get("/std/vector</NS1/Test>");
+        Type const& v_double  = *registry.get("/std/vector</double>");
+        MemoryLayout ops = Typelib::layout_of(type);
+
+        StdCollections test;
+
+        Arrays arrays_v;
+        size_t expected[] = {
+            MemLayout::FLAG_MEMCPY,
+               reinterpret_cast<uint8_t*>(&arrays_v.a_v_numeric) - reinterpret_cast<uint8_t*>(&arrays_v),
+            MemLayout::FLAG_ARRAY,
+                10,
+                MemLayout::FLAG_CONTAINER,
+                    reinterpret_cast<size_t>(&v_double),
+                    MemLayout::FLAG_MEMCPY,
+                    sizeof(double),
+                MemLayout::FLAG_END,
+            MemLayout::FLAG_END,
+            MemLayout::FLAG_MEMCPY,
+               reinterpret_cast<uint8_t*>(&arrays_v.a_v_struct[0]) - reinterpret_cast<uint8_t*>(&arrays_v.padding3),
+            MemLayout::FLAG_ARRAY,
+                10,
+                MemLayout::FLAG_CONTAINER,
+                    reinterpret_cast<size_t>(&v_str),
+                    MemLayout::FLAG_MEMCPY,
+                    sizeof(NS1::Test),
+                MemLayout::FLAG_END,
+            MemLayout::FLAG_END,
+            MemLayout::FLAG_MEMCPY,
+            sizeof(char)
+        };
+
+        for (size_t i = 0; i < ops.size(); ++i)
+            if (expected[i] != ops[i])
+            {
+                Typelib::display(cerr, ops.begin(), ops.end());
+                std::cerr << "error at index " << i << std::endl;
+                BOOST_REQUIRE_EQUAL(expected[i], ops[i]);
+            }
+
+        // Check that we have all the operations that we need
+        size_t expected_size = sizeof(expected) / sizeof(size_t);
+        BOOST_REQUIRE_EQUAL(expected_size, ops.size());
+    }
+}
+
 BOOST_AUTO_TEST_CASE(test_layout_containers)
 {
     // Get the test file into repository
@@ -96,31 +158,66 @@ BOOST_AUTO_TEST_CASE(test_layout_containers)
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
 
     {
-        Type const& type      = *registry.get("/struct StdCollections");
+        Type const& type      = *registry.get("/Collections");
+        Compound const& str       = static_cast<Compound const&>(*registry.get("/NS1/Test"));
+        BOOST_REQUIRE(str.getSize() != str.getField("b")->getOffset() + str.getField("b")->getType().getSize());
+
+        Type const& v_str     = *registry.get("/std/vector</NS1/Test>");
+        Type const& v_v_str   = *registry.get("/std/vector</std/vector</NS1/Test>>");
         Type const& v_double  = *registry.get("/std/vector</double>");
-        Type const& v_of_v_double  = *registry.get("/std/vector</std/vector</double>>");
+        Type const& v_v_double  = *registry.get("/std/vector</std/vector</double>>");
         MemoryLayout ops = Typelib::layout_of(type);
 
-        StdCollections test;
+        Collections value;
 
         size_t expected[] = {
-            MemLayout::FLAG_MEMCPY, reinterpret_cast<uint8_t*>(&test.dbl_vector) - reinterpret_cast<uint8_t*>(&test),
-            MemLayout::FLAG_CONTAINER, reinterpret_cast<size_t>(&v_double),
-                MemLayout::FLAG_MEMCPY, sizeof(double),
+            MemLayout::FLAG_CONTAINER,
+                reinterpret_cast<size_t>(&v_double),
+                MemLayout::FLAG_MEMCPY,
+                sizeof(double),
             MemLayout::FLAG_END,
-            MemLayout::FLAG_MEMCPY, reinterpret_cast<uint8_t*>(&test.v_of_v) - reinterpret_cast<uint8_t*>(&test.v8),
-            MemLayout::FLAG_CONTAINER, reinterpret_cast<size_t>(&v_of_v_double),
-                MemLayout::FLAG_CONTAINER, reinterpret_cast<size_t>(&v_double),
-                    MemLayout::FLAG_MEMCPY, sizeof(double),
+            MemLayout::FLAG_MEMCPY,
+               reinterpret_cast<uint8_t*>(&value.v_struct) - reinterpret_cast<uint8_t*>(&value.padding1),
+            MemLayout::FLAG_CONTAINER,
+                reinterpret_cast<size_t>(&v_str),
+                MemLayout::FLAG_MEMCPY,
+                sizeof(NS1::Test),
+            MemLayout::FLAG_END,
+            MemLayout::FLAG_MEMCPY,
+               reinterpret_cast<uint8_t*>(&value.v_v_numeric) - reinterpret_cast<uint8_t*>(&value.padding2),
+            MemLayout::FLAG_CONTAINER,
+                reinterpret_cast<size_t>(&v_v_double),
+                MemLayout::FLAG_CONTAINER,
+                    reinterpret_cast<size_t>(&v_double),
+                    MemLayout::FLAG_MEMCPY,
+                    sizeof(double),
                 MemLayout::FLAG_END,
             MemLayout::FLAG_END,
-            MemLayout::FLAG_MEMCPY, 16
+            MemLayout::FLAG_MEMCPY,
+               reinterpret_cast<uint8_t*>(&value.v_v_struct) - reinterpret_cast<uint8_t*>(&value.padding3),
+            MemLayout::FLAG_CONTAINER,
+                reinterpret_cast<size_t>(&v_v_str),
+                MemLayout::FLAG_CONTAINER,
+                    reinterpret_cast<size_t>(&v_str),
+                    MemLayout::FLAG_MEMCPY,
+                    sizeof(NS1::Test),
+                MemLayout::FLAG_END,
+            MemLayout::FLAG_END,
+            MemLayout::FLAG_MEMCPY,
+            sizeof(char)
         };
 
+        for (size_t i = 0; i < ops.size(); ++i)
+            if (expected[i] != ops[i])
+            {
+                Typelib::display(cerr, ops.begin(), ops.end());
+                std::cerr << "error at index " << i << std::endl;
+                BOOST_REQUIRE_EQUAL(expected[i], ops[i]);
+            }
+
+        // Check that we have all the operations that we need
         size_t expected_size = sizeof(expected) / sizeof(size_t);
         BOOST_REQUIRE_EQUAL(expected_size, ops.size());
-        for (size_t i = 0; i < expected_size; ++i)
-            BOOST_REQUIRE_EQUAL(expected[i], ops[i]);
     }
 }
 

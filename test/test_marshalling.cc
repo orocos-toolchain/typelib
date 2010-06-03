@@ -180,6 +180,7 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
         vector<uint8_t> buffer = dump(Value(&data, type));
         BOOST_REQUIRE_EQUAL( buffer.size(),
                 sizeof(StdCollections) - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
+                - (reinterpret_cast<uint8_t const*>(&data.v64) + sizeof(data.v64) - reinterpret_cast<uint8_t const*>(&data) - sizeof(data))
                 + sizeof(double) * 20 // elements
                 + 7 * sizeof(uint64_t)); // element counts
 

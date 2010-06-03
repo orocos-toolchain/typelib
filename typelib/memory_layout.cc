@@ -37,7 +37,7 @@ bool MemLayout::Visitor::visit_ (Array   const& type)
 {
     MemoryLayout subops;
     MemLayout::Visitor array_visitor(subops);
-    array_visitor.apply(type.getIndirection());
+    array_visitor.apply(type.getIndirection(), merge_skip_copy, false);
 
     if (subops.size() == 2 && subops.front() == FLAG_MEMCPY)
         memcpy(subops.back() * type.getDimension());
@@ -57,9 +57,11 @@ bool MemLayout::Visitor::visit_ (Container const& type)
     ops.push_back(FLAG_CONTAINER);
     ops.push_back(reinterpret_cast<size_t>(&type));
 
-    MemLayout::Visitor container_visitor(ops);
-    container_visitor.apply(type.getIndirection());
+    MemoryLayout subops;
+    MemLayout::Visitor container_visitor(subops);
+    container_visitor.apply(type.getIndirection(), merge_skip_copy, false);
 
+    ops.insert(ops.end(), subops.begin(), subops.end());
     ops.push_back(FLAG_END);
     return true;
 }
@@ -101,18 +103,23 @@ MemLayout::Visitor::Visitor(MemoryLayout& ops, bool accept_pointers, bool accept
     : ops(ops), accept_pointers(accept_pointers), accept_opaques(accept_opaques)
     , current_op(FLAG_MEMCPY), current_op_count(0) {}
 
-void MemLayout::Visitor::apply(Type const& type, bool merge_skip_copy)
+void MemLayout::Visitor::apply(Type const& type, bool merge_skip_copy, bool remove_trailing_skips)
 {
+    this->merge_skip_copy = merge_skip_copy;
+
     current_op = FLAG_MEMCPY;
     current_op_count = 0;
     TypeVisitor::apply(type);
     push_current_op();
 
     // Remove trailing skips, they are useless
-    while (ops.size() > 2 && ops[ops.size() - 2] == FLAG_SKIP)
+    if (remove_trailing_skips)
     {
-        ops.pop_back();
-        ops.pop_back();
+        while (ops.size() > 2 && ops[ops.size() - 2] == FLAG_SKIP)
+        {
+            ops.pop_back();
+            ops.pop_back();
+        }
     }
 
     if (merge_skip_copy)
@@ -124,34 +131,33 @@ void MemLayout::Visitor::merge_skips_and_copies()
     // Merge skips and memcpy: if a skip is preceded by a memcpy (or another
     // skip), simply merge the counts.
     MemoryLayout merged;
-    size_t ops_idx = 0;
-    while (ops_idx < ops.size())
+
+    MemoryLayout::const_iterator it = ops.begin();
+    MemoryLayout::const_iterator const end = ops.end();
+    while (it != end)
     {
-        size_t op   = ops[ops_idx];
+        size_t op   = *it;
         if (op != FLAG_SKIP && op != FLAG_MEMCPY)
         {
-            merged.push_back(op);
-            ++ops_idx;
-
-            // Copy the flag argument if it has one
-            if (op != FLAG_END)
-                merged.push_back(ops[ops_idx++]);
+            MemoryLayout::const_iterator element_it = it;
+            ++(++(element_it));
+            MemoryLayout::const_iterator block_end_it = skip_block(element_it, end);
+            ++block_end_it;
+            merged.insert(merged.end(), it, block_end_it);
+            it = block_end_it;
             continue;
         }
 
         // Merge following FLAG_MEMCPY and FLAG_SKIP operations
-        size_t size = ops[ops_idx + 1];
-        ops_idx += 2;
-
-        while (ops_idx < ops.size())
+        size_t size = *(++it);
+        for (++it; it != end; ++it)
         {
-            if (ops[ops_idx] == FLAG_MEMCPY)
+            if (*it == FLAG_MEMCPY)
                 op = FLAG_MEMCPY;
-            else if (ops[ops_idx] != FLAG_SKIP)
+            else if (*it != FLAG_SKIP)
                 break;
 
-            size += ops[ops_idx + 1];
-            ops_idx += 2;
+            size += *(++it);
         }
         merged.push_back(op);
         merged.push_back(size);

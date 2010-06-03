@@ -58,6 +58,7 @@ namespace Typelib
             bool   accept_opaques;
             size_t current_op;
             size_t current_op_count;
+            bool merge_skip_copy;
 
         protected:
             void push_current_op();
@@ -78,7 +79,7 @@ namespace Typelib
         public:
             Visitor(MemoryLayout& ops, bool accept_pointers = false, bool accept_opaques = false);
 
-            void apply(Type const& type, bool merge_skip_copy = true);
+            void apply(Type const& type, bool merge_skip_copy = true, bool remove_trailing_skips = true);
         };
 
         /** Returns the iterator on the next FLAG_END, taking into account nesting */
