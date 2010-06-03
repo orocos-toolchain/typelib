@@ -750,5 +750,8 @@ void Typelib::load(uint8_t* v, std::vector<uint8_t> const& buffer, MemoryLayout 
         ValueOps::load(v, 0, stream, ops.begin(), ops.end());
     if (it != ops.end())
         throw std::runtime_error("internal error in the memory layout");
+    if (stream.in_index != buffer.size())
+        throw std::runtime_error("parts of the provided buffer has not been used (used " + 
+                lexical_cast<string>(stream.in_index) + " bytes, got " + lexical_cast<string>(buffer.size()) + "as input)");
 }
 
