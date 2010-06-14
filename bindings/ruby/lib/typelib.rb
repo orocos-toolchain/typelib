@@ -214,7 +214,7 @@ module Typelib
         # memory zone than +self+
 	def dup
 	    new = self.class.new
-	    Typelib.memcpy(new, self, self.class.size)
+	    Typelib.copy(new, self)
 	end
         alias clone dup
 

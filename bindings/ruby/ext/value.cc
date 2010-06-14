@@ -547,49 +547,11 @@ static VALUE typelib_compare(VALUE, VALUE to, VALUE from)
 }
 
 
-/* call-seq:
- *  Typelib.memcpy(to, from, size) => to
- *
- * Copies +size+ bytes from the memory in +to+ to the memory in +from+.  +to+
- * and +from+ can be either a Typelib::Type instance or a String.
- */
-static VALUE typelib_memcpy(VALUE, VALUE to, VALUE from, VALUE size)
-{
-    void * p_to, * p_from;
-    size_t size_to, size_from;
-    if (rb_obj_is_kind_of(to, rb_cString))
-    {
-	to = StringValue(to);
-	rb_str_modify(to);
-
-	p_to    = StringValuePtr(to);
-	size_to = RSTRING_LEN(to);
-    }
-    else typelib_validate_value_arg(to, p_to, size_to);
-
-    if (rb_obj_is_kind_of(from, rb_cString))
-    {
-	p_from    = StringValuePtr(from);
-	size_from = RSTRING_LEN(from);
-    }
-    else typelib_validate_value_arg(from, p_from, size_from);
-
-    size_t copy_size = NUM2UINT(size);
-    if (size_to < copy_size)
-	rb_raise(rb_eArgError, "destination buffer too small");
-    else if (size_from < copy_size)
-	rb_raise(rb_eArgError, "source buffer too small");
-
-    memcpy(p_to, p_from, copy_size);
-    return to;
-}
-
 void typelib_ruby::Typelib_init_values()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     rb_define_singleton_method(mTypelib, "copy", RUBY_METHOD_FUNC(typelib_copy), 2);
     rb_define_singleton_method(mTypelib, "compare", RUBY_METHOD_FUNC(typelib_compare), 2);
-    rb_define_singleton_method(mTypelib, "memcpy", RUBY_METHOD_FUNC(typelib_memcpy), 3);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
     rb_define_alloc_func(cType, value_alloc);
