@@ -135,11 +135,11 @@ namespace {
             int max_size = 0;
             for (Fields::const_iterator it = fields.begin(); it != fields.end(); ++it)
             {
-                if (it->getOffset() != 0)
-                    continue;
+                GetPackingSize recursive(it->getType());
+                if (recursive.size == -1)
+                    throw std::runtime_error("cannot compute the packing size for " + value.getName());
 
-                TypeVisitor::visit_(value);
-                max_size = std::max(max_size, size);
+                max_size = std::max(max_size, recursive.size);
             }
             size = max_size;
             return true;
