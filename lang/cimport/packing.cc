@@ -174,6 +174,8 @@ using std::endl;
 
 int Typelib::Packing::getOffsetOf(const Field& last_field, const Type& append_field, size_t packing)
 {
+    if (packing == 0)
+        return 0;
     int base_offset = last_field.getOffset() + last_field.getType().getSize();
     return (base_offset + (packing - 1)) / packing * packing;
 }
