@@ -399,7 +399,12 @@ void IDLExport::save
                 Container const& container_t = dynamic_cast<Container const&>(*type);
                 stream << "sequence<" << getIDLAbsoluteTypename(container_t.getIndirection(), type_namespace) << "> " << type.getBasename() << ";";
             }
-	    else
+            else if (type->getCategory() == Type::Opaque)
+            {
+                if (m_opaque_as_any)
+                    stream << "any " << type.getBasename() << ";";
+            }
+            else
 		stream << getIDLAbsoluteTypename(*type, type_namespace) << " " << type.getBasename() << ";";
 
             m_typedefs[type_namespace].push_back(stream.str());

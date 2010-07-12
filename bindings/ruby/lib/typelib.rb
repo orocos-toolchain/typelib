@@ -787,6 +787,23 @@ module Typelib
         end
     end
 
+    def self.load_typelib_plugins
+        if !ENV['TYPELIB_PLUGIN_PATH'] || (@@typelib_plugin_path == ENV['TYPELIB_PLUGIN_PATH'])
+            return
+        end
+
+        ENV['TYPELIB_PLUGIN_PATH'].split(':').each do |dir|
+            Dir.glob(File.join(dir, '*.rb')) do |file|
+                puts "loading #{file}"
+                require file
+            end
+        end
+
+        @@typelib_plugin_path = ENV['TYPELIB_PLUGIN_PATH'].dup
+    end
+    @@typelib_plugin_path = nil
+    
+
     # In Typelib, a registry contains a consistent set of types, i.e. the types
     # are that are related to each other.
     #
@@ -849,6 +866,11 @@ module Typelib
             registry = Registry.new
             registry.import(*args)
             registry
+        end
+
+        def initialize
+            Typelib.load_typelib_plugins
+            super
         end
 
         # Imports the +file+ into this registry. +kind+ is the file format or
@@ -959,6 +981,39 @@ module Typelib
         def to_xml
             export('tlb')
         end
+    end
+
+    # This module is used to extend base Ruby types so that they behave like
+    # their corresponding Typelib types 
+    #
+    # I.e. it must be possible to do
+    #
+    #   structure.time.seconds = 10
+    #
+    # while, still, having the option of doing
+    #
+    #   structure.time => Time instance
+    module DynamicWrapperBase
+        def to_ruby
+            @ruby_object
+        end
+        def to_typelib
+            @typelib_object
+        end
+
+        def method_missing(m, *args, &block)
+            if @typelib_object.respond_to?(m)
+                return @typelib_object.send(m, *args, &block)
+            end
+            return @ruby_object.respond_to?(m)
+        end
+    end
+
+    def self.DynamicWrapper(ruby_object, typelib_object)
+        ruby_object.extend DynamicWrapperBase
+        ruby_object.instance_variable_set(:@ruby_object,    ruby_object)
+        ruby_object.instance_variable_set(:@typelib_object, typelib_object)
+        ruby_object
     end
 end
 
