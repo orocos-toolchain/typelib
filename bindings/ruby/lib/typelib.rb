@@ -788,18 +788,18 @@ module Typelib
     end
 
     def self.load_typelib_plugins
-        if !ENV['TYPELIB_PLUGIN_PATH'] || (@@typelib_plugin_path == ENV['TYPELIB_PLUGIN_PATH'])
+        if !ENV['TYPELIB_RUBY_PLUGIN_PATH'] || (@@typelib_plugin_path == ENV['TYPELIB_RUBY_PLUGIN_PATH'])
             return
         end
 
-        ENV['TYPELIB_PLUGIN_PATH'].split(':').each do |dir|
+        ENV['TYPELIB_RUBY_PLUGIN_PATH'].split(':').each do |dir|
             Dir.glob(File.join(dir, '*.rb')) do |file|
                 puts "loading #{file}"
                 require file
             end
         end
 
-        @@typelib_plugin_path = ENV['TYPELIB_PLUGIN_PATH'].dup
+        @@typelib_plugin_path = ENV['TYPELIB_RUBY_PLUGIN_PATH'].dup
     end
     @@typelib_plugin_path = nil
     
