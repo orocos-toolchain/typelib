@@ -821,9 +821,11 @@ module Typelib
             ".c" => "c",
             ".cc" => "c",
             ".cxx" => "c",
+            ".cpp" => "c",
             ".h" => "c",
             ".hh" => "c",
             ".hxx" => "c",
+            ".hpp" => "c",
             ".tlb" => "tlb"
         }
 	# Returns the file type as expected by Typelib from 
