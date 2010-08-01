@@ -349,6 +349,31 @@ VALUE registry_from_xml(VALUE mod, VALUE xml)
 
 /*
  * call-seq:
+ *  Registry.available_containers => container_names
+ *
+ * Returns the set of known container names
+ */
+static VALUE registry_available_container(VALUE registry_module)
+{
+    Typelib::Container::AvailableContainers containers =
+        Typelib::Container::availableContainers();
+
+    VALUE result = rb_ary_new();
+    Typelib::Container::AvailableContainers::const_iterator
+        it = containers.begin(),
+        end = containers.end();
+
+    while (it != end)
+    {
+        std::string name = it->first;
+        rb_ary_push(result, rb_str_new(name.c_str(), name.length()));
+        ++it;
+    }
+    return result;
+}
+
+/*
+ * call-seq:
  *  registry.define_container(kind, element_type) => new_type
  *
  * Defines a new container instance with the given container kind and element
@@ -395,6 +420,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "includes?", RUBY_METHOD_FUNC(registry_includes_p), 1);
     rb_define_method(cRegistry, "do_resize", RUBY_METHOD_FUNC(registry_resize), 1);
 
+    rb_define_singleton_method(cRegistry, "available_containers", RUBY_METHOD_FUNC(registry_available_container), 0);
     rb_define_method(cRegistry, "define_container", RUBY_METHOD_FUNC(registry_define_container), 2);
 }
 
