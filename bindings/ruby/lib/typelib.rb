@@ -828,6 +828,16 @@ module Typelib
             ".hpp" => "c",
             ".tlb" => "tlb"
         }
+
+        def each(&block)
+            each_type(false, &block)
+        end
+        include Enumerable
+
+        def include?(name)
+            includes?(name)
+        end
+
 	# Returns the file type as expected by Typelib from 
 	# the extension of +file+ (see TYPE_BY_EXT)
 	#
