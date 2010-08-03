@@ -59,6 +59,6 @@ INSTALL(TARGETS typelib_ruby
 INSTALL(FILES ext/typelib_ruby.hh
     DESTINATION ${RUBY_EXTENSIONS_INSTALL_DIR})
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/typelib_ruby.pc DESTINATION lib/pkgconfig)
-INSTALL(FILES lib/typelib.rb
+INSTALL(FILES lib/typelib.rb lib/typelib-gccxml.rb
     DESTINATION ${RUBY_LIBRARY_INSTALL_DIR})
 

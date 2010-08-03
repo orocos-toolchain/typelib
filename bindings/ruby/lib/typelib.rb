@@ -1351,3 +1351,6 @@ module Typelib
 end
 end
 
+if ENV['TYPELIB_USE_GCCXML'] == '1'
+    require 'typelib-gccxml'
+end
