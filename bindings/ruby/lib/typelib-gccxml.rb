@@ -23,6 +23,10 @@ module Typelib
         # actually want in the final XML
         attr_reader :type_aliases
 
+        def node_from_id(id)
+            id_to_node[id]
+        end
+
         def initialize
             @opaques = Set.new
             @id_to_name = Hash.new
@@ -124,7 +128,7 @@ module Typelib
                 return result
             end
 
-            definition = (xml / "[id=\"#{id}\"]").first
+            definition = node_from_id(id)
             if definition.name == "Namespace"
                 result = "/" + resolve_namespace(xml, id).join("/")
                 id_to_name[id] = result
@@ -138,8 +142,7 @@ module Typelib
             if (field_type_name = id_to_name[id])
                 field_type_name
             else
-                typedef = (xml / "[id=\"#{id}\"]").
-                    first
+                typedef = node_from_id(id)
                 resolve_type_definition(xml, typedef)
             end
         end
@@ -212,8 +215,12 @@ module Typelib
                         return ignore(id, "ignoring #{name} as it has parent classes (#{xmlnode['bases']})")
                     end
 
+                    fields = xmlnode['members'].split(" ").
+                        map { |member_id| node_from_id(member_id) }.
+                        find_all { |member_node| member_node.name == "Field" }
+
                     type_def << "<compound name=\"#{emit_type_name(name)}\" size=\"#{Integer(xmlnode['size']) / 8}\">"
-                    (xml / "Field[context=\"#{id}\"]").each do |field|
+                    fields.each do |field|
                         if field['access'] == 'private'
                             return ignore(id, "ignoring #{name} since its field #{field['name']} is private")
                         elsif field_type_name = resolve_type_id(xml, field['type'])
@@ -267,7 +274,7 @@ module Typelib
             opaques.each do |name|
                 name = typelib_to_cxx(name)
                 (xml / "Typedef[name=\"#{name}\"]").each do |typedef|
-                    full_name = cxx_to_typelib(id_to_node[typedef["type"].to_s]["name"].to_s)
+                    full_name = cxx_to_typelib(node_from_id(typedef["type"].to_s)["name"])
                     opaques << full_name
                     STDERR.puts "aliasing #{full_name} to #{name}"
                     self.type_aliases[full_name] = name
