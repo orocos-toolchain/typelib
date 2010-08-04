@@ -147,9 +147,12 @@ module Typelib
             end
         end
 
+        def warn(msg)
+            STDERR.puts "WARN: #{msg}"
+        end
         def ignore(id, msg = nil)
             if msg
-                STDERR.puts "WARN: #{msg}"
+                warn(msg)
             end
             id_to_name[id] = nil
         end
@@ -294,7 +297,7 @@ module Typelib
             end
         end
 
-        def load(path, xml)
+        def load(required_files, xml)
             @result = Array.new
 
             @id_to_node = Hash.new
@@ -317,13 +320,14 @@ module Typelib
 
             # Extract the "root" type definitions, i.e. the type definitions
             # that are actually included in the files we are loading
-            files = (xml / "File").find_all do |file|
-                file_path = file["name"].to_s
-                if file_path != "built-ins"
-                    (file_path =~ /^#{Regexp.quote(path)}/) ||
-                        (file_path[0, 1] != "/")
+            # First, find +path+ in the set of files
+            files = required_files.map do |path|
+                if node = (xml / "File[name=\"#{path}\"]").first
+                    node
+                else
+                    warn("#{path} contains no type definition")
                 end
-            end
+            end.compact
             file_ids = files.map { |f| f["id"] }
 
             all_structs  = []
@@ -386,8 +390,8 @@ module Typelib
     class Registry
         # Imports the given C++ file into the registry using GCC-XML
         def self.load_from_gccxml(registry, file, kind, options)
-            base_dir = (options[:base_dir] || file)
-            base_dir = File.expand_path(base_dir)
+            required_files = (options[:required_files] || [file]).
+                map { |f| File.expand_path(f) }
 
 
             xml = GCCXMLLoader.gccxml(file, options)
@@ -395,7 +399,14 @@ module Typelib
             if opaques = options[:opaques]
                 converter.opaques |= opaques.to_set
             end
-            converter.load(base_dir, xml)
+            tlb = converter.load(required_files, xml)
+
+            Tempfile.open('gccxml.tlb') do |io|
+                io.write tlb
+                io.flush
+
+                registry.import(io.path, 'tlb')
+            end
         end
 
         TYPE_HANDLERS['c'] = method(:load_from_gccxml)
