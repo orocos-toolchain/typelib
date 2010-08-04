@@ -379,7 +379,7 @@ module Typelib
             Tempfile.open('typelib_gccxml') do |io|
                 cmdline << "-fxml=#{io.path}"
                 if !system(*cmdline)
-                    raise "gccxml returned an error while parsing #{file}"
+                    raise ArgumentError, "gccxml returned an error while parsing #{file}"
                 end
 
                 return Nokogiri::XML(io.read)
