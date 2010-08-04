@@ -156,8 +156,6 @@ module Typelib
 
         # Returns if +name+ has been declared as an opaque
         def opaque?(name)
-            STDERR.puts "checking if #{name} is an opaque"
-            STDERR.puts "  #{opaques.to_a.join(", ")}"
             opaques.include?(name)
         end
 
@@ -291,7 +289,6 @@ module Typelib
                 (xml / "Typedef[name=\"#{name}\"]").each do |typedef|
                     full_name = cxx_to_typelib(node_from_id(typedef["type"].to_s)["name"])
                     opaques << full_name
-                    STDERR.puts "aliasing #{full_name} to #{name}"
                     self.type_aliases[full_name] = name
                 end
             end
@@ -338,13 +335,11 @@ module Typelib
             end
 
             # Resolve structs and classes
-            puts "#{all_structs.size} structure definitions found"
             all_structs.each do |node|
                 resolve_type_definition(xml, node)
             end
 
             # Look at typedefs
-            puts "#{all_typedefs.size} typedefs found"
             all_typedefs.each do |node|
                 resolve_type_definition(xml, node)
             end
