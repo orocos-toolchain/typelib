@@ -829,6 +829,8 @@ module Typelib
             ".tlb" => "tlb"
         }
 
+        TYPE_HANDLERS = Hash.new
+
         def each(&block)
             each_type(false, &block)
         end
@@ -929,6 +931,9 @@ module Typelib
 	    file = File.expand_path(file)
             if !kind || kind == 'auto'
                 kind    = Registry.guess_type(file)
+            end
+            if handler = TYPE_HANDLERS[kind]
+                return handler.call(self, file, kind, options)
             end
             if kind.respond_to?(:call)
                 return kind.call(self, file, kind, options)

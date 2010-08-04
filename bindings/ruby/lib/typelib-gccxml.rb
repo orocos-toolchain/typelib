@@ -388,11 +388,7 @@ module Typelib
             converter.load(base_dir, xml)
         end
 
-        TYPE_BY_EXT.each_key do |ext|
-            if TYPE_BY_EXT[ext] == 'c'
-                TYPE_BY_EXT[ext] = method(:load_from_gccxml)
-            end
-        end
+        TYPE_HANDLERS['c'] = method(:load_from_gccxml)
     end
 end
 
