@@ -193,7 +193,13 @@ module Typelib
                 end
             elsif kind == "ArrayType"
                 if pointed_to_type = resolve_type_id(xml, xmlnode['type'])
-                    return (id_to_name[id] = "#{pointed_to_type}[#{xmlnode['max']}]")
+                    value = xmlnode["max"]
+                    if value =~ /^(\d+)u/
+                        size = Integer($1) + 1
+                    else
+                        raise "expected NUMBERu for the 'max' attribute of an array definition, but got #{value}"
+                    end
+                    return (id_to_name[id] = "#{pointed_to_type}[#{size}]")
                 else return ignore(xmlnode)
                 end
             end
