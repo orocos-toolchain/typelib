@@ -279,12 +279,14 @@ std::string IDLExport::getIDLAbsoluteTypename(Type const& type, std::string cons
         return "string";
 
     string type_ns = getExportNamespace(type.getNamespace());
-    if (type_ns != current_namespace && type.getCategory() != Type::Numeric)
+    if (type.getCategory() != Type::Numeric)
     {
 	result = utilmm::join(utilmm::split(type_ns, "/"), "::");
 	if (!result.empty())
 	    result += "::";
     }
+
+
     return result + getIDLTypename(type);
 }
 
