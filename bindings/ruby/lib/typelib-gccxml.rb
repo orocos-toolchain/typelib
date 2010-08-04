@@ -209,15 +209,17 @@ module Typelib
                     # private members
                     #
                     # TODO: add inheritance support
-                    if xmlnode['members'] && xmlnode['members'].empty?
-                        return ignore(id, "ignoring the empty struct/class #{name}")
-                    elsif !xmlnode['bases'].empty?
+                    if xmlnode['bases'] && !xmlnode['bases'].empty?
                         return ignore(id, "ignoring #{name} as it has parent classes (#{xmlnode['bases']})")
                     end
 
                     fields = xmlnode['members'].split(" ").
                         map { |member_id| node_from_id(member_id) }.
                         find_all { |member_node| member_node.name == "Field" }
+
+                    if fields.empty?
+                        return ignore(id, "ignoring the empty struct/class #{name}")
+                    end
 
                     type_def << "<compound name=\"#{emit_type_name(name)}\" size=\"#{Integer(xmlnode['size']) / 8}\">"
                     fields.each do |field|
