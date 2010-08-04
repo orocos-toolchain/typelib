@@ -124,8 +124,8 @@ module Typelib
         end
 
         def resolve_context(xml, id)
-            if result = id_to_name[id]
-                return result
+            if id_to_name.has_key?(id)
+                return id_to_name[id]
             end
 
             definition = node_from_id(id)
@@ -139,8 +139,8 @@ module Typelib
         end
         
         def resolve_type_id(xml, id)
-            if (field_type_name = id_to_name[id])
-                field_type_name
+            if id_to_name.has_key?(id)
+                id_to_name[id]
             else
                 typedef = node_from_id(id)
                 resolve_type_definition(xml, typedef)
