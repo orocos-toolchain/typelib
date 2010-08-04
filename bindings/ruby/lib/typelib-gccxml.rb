@@ -235,19 +235,32 @@ module Typelib
                 end
             elsif kind == "FundamentalType"
             elsif kind == "Typedef"
-                namespace       = resolve_context(xml, xmlnode['context'])
                 if !(pointed_to_type = resolve_type_id(xml, xmlnode['type']))
                     return ignore(id, "cannot create the #{name} typedef, as it points to a type that can't be represented")
                 end
 
+                namespace       = resolve_context(xml, xmlnode['context'])
                 full_name =
                     if namespace != "/"
                         "#{namespace}#{name}"
                     else name
                     end
-                type_def << "<alias name=\"#{full_name}\" source=\"#{pointed_to_type}\" />"
+                type_def << "<alias name=\"#{emit_type_name(full_name)}\" source=\"#{emit_type_name(pointed_to_type)}\" />"
+
+                # And always resolve the typedef as the type it is pointing to
+                name = id_to_name[id] = pointed_to_type
+
             elsif kind == "Enumeration"
-                type_def << "<enum name=\"#{name}\">"
+                namespace       = resolve_context(xml, xmlnode['context'])
+                full_name =
+                    if namespace != "/"
+                        "#{namespace}#{name}"
+                    else name
+                    end
+
+                name = id_to_name[id] = full_name
+
+                type_def << "<enum name=\"#{emit_type_name(full_name)}\">"
                 (xmlnode / "EnumValue").each do |enum_value|
                     type_def << "  <value symbol=\"#{enum_value["name"]}\" value=\"#{enum_value["init"]}\"/>"
                 end
