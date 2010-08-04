@@ -330,16 +330,17 @@ module Typelib
             end.compact
             file_ids = files.map { |f| f["id"] }
 
-            all_structs  = []
+            all_types  = []
             all_typedefs = []
             file_ids.each do |id|
-                all_structs.concat((xml / "Struct[file=\"#{id}\"]").to_a)
-                all_structs.concat((xml / "Class[file=\"#{id}\"]").to_a)
+                all_types.concat((xml / "Struct[file=\"#{id}\"]").to_a)
+                all_types.concat((xml / "Class[file=\"#{id}\"]").to_a)
+                all_types.concat((xml / "Enumeration[file=\"#{id}\"]").to_a)
                 all_typedefs.concat((xml / "Typedef[file=\"#{id}\"]").to_a)
             end
 
             # Resolve structs and classes
-            all_structs.each do |node|
+            all_types.each do |node|
                 resolve_type_definition(xml, node)
             end
 
