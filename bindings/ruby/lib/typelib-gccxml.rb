@@ -203,7 +203,7 @@ module Typelib
                     # This is internally known to typelib
                 elsif Typelib::Registry.available_containers.include?(type_name)
                     # This is known to Typelib as a container
-                    type_def << "<container name=\"#{emit_type_name(name)}\" of=\"#{emit_type_name(template_args[0])}\" size=\"#{xmlnode['size']}\" kind=\"#{emit_type_name(type_name)}\"/>"
+                    type_def << "<container name=\"#{emit_type_name(name)}\" of=\"#{emit_type_name(template_args[0])}\" kind=\"#{emit_type_name(type_name)}\"/>"
                 else
                     # Make sure that we can digest it. Forbidden are: inheritance,
                     # private members
