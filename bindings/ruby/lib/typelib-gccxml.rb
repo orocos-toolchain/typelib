@@ -18,6 +18,12 @@ module Typelib
         attr_reader :id_to_name
         # A mapping from the type ID to the corresponding XML node
         attr_reader :id_to_node
+
+        # A mapping from the type ID to the type names
+        #
+        # Unlike id_to_name, the stored value is not dependent of the fact that
+        # the type has to be exported by typelib.
+        attr_reader :type_names
         # A mapping from type name to type name. Whenever a type name is
         # emitted, it is checked against that map to be translated into what we
         # actually want in the final XML
@@ -28,8 +34,10 @@ module Typelib
         end
 
         def initialize
-            @opaques = Set.new
-            @id_to_name = Hash.new
+            @opaques      = Set.new
+            @id_to_name   = Hash.new
+            @id_to_node   = Hash.new
+            @type_names   = Hash.new
             @type_aliases = Hash.new
         end
 
@@ -150,11 +158,18 @@ module Typelib
         def warn(msg)
             STDERR.puts "WARN: #{msg}"
         end
-        def ignore(id, msg = nil)
-            if msg
-                warn(msg)
+
+        def file_context(xmlnode)
+            if (file = xmlnode["file"]) && (line = xmlnode["line"])
+                "#{id_to_node[file]["name"]}:#{line}"
             end
-            id_to_name[id] = nil
+        end
+
+        def ignore(xmlnode, msg = nil)
+            if msg
+                warn("#{file_context(xmlnode)}: #{msg}")
+            end
+            id_to_name[xmlnode["id"]] = nil
         end
 
         # Returns if +name+ has been declared as an opaque
@@ -174,13 +189,12 @@ module Typelib
             if kind == "PointerType"
                 if pointed_to_type = resolve_type_id(xml, xmlnode['type'])
                     return (id_to_name[id] = "#{pointed_to_type}*")
-                else return ignore(id)
+                else return ignore(xmlnode)
                 end
             elsif kind == "ArrayType"
-                ignore(id)
                 if pointed_to_type = resolve_type_id(xml, xmlnode['type'])
                     return (id_to_name[id] = "#{pointed_to_type}[#{xmlnode['max']}]")
-                else return ignore(id)
+                else return ignore(xmlnode)
                 end
             end
 
@@ -189,9 +203,10 @@ module Typelib
             if name =~ /\/__\w+$/
                 # This is defined as private STL/Compiler implementation
                 # structures. Just ignore it
-                return ignore(id)
+                return ignore(xmlnode)
             end
 
+            type_names[id] = name
             id_to_name[id] = name
             if opaque?(name)
                 # Nothing to do ...
@@ -211,7 +226,7 @@ module Typelib
                     #
                     # TODO: add inheritance support
                     if xmlnode['bases'] && !xmlnode['bases'].empty?
-                        return ignore(id, "ignoring #{name} as it has parent classes (#{xmlnode['bases']})")
+                        return ignore(xmlnode, "ignoring #{name} as it has parent classes")
                     end
 
                     fields = xmlnode['members'].split(" ").
@@ -219,17 +234,17 @@ module Typelib
                         find_all { |member_node| member_node.name == "Field" }
 
                     if fields.empty?
-                        return ignore(id, "ignoring the empty struct/class #{name}")
+                        return ignore(xmlnode, "ignoring the empty struct/class #{name}")
                     end
 
                     type_def << "<compound name=\"#{emit_type_name(name)}\" size=\"#{Integer(xmlnode['size']) / 8}\">"
                     fields.each do |field|
                         if field['access'] == 'private'
-                            return ignore(id, "ignoring #{name} since its field #{field['name']} is private")
+                            return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is private")
                         elsif field_type_name = resolve_type_id(xml, field['type'])
                             type_def << "  <field name=\"#{field['name']}\" type=\"#{emit_type_name(field_type_name)}\" offset=\"#{Integer(field['offset']) / 8}\" />"
                         else
-                            return ignore(id, "ignoring #{name} since its field #{field['name']} has a type that can't be represented")
+                            return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is of the ignored type #{type_names[field['type']]}")
                         end
                     end
                     type_def << "</compound>"
@@ -237,10 +252,13 @@ module Typelib
             elsif kind == "FundamentalType"
             elsif kind == "Typedef"
                 if !(pointed_to_type = resolve_type_id(xml, xmlnode['type']))
-                    return ignore(id, "cannot create the #{name} typedef, as it points to a type that can't be represented")
+                    return ignore(xmlnode, "cannot create the #{name} typedef, as it points to #{type_names[xmlnode['type']]} which is ignored")
                 end
 
-                namespace       = resolve_context(xml, xmlnode['context'])
+                if !(namespace = resolve_context(xml, xmlnode['context']))
+                    return ignore(xmlnode, "ignoring typedef #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
+                end
+
                 full_name =
                     if namespace != "/"
                         "#{namespace}#{name}"
@@ -252,7 +270,10 @@ module Typelib
                 name = id_to_name[id] = pointed_to_type
 
             elsif kind == "Enumeration"
-                namespace       = resolve_context(xml, xmlnode['context'])
+                if !(namespace = resolve_context(xml, xmlnode['context']))
+                    return ignore(xmlnode, "ignoring typedef #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
+                end
+
                 full_name =
                     if namespace != "/"
                         "#{namespace}#{name}"
@@ -267,10 +288,11 @@ module Typelib
                 end
                 type_def << "</enum>"
             else
-                return ignore(id, "ignoring #{name} as it is of the unsupported GCCXML type #{kind}")
+                return ignore(xmlnode, "ignoring #{name} as it is of the unsupported GCCXML type #{kind}")
             end
 
             result.concat(type_def)
+            type_names[id] = name
             name
         end
 
