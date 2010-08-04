@@ -1357,5 +1357,7 @@ end
 end
 
 if ENV['TYPELIB_USE_GCCXML'] == '1'
+    STDERR.puts "Typelib will use GCC-XML to load C/C++ code"
     require 'typelib-gccxml'
 end
+
