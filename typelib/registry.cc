@@ -147,10 +147,10 @@ namespace Typelib
 
         DECLARE_STD_TYPE(short);
         DECLARE_STD_TYPE(short int);
-        DECLARE_STD_TYPE(signed short);
-        DECLARE_STD_TYPE(signed short int);
-        DECLARE_STD_TYPE(unsigned short);
-        DECLARE_STD_TYPE(unsigned short int);
+        DECLARE_STD_TYPE(short signed);
+        DECLARE_STD_TYPE(short signed int);
+        DECLARE_STD_TYPE(short unsigned);
+        DECLARE_STD_TYPE(short unsigned int);
 
         DECLARE_STD_TYPE(long);
         DECLARE_STD_TYPE(long int);
