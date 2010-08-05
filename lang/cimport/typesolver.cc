@@ -205,7 +205,31 @@ void TypeSolver::endFieldDeclaration()
 void TypeSolver::foundSimpleType(const std::list<std::string>& full_type)
 {
     if (!m_current.empty() && m_current.front().name.empty())
-        m_current.front().name = full_type;
+    {
+        // Special case "unsigned XXX" with XXX != "int" should be "XXX unsigned int"
+        if (full_type.front() == "unsigned" || full_type.front() == "signed")
+        {
+            if (full_type.size() == 2 && full_type.back() != "char" && full_type.back() != "int")
+            {
+                m_current.front().name.clear();
+                m_current.front().name.push_back(full_type.back());
+                m_current.front().name.push_back(full_type.front());
+            }
+            else if (full_type.size() > 2)
+            {
+                std::list<std::string> reordered = full_type;
+                reordered.pop_front();
+                reordered.pop_back();
+                reordered.push_back(full_type.front());
+                reordered.push_back(full_type.back());
+                m_current.front().name = reordered;
+            }
+            else
+                m_current.front().name = full_type;
+        }
+        else
+            m_current.front().name = full_type;
+    }
 
     CPPParser::foundSimpleType(full_type);
 }
