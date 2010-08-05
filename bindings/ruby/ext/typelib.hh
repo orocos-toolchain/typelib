@@ -33,11 +33,22 @@ namespace typelib_ruby {
 
     namespace cxx2rb {
         using namespace Typelib;
-        typedef std::map<Type const*, VALUE> WrapperMap;
+
+        typedef std::map<Type const*, std::pair<bool, VALUE> > WrapperMap;
 
         struct RbRegistry
         {
             boost::shared_ptr<Typelib::Registry> registry;
+            /** Map that stores the mapping from Type instances to the
+             * corresponding Ruby object
+             *
+             * The boolean flag is false if the registry still owns that type,
+             * and true otherwise. The registry loses ownership of a type
+             * through the remove call
+             *
+             * In both cases, they will be deleted only when the registry is
+             * garbage collected.
+             */
             cxx2rb::WrapperMap wrappers;
 
             RbRegistry(Typelib::Registry* registry)

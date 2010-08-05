@@ -82,7 +82,7 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
 
     WrapperMap::const_iterator it = wrappers.find(&type);
     if (it != wrappers.end())
-	return it->second;
+	return it->second.second;
 
     VALUE base  = class_of(type);
     VALUE klass = rb_funcall(rb_cClass, rb_intern("new"), 1, base);
@@ -96,7 +96,7 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
     if (rb_respond_to(klass, rb_intern("subclass_initialize")))
 	rb_funcall(klass, rb_intern("subclass_initialize"), 0);
 
-    wrappers.insert(std::make_pair(&type, klass));
+    wrappers.insert(std::make_pair(&type, std::make_pair(false, klass)));
     return klass;
 }
 

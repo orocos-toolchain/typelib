@@ -26,14 +26,27 @@ namespace typelib_ruby {
 
 
 static 
-void registry_free(void* ptr) { delete reinterpret_cast<RbRegistry*>(ptr); }
+void registry_free(void* ptr)
+{
+    using cxx2rb::WrapperMap;
+    RbRegistry* rbregistry = reinterpret_cast<RbRegistry*>(ptr);
+    WrapperMap& wrappers = rbregistry->wrappers;
+    for (WrapperMap::iterator it = wrappers.begin(); it != wrappers.end(); ++it)
+    {
+        if (it->second.first)
+            delete it->first;
+    }
+
+    delete rbregistry;
+}
+
 static
 void registry_mark(void* ptr)
 {
     using cxx2rb::WrapperMap;
     WrapperMap const& wrappers = reinterpret_cast<RbRegistry const*>(ptr)->wrappers;
     for (WrapperMap::const_iterator it = wrappers.begin(); it != wrappers.end(); ++it)
-	rb_gc_mark(it->second);
+	rb_gc_mark(it->second.second);
 }
 
 static
@@ -56,6 +69,54 @@ VALUE registry_includes_p(VALUE self, VALUE name)
     Registry& registry = rb2cxx::object<Registry>(self);
     Type const* type = registry.get( StringValuePtr(name) );
     return type ? Qtrue : Qfalse;
+}
+
+/* call-seq:
+ *   registry.remove(type) => removed_types
+ *
+ * Removes +type+ from the registry, along with all the types that depends on
+ * +type+.
+ *
+ * Returns the set of removed types
+ */
+static
+VALUE registry_remove(VALUE self, VALUE rbtype)
+{
+    RbRegistry& rbregistry = rb2cxx::object<RbRegistry>(self);
+    Registry&   registry = *(rbregistry.registry);
+    Type const& type(rb2cxx::object<Type>(rbtype));
+    std::set<Type*> deleted = registry.remove(type);
+    
+    VALUE result = rb_ary_new();
+    std::set<Type*>::iterator it, end;
+    for (it = deleted.begin(); it != deleted.end(); ++it)
+    {
+        rb_ary_push(result, cxx2rb::type_wrap(**it, self));
+        cxx2rb::WrapperMap::iterator wrapper_it = rbregistry.wrappers.find(*it);
+        wrapper_it->second.first = true;
+    }
+
+    return result;
+}
+
+/* call-seq:
+ *   registry.reverse_depends(type) => types
+ *
+ * Returns the array of types that depend on +type+, including +type+ itself
+ */
+static
+VALUE registry_reverse_depends(VALUE self, VALUE rbtype)
+{
+    Registry const& registry = rb2cxx::object<Registry>(self);
+    Type const& type(rb2cxx::object<Type>(rbtype));
+    std::set<Type const*> rdeps = registry.reverseDepends(type);
+    
+    VALUE result = rb_ary_new();
+    std::set<Type const*>::iterator it, end;
+    for (it = rdeps.begin(); it != rdeps.end(); ++it)
+        rb_ary_push(result, cxx2rb::type_wrap(**it, self));
+
+    return result;
 }
 
 static
@@ -419,6 +480,8 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "minimal", RUBY_METHOD_FUNC(registry_minimal), 1);
     rb_define_method(cRegistry, "includes?", RUBY_METHOD_FUNC(registry_includes_p), 1);
     rb_define_method(cRegistry, "do_resize", RUBY_METHOD_FUNC(registry_resize), 1);
+    rb_define_method(cRegistry, "reverse_depends", RUBY_METHOD_FUNC(registry_reverse_depends), 1);
+    rb_define_method(cRegistry, "remove", RUBY_METHOD_FUNC(registry_remove), 1);
 
     rb_define_singleton_method(cRegistry, "available_containers", RUBY_METHOD_FUNC(registry_available_container), 0);
     rb_define_method(cRegistry, "define_container", RUBY_METHOD_FUNC(registry_define_container), 2);
