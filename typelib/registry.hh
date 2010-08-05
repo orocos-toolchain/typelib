@@ -112,6 +112,10 @@ namespace Typelib
         static bool isPersistent(std::string const& name, Type const& type, std::string const& source_id);
         void add(std::string const& name, Type* new_type, std::string const& source_id);
 
+        /** Returns the set of types that depend on \c type
+         */
+        std::set<Type*> reverseDepends(Type const& type);
+
     public:
 	typedef RegistryIterator Iterator;
 
@@ -162,6 +166,18 @@ namespace Typelib
          *
          * You should not be using it. This is for internal Typelib use only */
         Type* get_(const std::string& name);
+
+        /** Returns the set of types that depend on \c type
+         */
+        std::set<Type const*> reverseDepends(Type const& type) const;
+
+        /** Removes the given type from the registry, along with all the types
+         * that depend on it.
+         *
+         * @return the set of types that have been removed. Their ownership is
+         * passed to the caller (i.e. the caller has to delete them)
+         */
+        std::set<Type *> remove(Type const& type);
 
         /* Internal version to get a non-const Type object
          *

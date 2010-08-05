@@ -503,5 +503,59 @@ namespace Typelib
 	    it.get_().resize(*this, sizes);
 	}
     }
+
+    std::set<Type const*> Registry::reverseDepends(Type const& type) const
+    {
+        std::set<Type const*> result;
+        result.insert(&type);
+
+        RegistryIterator const end = this->end();
+        for (RegistryIterator it = this->begin(); it != end; ++it)
+        {
+            Type const& t = *it;
+            if (it.isAlias()) continue;
+
+            std::set<Type const*> dependencies = t.dependsOn();
+            if (dependencies.count(&type))
+                result.insert(&t);
+        }
+
+        return result;
+    }
+
+    std::set<Type*> Registry::reverseDepends(Type const& type)
+    {
+        std::set<Type*> result;
+
+        std::set<Type const*> const_result = static_cast<Registry const*>(this)->reverseDepends(type);
+        std::set<Type const*>::const_iterator it, end;
+        for (it = const_result.begin(); it != const_result.end(); ++it)
+            result.insert(const_cast<Type*>(*it));
+
+        return result;
+    }
+
+    std::set<Type *> Registry::remove(Type const& type)
+    {
+        std::set<Type*> types = reverseDepends(type);
+
+        TypeMap::iterator global_it = m_global.begin(), global_end = m_global.end();
+        while (global_it != global_end)
+        {
+            if (types.count(global_it->second.type))
+                m_global.erase(global_it++);
+            else ++global_it;
+        }
+
+        NameMap::iterator current_it = m_current.begin(), current_end = m_current.end();
+        while (current_it != current_end)
+        {
+            if (types.count(current_it->second.type))
+                m_current.erase(current_it++);
+            else ++current_it;
+        }
+
+        return types;
+    }
 }; // namespace Typelib
 
