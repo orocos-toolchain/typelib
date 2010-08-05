@@ -18,42 +18,39 @@ using boost::lexical_cast;
 
 using namespace Typelib;
 
-namespace 
-{   
-    /* Returns true if \c name1 is either in a more in-depth namespace than
-     * name2 (i.e. name2 == /A/B/class and name1 == /A/B/C/class2 or if 
-     * name2 < name1 (lexicographic sort). Otherwise, returns false
-     */
-    bool sort_names ( const std::string& name1, const std::string& name2 )
+/* Returns true if \c name1 is either in a more in-depth namespace than
+ * name2 (i.e. name2 == /A/B/class and name1 == /A/B/C/class2 or if 
+ * name2 < name1 (lexicographic sort). Otherwise, returns false
+ */
+bool Typelib::nameSort( const std::string& name1, const std::string& name2 )
+{
+    NameTokenizer tok1(name1);
+    NameTokenizer tok2(name2);
+    NameTokenizer::const_iterator it1 = tok1.begin();
+    NameTokenizer::const_iterator it2 = tok2.begin();
+
+    std::string ns1, ns2;
+    // we sort /A/B/C/ before /A/B/C/class
+    // and /A/B/C/class2 after /A/B/class1
+    for (; it1 != tok1.end() && it2 != tok2.end(); ++it1, ++it2)
     {
-        NameTokenizer tok1(name1);
-        NameTokenizer tok2(name2);
-        NameTokenizer::const_iterator it1 = tok1.begin();
-        NameTokenizer::const_iterator it2 = tok2.begin();
+        ns1 = *it1;
+        ns2 = *it2;
 
-        std::string ns1, ns2;
-        // we sort /A/B/C/ before /A/B/C/class
-        // and /A/B/C/class2 after /A/B/class1
-        for (; it1 != tok1.end() && it2 != tok2.end(); ++it1, ++it2)
-        {
-            ns1 = *it1;
-            ns2 = *it2;
-
-            int value = ns1.compare(ns2);
-            if (value) return value < 0;
-            //cout << ns1 << " " << ns2 << endl;
-        }
-
-        if (it1 == tok1.end()) 
-            return true;  // there is namespace names left in name1, and not in name2
-        if (it2 == tok2.end()) 
-            return false; // there is namespace names left in name2, and not in name1
         int value = ns1.compare(ns2);
-        if (value) 
-            return value < 0;
-
-        return false;
+        if (value) return value < 0;
+        //cout << ns1 << " " << ns2 << endl;
     }
+
+    if (it1 == tok1.end()) 
+        return true;  // there is namespace names left in name1, and not in name2
+    if (it2 == tok2.end()) 
+        return false; // there is namespace names left in name2, and not in name1
+    int value = ns1.compare(ns2);
+    if (value) 
+        return value < 0;
+
+    return false;
 }
 
 namespace Typelib
@@ -65,7 +62,7 @@ namespace Typelib
     }
     
     Registry::Registry()
-        : m_global(sort_names)
+        : m_global(nameSort)
     { 
         addStandardTypes();
         PluginManager::self manager;
@@ -366,7 +363,7 @@ namespace Typelib
 
 	    // Check if there is already a type with the same relative name
 	    TypeMap::iterator it = m_current.find(cur_name);
-	    if (it == m_current.end() || !sort_names(it->second.type->getName(), name))
+	    if (it == m_current.end() || !nameSort(it->second.type->getName(), name))
 	    {
 		m_current.erase(cur_name);
 		m_current.insert(make_pair(cur_name, regtype));

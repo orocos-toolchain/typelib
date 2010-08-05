@@ -35,6 +35,11 @@ namespace Typelib
     /** Returns the relative part of +name+, relative to the given namespace.
      * The returned name does not have any leading namespace separator. */
     std::string getRelativeName(std::string const& full_name, std::string const& ns);
+    /** Returns true if \c name1 is either in a more in-depth namespace than
+     * name2 (i.e. name2 == /A/B/class and name1 == /A/B/C/class2 or if 
+     * name2 < name1 (lexicographic sort). Otherwise, returns false
+     */
+    bool nameSort(std::string const& name1, std::string const& name2);
 };
 
 #endif
