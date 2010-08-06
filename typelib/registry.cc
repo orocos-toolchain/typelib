@@ -138,42 +138,6 @@ namespace Typelib
         add(new NullType("/nil"), s_stdsource);
         alias("/nil", "/void", s_stdsource);
         
-        DECLARE_STD_TYPE(char);
-        DECLARE_STD_TYPE(signed char);
-        DECLARE_STD_TYPE(unsigned char);
-
-        DECLARE_STD_TYPE(short);
-        DECLARE_STD_TYPE(short int);
-        DECLARE_STD_TYPE(short signed);
-        DECLARE_STD_TYPE(short signed int);
-        DECLARE_STD_TYPE(short unsigned);
-        DECLARE_STD_TYPE(short unsigned int);
-
-        DECLARE_STD_TYPE(long);
-        DECLARE_STD_TYPE(long int);
-        DECLARE_STD_TYPE(signed long);
-        DECLARE_STD_TYPE(signed long int);
-        DECLARE_STD_TYPE(unsigned long);
-        DECLARE_STD_TYPE(unsigned long int);
-        DECLARE_STD_TYPE(long unsigned);
-        DECLARE_STD_TYPE(long unsigned int);
-
-        DECLARE_STD_TYPE(long long);
-        DECLARE_STD_TYPE(long long int);
-        DECLARE_STD_TYPE(signed long long);
-        DECLARE_STD_TYPE(signed long long int);
-        DECLARE_STD_TYPE(unsigned long long);
-        DECLARE_STD_TYPE(unsigned long long int);
-
-        DECLARE_STD_TYPE(int);
-        DECLARE_STD_TYPE(signed int);
-        DECLARE_STD_TYPE(unsigned int);
-
-        BOOST_STATIC_ASSERT(( sizeof(float) == sizeof(int32_t) ));
-        BOOST_STATIC_ASSERT(( sizeof(double) == sizeof(int64_t) ));
-        add(new Numeric("/float",  4, Numeric::Float), s_stdsource);
-        add(new Numeric("/double", 8, Numeric::Float), s_stdsource);
-
         // Add standard sized integers
         static const int sizes[] = { 1, 2, 4, 8 };
         for (int i = 0; i < 4; ++i)
@@ -182,6 +146,81 @@ namespace Typelib
             add(new Numeric("/"  + suffix, sizes[i], Numeric::SInt), s_stdsource);
             add(new Numeric("/u" + suffix, sizes[i], Numeric::UInt), s_stdsource);
         }
+
+        std::string normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<char>::digits + 1) + "_t";
+        alias(normalized_type_name, "/char", s_stdsource);
+        alias(normalized_type_name, "/signed char", s_stdsource);
+        normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<char>::digits + 1) + "_t";
+        alias(normalized_type_name, "/unsigned char", s_stdsource);
+
+        normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<short int>::digits + 1) + "_t";
+        alias(normalized_type_name, "/signed short int", s_stdsource);
+        alias(normalized_type_name, "/signed int short", s_stdsource);
+        alias(normalized_type_name, "/int signed short", s_stdsource);
+        alias(normalized_type_name, "/short signed int", s_stdsource);
+        alias(normalized_type_name, "/signed short int", s_stdsource);
+        alias(normalized_type_name, "/signed short", s_stdsource);
+        alias(normalized_type_name, "/short signed", s_stdsource);
+        alias(normalized_type_name, "/short", s_stdsource);
+        alias(normalized_type_name, "/short int", s_stdsource);
+        normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<short int>::digits + 1) + "_t";
+        alias(normalized_type_name, "/short unsigned int", s_stdsource);
+        alias(normalized_type_name, "/short int unsigned", s_stdsource);
+        alias(normalized_type_name, "/int short unsigned", s_stdsource);
+        alias(normalized_type_name, "/unsigned short int", s_stdsource);
+        alias(normalized_type_name, "/short unsigned", s_stdsource);
+        alias(normalized_type_name, "/unsigned short", s_stdsource);
+
+        normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<int>::digits + 1) + "_t";
+        alias(normalized_type_name, "/signed int", s_stdsource);
+        alias(normalized_type_name, "/signed", s_stdsource);
+        alias(normalized_type_name, "/int signed", s_stdsource);
+        alias(normalized_type_name, "/int", s_stdsource);
+        normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<int>::digits + 1) + "_t";
+        alias(normalized_type_name, "/unsigned int", s_stdsource);
+        alias(normalized_type_name, "/unsigned", s_stdsource);
+        alias(normalized_type_name, "/int unsigned", s_stdsource);
+
+        normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<long>::digits + 1) + "_t";
+        alias(normalized_type_name, "/signed long int", s_stdsource);
+        alias(normalized_type_name, "/signed int long", s_stdsource);
+        alias(normalized_type_name, "/int signed long", s_stdsource);
+        alias(normalized_type_name, "/long signed int", s_stdsource);
+        alias(normalized_type_name, "/signed long int", s_stdsource);
+        alias(normalized_type_name, "/signed long", s_stdsource);
+        alias(normalized_type_name, "/long signed", s_stdsource);
+        alias(normalized_type_name, "/long", s_stdsource);
+        alias(normalized_type_name, "/long int", s_stdsource);
+        normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<long>::digits + 1) + "_t";
+        alias(normalized_type_name, "/long unsigned int", s_stdsource);
+        alias(normalized_type_name, "/long int unsigned", s_stdsource);
+        alias(normalized_type_name, "/int long unsigned", s_stdsource);
+        alias(normalized_type_name, "/unsigned long int", s_stdsource);
+        alias(normalized_type_name, "/long unsigned", s_stdsource);
+        alias(normalized_type_name, "/unsigned long", s_stdsource);
+
+        normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<long long>::digits + 1) + "_t";
+        alias(normalized_type_name, "/signed long long int", s_stdsource);
+        alias(normalized_type_name, "/signed int long long", s_stdsource);
+        alias(normalized_type_name, "/int signed long long", s_stdsource);
+        alias(normalized_type_name, "/long long signed int", s_stdsource);
+        alias(normalized_type_name, "/signed long long int", s_stdsource);
+        alias(normalized_type_name, "/signed long long", s_stdsource);
+        alias(normalized_type_name, "/long long signed", s_stdsource);
+        alias(normalized_type_name, "/long long", s_stdsource);
+        alias(normalized_type_name, "/long long int", s_stdsource);
+        normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<long long>::digits + 1) + "_t";
+        alias(normalized_type_name, "/long long unsigned int", s_stdsource);
+        alias(normalized_type_name, "/long long int unsigned", s_stdsource);
+        alias(normalized_type_name, "/int long long unsigned", s_stdsource);
+        alias(normalized_type_name, "/unsigned long long int", s_stdsource);
+        alias(normalized_type_name, "/long long unsigned", s_stdsource);
+        alias(normalized_type_name, "/unsigned long long", s_stdsource);
+
+        BOOST_STATIC_ASSERT(( sizeof(float) == sizeof(int32_t) ));
+        BOOST_STATIC_ASSERT(( sizeof(double) == sizeof(int64_t) ));
+        add(new Numeric("/float",  4, Numeric::Float), s_stdsource);
+        add(new Numeric("/double", 8, Numeric::Float), s_stdsource);
 
         // Finally, add definition for boolean types
         add(new Numeric("/bool", sizeof(bool), Numeric::UInt), s_stdsource);
