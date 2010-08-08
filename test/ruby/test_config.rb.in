@@ -4,3 +4,5 @@ $LOAD_PATH.unshift "@CMAKE_SOURCE_DIR@/bindings/ruby/lib"
 
 SRCDIR   = "@CMAKE_SOURCE_DIR@/test"
 BUILDDIR = "@CMAKE_BINARY_DIR@/test"
+
+require 'typelib'
