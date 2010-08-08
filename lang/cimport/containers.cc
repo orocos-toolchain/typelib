@@ -10,11 +10,11 @@ using namespace std;
 
 BOOST_STATIC_ASSERT(( sizeof(vector<void*>) == sizeof(vector<Container>) ));
 
-string Vector::fullName(Type const& on)
-{ return "/std/vector<" + on.getName() + ">"; }
+string Vector::fullName(std::string const& element_name)
+{ return "/std/vector<" + element_name + ">"; }
 
 Vector::Vector(Type const& on)
-    : Container("/std/vector", fullName(on), getNaturalSize(), on)
+    : Container("/std/vector", fullName(on.getName()), getNaturalSize(), on)
     , is_memcpy(false)
 {
     try {
@@ -296,6 +296,10 @@ Container::MarshalOps::const_iterator Vector::load(
     }
 }
 
+std::string Vector::getIndirectTypeName(std::string const& element_name) const
+{
+    return Vector::fullName(element_name);
+}
 
 Container const& Vector::factory(Registry& registry, std::list<Type const*> const& on)
 {
@@ -303,7 +307,7 @@ Container const& Vector::factory(Registry& registry, std::list<Type const*> cons
         throw std::runtime_error("expected only one template argument for std::vector");
 
     Type const& contained_type = *on.front();
-    std::string full_name = Vector::fullName(contained_type);
+    std::string full_name = Vector::fullName(contained_type.getName());
     if (! registry.has(full_name))
     {
         Vector* new_type = new Vector(contained_type);

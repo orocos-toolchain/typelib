@@ -5,10 +5,11 @@
 #include <typelib/exporter.hh>
 #include <typelib/registryiterator.hh>
 #include <utilmm/configfile/configset.hh>
+#include <set>
 
 using namespace Typelib;
 using utilmm::config_set;
-using std::string;
+using namespace std;
 using namespace typelib_ruby;
 using cxx2rb::RbRegistry;
 
@@ -410,6 +411,25 @@ VALUE registry_from_xml(VALUE mod, VALUE xml)
 
 /*
  * call-seq:
+ *  Registry.aliases_of(type) => list_of_names
+ *
+ * Lists all the known aliases for the given type
+ */
+static VALUE registry_aliases_of(VALUE self, VALUE type_)
+{
+    Registry& registry = rb2cxx::object<Registry>(self);
+    Type const& type(rb2cxx::object<Type>(type_));
+    std::set<std::string> aliases =
+        registry.getAliasesOf(type);
+
+    VALUE result = rb_ary_new();
+    for (set<string>::const_iterator it = aliases.begin(); it != aliases.end(); ++it)
+        rb_ary_push(result, rb_str_new(it->c_str(), it->length()));
+    return result;
+}
+
+/*
+ * call-seq:
  *  Registry.available_containers => container_names
  *
  * Returns the set of known container names
@@ -476,6 +496,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "do_export", RUBY_METHOD_FUNC(registry_export), 2);
     rb_define_singleton_method(cRegistry, "from_xml", RUBY_METHOD_FUNC(registry_from_xml), 1);
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
+    rb_define_method(cRegistry, "aliases_of", RUBY_METHOD_FUNC(registry_aliases_of), 1);
     rb_define_method(cRegistry, "merge", RUBY_METHOD_FUNC(registry_merge), 1);
     rb_define_method(cRegistry, "minimal", RUBY_METHOD_FUNC(registry_minimal), 1);
     rb_define_method(cRegistry, "includes?", RUBY_METHOD_FUNC(registry_includes_p), 1);

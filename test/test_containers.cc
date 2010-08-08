@@ -57,6 +57,18 @@ struct AssertValueVisit : public ValueVisitor
     }
 };
 
+BOOST_AUTO_TEST_CASE( test_vector_defines_aliases )
+{
+    Registry registry;
+    import_test_types(registry);
+    registry.alias("/B", "/BAlias");
+    Container const& container = Container::createContainer(registry, "/std/vector", *registry.get("B"));
+
+    Type const* aliased = registry.get("/std/vector</BAlias>");
+    BOOST_REQUIRE(aliased);
+    BOOST_REQUIRE(*aliased == container);
+}
+
 BOOST_AUTO_TEST_CASE( test_vector_getElementCount )
 {
     Registry registry;

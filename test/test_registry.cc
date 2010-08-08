@@ -137,3 +137,15 @@ BOOST_AUTO_TEST_CASE( test_repositories_merge )
     assert_registries_equal(target, *ref);
 }
 
+BOOST_AUTO_TEST_CASE( test_array_auto_alias )
+{
+    Registry registry;
+    registry.alias("/int", "/A");
+    registry.add(new Array(*registry.get("/int"), 10));
+    BOOST_REQUIRE(registry.get("/A[10]"));
+    BOOST_REQUIRE(*registry.get("/A[10]") == *registry.get("/int[10]"));
+    registry.alias("/int", "/B");
+    BOOST_REQUIRE(registry.get("/B[10]"));
+    BOOST_REQUIRE(*registry.get("/B[10]") == *registry.get("/int[10]"));
+}
+

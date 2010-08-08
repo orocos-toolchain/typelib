@@ -416,7 +416,22 @@ namespace Typelib
     }
 
     void Registry::add(Type* new_type, const std::string& source_id)
-    { add(new_type->getName(), new_type, source_id); }
+    {
+        add(new_type->getName(), new_type, source_id);
+
+        // If there are any aliases for any of the type's dependencies, trigger
+        // modifiedDependencyAliases()
+	set<Type const*> dependencies = new_type->dependsOn();
+        for (set<Type const*>::const_iterator dep_it = dependencies.begin();
+                dep_it != dependencies.end(); ++dep_it)
+        {
+            if (!getAliasesOf(**dep_it).empty())
+            {
+                new_type->modifiedDependencyAliases(*this);
+                break;
+            }
+        }
+    }
 
     void Registry::alias(std::string const& base, std::string const& newname, std::string const& source_id)
     {
@@ -428,6 +443,27 @@ namespace Typelib
             throw Undefined(base);
 
         add(newname, base_type, source_id);
+
+        // If base_type is in use in any type, trigger
+        // modifiedDependencyAliases() on it
+        //
+        // We do it in two stages as modifying a container while iterating on it
+        // is evil ...
+        std::list<Type const*> triggers;
+        RegistryIterator const end = this->end();
+        for (RegistryIterator it = begin(); it != end; ++it)
+        {
+            if (it.isAlias()) continue;
+            set<Type const*> dependencies = it->dependsOn();
+            if (dependencies.count(base_type))
+                triggers.push_back(&(*it));
+        }
+
+        for (list<Type const*>::const_iterator trigger_it = triggers.begin();
+                trigger_it != triggers.end(); ++trigger_it)
+        {
+            (*trigger_it)->modifiedDependencyAliases(*this);
+        }
     }
 
     size_t Registry::size() const { return m_global.size(); }
@@ -592,6 +628,18 @@ namespace Typelib
         }
 
         return types;
+    }
+
+    std::set<std::string> Registry::getAliasesOf(Type const& type) const
+    {
+        set<string> result;
+        RegistryIterator const end = this->end();
+        for (RegistryIterator it = begin(); it != end; ++it)
+        {
+            if (it.isAlias() && *it == type)
+                result.insert(it.getName());
+        }
+        return result;
     }
 }; // namespace Typelib
 

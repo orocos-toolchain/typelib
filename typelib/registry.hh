@@ -246,6 +246,9 @@ namespace Typelib
 
         /** Returns true if +type+ is a type included in this registry */
         bool isIncluded(Type const& type) const;
+
+        /** Returns the set of aliases that exist for +type+ */
+        std::set<std::string> getAliasesOf(Type const& type) const;
         
     public:
         enum DumpMode

@@ -114,7 +114,14 @@ namespace
             if (basename == name)
                 return base;
 
-            return m_registry.build(name);
+            Type const* derived = m_registry.build(name);
+            if (derived->getName() != name && !m_registry.has(name, false))
+                m_registry.alias(derived->getName(), name);
+
+            it = m_map.find(name);
+            if (it != m_map.end())
+                m_map.erase(it);
+            return derived;
         }
     };
 }

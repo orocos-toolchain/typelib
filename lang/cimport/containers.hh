@@ -9,9 +9,10 @@ class Vector : public Typelib::Container
     void resize(std::vector<uint8_t>* ptr, size_t new_size) const;
     void copy(std::vector<uint8_t>* dst_ptr, size_t dst_idx, std::vector<uint8_t>* src_ptr, size_t src_idx, size_t count) const;
     void erase(std::vector<uint8_t>* ptr, size_t idx) const;
+    std::string getIndirectTypeName(std::string const& element_name) const;
 
 public:
-    static std::string fullName(Typelib::Type const& on);
+    static std::string fullName(std::string const& element_name);
     Vector(Typelib::Type const& on);
 
     size_t getElementCount(void const* ptr) const;
@@ -74,6 +75,10 @@ public:
 
     static Container const& factory(Typelib::Registry& registry, std::list<Type const*> const& on);
     ContainerFactory getFactory() const;
+
+    // This method is never called since we redefine modifiedDependencyAliases
+    std::string getIndirectTypeName(std::string const& element_name) const { return ""; }
+    void modifiedDependencyAliases(Typelib::Registry& registry) const {}
 };
 
 

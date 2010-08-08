@@ -79,8 +79,20 @@ namespace Typelib
 	/** true if this type is null */
         bool          isNull() const;
 
-	/** The set of types this type depends upon */
+	/** The set of types this type depends upon
+         *
+         * This method returns the set of types that are directly depended-upon
+         * by this type
+         */
 	virtual std::set<Type const*> dependsOn() const = 0;
+
+        /** Called by the registry if one (or more) of this type's dependencies
+         * is aliased
+         *
+         * The default implementation does nothing. It is reimplemented in
+         * types for which the name is built from the dependencies' name
+         */
+        virtual void modifiedDependencyAliases(Registry& registry) const;
 
         bool operator == (Type const& with) const;
         bool operator != (Type const& with) const;
@@ -343,6 +355,9 @@ namespace Typelib
     public:
 
         Indirect(std::string const& name, size_t size, Category category, Type const& on);
+
+        void modifiedDependencyAliases(Registry& registry) const;
+
         Type const& getIndirection() const;
 	virtual std::set<Type const*> dependsOn() const;
 
@@ -350,6 +365,14 @@ namespace Typelib
 
     protected:
 	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
+
+        /** Overloaded in subclasses to return the name of this type based on
+         * the name of the indirection
+         *
+         * This is solely used by modifiedDependencyAliases() to update the set
+         * of aliases for a given type
+         */
+        virtual std::string getIndirectTypeName(std::string const& inside_name) const = 0;
 
     private:
         Type const& m_indirection;
@@ -366,6 +389,9 @@ namespace Typelib
         size_t getDimension() const;
         static std::string getArrayName(std::string const& base, size_t new_dim);
 
+    protected:
+        virtual std::string getIndirectTypeName(std::string const& inside_name) const;
+
     private:
 	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
@@ -379,6 +405,9 @@ namespace Typelib
     public:
         Pointer(Type const& on);
         static std::string getPointerName(std::string const& base);
+
+    protected:
+        virtual std::string getIndirectTypeName(std::string const& inside_name) const;
 
     private:
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;

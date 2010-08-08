@@ -1,12 +1,15 @@
 require 'test_config'
+require 'set'
 
 class TC_Registry < Test::Unit::TestCase
     Registry = Typelib::Registry
     def test_aliasing
 	registry = Registry.new
 	registry.alias "/my_own_and_only_int", "/int"
+        current_aliases = registry.aliases_of(registry.get("int"))
 	assert_equal(registry.get("my_own_and_only_int"), registry.get("int"))
-	assert_equal("/int", registry.get("/my_own_and_only_int").name)
+
+	assert_equal((current_aliases.to_set << "/my_own_and_only_int"), registry.aliases_of(registry.get("/int")).to_set)
     end
 
     def test_guess_type

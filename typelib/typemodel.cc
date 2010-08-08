@@ -27,6 +27,7 @@ namespace Typelib
     std::string Type::getNamespace() const { return Typelib::getNamespace(m_name); }
     void Type::setName(const std::string& name) { m_name = name; }
     Type::Category Type::getCategory() const { return m_category; }
+    void Type::modifiedDependencyAliases(Registry& registry) const {}
 
     void   Type::setSize(size_t size) { m_size = size; }
     size_t Type::getSize() const { return m_size; }
@@ -171,6 +172,19 @@ namespace Typelib
         getIndirection().merge(registry, stack);
 
         return Type::merge(registry, stack);
+    }
+
+    void Indirect::modifiedDependencyAliases(Registry& registry) const
+    {
+        std::string full_name = getName();
+        set<string> aliases = registry.getAliasesOf(getIndirection());
+        for (set<string>::const_iterator alias_it = aliases.begin();
+                alias_it != aliases.end(); ++alias_it)
+        {
+            std::string alias_name = getIndirectTypeName(*alias_it);
+            if (!registry.has(alias_name, false))
+                registry.alias(full_name, alias_name);
+        }
     }
 
     Compound::Compound(std::string const& name)
@@ -347,6 +361,11 @@ namespace Typelib
         : Indirect(getArrayName(of.getName(), new_dim), new_dim * of.getSize(), Type::Array, of)
         , m_dimension(new_dim) { }
 
+    std::string Array::getIndirectTypeName(std::string const& inside_type_name) const
+    {
+        return Array::getArrayName(inside_type_name, getDimension());
+    }
+
     std::string Array::getArrayName(std::string const& name, size_t dim)
     { 
         std::ostringstream stream;
@@ -383,6 +402,11 @@ namespace Typelib
         : Indirect( getPointerName(on.getName()), sizeof(int *), Type::Pointer, on) {}
     std::string Pointer::getPointerName(std::string const& base)
     { return base + '*'; }
+    std::string Pointer::getIndirectTypeName(std::string const& inside_type_name) const
+    {
+        return Pointer::getPointerName(inside_type_name);
+    }
+
     Type* Pointer::do_merge(Registry& registry, RecursionStack& stack) const
     {
         // The pointed-to type has already been inserted in the repository by
