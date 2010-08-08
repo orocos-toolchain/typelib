@@ -321,7 +321,7 @@ tuple<uint8_t*, MemoryLayout::const_iterator>
             }
 
             default:
-                throw std::runtime_error("in init(): unrecognized marshalling bytecode");
+                throw std::runtime_error("in zero(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
         }
     }
 
@@ -367,7 +367,7 @@ tuple<uint8_t*, MemoryLayout::const_iterator>
             }
 
             default:
-                throw std::runtime_error("in init(): unrecognized marshalling bytecode");
+                throw std::runtime_error("in init(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
         }
     }
 
@@ -413,7 +413,7 @@ tuple<uint8_t*, MemoryLayout::const_iterator>
             }
 
             default:
-                throw std::runtime_error("unrecognized marshalling bytecode");
+                throw std::runtime_error("in destroy(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
         }
     }
 
@@ -468,7 +468,7 @@ tuple<uint8_t*, uint8_t*, MemoryLayout::const_iterator>
                 break;
             }
             default:
-                throw std::runtime_error("unrecognized marshalling bytecode");
+                throw std::runtime_error("in copy(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
         }
     }
 
@@ -532,7 +532,7 @@ tuple<bool, uint8_t*, uint8_t*, MemoryLayout::const_iterator>
                 break;
             }
             default:
-                throw std::runtime_error("unrecognized marshalling bytecode");
+                throw std::runtime_error("in compare(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
         }
     }
     return make_tuple(true, out_buffer, in_buffer, it);
