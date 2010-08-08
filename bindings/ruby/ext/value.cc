@@ -542,8 +542,12 @@ static VALUE typelib_compare(VALUE, VALUE to, VALUE from)
                     v_from.getType().getName().c_str(),
                     v_to.getType().getName().c_str());
     }
-    bool result = Typelib::compare(v_to.getData(), v_from.getData(), v_from.getType());
-    return result ? Qtrue : Qfalse;
+    try {
+        bool result = Typelib::compare(v_to.getData(), v_from.getData(), v_from.getType());
+        return result ? Qtrue : Qfalse;
+    } catch(std::runtime_error e) {
+        rb_raise(rb_eArgError, e.what());
+    }
 }
 
 
