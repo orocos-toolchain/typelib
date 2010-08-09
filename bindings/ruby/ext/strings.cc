@@ -5,13 +5,14 @@ using namespace Typelib;
 using std::string;
 using namespace typelib_ruby;
 
-static bool is_string_handler(Type const& type, bool known_size = false)
+static bool is_string_handler(Registry const& registry, Type const& type, bool known_size = false)
 {
     if (type.getCategory() != Type::Array && type.getCategory() != Type::Pointer)
         return false;
 
+    Type const& char_type(*registry.get("/char"));
     Type const& data_type(static_cast<Indirect const&>(type).getIndirection());
-    if (data_type.getName() != "/char")
+    if (data_type.getName() != char_type.getName())
         return false;
 
     if (known_size && type.getCategory() == Type::Pointer)
@@ -39,7 +40,8 @@ static VALUE value_string_handler_p(VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));
     Type  const& type(value.getType());
-    return is_string_handler(type) ? Qtrue : Qfalse;
+    Registry const& registry = rb2cxx::object<Registry>(value_get_registry(self));
+    return is_string_handler(registry, type) ? Qtrue : Qfalse;
 }
 
 /*
@@ -51,8 +53,9 @@ static VALUE value_from_string(VALUE mod, VALUE self, VALUE from)
 {
     Value const& value(rb2cxx::object<Value>(self));
     Type  const& type(value.getType());
+    Registry const& registry = rb2cxx::object<Registry>(value_get_registry(self));
 
-    if (!is_string_handler(type, true))
+    if (!is_string_handler(registry, type, true))
 	rb_raise(rb_eTypeError, "Ruby strings can only be converted to char arrays");
 
     char * buffer;
@@ -76,8 +79,9 @@ static VALUE value_to_string(VALUE mod, VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));
     Type  const& type(value.getType());
+    Registry const& registry = rb2cxx::object<Registry>(value_get_registry(self));
 
-    if (!is_string_handler(type))
+    if (!is_string_handler(registry, type))
 	rb_raise(rb_eRuntimeError, "invalid conversion to string");
 
     char* buffer;

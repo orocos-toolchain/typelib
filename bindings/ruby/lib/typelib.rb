@@ -759,34 +759,6 @@ module Typelib
         end
     end
 
-    convert_from_ruby String, '/std/string' do |value, typelib_type|
-        typelib_type.wrap([value.length, value].pack("QA#{value.length}"))
-    end
-    convert_from_ruby TrueClass, '/bool' do |value, typelib_type|
-        Typelib.from_ruby(1, typelib_type)
-    end
-    convert_from_ruby FalseClass, '/bool' do |value, typelib_type|
-        Typelib.from_ruby(0, typelib_type)
-    end
-    convert_from_ruby String, '/char' do |value, typelib_type|
-        Typelib.from_ruby(value[0], typelib_type)
-    end
-    specialize_model '/bool' do
-        def to_ruby(value)
-            value == 1
-        end
-    end
-    specialize '/bool' do
-        def to_ruby
-            super == 1
-        end
-    end
-    specialize '/std/string' do
-        def to_ruby
-            to_byte_array[8..-1]
-        end
-    end
-
     def self.load_typelib_plugins
         if !ENV['TYPELIB_RUBY_PLUGIN_PATH'] || (@@typelib_plugin_path == ENV['TYPELIB_RUBY_PLUGIN_PATH'])
             return
@@ -1042,6 +1014,41 @@ end
 
 require 'typelib_ruby'
 
+module Typelib
+    # Get the name for 'char'
+    reg = Registry.new
+    CHAR_T = reg.get('/char')
+
+    convert_from_ruby String, '/std/string' do |value, typelib_type|
+        typelib_type.wrap([value.length, value].pack("QA#{value.length}"))
+    end
+    convert_from_ruby TrueClass, '/bool' do |value, typelib_type|
+        Typelib.from_ruby(1, typelib_type)
+    end
+    convert_from_ruby FalseClass, '/bool' do |value, typelib_type|
+        Typelib.from_ruby(0, typelib_type)
+    end
+
+    convert_from_ruby String, CHAR_T.name do |value, typelib_type|
+        Typelib.from_ruby(value[0], typelib_type)
+    end
+    specialize_model '/bool' do
+        def to_ruby(value)
+            value == 1
+        end
+    end
+    specialize '/bool' do
+        def to_ruby
+            super == 1
+        end
+    end
+    specialize '/std/string' do
+        def to_ruby
+            to_byte_array[8..-1]
+        end
+    end
+end
+
 if Typelib.with_dyncall?
 module Typelib
     # An opened C library
@@ -1277,7 +1284,7 @@ module Typelib
 	if !(expected_type < IndirectType) && !(Kernel.immediate?(arg) || Kernel.numeric?(arg))
 	    raise TypeError, "#{arg.inspect} cannot be used for #{expected_type.name} arguments"
 	end
-   
+
 	filtered =  if expected_type < IndirectType
 			if MemoryZone === arg
 			    arg
@@ -1285,7 +1292,7 @@ module Typelib
 			    filter_value_arg(arg, expected_type)
                         elsif arg.nil?
                             expected_type.create_null
-			elsif expected_type.deference.name == "/char" && arg.respond_to?(:to_str)
+			elsif expected_type.deference.name == CHAR_T.name && arg.respond_to?(:to_str)
 			    # Ruby strings ARE null-terminated
 			    # The thing which is not checked here is that there is no NULL bytes
 			    # inside the string.
