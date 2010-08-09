@@ -48,7 +48,7 @@ class TC_Functions < Test::Unit::TestCase
 		with_arguments(name)
 
 	    assert( wrapper.returns_something? )
-	    assert_equal("/#{name}", wrapper.return_type.name)
+	    assert_equal(lib.registry.get("/#{name}").name, wrapper.return_type.name)
 	    assert_equal(1,  wrapper.arity)
 
 	    assert_equal(12, wrapper.call(12));

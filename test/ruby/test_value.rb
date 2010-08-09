@@ -190,7 +190,6 @@ class TC_Value < Test::Unit::TestCase
         registry = make_registry
         a = registry.get("/struct A").new
 	assert( a.is_a?("/A") )
-	assert( a.is_a?("/long long") )
 	assert( a.is_a?(/A$/) )
 
 	assert( a.is_a?(registry.get("/A")) )

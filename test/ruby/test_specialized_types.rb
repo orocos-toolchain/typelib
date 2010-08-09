@@ -216,11 +216,14 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     end
 
     def test_array_multi_dim
-	mdarray = make_registry.get('TestMultiDimArray').new.fields
+        registry = make_registry
+	mdarray = registry.get('TestMultiDimArray').new.fields
+
+        int_t = registry.get("/int")
 
 	fill_multi_dim_array(mdarray)
 	mdarray.each_with_index do |line, y|
-	    assert_equal('/int[10]', line.class.name, y)
+	    assert_equal("#{int_t.name}[10]", line.class.name, y)
 	    line.each_with_index do |v, x|
 		assert_equal(10 * y + x, v)
 	    end

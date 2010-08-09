@@ -26,8 +26,8 @@ class TC_Type < Test::Unit::TestCase
         # Check that == returns false when the two objects aren't of the same class
         # (for instance type == nil shall return false)
 	type = nil
-        type = Registry.new.get("/int")
-        assert_equal("/int", type.name)
+        type = Registry.new.get("/int32_t")
+        assert_equal("/int32_t", type.name)
         assert_nothing_raised { type == nil }
         assert(type != nil)
     end
