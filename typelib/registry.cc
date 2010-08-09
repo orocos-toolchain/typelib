@@ -201,21 +201,30 @@ namespace Typelib
 
         normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<long long>::digits + 1) + "_t";
         alias(normalized_type_name, "/signed long long int", s_stdsource);
+        alias(normalized_type_name, "/signed long int long", s_stdsource);
         alias(normalized_type_name, "/signed int long long", s_stdsource);
         alias(normalized_type_name, "/int signed long long", s_stdsource);
+        alias(normalized_type_name, "/long signed long int", s_stdsource);
         alias(normalized_type_name, "/long long signed int", s_stdsource);
-        alias(normalized_type_name, "/signed long long int", s_stdsource);
+        alias(normalized_type_name, "/long long int signed", s_stdsource);
         alias(normalized_type_name, "/signed long long", s_stdsource);
         alias(normalized_type_name, "/long long signed", s_stdsource);
-        alias(normalized_type_name, "/long long", s_stdsource);
+        alias(normalized_type_name, "/long signed long", s_stdsource);
         alias(normalized_type_name, "/long long int", s_stdsource);
+        alias(normalized_type_name, "/long int long", s_stdsource);
+        alias(normalized_type_name, "/int long long", s_stdsource);
+        alias(normalized_type_name, "/long long", s_stdsource);
         normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<long long>::digits + 1) + "_t";
+        alias(normalized_type_name, "/unsigned long long int", s_stdsource);
+        alias(normalized_type_name, "/unsigned long int long", s_stdsource);
+        alias(normalized_type_name, "/unsigned int long long", s_stdsource);
+        alias(normalized_type_name, "/int unsigned long long", s_stdsource);
+        alias(normalized_type_name, "/long unsigned long int", s_stdsource);
         alias(normalized_type_name, "/long long unsigned int", s_stdsource);
         alias(normalized_type_name, "/long long int unsigned", s_stdsource);
-        alias(normalized_type_name, "/int long long unsigned", s_stdsource);
-        alias(normalized_type_name, "/unsigned long long int", s_stdsource);
-        alias(normalized_type_name, "/long long unsigned", s_stdsource);
         alias(normalized_type_name, "/unsigned long long", s_stdsource);
+        alias(normalized_type_name, "/long long unsigned", s_stdsource);
+        alias(normalized_type_name, "/long unsigned long", s_stdsource);
 
         BOOST_STATIC_ASSERT(( sizeof(float) == sizeof(int32_t) ));
         BOOST_STATIC_ASSERT(( sizeof(double) == sizeof(int64_t) ));
