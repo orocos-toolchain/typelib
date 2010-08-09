@@ -319,7 +319,7 @@ namespace Typelib
 	    {
 		// we are sure the concrete type we are pointing to is 
 		// already in the target registry
-		result->alias(it->getName(), it.getName(), "");
+		result->alias(it->getName(), it.getName(), it.isPersistent(), it.getSource());
 	    }
 	}
 

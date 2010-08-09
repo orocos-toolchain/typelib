@@ -149,3 +149,44 @@ BOOST_AUTO_TEST_CASE( test_array_auto_alias )
     BOOST_REQUIRE(*registry.get("/B[10]") == *registry.get("/int[10]"));
 }
 
+BOOST_AUTO_TEST_CASE( test_registry_merge_keeps_alias_persistent_flag )
+{
+    Registry registry;
+    registry.alias("/int", "/Persistent", true);
+    registry.alias("/int", "/Temporary", false);
+    BOOST_REQUIRE(registry.get("/Persistent"));
+    BOOST_REQUIRE(registry.find("/Persistent") != registry.end());
+
+    Registry target;
+    target.merge(registry);
+    { RegistryIterator it = target.find("/Persistent");
+        BOOST_REQUIRE(it != target.end());
+        BOOST_REQUIRE(it.isPersistent());
+    }
+
+    { RegistryIterator it = target.find("/Temporary");
+        BOOST_REQUIRE(it != target.end());
+        BOOST_REQUIRE(!it.isPersistent());
+    }
+}
+
+BOOST_AUTO_TEST_CASE( test_registry_minimal_keeps_alias_persistent_flag )
+{
+    Registry registry;
+    Registry target;
+    target.alias("/int", "/Persistent", true);
+    target.alias("/int", "/Temporary", false);
+
+    target.minimal(registry);
+    { RegistryIterator it = target.find("/Persistent");
+        BOOST_REQUIRE(it != target.end());
+        BOOST_REQUIRE(it.isPersistent());
+    }
+
+    { RegistryIterator it = target.find("/Temporary");
+        BOOST_REQUIRE(it != target.end());
+        BOOST_REQUIRE(!it.isPersistent());
+    }
+}
+
+
