@@ -1,5 +1,6 @@
 require 'enumerator'
 require 'utilrb/object/singleton_class'
+require 'utilrb/kernel/options'
 require 'delegate'
 require 'pp'
 
@@ -231,6 +232,20 @@ module Typelib
 		    super
 		end
 	    end
+
+            # Returns a representation of the MemoryLayout for this type.
+            def memory_layout(options = Hash.new)
+                options = Kernel.validate_options options, :accept_opaques => false,
+                    :accept_pointers => false,
+                    :merge_skip_copy => true,
+                    :remove_trailing_skips => true
+
+                do_memory_layout(
+                    options[:accept_pointers],
+                    options[:accept_opaques],
+                    options[:merge_skip_copy],
+                    options[:remove_trailing_skips])
+            end
 
 	    # Returns the namespace part of the type's name.  If +separator+ is
 	    # given, the namespace components are separated by it, otherwise,

@@ -218,14 +218,14 @@ static VALUE type_can_cast_to(VALUE self, VALUE to)
     return from_type.canCastTo(to_type) ? Qtrue : Qfalse;
 }
 
-/* call-seq:
- *  type.memory_layout(VALUE with_pointers) => [operations]
+/*
+ *  type.do_memory_layout(VALUE accept_pointers, VALUE accept_opaques, VALUE merge_skip_copy, VALUE remove_trailing_skips) => [operations]
  *
  * Returns a representation of the MemoryLayout for this type. If
  * +with_pointers+ is true, then pointers will be included in the layout.
  * Otherwise, an exception is raised if pointers are part of the type
  */
-static VALUE type_memory_layout(VALUE self, VALUE with_pointers)
+static VALUE type_memory_layout(VALUE self, VALUE pointers, VALUE opaques, VALUE merge, VALUE remove_trailing_skips)
 {
     Type const& type(rb2cxx::object<Type>(self));
     VALUE registry = type_get_registry(self);
@@ -239,7 +239,9 @@ static VALUE type_memory_layout(VALUE self, VALUE with_pointers)
     VALUE rb_container = ID2SYM(rb_intern("FLAG_CONTAINER"));
 
     try {
-        MemoryLayout layout = Typelib::layout_of(type, RTEST(with_pointers));
+        MemoryLayout layout;
+        MemLayout::Visitor visitor(layout, RTEST(pointers), RTEST(opaques));
+        visitor.apply(type, RTEST(merge), RTEST(remove_trailing_skips));
 
         // Now, convert into something representable in Ruby
         for (MemoryLayout::const_iterator it = layout.begin(); it != layout.end(); ++it)
@@ -561,7 +563,7 @@ void typelib_ruby::Typelib_init_values()
     rb_define_alloc_func(cType, value_alloc);
     rb_define_singleton_method(cType, "==",	       RUBY_METHOD_FUNC(type_equal_operator), 1);
     rb_define_singleton_method(cType, "size",          RUBY_METHOD_FUNC(&type_size), 0);
-    rb_define_singleton_method(cType, "memory_layout", RUBY_METHOD_FUNC(&type_memory_layout), 0);
+    rb_define_singleton_method(cType, "do_memory_layout", RUBY_METHOD_FUNC(&type_memory_layout), 4);
     rb_define_singleton_method(cType, "dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
     rb_define_singleton_method(cType, "casts_to?",     RUBY_METHOD_FUNC(&type_can_cast_to), 1);
     rb_define_method(cType, "__initialize__",   RUBY_METHOD_FUNC(&value_initialize), 1);
