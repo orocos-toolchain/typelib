@@ -380,7 +380,7 @@ tuple<uint8_t*, MemoryLayout::const_iterator>
         MemoryLayout::const_iterator end)
 {
     MemoryLayout::const_iterator it;
-    for (it = begin; it != end; ++it)
+    for (it = begin; it != end && *it != MemLayout::FLAG_END; ++it)
     {
         switch(*it)
         {
@@ -427,7 +427,7 @@ tuple<uint8_t*, uint8_t*, MemoryLayout::const_iterator>
 {
 
     MemoryLayout::const_iterator it;
-    for (it = begin; it != end; ++it)
+    for (it = begin; it != end && *it != MemLayout::FLAG_END; ++it)
     {
         switch(*it)
         {
@@ -482,7 +482,7 @@ tuple<bool, uint8_t*, uint8_t*, MemoryLayout::const_iterator>
 {
 
     MemoryLayout::const_iterator it;
-    for (it = begin; it != end; ++it)
+    for (it = begin; it != end && *it != MemLayout::FLAG_END; ++it)
     {
         switch(*it)
         {
