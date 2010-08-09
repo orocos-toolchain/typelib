@@ -1,6 +1,7 @@
 require 'enumerator'
 require 'utilrb/object/singleton_class'
 require 'utilrb/kernel/options'
+require 'utilrb/module/attr_predicate'
 require 'delegate'
 require 'pp'
 
@@ -55,8 +56,12 @@ module Typelib
         # A [ruby class, type name] to block mapping of the custom convertions
         # defined by Typelib.convert_from_ruby
         attr_reader :convertions
+	# If true (the default), typelib will load its type plugins. Otherwise,
+        # it will not
+        attr_predicate :load_type_plugins, true
     end
 
+    @load_type_plugins = true
     @value_specializations = Hash.new
     @type_specializations = Hash.new
     @convertions    = Hash.new
@@ -781,7 +786,7 @@ module Typelib
 
         ENV['TYPELIB_RUBY_PLUGIN_PATH'].split(':').each do |dir|
             Dir.glob(File.join(dir, '*.rb')) do |file|
-                puts "loading #{file}"
+		puts "typelib: loading plugin #{file}"
                 require file
             end
         end
@@ -869,9 +874,11 @@ module Typelib
             registry
         end
 
-        def initialize
-            Typelib.load_typelib_plugins
-            super
+        def initialize(load_plugins = nil)
+	    if load_plugins || (load_plugins.nil? && Typelib.load_type_plugins?)
+            	Typelib.load_typelib_plugins
+            end
+	    super()
         end
 
         # Imports the +file+ into this registry. +kind+ is the file format or
@@ -1031,7 +1038,7 @@ require 'typelib_ruby'
 
 module Typelib
     # Get the name for 'char'
-    reg = Registry.new
+    reg = Registry.new(false)
     CHAR_T = reg.get('/char')
 
     convert_from_ruby String, '/std/string' do |value, typelib_type|
