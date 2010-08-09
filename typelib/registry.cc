@@ -366,6 +366,13 @@ namespace Typelib
         return 0;
     }
 
+    RegistryIterator Registry::find(std::string const& name) const
+    {
+        TypeMap::const_iterator global_it =
+            m_global.find(name);
+        return RegistryIterator(*this, global_it);
+    }
+
     bool Registry::isPersistent(std::string const& name, Type const& type, std::string const& source_id)
     {
         if (source_id == s_stdsource)

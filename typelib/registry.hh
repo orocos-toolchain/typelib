@@ -162,6 +162,13 @@ namespace Typelib
          */
         Type const* get(const std::string& name) const;  
 
+        /** Gets a RegistryIterator on a given type
+         *
+         * @arg name the type name
+         * @return the iterator, or end() if it is not found
+         */
+        RegistryIterator find(std::string const& name) const;
+
         /* Internal version to get a non-const Type object
          *
          * You should not be using it. This is for internal Typelib use only */
