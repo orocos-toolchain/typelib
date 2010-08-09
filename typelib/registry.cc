@@ -24,6 +24,9 @@ using namespace Typelib;
  */
 bool Typelib::nameSort( const std::string& name1, const std::string& name2 )
 {
+    if (name1 == name2)
+        return false;
+
     NameTokenizer tok1(name1);
     NameTokenizer tok2(name2);
     NameTokenizer::const_iterator it1 = tok1.begin();
