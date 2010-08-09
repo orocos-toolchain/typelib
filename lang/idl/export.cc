@@ -382,11 +382,9 @@ bool IDLExport::save
 		    && type.getBasename() != "enum " + type->getBasename()))
 	{
 	    IDLExport::checkType(*type);
+            ostringstream stream;
 
             std::string type_namespace = getExportNamespace(type.getNamespace());
-	    adaptNamespace(stream, type_namespace);
-
-            stream << m_indent << "typedef ";
 
 	    // Alias types using typedef, taking into account that the aliased type
 	    // may not be in the same module than the new alias.
@@ -410,8 +408,8 @@ bool IDLExport::save
             }
             else
 		stream << getIDLAbsoluteTypename(*type, type_namespace) << " " << type.getBasename() << ";";
-            stream << std::endl;
 
+            m_typedefs[type_namespace].push_back(stream.str());
             return true;
 	}
         else return false;
