@@ -384,6 +384,8 @@ void IDLExport::save
 	    IDLExport::checkType(*type);
 
             std::string type_namespace = getExportNamespace(type.getNamespace());
+	    adaptNamespace(stream, type_namespace);
+
             stream << m_indent << "typedef ";
 
 	    // Alias types using typedef, taking into account that the aliased type
