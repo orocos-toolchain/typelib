@@ -12,7 +12,7 @@ protected:
     virtual void end  (std::ostream& stream, Typelib::Registry const& registry);
 
 public:
-    virtual void save
+    virtual bool save
         ( std::ostream& stream
         , Typelib::RegistryIterator const& type);
 };

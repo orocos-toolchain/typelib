@@ -360,7 +360,7 @@ void IDLExport::generateTypedefs(ostream& stream)
     }
 }
 
-void IDLExport::save
+bool IDLExport::save
     ( ostream& stream
     , Typelib::RegistryIterator const& type )
 {
@@ -368,7 +368,7 @@ void IDLExport::save
     {
         if (m_selected_types.count(type->getName()) == 0)
         {
-            return;
+            return false;
         }
     }
 
@@ -411,7 +411,10 @@ void IDLExport::save
             else
 		stream << getIDLAbsoluteTypename(*type, type_namespace) << " " << type.getBasename() << ";";
             stream << std::endl;
+
+            return true;
 	}
+        else return false;
     }
     else
     {
@@ -431,6 +434,7 @@ void IDLExport::save
 	{
 	    adaptNamespace(stream, target_namespace);
 	    stream << indent_string << "typedef sequence<octet> " << type->getBasename() << ";\n";
+            return true;
 	}
 	else
 	{
@@ -442,10 +446,13 @@ void IDLExport::save
             m_namespace = old_namespace;
 
 	    string result = temp_stream.str();
-	    if (! result.empty())
+	    if (result.empty())
+                return false;
+            else
 	    {
 		adaptNamespace(stream, target_namespace);
 		stream << result;
+                return true;
 	    }
 	}
     }

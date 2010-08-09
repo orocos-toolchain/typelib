@@ -37,10 +37,12 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
     // Some exporters need to limit how many times a namespace appears. So, the
     // main algorithm (here) is meant to limit switching between namespaces.
     TypeMap free_types(nameSort);
+    std::string last_namespace;
     do
     {
         TypeMap::iterator it = types.begin();
         TypeMap::iterator const end = types.end();
+
         while (it != end)
         {
 	    bool done_dependencies = false;
@@ -69,11 +71,41 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
             throw ExportError(join(remaining) + " seem to be recursive type(s). Exporting them is not supported yet");
         }
 
-        it = free_types.begin();
-        saved_types.insert(&(*it->second));
-        if (it->second.isPersistent())
-            save(stream, it->second);
-        free_types.erase(it);
+        // Remove all non-persistent types from the free_type set. If we found
+        // any, just go loop. Otherwise, do dump some other types.
+        bool got_some = false;
+        TypeMap::iterator free_it = free_types.begin();
+        TypeMap::iterator save_it = free_types.end();
+        while (free_it != free_types.end())
+        {
+            if (!free_it->second.isPersistent())
+            {
+                got_some = true;
+                saved_types.insert(&(*free_it->second));
+                free_types.erase(free_it++);
+            }
+            else
+            {
+                if (save_it == free_types.end() && free_it->second.getNamespace() == last_namespace)
+                    save_it = free_it;
+                ++free_it;
+            }
+        }
+        if (got_some)
+            continue;
+
+        if (save_it == free_types.end())
+            save_it = free_types.begin();
+
+        std::string ns = save_it->second.getNamespace();
+        while (save_it != free_types.end() && save_it->second.getNamespace() == ns)
+        {
+            saved_types.insert(&(*save_it->second));
+            if (save(stream, save_it->second))
+                last_namespace = ns;
+
+            free_types.erase(save_it++);
+        }
     }
     while (!types.empty());
 

@@ -81,8 +81,10 @@ namespace Typelib
 
         /** Serialize one type in \c stream. It is called by Registry::save(ostream&, Registry const&) 
 	 * @arg stream	the stream to write to
-	 * @arg type	the type to be serialized */
-        virtual void save
+	 * @arg type	the type to be serialized
+         * @return true if the type has been saved and false if it is ignored by this exporter
+         */
+        virtual bool save
             ( std::ostream& stream
             , RegistryIterator const& type ) = 0;
     };

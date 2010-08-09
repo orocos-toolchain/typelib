@@ -191,7 +191,7 @@ void TlbExport::end
         "</typelib>\n";
 }
 
-void TlbExport::save
+bool TlbExport::save
     ( ostream& stream
     , Typelib::RegistryIterator const& type )
 {
@@ -208,5 +208,6 @@ void TlbExport::save
         exporter.apply(*type);
         stream << "\n";
     }
+    return true;
 }
 

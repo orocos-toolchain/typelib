@@ -74,7 +74,7 @@ public:
 	, utilmm::config_set const& config
         , Typelib::Registry const& type);
 
-    virtual void save
+    virtual bool save
         ( std::ostream& stream
         , Typelib::RegistryIterator const& type);
 
