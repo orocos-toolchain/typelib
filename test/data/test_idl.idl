@@ -1,10 +1,4 @@
 enum TestEnum { A, B, C };
-struct Compound {
-    long a;
-    short b;
-    octet c;
-    long array[10];
-};
 module NS1 {
     module NS1_1 {
         struct Test {
@@ -17,6 +11,12 @@ module NS1 {
         NS1::NS1_1::Test test2;
     };
 
+};
+struct Compound {
+    long a;
+    short b;
+    octet c;
+    long array[10];
 };
 struct CompoundInCompound {
     Compound test[10];

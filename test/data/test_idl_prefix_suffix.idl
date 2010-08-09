@@ -3,12 +3,6 @@ module CorbaPrefix {
         module CorbaSuffix {
             module TestSuffix {
                 enum TestEnum { A, B, C };
-                struct Compound {
-                    long a;
-                    short b;
-                    octet c;
-                    long array[10];
-                };
 
             };
 
@@ -40,11 +34,17 @@ module CorbaPrefix {
         };
         module CorbaSuffix {
             module TestSuffix {
-                struct CompoundInCompound {
-                    Compound test[10];
+                struct Compound {
+                    long a;
+                    short b;
+                    octet c;
+                    long array[10];
                 };
-                typedef TestEnum EnumAlias;
-                typedef TestEnum OtherEnum;
+                struct CompoundInCompound {
+                    CorbaPrefix::TestPrefix::CorbaSuffix::TestSuffix::Compound test[10];
+                };
+                typedef CorbaPrefix::TestPrefix::CorbaSuffix::TestSuffix::TestEnum EnumAlias;
+                typedef CorbaPrefix::TestPrefix::CorbaSuffix::TestSuffix::TestEnum OtherEnum;
 
             };
 
