@@ -353,7 +353,7 @@ VALUE value_endian_swap(VALUE self)
     CompileEndianSwapVisitor compiled;
     compiled.apply(value.getType());
 
-    VALUE registry = rb_iv_get(rb_class_of(self), "@registry");
+    VALUE registry = value_get_registry(self);
     VALUE result   = value_allocate(value.getType(), registry);
     compiled.swap(value, rb2cxx::object<Value>(result));
     return result;
@@ -420,7 +420,7 @@ VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)
 
 VALUE typelib_ruby::value_get_registry(VALUE self)
 {
-    VALUE type = rb_class_of(self);
+    VALUE type = rb_funcall(self, rb_intern("class"), 0);
     return rb_iv_get(type, "@registry");
 }
 
