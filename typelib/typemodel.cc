@@ -108,7 +108,7 @@ namespace Typelib
             return *old_type;
 
 	Type* new_type = do_merge(registry, stack);
-	registry.add(new_type, "");
+	registry.add(new_type);
 	return *new_type;
     }
 
@@ -183,7 +183,7 @@ namespace Typelib
         {
             std::string alias_name = getIndirectTypeName(*alias_it);
             if (!registry.has(alias_name, false))
-                registry.alias(full_name, alias_name);
+                registry.alias(full_name, alias_name, false);
         }
     }
 

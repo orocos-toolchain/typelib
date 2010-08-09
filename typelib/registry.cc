@@ -55,7 +55,7 @@ bool Typelib::nameSort( const std::string& name1, const std::string& name2 )
 
 namespace Typelib
 {
-    char const* const Registry::s_stdsource = "__stdtypes__";
+    std::string const Registry::s_stdsource = "__stdtypes__";
     Type const& Registry::null() { 
         static NullType const null_type("/nil");
         return null_type; 
@@ -260,7 +260,7 @@ namespace Typelib
 	    {
 		// we are sure the concrete type we are pointing to is 
 		// already in the target registry
-		alias(it->getName(), it.getName(), "");
+		alias(it->getName(), it.getName(), it.isPersistent(), it.getSource());
 	    }
 	}
     }
@@ -358,7 +358,8 @@ namespace Typelib
     {
         if (source_id == s_stdsource)
             return false;
-        if (type.getName() != name)
+
+        if (name != type.getName())
             return true;
 
         switch(type.getCategory())
@@ -371,7 +372,7 @@ namespace Typelib
         };
     }
 
-    void Registry::add(std::string const& name, Type* new_type, std::string const& source_id)
+    void Registry::add(std::string const& name, Type* new_type, bool persistent, std::string const& source_id)
     {
         if (! isValidTypename(name, true))
             throw BadName(name);
@@ -384,7 +385,7 @@ namespace Typelib
 
         RegistryType regtype = 
             { new_type
-            , isPersistent(name, *new_type, source_id)
+            , persistent
             , source_id };
             
         m_global.insert (make_pair(name, regtype));
@@ -417,7 +418,12 @@ namespace Typelib
 
     void Registry::add(Type* new_type, const std::string& source_id)
     {
-        add(new_type->getName(), new_type, source_id);
+        return add(new_type, isPersistent(new_type->getName(), *new_type, source_id), source_id);
+    }
+
+    void Registry::add(Type* new_type, bool persistent, const std::string& source_id)
+    {
+        add(new_type->getName(), new_type, persistent, source_id);
 
         // If there are any aliases for any of the type's dependencies, trigger
         // modifiedDependencyAliases()
@@ -435,6 +441,15 @@ namespace Typelib
 
     void Registry::alias(std::string const& base, std::string const& newname, std::string const& source_id)
     {
+        Type* base_type = get_(base);
+        if (! base_type) 
+            throw Undefined(base);
+
+        return alias(base, newname, isPersistent(newname, *base_type, source_id), source_id);
+    }
+
+    void Registry::alias(std::string const& base, std::string const& newname, bool persistent, std::string const& source_id)
+    {
         if (! isValidTypename(newname, true))
             throw BadName(newname);
 
@@ -442,7 +457,7 @@ namespace Typelib
         if (! base_type) 
             throw Undefined(base);
 
-        add(newname, base_type, source_id);
+        add(newname, base_type, persistent, source_id);
 
         // If base_type is in use in any type, trigger
         // modifiedDependencyAliases() on it

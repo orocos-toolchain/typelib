@@ -108,15 +108,15 @@ namespace Typelib
 
         void addStandardTypes();
 
-        static char const* const s_stdsource;
         static bool isPersistent(std::string const& name, Type const& type, std::string const& source_id);
-        void add(std::string const& name, Type* new_type, std::string const& source_id);
+        void add(std::string const& name, Type* new_type, bool persistent, std::string const& source_id);
 
         /** Returns the set of types that depend on \c type
          */
         std::set<Type*> reverseDepends(Type const& type);
 
     public:
+        static std::string const s_stdsource;
 	typedef RegistryIterator Iterator;
 
         Registry();
@@ -184,11 +184,15 @@ namespace Typelib
          * You should not be using it. This is for internal Typelib use only */
         Type& get_(Type const& type);
 
+        /** \overload
+         */
+        void        add(Type* type, std::string const& source_id = "");
+
         /** Adds a new type
          * @return true on success, false if the type was already
          * defined in the registry
          */
-        void        add(Type* type, std::string const& source_id = "");
+        void        add(Type* type, bool persistent, std::string const& source_id = "");
 
         /** Creates an alias
          * While base can be a derived type, all aliases are considered persistent since
@@ -197,6 +201,10 @@ namespace Typelib
          * @arg base       the base type
          * @arg alias      the alias name
          * @arg source_id  a source ID for the newly created type
+         */
+        void        alias(std::string const& base, std::string const& alias, bool persistent, std::string const& source_id = "");
+
+        /** \overload
          */
         void        alias(std::string const& base, std::string const& alias, std::string const& source_id = "");
 
