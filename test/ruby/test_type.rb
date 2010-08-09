@@ -90,7 +90,7 @@ class TC_Type < Test::Unit::TestCase
                     :FLAG_MEMCPY, 8,
                 :FLAG_END,
             :FLAG_END,
-            :FLAG_MEMCPY, 16]
+            :FLAG_MEMCPY, 17]
 
         assert_equal(expected, layout)
     end
