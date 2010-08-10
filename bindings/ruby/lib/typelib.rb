@@ -823,8 +823,19 @@ module Typelib
 
         TYPE_HANDLERS = Hash.new
 
-        def each(&block)
-            each_type(false, &block)
+        def each(filter = nil, options = Hash.new, &block)
+            if filter.kind_of?(Hash)
+                filter, options = nil, filter
+            end
+
+            options = Kernel.validate_options options,
+                :with_aliases => false
+
+            if !block_given?
+                enum_for(:each, filter, options)
+            else
+                each_type(filter, options[:with_aliases], &block)
+            end
         end
         include Enumerable
 

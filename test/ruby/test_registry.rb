@@ -84,17 +84,19 @@ class TC_Registry < Test::Unit::TestCase
 
     def test_registry_iteration
 	reg = make_registry
-	values = nil
-	assert_nothing_raised { values = reg.enum_for(:each_type).to_a }
 
+	values = reg.each.to_a
 	assert_not_equal(0, values.size)
 	assert(values.include?(reg.get("/int")))
 	assert(values.include?(reg.get("/struct EContainer")))
 
-	assert_nothing_raised { values = reg.enum_for(:each_type, true).to_a }
+	values = reg.each(:with_aliases => true).to_a
 	assert_not_equal(0, values.size)
 	assert(values.include?(["/struct EContainer", reg.get("/struct EContainer")]))
 	assert(values.include?(["/EContainer", reg.get("/EContainer")]))
+
+	values = reg.each('/NS1').to_a
+	assert_equal(6, values.size, values.map(&:name))
     end
 
     def test_validate_xml

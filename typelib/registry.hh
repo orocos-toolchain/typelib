@@ -230,6 +230,27 @@ namespace Typelib
         RegistryIterator begin() const;
 	/** Past-the-end iterator on the registry */
         RegistryIterator end() const;
+        /** Returns an iterator on the first type whose name starts with
+         * +prefix+. If +prefix+ is a namespace name, it will be the first type
+         * in that namespace
+         */
+        RegistryIterator begin(std::string const& prefix) const;
+        /** Returns an iterator on the first type whose name does not start with
+         * +prefix+ and which is preceded by a type whose name starts with
+         * +prefix
+         *
+         * If +prefix+ is a namespace name, it will be the past-the-end iterator
+         * allowing you to iterate on the namespace types:
+         *
+         * <code>
+         * RegistryIterator const end = registry.end("/A");
+         * for (RegistryIterator it = registry.begin("/A"); it != end; ++it)
+         * {
+         *   // iterates on all types in namespace A
+         * }
+         * </code>
+         */
+        RegistryIterator end(std::string const& prefix) const;
         
         /** Returns a null type */
         static Type const& null();

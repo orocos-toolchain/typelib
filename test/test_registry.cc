@@ -189,4 +189,20 @@ BOOST_AUTO_TEST_CASE( test_registry_minimal_keeps_alias_persistent_flag )
     }
 }
 
+BOOST_AUTO_TEST_CASE( test_registry_range )
+{
+    Registry registry;
+    registry.alias("/int", "/A/A", true);
+    registry.alias("/int", "/A/C", true);
+    registry.alias("/int", "/A/F", true);
+    registry.alias("/int", "/A/B/A", true);
+    registry.alias("/int", "/A/B/C", true);
+    registry.alias("/int", "/A/B/F", true);
+    registry.alias("/int", "/B/A", true);
+    registry.alias("/int", "/B/C", true);
+    registry.alias("/int", "/B/F", true);
+
+    BOOST_REQUIRE_EQUAL("/A/A", registry.begin("/A").getName());
+    BOOST_REQUIRE_EQUAL("/B/A", registry.end("/A").getName());
+}
 

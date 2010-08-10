@@ -341,49 +341,57 @@ VALUE registry_minimal(VALUE self, VALUE rb_auto)
 }
 
 
+static void yield_types(VALUE self, bool with_aliases, RegistryIterator it, RegistryIterator end)
+{
+    if (with_aliases)
+    {
+        for (; it != end; ++it)
+        {
+            std::string const& type_name = it.getName();
+            VALUE rb_type_name = rb_str_new(type_name.c_str(), type_name.length());
+            rb_yield_values(2, rb_type_name, cxx2rb::type_wrap(*it, self));
+        }
+    }
+    else
+    {
+        for (; it != end; ++it)
+        {
+            if (!it.isAlias())
+                rb_yield(cxx2rb::type_wrap(*it, self));
+        }
+    }
+}
+
 /*
- * each_type(include_alias = false) { |type| ... }
- * each_type(include_alias = true)  { |name, type| ... }
+ * each_type(filter, false) { |type| ... }
+ * each_type(filter, true)  { |name, type| ... }
  *
  * Iterates on the types found in this registry. If include_alias is true, also
- * yield the aliased types.
+ * yield the aliased types. If +filter+ is not nil, only the types whose names
+ * start with +filter+ will be yield
  */
 static
-VALUE registry_each_type(int argc, VALUE* argv, VALUE self)
+VALUE registry_each_type(VALUE self, VALUE filter_, VALUE with_aliases_)
 {
-    VALUE rb_include_alias;
-    rb_scan_args(argc, argv, "01", &rb_include_alias);
-    bool include_alias = RTEST(rb_include_alias);
-
     Registry& registry = rb2cxx::object<Registry>(self);
-    std::string error_string;
+    bool with_aliases = RTEST(with_aliases_);
+    std::string filter;
+    if (RTEST(filter_))
+        filter = StringValuePtr(filter_);
 
     try 
     {
-	RegistryIterator it = registry.begin();
-	RegistryIterator end = registry.end();
-	if (include_alias)
-	{
-	    for (; it != end; ++it)
-	    {
-		std::string const& type_name = it.getName();
-		VALUE rb_type_name = rb_str_new(type_name.c_str(), type_name.length());
-		rb_yield_values(2, rb_type_name, cxx2rb::type_wrap(*it, self));
-	    }
-	}
-	else
-	{
-	    for (; it != end; ++it)
-	    {
-		if (!it.isAlias())
-		    rb_yield(cxx2rb::type_wrap(*it, self));
-	    }
-	}
+        if (filter.empty())
+            yield_types(self, with_aliases, registry.begin(), registry.end());
+        else
+            yield_types(self, with_aliases, registry.begin(filter), registry.end(filter));
 
 	return self;
     }
-    catch(std::runtime_error e) { error_string = e.what(); }
-    rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
+    catch(std::runtime_error e)
+    {
+        rb_raise(rb_eRuntimeError, "%s", e.what());
+    }
 }
 
 /* call-seq:
@@ -489,7 +497,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_alloc_func(cRegistry, registry_alloc);
     rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_do_get), 1);
     rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_do_build), 1);
-    rb_define_method(cRegistry, "each_type", RUBY_METHOD_FUNC(registry_each_type), -1);
+    rb_define_method(cRegistry, "each_type", RUBY_METHOD_FUNC(registry_each_type), 2);
     // do_import is called by the Ruby-defined import, which formats the 
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 4);

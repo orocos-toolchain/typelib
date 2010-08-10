@@ -571,6 +571,23 @@ namespace Typelib
 
     RegistryIterator Registry::begin() const { return RegistryIterator(*this, m_global.begin()); }
     RegistryIterator Registry::end() const { return RegistryIterator(*this, m_global.end()); }
+    RegistryIterator Registry::begin(std::string const& prefix) const
+    {
+        RegistryIterator it(*this, m_global.lower_bound(prefix));
+        RegistryIterator const end = this->end();
+        if (it != end && it.getName().compare(0, prefix.length(), prefix) == 0)
+            return it;
+        else return end;
+    }
+    RegistryIterator Registry::end(std::string const& prefix) const
+    {
+        RegistryIterator it(begin(prefix));
+        RegistryIterator const end = this->end();
+        while (it != end && it.getName().compare(0, prefix.length(), prefix) == 0)
+            ++it;
+
+        return it;
+    }
 
     bool Registry::isSame(Registry const& other) const
     {
