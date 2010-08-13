@@ -11,9 +11,10 @@ namespace Typelib
     {
         Type const& m_type;
         std::string m_separator;
+        bool m_char_as_numeric;
 
     public:
-        CSVOutput(Type const& type, std::string const& sep);
+        CSVOutput(Type const& type, std::string const& sep, bool char_as_numeric);
 
         /** Displays the header */
         void header(std::ostream& out, std::string const& basename);
@@ -28,15 +29,16 @@ namespace Typelib
             std::string basename;
             
             csvheader(Type const& type, std::string const& basename_, std::string const& sep = " ")
-                : output(type, sep), basename(basename_) {}
+                : output(type, sep, true), basename(basename_) {}
         };
         struct csvline
         {
             CSVOutput output;
             void* value;
+            bool char_as_numeric;
             
-            csvline(Type const& type_, void* value_, std::string const& sep_ = " ")
-                : output(type_, sep_), value(value_) {}
+            csvline(Type const& type_, void* value_, std::string const& sep_ = " ", bool char_as_numeric = true)
+                : output(type_, sep_, char_as_numeric), value(value_), char_as_numeric(char_as_numeric) {}
         };
         inline std::ostream& operator << (std::ostream& stream, csvheader header)
         {
@@ -63,8 +65,8 @@ namespace Typelib
      * @arg value	the data as a void* pointer
      * @arg sep		the separator to use
      */
-    inline details::csvline   csv(Type const& type, void* value, std::string const& sep = " ")
-    { return details::csvline(type, value, sep); }
+    inline details::csvline   csv(Type const& type, void* value, std::string const& sep = " ", bool char_as_numeric = true)
+    { return details::csvline(type, value, sep, char_as_numeric); }
 };
 
 #endif

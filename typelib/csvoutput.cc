@@ -83,6 +83,7 @@ namespace
     class LineVisitor : public ValueVisitor
     {
         stringlist  m_output;
+        bool m_char_as_numeric;
         
     protected:
         template<typename T>
@@ -96,8 +97,20 @@ namespace
             display("<" + type.getName() + ">");
             return true;
         }
-        bool visit_ (int8_t  & value) { return display(value); }
-        bool visit_ (uint8_t & value) { return display(value); }
+        bool visit_ (int8_t  & value)
+        {
+            if (m_char_as_numeric)
+                return display<int>(value);
+            else
+                return display(value);
+        }
+        bool visit_ (uint8_t & value)
+        {
+            if (m_char_as_numeric)
+                return display<int>(value);
+            else
+                return display(value);
+        }
         bool visit_ (int16_t & value) { return display(value); }
         bool visit_ (uint16_t& value) { return display(value); }
         bool visit_ (int32_t & value) { return display(value); }
@@ -115,9 +128,10 @@ namespace
         }
 
     public:
-        stringlist apply(Value const& value)
+        stringlist apply(Value const& value, bool char_as_numeric)
         {
             m_output.clear();
+            m_char_as_numeric = char_as_numeric;
             ValueVisitor::apply(value);
             return m_output;
         }
@@ -125,8 +139,8 @@ namespace
 }
 
 
-CSVOutput::CSVOutput(Type const& type, std::string const& sep)
-    : m_type(type), m_separator(sep) {}
+CSVOutput::CSVOutput(Type const& type, std::string const& sep, bool char_as_numeric = true)
+    : m_type(type), m_separator(sep), m_char_as_numeric(char_as_numeric) {}
 
 /** Displays the header */
 void CSVOutput::header(std::ostream& out, std::string const& basename)
@@ -138,6 +152,6 @@ void CSVOutput::header(std::ostream& out, std::string const& basename)
 void CSVOutput::display(std::ostream& out, void* value)
 {
     LineVisitor visitor;
-    out << join(visitor.apply( Value(value, m_type) ), m_separator);
+    out << join(visitor.apply( Value(value, m_type), m_char_as_numeric ), m_separator );
 }
 
