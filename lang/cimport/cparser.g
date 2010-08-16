@@ -416,6 +416,8 @@ qualified_type returns [std::string qitem]
 		// predicate on
 		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
         :
+                SCOPE qitem = qualified_type
+        |
 		id1:ID SCOPE remains = qualified_type
 		{ qitem = id1->getText() + "/" + remains; }
 	|
