@@ -892,6 +892,21 @@ module Typelib
 	    super()
         end
 
+        # Returns the handler that will be used to import that file. It can
+        # either be a string, in which case we use a Typelib internal importer,
+        # or a Ruby object responding to 'call' in which case Registry#import
+        # will use that object to do the importing.
+        def self.handler_for(file, kind = 'auto')
+	    file = File.expand_path(file)
+            if !kind || kind == 'auto'
+                kind    = Registry.guess_type(file)
+            end
+            if handler = TYPE_HANDLERS[kind]
+                return handler
+            end
+            return kind
+        end
+
         # Imports the +file+ into this registry. +kind+ is the file format or
         # nil, in which case the file format is guessed by extension (see
         # TYPE_BY_EXT)
@@ -934,14 +949,12 @@ module Typelib
 	#
         def import(file, kind = 'auto', options = {})
 	    file = File.expand_path(file)
-            if !kind || kind == 'auto'
-                kind    = Registry.guess_type(file)
-            end
-            if handler = TYPE_HANDLERS[kind]
+
+            handler = Registry.handler_for(file, kind)
+            if handler.respond_to?(:call)
                 return handler.call(self, file, kind, options)
-            end
-            if kind.respond_to?(:call)
-                return kind.call(self, file, kind, options)
+            else
+                kind = handler
             end
 
             do_merge = 
@@ -1397,7 +1410,6 @@ end
 end
 
 if ENV['TYPELIB_USE_GCCXML'] == '1'
-    STDERR.puts "Typelib will use GCC-XML to load C/C++ code"
     require 'typelib-gccxml'
 end
 

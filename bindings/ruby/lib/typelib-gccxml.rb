@@ -438,6 +438,12 @@ module Typelib
             end
         end
 
+        # Returns true if Registry#import will use GCCXML to load the given
+        # file
+        def self.uses_gccxml?(path, kind = 'auto')
+            (handler_for(path, kind) == method(:load_from_gccxml))
+        end
+
         TYPE_HANDLERS['c'] = method(:load_from_gccxml)
     end
 end
