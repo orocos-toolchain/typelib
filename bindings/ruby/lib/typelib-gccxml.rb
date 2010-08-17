@@ -341,7 +341,7 @@ module Typelib
                 # resolve_opaques as resolve_opaques will add the resolved
                 # opaque names to +opaques+
                 opaques.each do |type_name|
-                    result << "<opaque name=\"#{type_name}\" size=\"0\"/>"
+                    result << "<opaque name=\"#{xml_quote(type_name)}\" size=\"0\"/>"
                 end
                 resolve_opaques(xml)
             end
