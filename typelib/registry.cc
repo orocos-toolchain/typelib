@@ -308,6 +308,8 @@ namespace Typelib
 	    // we have to add the alias
 	    if (!it.isAlias()) continue;
             if (auto_types.has(it.getName())) continue;
+            // Do not continue if it is a typedef on a type that we don't need
+            if (!result->has(it->getName())) continue;
 
 	    Type const* old_type = result->get(it.getName());
 	    if (old_type)
@@ -317,8 +319,6 @@ namespace Typelib
 	    }
 	    else
 	    {
-		// we are sure the concrete type we are pointing to is 
-		// already in the target registry
 		result->alias(it->getName(), it.getName(), it.isPersistent(), it.getSource());
 	    }
 	}
