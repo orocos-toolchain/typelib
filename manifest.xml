@@ -18,6 +18,7 @@
 
   <depend package="utilmm" />
   <depend package="utilrb" />
+  <depend package="gccxml" />
   <rosdep name="boost" />
   <rosdep name="libxml2" />
   <rosdep name="antlr" />
