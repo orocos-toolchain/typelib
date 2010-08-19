@@ -834,16 +834,6 @@ module Typelib
         end
     end
 
-    # Generic method that converts a Typelib value into the corresponding Ruby
-    # value.
-    def self.to_ruby(value)
-        if value.respond_to?(:to_ruby)
-            value.to_ruby
-        else
-            value
-        end
-    end
-
     def self.load_typelib_plugins
         if !ENV['TYPELIB_RUBY_PLUGIN_PATH'] || (@@typelib_plugin_path == ENV['TYPELIB_RUBY_PLUGIN_PATH'])
             return
@@ -1419,6 +1409,18 @@ module Typelib
           raise TypeError, "cannot use #{arg.inspect} for a #{expected_type.inspect} argument. Object ID for argument #{arg.class.object_id}, object ID for expected type #{expected_type.object_id}"
 	end
 	filtered
+    end
+
+    # Generic method that converts a Typelib value into the corresponding Ruby
+    # value.
+    def self.to_ruby(value)
+        if value.respond_to?(:to_ruby)
+            value.to_ruby
+        elsif value.class.respond_to?(:to_ruby)
+            value.class.to_ruby(value)
+        else
+            value
+        end
     end
 
     # Initializes +expected_type+ from +arg+, where +arg+ can either be a value
