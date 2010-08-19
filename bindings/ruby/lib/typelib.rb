@@ -93,12 +93,24 @@ module Typelib
     #     end
     #   end
     #
+    # NOTE: this specific use of specialize_model is taken care of by
+    # Typelib.convert_to_ruby
+    #
     # See Typelib.specialize to add instance methods to the values of a given
     # Typelib type
     def self.specialize_model(name, &block)
         type_specializations[name] ||= Array.new
         type_specializations[name] << Module.new(&block)
     end
+
+    class << self
+        # Controls globally if Typelib.convert_to_ruby should use DynamicWrapper
+        # on the return values or not
+        #
+        # See Typelib.convert_to_ruby for more information
+        attr_accessor :use_dynamic_wrappers
+    end
+    @use_dynamic_wrappers = true
 
     # Extends instances of a given Typelib type
     #
@@ -127,6 +139,59 @@ module Typelib
     def self.specialize(name, &block)
         value_specializations[name] ||= Array.new
         value_specializations[name] << Module.new(&block)
+    end
+
+    # Declares how to convert values of the given type to an equivalent Ruby
+    # object
+    #
+    # For instance, given a hypothetical timeval type that would be defined (in C) by
+    #
+    #   struct timeval
+    #   {
+    #       int32_t seconds;
+    #       uint32_t microseconds;
+    #   };
+    #
+    # one could make sure that timeval values get automatically converted to
+    # Ruby's Time with
+    #
+    #   Typelib.convert_to_ruby '/timeval' do |value|
+    #     Time.at(value.seconds, value.microseconds)
+    #   end
+    #
+    # The returned value is wrapped using Typelib::DynamicWrapper. What it means
+    # is that the returned value will behave as both the Typelib *and* the
+    # converted value.
+    #
+    # For instance, given
+    #
+    #   timeval_t = registry.get 'timeval' # get the timeval type
+    #   timeval = timeval_t.new # an object of type timeval_t
+    #   time = Typelib.to_ruby(timeval)
+    #
+    # Then both the following expressions are valid
+    #
+    #   time.tv_sec # defined as a Time method
+    #
+    # and
+    #
+    #   time.seconds # defined as field of the timeval structure
+    #
+    # This behaviour can be turned off on a type-by-type basis by calling
+    # convert_to_ruby with 'false' as use_dynamic_wrapper argument, or globally
+    # by setting Typelib.use_dynamic_wrappers to false.
+    def self.convert_to_ruby(typename, use_dynamic_wrapper = Typelib.use_dynamic_wrappers, &block)
+        Typelib.specialize_model(typename) do
+            if use_dynamic_wrapper
+                define_method(:to_ruby) do |value|
+                    Typelib::DynamicWrapper(lambda(&block).call(value), value)
+                end
+            else
+                define_method(:to_ruby) do |value|
+                    block[value]
+                end
+            end
+        end
     end
 
     # Define specialized convertions from Ruby objects to Typelib-managed
