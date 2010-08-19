@@ -150,11 +150,15 @@ namespace Typelib
             add(new Numeric("/u" + suffix, sizes[i], Numeric::UInt), s_stdsource);
         }
 
-        std::string normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<char>::digits + 1) + "_t";
-        alias(normalized_type_name, "/char", s_stdsource);
+        std::string normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<signed char>::digits + 1) + "_t";
         alias(normalized_type_name, "/signed char", s_stdsource);
-        normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<char>::digits + 1) + "_t";
+        if (std::numeric_limits<char>::is_signed)
+            alias(normalized_type_name, "/char", s_stdsource);
+        normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<signed char>::digits + 1) + "_t";
+        if (!std::numeric_limits<char>::is_signed)
+            alias(normalized_type_name, "/char", s_stdsource);
         alias(normalized_type_name, "/unsigned char", s_stdsource);
+
 
         normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<short int>::digits + 1) + "_t";
         alias(normalized_type_name, "/signed short int", s_stdsource);
