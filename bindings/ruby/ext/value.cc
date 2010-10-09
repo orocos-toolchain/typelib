@@ -492,18 +492,6 @@ static VALUE value_zero(VALUE self)
     return self;
 }
 
-static void typelib_validate_value_arg(VALUE arg, void*& data, size_t& size)
-{
-    Value const& value(rb2cxx::object<Value>(arg));
-    Type  const& type = value.getType();
-    if (type.getCategory() == Type::Pointer)
-	size = numeric_limits<size_t>::max();
-    else
-	size = type.getSize();
-
-    data = value.getData();
-}
-
 /* call-seq:
  *  Typelib.copy(to, from) => to
  *
