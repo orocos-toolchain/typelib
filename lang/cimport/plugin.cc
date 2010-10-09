@@ -17,7 +17,8 @@ namespace
 extern "C" void registerPlugins(Typelib::PluginManager& manager)
 {
     Typelib::Container::registerContainer("/std/vector", Vector::factory);
+    Typelib::Container::registerContainer("/std/string", String::factory);
     manager.add(new Typelib::GenericIOPlugin<CImport>("c"));
-    manager.add(new TypeRegistrar());
+    // manager.add(new TypeRegistrar());
 }
 

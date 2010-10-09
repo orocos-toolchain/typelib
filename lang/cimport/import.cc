@@ -14,6 +14,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include "standard_types.hh"
+
 using namespace std;
 using namespace antlr;
 using namespace Typelib;
@@ -93,6 +95,8 @@ void CImport::load
 {
     try {
         CPPLexer cpp_lexer(stream);
+
+        Typelib::CXX::addStandardTypes(registry);
 
         TypeSolver reader(cpp_lexer, registry, config.get<bool>("cxx", true));
         reader.setupOpaqueHandling(config.get<bool>("opaques_forced_alignment", true),

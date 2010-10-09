@@ -4,6 +4,7 @@
 #include <typelib/importer.hh>
 #include <typelib/exporter.hh>
 #include <typelib/registryiterator.hh>
+#include <lang/cimport/standard_types.hh>
 #include <utilmm/configfile/configset.hh>
 #include <set>
 
@@ -489,6 +490,19 @@ static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element
     }
 }
 
+/*
+ * call-seq:
+ *  Registry.add_standard_cxx_types(registry) => registry
+ *
+ * Adds to +registry+  some standard C/C++ types that Typelib can represent
+ */
+static VALUE registry_add_standard_cxx_types(VALUE klass, VALUE registry)
+{
+    Registry& reg = rb2cxx::object<Registry>(registry);
+    Typelib::CXX::addStandardTypes(reg);
+    return registry;
+}
+
 void typelib_ruby::Typelib_init_registry()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
@@ -511,6 +525,8 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "do_resize", RUBY_METHOD_FUNC(registry_resize), 1);
     rb_define_method(cRegistry, "reverse_depends", RUBY_METHOD_FUNC(registry_reverse_depends), 1);
     rb_define_method(cRegistry, "remove", RUBY_METHOD_FUNC(registry_remove), 1);
+
+    rb_define_singleton_method(cRegistry, "add_standard_cxx_types", RUBY_METHOD_FUNC(registry_add_standard_cxx_types), 1);
 
     rb_define_singleton_method(cRegistry, "available_containers", RUBY_METHOD_FUNC(registry_available_container), 0);
     rb_define_method(cRegistry, "define_container", RUBY_METHOD_FUNC(registry_define_container), 2);

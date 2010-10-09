@@ -319,8 +319,6 @@ Container const& Vector::factory(Registry& registry, std::list<Type const*> cons
 }
 Container::ContainerFactory Vector::getFactory() const { return factory; }
 
-
-
 String::String(Typelib::Registry const& registry)
     : Container("/std/string", "/std/string", getNaturalSize(), *registry.get("char")) {}
 
@@ -421,7 +419,19 @@ void String::delete_if_impl(void* ptr, DeleteIfPredicate& pred) const
 
 Container const& String::factory(Registry& registry, std::list<Type const*> const& on)
 {
-    throw std::logic_error("factory() called for String");
+    if (registry.has("/std/string"))
+        return dynamic_cast<Container const&>(*registry.get("/std/string"));
+
+    if (on.size() != 1)
+        throw std::runtime_error("expected only one template argument for std::string");
+
+    Type const& contained_type = *on.front();
+    if (contained_type != *registry.get("char"))
+        throw std::runtime_error("std::string can only be built on top of 'char'");
+
+    String* new_type = new String(registry);
+    registry.add(new_type);
+    return *new_type;
 }
 Container::ContainerFactory String::getFactory() const { return factory; }
 

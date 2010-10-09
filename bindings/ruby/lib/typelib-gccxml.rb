@@ -422,6 +422,8 @@ module Typelib
             required_files = (options[:required_files] || [file]).
                 map { |f| File.expand_path(f) }
 
+            # Add the standard C++ types (such as /std/string)
+            Registry.add_standard_cxx_types(registry)
 
             xml = GCCXMLLoader.gccxml(file, options)
             converter = GCCXMLLoader.new
