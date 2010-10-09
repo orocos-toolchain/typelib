@@ -170,7 +170,7 @@ namespace
         Type const* indirect = factory.build(indirect_name);
         string kind          = getAttribute<string>(node.xml, "kind");
         bool has_size = false;
-        int size;
+        int size = 0;
         try { 
             size = getAttribute<int>(node.xml, "size");
             has_size = true;
