@@ -112,26 +112,30 @@ namespace Typelib
 	return *new_type;
     }
 
-    bool Type::resize(Registry& registry, std::map<std::string, size_t>& new_sizes)
+    bool Type::resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes)
     {
-        if (do_resize(registry, new_sizes))
+        size_t old_size = getSize();
+        if (new_sizes.count(getName()))
+            return true;
+        else if (do_resize(registry, new_sizes))
         {
-            new_sizes.insert(make_pair(getName(), getSize()));
+            new_sizes.insert(make_pair(getName(), make_pair(old_size, getSize()) ));
             return true;
         }
         else
             return false;
     }
 
-    bool Type::do_resize(Registry& into, std::map<std::string, size_t>& new_sizes)
+    bool Type::do_resize(Registry& into, std::map<std::string, std::pair<size_t, size_t> >& new_sizes)
     {
-        map<std::string, size_t>::const_iterator it =
+        map<std::string, std::pair<size_t, size_t> >::const_iterator it =
             new_sizes.find(getName());
         if (it != new_sizes.end())
         {
-            if (getSize() != it->second)
+            size_t new_size = it->second.second;
+            if (getSize() != new_size)
             {
-                setSize(it->second);
+                setSize(new_size);
                 return true;
             }
         }
@@ -185,6 +189,12 @@ namespace Typelib
             if (!registry.has(alias_name, false))
                 registry.alias(full_name, alias_name, false);
         }
+    }
+
+    bool Indirect::do_resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes)
+    {
+        bool result = Type::do_resize(registry, new_sizes);
+        return registry.get_(getIndirection()).resize(registry, new_sizes) || result;
     }
 
     Compound::Compound(std::string const& name)
@@ -278,7 +288,7 @@ namespace Typelib
 	return result;
     }
 
-    bool Compound::do_resize(Registry& registry, std::map<std::string, size_t>& new_sizes)
+    bool Compound::do_resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes)
     {
         size_t global_offset = 0;
         for (FieldList::iterator it = m_fields.begin(); it != m_fields.end(); ++it)
@@ -286,9 +296,11 @@ namespace Typelib
             it->setOffset(it->getOffset() + global_offset);
 
             Type& field_type = registry.get_(it->getType());
-            size_t old_size = field_type.getSize();
             if (field_type.resize(registry, new_sizes))
+            {
+                size_t old_size = new_sizes.find(field_type.getName())->second.first;
                 global_offset += field_type.getSize() - old_size;
+            }
         }
         if (global_offset != 0)
         {
@@ -389,9 +401,9 @@ namespace Typelib
         return new Array(indirect_type, m_dimension);
     }
 
-    bool Array::do_resize(Registry& registry, std::map<std::string, size_t>& new_sizes)
+    bool Array::do_resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes)
     {
-        if (!registry.get_(getIndirection()).resize(registry, new_sizes))
+        if (!Indirect::do_resize(registry, new_sizes))
             return false;
 
         setSize(getDimension() * getIndirection().getSize());

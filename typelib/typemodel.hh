@@ -130,7 +130,7 @@ namespace Typelib
          *
          * @return true if this type has been modified, and false otherwise.
          */
-        virtual bool resize(Registry& registry, std::map<std::string, size_t>& new_sizes);
+        virtual bool resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes);
 
         /** Returns the number of bytes that are unused at the end of the
          * compound */
@@ -183,7 +183,7 @@ namespace Typelib
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const = 0;
 
         /** Implementation of the actual resizing. Called by resize() */
-        virtual bool do_resize(Registry& into, std::map<std::string, size_t>& new_sizes);
+        virtual bool do_resize(Registry& into, std::map<std::string, std::pair<size_t, size_t> >& new_sizes);
     };
 
     class NullType : public Type
@@ -342,7 +342,7 @@ namespace Typelib
     private:
 	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
-        bool do_resize(Registry& registry, std::map<std::string, size_t>& new_sizes);
+        bool do_resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes);
         FieldList m_fields;
     };
 
@@ -365,6 +365,7 @@ namespace Typelib
 
     protected:
 	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
+        virtual bool do_resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes);
 
         /** Overloaded in subclasses to return the name of this type based on
          * the name of the indirection
@@ -395,7 +396,7 @@ namespace Typelib
     private:
 	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
-        virtual bool do_resize(Registry& into, std::map<std::string, size_t>& new_sizes);
+        virtual bool do_resize(Registry& into, std::map<std::string, std::pair<size_t, size_t> >& new_sizes);
         size_t m_dimension;
     };
 

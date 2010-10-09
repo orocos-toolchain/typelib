@@ -617,12 +617,18 @@ namespace Typelib
 
     void Registry::resize(std::map<std::string, size_t> const& new_sizes)
     {
-        typedef std::map<std::string, size_t> SizeMap;
+        typedef std::map<std::string, std::pair<size_t, size_t> > SizeMap;
         // First, do a copy of new_sizes for our own use. Most importantly, we
         // resolve aliases
         SizeMap sizes;
-        for (SizeMap::const_iterator it = new_sizes.begin(); it != new_sizes.end(); ++it)
-            sizes.insert(make_pair(get(it->first)->getName(), it->second));
+        for (std::map<std::string, size_t>::const_iterator it = new_sizes.begin(); it != new_sizes.end(); ++it)
+        {
+            Type& t = *get_(it->first);
+            sizes.insert(make_pair(t.getName(),
+                        make_pair(t.getSize(), it->second)
+                        ));
+            t.setSize(it->second);
+        }
 
 	for(Iterator it = begin(); it != end(); ++it)
 	{
