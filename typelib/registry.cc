@@ -621,7 +621,8 @@ namespace Typelib
         // First, do a copy of new_sizes for our own use. Most importantly, we
         // resolve aliases
         SizeMap sizes;
-        for (std::map<std::string, size_t>::const_iterator it = new_sizes.begin(); it != new_sizes.end(); ++it)
+        for (std::map<std::string, size_t>::const_iterator it = new_sizes.begin();
+                it != new_sizes.end(); ++it)
         {
             Type& t = *get_(it->first);
             sizes.insert(make_pair(t.getName(),
@@ -660,7 +661,8 @@ namespace Typelib
     {
         std::set<Type*> result;
 
-        std::set<Type const*> const_result = static_cast<Registry const*>(this)->reverseDepends(type);
+        std::set<Type const*> const_result =
+            static_cast<Registry const*>(this)->reverseDepends(type);
         std::set<Type const*>::const_iterator it, end;
         for (it = const_result.begin(); it != const_result.end(); ++it)
             result.insert(const_cast<Type*>(*it));
