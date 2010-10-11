@@ -841,7 +841,6 @@ module Typelib
 
         ENV['TYPELIB_RUBY_PLUGIN_PATH'].split(':').each do |dir|
             Dir.glob(File.join(dir, '*.rb')) do |file|
-		puts "typelib: loading plugin #{file}"
                 require file
             end
         end
