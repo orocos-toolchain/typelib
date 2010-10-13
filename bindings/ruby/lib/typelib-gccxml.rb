@@ -437,7 +437,7 @@ module Typelib
                 io.write tlb
                 io.flush
 
-                registry.import(io.path, 'tlb')
+                registry.import(io.path, 'tlb', :merge => false)
             end
         end
 
