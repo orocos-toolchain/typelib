@@ -364,6 +364,7 @@ module Typelib
                 all_types.concat((xml / "Struct[file=\"#{id}\"]").to_a)
                 all_types.concat((xml / "Class[file=\"#{id}\"]").to_a)
                 all_types.concat((xml / "Enumeration[file=\"#{id}\"]").to_a)
+                all_types.delete_if { |t| t['incomplete'] == '1' }
                 all_typedefs.concat((xml / "Typedef[file=\"#{id}\"]").to_a)
             end
 
