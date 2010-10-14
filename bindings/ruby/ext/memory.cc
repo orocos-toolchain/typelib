@@ -1,7 +1,7 @@
 #include "typelib.hh"
 #include <typelib/value_ops.hh>
 #include <ruby.h>
-#ifndef RUBY_19
+#if !defined(RUBY_19) && !defined(RUBY_191)
 extern "C" {
 #include <st.h>
 }
@@ -23,8 +23,8 @@ static int memory_table_compare(void* a, void* b)
     return (a != b);
 }
 
-#if defined(RUBY_191)
-typedef int st_index_t;
+#if !defined(RUBY_19)
+typedef long st_index_t;
 #endif
 
 static st_index_t memory_table_hash(void* a)
