@@ -225,7 +225,18 @@ module Typelib
                     # This is internally known to typelib
                 elsif Typelib::Registry.available_containers.include?(type_name)
                     # This is known to Typelib as a container
-                    type_def << "<container name=\"#{emit_type_name(name)}\" of=\"#{emit_type_name(template_args[0])}\" kind=\"#{emit_type_name(type_name)}\"/>"
+                    contained_type = typelib_to_cxx(template_args[0])
+                    contained_node = (xml / "[demangled=\"#{contained_type}\"]").to_a.first
+                    if !contained_node
+                        contained_node = (xml / "[name=\"#{contained_type}\"]").to_a.first
+                        if !contained_node
+                            raise "Internal error: cannot find definition for #{contained_type}"
+                        end
+                    end
+                    if resolve_type_id(xml, contained_node["id"])
+                        type_def << "<container name=\"#{emit_type_name(name)}\" of=\"#{emit_type_name(template_args[0])}\" kind=\"#{emit_type_name(type_name)}\"/>"
+                    else return ignore("ignoring #{name} as its element type #{contained_type} is ignored as well")
+                    end
                 else
                     # Make sure that we can digest it. Forbidden are: inheritance,
                     # private members
