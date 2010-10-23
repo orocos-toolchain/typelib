@@ -33,8 +33,21 @@ namespace Typelib
      * namespace name starts and ends with the namespace separator '/'. */
     std::string getNamespace(const std::string& full_name);
     /** Returns the relative part of +name+, relative to the given namespace.
+     * The type name must be included in the namespace. Use
+     * getMinimalPathTo to generate the minimal namespace specification reaching
+     * a type from a namespace.
+     *
      * The returned name does not have any leading namespace separator. */
     std::string getRelativeName(std::string const& full_name, std::string const& ns);
+    /** Computes the minimal namespace specification needed to reach a type from
+     * a namespace. The specification takes into account possible ambiguities,
+     * i.e.
+     *
+     *   getMinimalPathTo("/A/A/Type", "/A/B/A")
+     *
+     * will return  "/A/A/Type" as "A/Type" would be ambiguous.
+     */
+    std::string getMinimalPathTo(std::string const& full_name, std::string const& ns);
     /** Returns true if \c name1 is either in a more in-depth namespace than
      * name2 (i.e. name2 == /A/B/class and name1 == /A/B/C/class2 or if 
      * name2 < name1 (lexicographic sort). Otherwise, returns false

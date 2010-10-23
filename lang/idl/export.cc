@@ -5,6 +5,7 @@
 #include <typelib/typevisitor.hh>
 #include <typelib/plugins.hh>
 
+#include <boost/algorithm/string.hpp>
 
 namespace
 {
@@ -32,15 +33,91 @@ namespace
 
         IDLTypeIdentifierVisitor(IDLExport const& exporter, bool opaque_as_any)
             : m_exporter(exporter), m_opaque_as_any(opaque_as_any) {}
+        std::string getIDLAbsolute(Type const& type, std::string const& field_name = "");
+        std::string getIDLRelative(Type const& type, std::string const& field_name = "");
+        std::string getIDLBase(Type const& type, std::string const& field_name = "");
     };
-    static string idl_type_identifier(Type const& type, IDLExport const& exporter, bool opaque_as_any, std::string const& field_name = std::string())
+
+    static string getIDLAbsoluteNamespace(std::string const& type_ns, IDLExport const& exporter)
     {
+        string ns = type_ns;
+        string prefix = exporter.getNamespacePrefix();
+        string suffix = exporter.getNamespaceSuffix();
+        if (!prefix.empty())
+            ns = prefix + ns;
+        if (!suffix.empty())
+            ns += suffix;
+        return ns;
+    }
+
+    static bool isIDLBuiltinType(Type const& type)
+    {
+        if (type.getCategory() == Type::Numeric || type.getName() == "/std/string")
+            return true;
+        else if (type.getCategory() == Type::Array)
+        {
+            Type const& element_type = static_cast<Array const&>(type).getIndirection();
+            return isIDLBuiltinType(element_type);
+        }
+        return false;
+    }
+
+    /** Returns the IDL identifier for the given type, without the type's own
+     * namespace prepended
+     */
+    static string getIDLBase(Type const& type, IDLExport const& exporter, bool opaque_as_any, std::string const& field_name = std::string())
+    {
+        std::string type_name;
         IDLTypeIdentifierVisitor visitor(exporter, opaque_as_any);
         visitor.apply(type);
         if (field_name.empty())
             return visitor.m_front + visitor.m_back;
         else
             return visitor.m_front + " " + field_name + visitor.m_back;
+    }
+
+    /** Returns the IDL identifier for the given type, with the minimal
+     * namespace specification to reach it from the exporter's current namespace
+     */
+    static string getIDLRelative(Type const& type, IDLExport const& exporter, bool opaque_as_any, std::string const& field_name = std::string())
+    {
+        std::string base = getIDLBase(type, exporter, opaque_as_any, field_name);
+        if (!isIDLBuiltinType(type))
+        {
+            std::string ns = getMinimalPathTo(getIDLAbsoluteNamespace(type.getNamespace(), exporter) + type.getBasename(), exporter.getCurrentNamespace());
+            std::cerr << ns << " " << base << " " << getIDLAbsoluteNamespace(type.getNamespace(), exporter) + type.getBasename() << " " << exporter.getCurrentNamespace() << std::endl;
+            boost::replace_all(ns, Typelib::NamespaceMarkString, "::");
+            return ns + base;
+        }
+        else return base;
+    }
+
+    /** Returns the IDL identifier for the given type, with the complete
+     * namespace specification prepended to it
+     */
+    static string getIDLAbsolute(Type const& type, IDLExport const& exporter, bool opaque_as_any, std::string const& field_name = std::string())
+    {
+        std::string base = getIDLBase(type, exporter, opaque_as_any, field_name);
+        if (!isIDLBuiltinType(type))
+        {
+            std::string ns = getIDLAbsoluteNamespace(type.getNamespace(), exporter);
+            boost::replace_all(ns, Typelib::NamespaceMarkString, "::");
+            return ns + base;
+        }
+        else return base;
+    }
+
+    std::string IDLTypeIdentifierVisitor::getIDLAbsolute(Type const& type, std::string const& field_name)
+    {
+        return ::getIDLAbsolute(type, m_exporter, m_opaque_as_any, field_name);
+    }
+    std::string IDLTypeIdentifierVisitor::getIDLRelative(Type const& type, std::string const& field_name)
+    {
+        return ::getIDLAbsolute(type, m_exporter, m_opaque_as_any, field_name);
+    }
+    std::string IDLTypeIdentifierVisitor::getIDLBase(Type const& type, std::string const& field_name)
+    {
+        return ::getIDLBase(type, m_exporter, m_opaque_as_any, field_name);
     }
 
     bool IDLTypeIdentifierVisitor::visit_(OpaqueType const& type)
@@ -59,16 +136,47 @@ namespace
         if (type.getName() == "/std/string")
             m_front = "string";
         else
-            m_front = "sequence<" + idl_type_identifier(type.getIndirection(), m_exporter, m_opaque_as_any) + ">";
+        {
+            // Get the basename for "kind"
+            std::string container_kind = Typelib::getTypename(type.kind());
+            std::string element_name   = type.getIndirection().getName();
+            boost::replace_all(element_name, Typelib::NamespaceMarkString, "_");
+            boost::replace_all(element_name, " ", "_");
+            m_front = container_kind + "_" + element_name + "_";
+        }
 
         return true;
     }
     bool IDLTypeIdentifierVisitor::visit_(Compound const& type)
-    { m_front = m_exporter.getIDLAbsoluteTypename(type);
+    { m_front = type.getBasename();
         return true; }
     bool IDLTypeIdentifierVisitor::visit_(Numeric const& type)
-    { m_front = m_exporter.getIDLAbsoluteTypename(type);
-        return true; }
+    {
+        if (type.getName() == "/bool")
+        {
+            m_front = "boolean";
+        }
+        else if (type.getNumericCategory() != Numeric::Float)
+        {
+            if (type.getNumericCategory() == Numeric::UInt && type.getSize() != 1)
+                m_front = "unsigned ";
+            switch (type.getSize())
+            {
+                case 1: m_front += "octet"; break;
+                case 2: m_front += "short"; break;
+                case 4: m_front += "long"; break;
+                case 8: m_front += "long long"; break;
+            }
+        }
+        else
+        {
+            if (type.getSize() == 4)
+                m_front = "float";
+            else
+                m_front = "double";
+        }
+        return true;
+    }
     bool IDLTypeIdentifierVisitor::visit_(Pointer const& type)
     { throw UnsupportedType(type, "pointer types are not supported for export in IDL"); }
     bool IDLTypeIdentifierVisitor::visit_(Array const& type)
@@ -76,12 +184,12 @@ namespace
         if (type.getIndirection().getCategory() == Type::Array)
             throw UnsupportedType(type, "multi-dimensional arrays are not supported in IDL");
 
-        m_front = idl_type_identifier(type.getIndirection(), m_exporter, m_opaque_as_any);
+        m_front = getIDLBase(type.getIndirection());
         m_back = "[" + boost::lexical_cast<string>(type.getDimension()) + "]";
         return true;
     }
     bool IDLTypeIdentifierVisitor::visit_(Enum const& type)
-    { m_front = m_exporter.getIDLAbsoluteTypename(type);
+    { m_front = type.getBasename();
         return true; }
 
     class IDLExportVisitor : public TypeVisitor
@@ -91,6 +199,7 @@ namespace
         ostream&  m_stream;
         string    m_indent;
         bool      m_opaque_as_any;
+        std::map<std::string, Type const*>& m_exported_typedefs;
 
         bool visit_(OpaqueType const& type);
         bool visit_(Container const& type);
@@ -104,8 +213,23 @@ namespace
 
         bool visit_(Enum const& type);
 
-        IDLExportVisitor(Registry const& registry, IDLExport const& exporter, ostream& stream, string const& base_indent, bool opaque_as_any);
+        IDLExportVisitor(Registry const& registry, IDLExport const& exporter, ostream& stream, string const& base_indent, bool opaque_as_any, std::map<std::string, Type const*>& exported_typedefs);
+        std::string getIDLAbsolute(Type const& type, std::string const& field_name = "");
+        std::string getIDLRelative(Type const& type, std::string const& field_name = "");
+        std::string getIDLBase(Type const& type, std::string const& field_name = "");
     };
+    std::string IDLExportVisitor::getIDLAbsolute(Type const& type, std::string const& field_name)
+    {
+        return ::getIDLAbsolute(type, m_exporter, m_opaque_as_any, field_name);
+    }
+    std::string IDLExportVisitor::getIDLRelative(Type const& type, std::string const& field_name)
+    {
+        return ::getIDLRelative(type, m_exporter, m_opaque_as_any, field_name);
+    }
+    std::string IDLExportVisitor::getIDLBase(Type const& type, std::string const& field_name)
+    {
+        return ::getIDLBase(type, m_exporter, m_opaque_as_any, field_name);
+    }
 
     struct Indent
     {
@@ -118,13 +242,15 @@ namespace
     };
 
     IDLExportVisitor::IDLExportVisitor(Registry const& registry, IDLExport const& exporter,
-	    ostream& stream, string const& base_indent, bool opaque_as_any)
+	    ostream& stream, string const& base_indent, bool opaque_as_any,
+            std::map<std::string, Type const*>& exported_typedefs)
         : m_exporter(exporter), m_stream(stream), m_indent(base_indent)
-        , m_opaque_as_any(opaque_as_any) {}
+        , m_opaque_as_any(opaque_as_any)
+        , m_exported_typedefs(exported_typedefs) {}
 
     bool IDLExportVisitor::visit_(Compound const& type)
     { 
-        m_stream << m_indent << "struct " << IDLExport::getIDLTypename(type) << " {\n";
+        m_stream << m_indent << "struct " << type.getBasename() << " {\n";
         
         { Indent indenter(m_indent);
             TypeVisitor::visit_(type);
@@ -139,7 +265,7 @@ namespace
     { 
         m_stream
             << m_indent
-            << idl_type_identifier(field.getType(), m_exporter, m_opaque_as_any, field.getName())
+            << getIDLRelative(field.getType(), field.getName())
             << ";\n";
 
         return true;
@@ -165,7 +291,7 @@ namespace
 
     bool IDLExportVisitor::visit_ (Enum const& type)
     {
-	m_stream << m_indent << "enum " << m_exporter.getIDLTypename(type) << " { ";
+	m_stream << m_indent << "enum " << type.getBasename() << " { ";
 
 	utilmm::stringlist symbols;
         Enum::ValueMap const& values = type.values();
@@ -179,8 +305,15 @@ namespace
 
     bool IDLExportVisitor::visit_(Container const& type)
     {
-        // Simply ignore the type, it is uneeded to export it. Containers in structures
-        // are already handled in visit_(Compound, Field)
+        // sequence<> can be used as-is, but in order to be as cross-ORB
+        // compatible as possible we generate sequence typedefs and use them in
+        // the compounds. Emit the sequence right now.
+        std::string element_name = getIDLRelative(type.getIndirection());
+        std::string typedef_name = getIDLBase(type);
+        boost::replace_all(typedef_name, "::", "_");
+        m_stream << m_indent << "typedef sequence<" << element_name << "> " << typedef_name << ";\n";
+        m_exported_typedefs.insert(make_pair(type.getNamespace() + typedef_name, &type));
+
         return true;
     }
     bool IDLExportVisitor::visit_(OpaqueType const& type)
@@ -256,82 +389,15 @@ void IDLExport::adaptNamespace(ostream& stream, string const& ns)
     m_namespace = ns;
 }
 
-std::string IDLExport::getExportNamespace(std::string const& type_ns) const
+std::string IDLExport::getIDLAbsolute(Type const& type) const
 {
-    string ns = type_ns;
-    if (!m_ns_prefix.empty())
-	ns = m_ns_prefix + "/" + ns;
-    if (!m_ns_suffix.empty())
-	ns = ns + "/" + m_ns_suffix;
-    return ns;
+    return ::getIDLAbsolute(type, *this, m_opaque_as_any);
 }
 
-std::string IDLExport::getIDLAbsoluteTypename(Type const& type) const
+std::string IDLExport::getIDLRelative(Type const& type) const
 {
-    return getIDLAbsoluteTypename(type, m_namespace);
+    return ::getIDLRelative(type, *this, m_opaque_as_any);
 }
-
-std::string IDLExport::getIDLAbsoluteTypename(Type const& type, std::string const& current_namespace) const
-{
-    string result;
-
-    if (type.getName() == "std::string")
-        return "string";
-
-    string type_ns = getExportNamespace(type.getNamespace());
-    if (type.getCategory() != Type::Numeric)
-    {
-	result = utilmm::join(utilmm::split(type_ns, "/"), "::");
-	if (!result.empty())
-	    result += "::";
-    }
-
-
-    return result + getIDLTypename(type);
-}
-
-std::string IDLExport::getIDLTypename(Type const& type)
-{
-    if (type.getCategory() == Type::Numeric)
-	return getIDLBaseType(static_cast<Numeric const&>(type));
-    else if (type.getCategory() == Type::Compound || type.getCategory() == Type::Enum)
-    {
-	utilmm::stringlist type_name = utilmm::split(type.getBasename(), " ");
-	if (*type_name.begin() == "struct" || *type_name.begin() == "enum")
-	    return *type_name.rbegin();
-    }
-
-    return type.getBasename();
-}
-
-std::string IDLExport::getIDLBaseType(Numeric const& type)
-{
-    std::string idl_name;
-    if (type.getName() == "/bool")
-        return "boolean";
-    if (type.getNumericCategory() != Numeric::Float)
-    {
-	if (type.getNumericCategory() == Numeric::UInt && type.getSize() != 1)
-	    idl_name = "unsigned ";
-	switch (type.getSize())
-	{
-	    case 1: idl_name += "octet"; break;
-	    case 2: idl_name += "short"; break;
-	    case 4: idl_name += "long"; break;
-	    case 8: idl_name += "long long"; break;
-	}
-    }
-    else
-    {
-	if (type.getSize() == 4)
-	    idl_name = "float";
-	else
-	    idl_name = "double";
-    }
-
-    return idl_name;
-}
-
 
 void IDLExport::save
     ( ostream& stream
@@ -339,7 +405,11 @@ void IDLExport::save
     , Typelib::Registry const& type )
 {
     m_ns_prefix = config.get<std::string>("namespace_prefix", "");
+    if (!m_ns_prefix.empty() && string(m_ns_prefix, 0, 1) != Typelib::NamespaceMarkString)
+        m_ns_prefix = Typelib::NamespaceMarkString + m_ns_prefix;
     m_ns_suffix = config.get<std::string>("namespace_suffix", "");
+    if (!m_ns_suffix.empty() && string(m_ns_suffix, m_ns_suffix.length() - 1, 1) != Typelib::NamespaceMarkString)
+        m_ns_suffix += Typelib::NamespaceMarkString;
     m_blob_threshold = config.get<int>("blob_threshold", 0);
     m_opaque_as_any  = config.get<bool>("opaque_as_any", false);
     list<string> selection = config.get< list<string> >("selected");
@@ -359,6 +429,17 @@ void IDLExport::generateTypedefs(ostream& stream)
             stream << m_indent << "typedef " << *str_it << std::endl;
     }
 }
+
+std::string IDLExport::getNamespacePrefix() const
+{
+    return m_ns_prefix;
+}
+std::string IDLExport::getNamespaceSuffix() const
+{
+    return m_ns_suffix;
+}
+std::string IDLExport::getCurrentNamespace() const
+{ return m_namespace; }
 
 bool IDLExport::save
     ( ostream& stream
@@ -384,7 +465,17 @@ bool IDLExport::save
 	    IDLExport::checkType(*type);
             ostringstream stream;
 
-            std::string type_namespace = getExportNamespace(type.getNamespace());
+            std::string type_namespace = getIDLAbsoluteNamespace(type.getNamespace(), *this);
+
+            map<string, Type const*>::const_iterator already_exported =
+                m_exported_typedefs.find(type.getName());
+            std::cerr << "should we emit " << type.getName() << "? " << (already_exported == m_exported_typedefs.end()) << std::endl;
+            if (already_exported != m_exported_typedefs.end())
+            {
+                if (*already_exported->second != *type)
+                    throw UnsupportedType(*type, "the typedef name " + type.getName() + " is reserved by the IDL exporter");
+                return false;
+            }
 
 	    // Alias types using typedef, taking into account that the aliased type
 	    // may not be in the same module than the new alias.
@@ -392,14 +483,14 @@ bool IDLExport::save
 	    {
 		Array const& array_t = dynamic_cast<Array const&>(*type);
 		stream 
-		    << getIDLAbsoluteTypename(array_t.getIndirection(), type_namespace) 
+		    << getIDLRelative(array_t.getIndirection()) 
 		    << " " << type.getBasename() << "[" << array_t.getDimension() << "];";
 	    }
             else if (type->getCategory() == Type::Container)
             {
                 // Generate a sequence, regardless of the actual container type
                 Container const& container_t = dynamic_cast<Container const&>(*type);
-                stream << "sequence<" << getIDLAbsoluteTypename(container_t.getIndirection(), type_namespace) << "> " << type.getBasename() << ";";
+                stream << "sequence<" << getIDLRelative(container_t.getIndirection()) << "> " << type.getBasename() << ";";
             }
             else if (type->getCategory() == Type::Opaque)
             {
@@ -407,7 +498,7 @@ bool IDLExport::save
                     stream << "any " << type.getBasename() << ";";
             }
             else
-		stream << getIDLAbsoluteTypename(*type, type_namespace) << " " << type.getBasename() << ";";
+		stream << getIDLRelative(*type) << " " << type.getBasename() << ";";
 
             m_typedefs[type_namespace].push_back(stream.str());
             return true;
@@ -424,7 +515,7 @@ bool IDLExport::save
 	// in a temporary ostringstream and change namespace only if some output
 	// has actually been generated
 	
-	string target_namespace = getExportNamespace(type.getNamespace());
+	string target_namespace = getIDLAbsoluteNamespace(type.getNamespace(), *this);
 	size_t ns_size = utilmm::split(target_namespace, "/").size();
 	string indent_string = string(ns_size * 4, ' ');
 
@@ -439,7 +530,7 @@ bool IDLExport::save
             std::string old_namespace = m_namespace;
             m_namespace = target_namespace;
 	    std::ostringstream temp_stream;
-	    IDLExportVisitor exporter(type.getRegistry(), *this, temp_stream, indent_string, m_opaque_as_any);
+	    IDLExportVisitor exporter(type.getRegistry(), *this, temp_stream, indent_string, m_opaque_as_any, m_exported_typedefs);
 	    exporter.apply(*type);
             m_namespace = old_namespace;
 

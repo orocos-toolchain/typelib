@@ -34,6 +34,12 @@ class IDLExport : public Typelib::Exporter
     typedef std::map<std::string, std::list<std::string> > TypedefMap;
     TypedefMap m_typedefs;
 
+    /** The set of typedefs that have been exported during the generation
+     * process, -- i.e. before the end of generation
+     */
+    std::map<std::string, Typelib::Type const*> m_exported_typedefs;
+
+
     void closeNamespaces(std::ostream& stream, int levels);
     void adaptNamespace(std::ostream& stream, std::string const& ns);
     void generateTypedefs(std::ostream& stream);
@@ -45,29 +51,12 @@ protected:
 public:
     IDLExport();
 
-    /** Returns the namespace, in typelib-format, in which a type in +type_ns+
-     * should be exported. In particular, it takes into account m_ns_prefix and
-     * m_ns_suffix
-     */
-    std::string getExportNamespace(std::string const& type_ns) const;
-    /** Returns the name in which +type+ should be represented in the IDL file.
-     * This converts base types into the corresponding IDL base types, and
-     * removes "struct" and "union" from C-related names
-     */
-    static std::string getIDLTypename(Typelib::Type const& type);
-    /** Returns the IDL type for the basic +type+
-     */
-    static std::string getIDLBaseType(Typelib::Numeric const& type);
-    /** Returns the absolute name (including the full namespace) to reference
-     * +type+ in the IDL file. If +type+ is in the current namespace, no
-     * the type basename is returned instead.
-     */
-    std::string getIDLAbsoluteTypename(Typelib::Type const& type) const;
-    /** Returns the absolute name (including the full namespace) to reference
-     * +type+ in the IDL file. If +type+ is in current_namespace, the type
-     * basename is returned instead.
-     */
-    std::string getIDLAbsoluteTypename(Typelib::Type const& type, std::string const& current_namespace) const;
+    std::string getNamespacePrefix() const;
+    std::string getNamespaceSuffix() const;
+    std::string getCurrentNamespace() const;
+
+    std::string getIDLAbsolute(Typelib::Type const& type) const;
+    std::string getIDLRelative(Typelib::Type const& type) const;
 
     virtual void save
         ( std::ostream& stream

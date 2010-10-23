@@ -147,6 +147,51 @@ namespace Typelib
 	return std::string(name, size, string::npos);
     }
 
+    std::string getMinimalPathTo(std::string const& full_name, std::string const& ns)
+    {
+        string type_ns = getNamespace(full_name);
+        if (isInNamespace(full_name, ns, true))
+            return getRelativeName(getNamespace(full_name), ns);
+        else if (ns.find(type_ns) != string::npos || ns.find(full_name) != string::npos) // need an absolute path
+            return type_ns;
+
+        NameTokenizer tok1(type_ns);
+        NameTokenizer tok2(ns);
+        NameTokenizer::const_iterator it1 = tok1.begin();
+        NameTokenizer::const_iterator it2 = tok2.begin();
+        std::vector<std::string> tokens;
+
+        // Filter out the common NS parts
+        std::string ns1, ns2;
+        for (; it1 != tok1.end() && it2 != tok2.end(); ++it1, ++it2)
+        {
+            ns1 = *it1;
+            tokens.push_back(ns1);
+            ns2 = *it2;
+            int value = ns1.compare(ns2);
+            if (value) break;
+        }
+        tokens.pop_back();
+
+        // Build the remainder of both namespaces, and verify that the remainder
+        // of the type is unambiguous. If it is, go back in it1 until it is not.
+        // We already checked the case where the full path is ambiguous
+        std::string result = *it1;
+        NameTokenizer::const_iterator remainder_it = it1;
+        for (++remainder_it; remainder_it != tok1.end(); ++remainder_it)
+            result += Typelib::NamespaceMarkString + *remainder_it;
+
+        while (ns.find(result) != string::npos)
+        {
+            result = tokens.back() + Typelib::NamespaceMarkString + result;
+            tokens.pop_back();
+        }
+        if (result.empty())
+            return result;
+        else
+            return result + Typelib::NamespaceMarkString;
+    }
+
     std::string getNamespace(const std::string& name)
     {
         size_t template_position = name.find(TemplateMark);
