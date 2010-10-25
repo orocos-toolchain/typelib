@@ -51,12 +51,13 @@ protected:
 public:
     IDLExport();
 
+    bool marshalOpaquesAsAny() const;
+
     std::string getNamespacePrefix() const;
     std::string getNamespaceSuffix() const;
-    std::string getCurrentNamespace() const;
 
     std::string getIDLAbsolute(Typelib::Type const& type) const;
-    std::string getIDLRelative(Typelib::Type const& type) const;
+    std::string getIDLRelative(Typelib::Type const& type, std::string const& relative_to) const;
 
     virtual void save
         ( std::ostream& stream
