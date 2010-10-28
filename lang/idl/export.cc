@@ -561,7 +561,6 @@ bool IDLExport::save
                 return false;
             else
 	    {
-                std::cerr << "emitting " << type.getName() << " in " << exporter.getTargetNamespace() << std::endl;
 		adaptNamespace(stream, exporter.getTargetNamespace());
 		stream << result;
                 return true;
