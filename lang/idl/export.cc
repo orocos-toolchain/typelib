@@ -140,7 +140,7 @@ namespace
     {
         if (type.getName() == "/std/string")
         {
-            m_namespace = "";
+            m_namespace = "/";
             m_front = "string";
         }
         else
@@ -332,8 +332,9 @@ namespace
         // sequence<> can be used as-is, but in order to be as cross-ORB
         // compatible as possible we generate sequence typedefs and use them in
         // the compounds. Emit the sequence right now.
-        string target_namespace  = getIDLAbsoluteNamespace(type.getIndirection().getNamespace(), m_exporter);
+	string target_namespace  = ::getIDLBase(type.getIndirection(), m_exporter).first;
         setTargetNamespace(target_namespace);
+
         std::string element_name = getIDLRelative(type.getIndirection());
         std::string typedef_name = getIDLBase(type);
         boost::replace_all(typedef_name, "::", "_");
