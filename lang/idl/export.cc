@@ -140,7 +140,7 @@ namespace
     {
         if (type.getName() == "/std/string")
         {
-            m_namespace = "/";
+            m_namespace = getIDLAbsoluteNamespace("/", m_exporter);
             m_front = "string";
         }
         else
