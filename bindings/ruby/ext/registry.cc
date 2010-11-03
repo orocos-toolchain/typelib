@@ -136,11 +136,13 @@ static
 VALUE registry_do_build(VALUE self, VALUE name)
 {
     Registry& registry = rb2cxx::object<Registry>(self);
-    Type const* type = registry.build( StringValuePtr(name) );
-
-    if (! type) 
-        rb_raise(eNotFound, "cannot find %s in registry", StringValuePtr(name));
-    return cxx2rb::type_wrap(*type, self);
+    try {
+        Type const* type = registry.build( StringValuePtr(name) );
+        if (! type) 
+            rb_raise(eNotFound, "cannot find %s in registry", StringValuePtr(name));
+        return cxx2rb::type_wrap(*type, self);
+    }
+    catch(std::runtime_error const& e) { rb_raise(rb_eRuntimeError, e.what()); }
 }
 
 
