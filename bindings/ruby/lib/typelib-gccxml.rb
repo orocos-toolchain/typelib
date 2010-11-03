@@ -434,11 +434,19 @@ module Typelib
             required_files = (options[:required_files] || [file]).
                 map { |f| File.expand_path(f) }
 
+            opaques = Set.new
+            registry.each do |type|
+                if type.opaque?
+                    opaques << type.name
+                end
+            end
+
             # Add the standard C++ types (such as /std/string)
             Registry.add_standard_cxx_types(registry)
 
             xml = GCCXMLLoader.gccxml(file, options)
             converter = GCCXMLLoader.new
+            converter.opaques = opaques
             if opaques = options[:opaques]
                 converter.opaques |= opaques.to_set
             end
