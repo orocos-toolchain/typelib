@@ -48,7 +48,7 @@ namespace
         string getTargetNamespace() const { return m_namespace; }
         std::string getIDLAbsolute(Type const& type, std::string const& field_name = "");
         std::string getIDLRelative(Type const& type, std::string const& field_name = "");
-        std::string getIDLBase(Type const& type, std::string const& field_name = "");
+        pair<string, string> getIDLBase(Type const& type, std::string const& field_name = "");
         void apply(Type const& type)
         {
             m_namespace = getIDLAbsoluteNamespace(type.getNamespace(), m_exporter);
@@ -88,8 +88,11 @@ namespace
     static string getIDLRelative(Type const& type, std::string const& relative_to, IDLExport const& exporter, std::string const& field_name = std::string())
     {
         pair<string, string> base = getIDLBase(type, exporter, field_name);
-        if (!isIDLBuiltinType(type))
+        if (!base.first.empty())
         {
+            if (base.first.empty())
+                return base.second;
+
             std::string ns = getMinimalPathTo(base.first + type.getBasename(), relative_to);
             boost::replace_all(ns, Typelib::NamespaceMarkString, "::");
             return ns + base.second;
@@ -103,7 +106,7 @@ namespace
     static string getIDLAbsolute(Type const& type, IDLExport const& exporter, std::string const& field_name = std::string())
     {
         pair<string, string> base = getIDLBase(type, exporter, field_name);
-        if (!isIDLBuiltinType(type))
+        if (!base.first.empty())
         {
             std::string ns = base.first;
             boost::replace_all(ns, Typelib::NamespaceMarkString, "::");
@@ -120,15 +123,18 @@ namespace
     {
         return ::getIDLRelative(type, m_namespace, m_exporter, field_name);
     }
-    std::string IDLTypeIdentifierVisitor::getIDLBase(Type const& type, std::string const& field_name)
+    pair<string, string> IDLTypeIdentifierVisitor::getIDLBase(Type const& type, std::string const& field_name)
     {
-        return ::getIDLBase(type, m_exporter, field_name).second;
+        return ::getIDLBase(type, m_exporter, field_name);
     }
 
     bool IDLTypeIdentifierVisitor::visit_(OpaqueType const& type)
     {
         if (m_exporter.marshalOpaquesAsAny())
+        {
+            m_namespace = "";
             m_front = "any";
+        }
         else
             throw UnsupportedType(type, "opaque types are not allowed in IDL");
 
@@ -140,13 +146,18 @@ namespace
     {
         if (type.getName() == "/std/string")
         {
-            m_namespace = getIDLAbsoluteNamespace("/", m_exporter);
+            m_namespace = "";
             m_front = "string";
         }
         else
         {
             // Get the basename for "kind"
-            m_namespace = ::getIDLBase(type.getIndirection(), m_exporter).first;
+            m_namespace = getIDLBase(type.getIndirection()).first;
+            // We generate all containers in orogen::Corba, even if their
+            // element type is a builtin
+            if (m_namespace.empty())
+                m_namespace = getIDLAbsoluteNamespace("/", m_exporter);
+
             std::string container_kind = Typelib::getTypename(type.kind());
             std::string element_name   = type.getIndirection().getName();
             boost::replace_all(element_name, Typelib::NamespaceMarkString, "_");
@@ -161,6 +172,7 @@ namespace
         return true; }
     bool IDLTypeIdentifierVisitor::visit_(Numeric const& type)
     {
+        m_namespace = "";
         if (type.getName() == "/bool")
         {
             m_front = "boolean";
@@ -193,7 +205,9 @@ namespace
         if (type.getIndirection().getCategory() == Type::Array)
             throw UnsupportedType(type, "multi-dimensional arrays are not supported in IDL");
 
-        m_front = getIDLBase(type.getIndirection());
+        pair<string, string> element_t = getIDLBase(type.getIndirection());
+        m_namespace = element_t.first;
+        m_front = element_t.second;
         m_back = "[" + boost::lexical_cast<string>(type.getDimension()) + "]";
         return true;
     }
@@ -233,7 +247,7 @@ namespace
         }
         std::string getIDLAbsolute(Type const& type, std::string const& field_name = "");
         std::string getIDLRelative(Type const& type, std::string const& field_name = "");
-        std::string getIDLBase(Type const& type, std::string const& field_name = "");
+        pair<string, string> getIDLBase(Type const& type, std::string const& field_name = "");
         void apply(Type const& type)
         {
             setTargetNamespace(getIDLAbsoluteNamespace(type.getNamespace(), m_exporter));
@@ -251,10 +265,10 @@ namespace
     {
         return ::getIDLRelative(type, m_namespace, m_exporter, field_name);
     }
-    std::string IDLExportVisitor::getIDLBase(Type const& type,
+    pair<string, string> IDLExportVisitor::getIDLBase(Type const& type,
             std::string const& field_name)
     {
-        return ::getIDLBase(type, m_exporter, field_name).second;
+        return ::getIDLBase(type, m_exporter, field_name);
     }
 
     struct Indent
@@ -332,11 +346,15 @@ namespace
         // sequence<> can be used as-is, but in order to be as cross-ORB
         // compatible as possible we generate sequence typedefs and use them in
         // the compounds. Emit the sequence right now.
-	string target_namespace  = ::getIDLBase(type.getIndirection(), m_exporter).first;
+	string target_namespace  = getIDLBase(type.getIndirection()).first;
+        // We never emit sequences into the main namespace, even if their
+        // element is a builtin
+        if (target_namespace.empty())
+            target_namespace = getIDLAbsoluteNamespace("/", m_exporter);
         setTargetNamespace(target_namespace);
 
         std::string element_name = getIDLRelative(type.getIndirection());
-        std::string typedef_name = getIDLBase(type);
+        std::string typedef_name = getIDLBase(type).second;
         boost::replace_all(typedef_name, "::", "_");
         m_stream << m_indent << "typedef sequence<" << element_name << "> " << typedef_name << ";\n";
         m_exported_typedefs.insert(make_pair(type.getIndirection().getNamespace() + typedef_name, &type));
