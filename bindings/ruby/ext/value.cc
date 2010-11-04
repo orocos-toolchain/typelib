@@ -201,7 +201,7 @@ static VALUE type_dependencies(VALUE self)
 
     VALUE result = rb_ary_new();
     for (TypeSet::const_iterator it = dependencies.begin(); it != dependencies.end(); ++it)
-        rb_ary_push(result, cxx2rb::type_wrap(type, registry));
+        rb_ary_push(result, cxx2rb::type_wrap(**it, registry));
     return result;
 }
 

@@ -102,7 +102,11 @@ namespace Typelib
         return builder.getType();
     }
 
-    class InvalidIndirectName : public std::exception { };
+    struct InvalidIndirectName : public std::runtime_error
+    {
+        InvalidIndirectName(std::string const& what)
+            : std::runtime_error(what) {}
+    };
 
     TypeBuilder::TypeSpec TypeBuilder::parse(const Registry& registry, const std::string& full_name)
     {
@@ -133,7 +137,7 @@ namespace Typelib
                 ++end;
             } 
 	    else
-		throw InvalidIndirectName();
+		throw InvalidIndirectName(full_name + " is not a valid type name");
             modlist.push_back(new_mod);
         }
 
