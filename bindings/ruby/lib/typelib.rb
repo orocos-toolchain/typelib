@@ -1143,6 +1143,9 @@ module Typelib
         end
     end
     specialize '/std/string' do
+	def set_values(value)
+	    Typelib.copy(self, Typelib.from_ruby(value, self.class))
+	end
         def to_ruby
             to_byte_array[8..-1]
         end
