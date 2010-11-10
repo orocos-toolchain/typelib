@@ -6,6 +6,7 @@ includedir=${prefix}/include
 Name: typelib
 Description: Type model and manipulation library
 Version: @PROJECT_VERSION@
+Requires: utilmm
 Libs: -L${libdir} -ltypeLib
 Cflags: -I${includedir}
 
