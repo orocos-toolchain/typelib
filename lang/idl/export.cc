@@ -520,6 +520,10 @@ bool IDLExport::save
                     throw UnsupportedType(*type, "the typedef name " + type.getName() + " is reserved by the IDL exporter");
                 return false;
             }
+            else if (type.getBasename().find_first_of("/<>") != std::string::npos)
+            {
+                return false;
+            }
 
 	    // Alias types using typedef, taking into account that the aliased type
 	    // may not be in the same module than the new alias.
