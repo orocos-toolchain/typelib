@@ -68,7 +68,7 @@ namespace Typelib
             stringlist args = split(string(template_args, 0, template_args.size()), ",");
             for (stringlist::const_iterator it = args.begin(); it != args.end(); ++it)
             {
-                if (!isValidTypename(*it, absolute))
+                if ((*it).find_first_not_of("0123456789") != string::npos && !isValidTypename(*it, true))
                     return false;
             }
 

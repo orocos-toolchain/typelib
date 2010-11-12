@@ -12,6 +12,15 @@ namespace
     using namespace std;
     using namespace Typelib;
 
+    static string normalizeIDLName(std::string const& name)
+    {
+        int template_mark;
+        string result = name;
+        while ((template_mark = result.find_first_of("<>")) != string::npos)
+            result.replace(template_mark, 1, "_");
+        return result;
+    }
+
     static string getIDLAbsoluteNamespace(std::string const& type_ns, IDLExport const& exporter)
     {
         string ns = type_ns;
@@ -53,6 +62,7 @@ namespace
         {
             m_namespace = getIDLAbsoluteNamespace(type.getNamespace(), m_exporter);
             TypeVisitor::apply(type);
+            m_front = normalizeIDLName(m_front);
         }
     };
 
@@ -288,7 +298,7 @@ namespace
 
     bool IDLExportVisitor::visit_(Compound const& type)
     { 
-        m_stream << m_indent << "struct " << type.getBasename() << " {\n";
+        m_stream << m_indent << "struct " << normalizeIDLName(type.getBasename()) << " {\n";
         
         { Indent indenter(m_indent);
             TypeVisitor::visit_(type);

@@ -101,7 +101,7 @@ module Typelib
             type_name, template_arguments = parse_template(name)
 
             type_name = type_name.gsub('::', '/')
-            if absolute && type_name[0, 1] != "/"
+            if absolute && type_name[0, 1] != "/" && type_name !~ /^\d+$/
                 type_name = "/#{type_name}"
             end
             template_arguments.map! { |n| cxx_to_typelib(n, absolute) }
