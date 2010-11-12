@@ -296,7 +296,7 @@ namespace Typelib
             for(Iterator it = begin(); it != end(); ++it)
             {
                 if (!it.isAlias()) continue;
-                if (result->has(it->getName()))
+                if (result->has(it->getName(), false))
                     result->alias(it->getName(), it.getName());
             }
         }
