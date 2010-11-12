@@ -281,7 +281,7 @@ namespace Typelib
 	}
     }
 
-    Registry* Registry::minimal(std::string const& name) const
+    Registry* Registry::minimal(std::string const& name, bool with_aliases) const
     {
         auto_ptr<Registry> result(new Registry);
         Type const* type = get(name);
@@ -289,6 +289,18 @@ namespace Typelib
             throw std::runtime_error("there is not type '" + name + "' in this registry");
 
         type->merge(*result);
+
+        // Copy now the aliases
+        if (with_aliases)
+        {
+            for(Iterator it = begin(); it != end(); ++it)
+            {
+                if (!it.isAlias()) continue;
+                if (result->has(it->getName()))
+                    result->alias(it->getName(), it.getName());
+            }
+        }
+
         return result.release();
     }
 
