@@ -877,6 +877,15 @@ module Typelib
 
         TYPE_HANDLERS = Hash.new
 
+        # Creates a new registry by loading a typelib XML file
+        #
+        # See also Registry#merge_xml
+        def self.from_xml(xml)
+            reg = Typelib::Registry.new
+            reg.merge_xml(xml)
+            reg
+        end
+
         def each(filter = nil, options = Hash.new, &block)
             if filter.kind_of?(Hash)
                 filter, options = nil, filter

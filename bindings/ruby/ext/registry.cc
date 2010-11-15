@@ -398,15 +398,14 @@ VALUE registry_each_type(VALUE self, VALUE filter_, VALUE with_aliases_)
 }
 
 /* call-seq:
- *  Registry.from_xml => string
+ *  registry.merge_xml(xml) => registry
  * 
  * Build a registry from a string, which is formatted as Typelib's own XML
  * format.  See also #export, #import and #to_xml
  */
 static
-VALUE registry_from_xml(VALUE mod, VALUE xml)
+VALUE registry_merge_xml(VALUE rb_registry, VALUE xml)
 {
-    VALUE rb_registry = rb_funcall(cRegistry, rb_intern("new"), 0);
     Registry& registry = rb2cxx::object<Registry>(rb_registry);
 
     std::istringstream istream(StringValuePtr(xml));
@@ -518,7 +517,7 @@ void typelib_ruby::Typelib_init_registry()
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 4);
     rb_define_method(cRegistry, "do_export", RUBY_METHOD_FUNC(registry_export), 2);
-    rb_define_singleton_method(cRegistry, "from_xml", RUBY_METHOD_FUNC(registry_from_xml), 1);
+    rb_define_method(cRegistry, "merge_xml", RUBY_METHOD_FUNC(registry_merge_xml), 1);
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
     rb_define_method(cRegistry, "aliases_of", RUBY_METHOD_FUNC(registry_aliases_of), 1);
     rb_define_method(cRegistry, "merge", RUBY_METHOD_FUNC(registry_merge), 1);
