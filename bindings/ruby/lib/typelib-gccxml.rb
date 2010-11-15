@@ -251,7 +251,7 @@ module Typelib
                         return ignore(xmlnode, "ignoring #{name} as it has parent classes")
                     end
 
-                    fields = xmlnode['members'].split(" ").
+                    fields = (xmlnode['members'] || "").split(" ").
                         map { |member_id| node_from_id(member_id) }.
                         find_all { |member_node| member_node.name == "Field" }
 
