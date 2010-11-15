@@ -91,7 +91,9 @@ module Typelib
         end
 
         def typelib_to_cxx(name)
-            name = name.gsub('/', '::')
+            name = name.gsub('/', '::').
+                gsub('<::', '<').
+                gsub(',', ', ')
             if name[0, 2] == "::"
                 name[2..-1]
             else
