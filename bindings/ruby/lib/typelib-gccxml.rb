@@ -333,18 +333,34 @@ module Typelib
         # their real name 
         #
         # For the typedefs, it it easy
-        #
-        # For the templates with default arguments, we have to generate a C++
-        # file that we feed back to GCCXML :(
         def resolve_opaques(xml)
             # First do typedefs. Search for the typedefs that are named like our
             # type, if we find one, alias it
-            opaques.each do |name|
+            opaques.each do |opaque_name|
+                context = nil
+                name = opaque_name
+                while name =~ /\/(\w+)\/(.*)/
+                    ns   = $1
+                    name = "/#{$2}"
+                    candidates = (xml / "Namespace[name=\"#{ns}\"]")
+                    if !context
+                        context = candidates.to_a.first
+                    else
+                        context = candidates.find { |node| node['context'].to_s == context }
+                    end
+                    if !context
+                        break
+                    else context = context["id"].to_s
+                    end
+                end
+
                 name = typelib_to_cxx(name)
                 (xml / "Typedef[name=\"#{name}\"]").each do |typedef|
+                    next if context && typedef["context"].to_s != context
                     full_name = cxx_to_typelib(node_from_id(typedef["type"].to_s)["name"])
+
                     opaques << full_name
-                    self.type_aliases[full_name] = name
+                    self.type_aliases[full_name] = opaque_name
                 end
             end
         end
