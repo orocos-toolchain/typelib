@@ -590,6 +590,9 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_singleton_method(cNumeric, "unsigned?", RUBY_METHOD_FUNC(numeric_type_unsigned_p), 0);
     rb_define_singleton_method(cNumeric, "size", RUBY_METHOD_FUNC(numeric_type_size), 0);
 
+    cOpaque    = rb_define_class_under(mTypelib, "OpaqueType", cType);
+    cNull      = rb_define_class_under(mTypelib, "NullType", cType);
+
     cIndirect  = rb_define_class_under(mTypelib, "IndirectType", cType);
     rb_define_singleton_method(cIndirect, "deference",    RUBY_METHOD_FUNC(indirect_type_deference), 0);
 

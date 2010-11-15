@@ -52,6 +52,8 @@ static VALUE value_allocate(Type const& type, VALUE registry)
 namespace typelib_ruby {
     VALUE cType	 = Qnil;
     VALUE cNumeric	 = Qnil;
+    VALUE cOpaque	 = Qnil;
+    VALUE cNull	 = Qnil;
     VALUE cIndirect  = Qnil;
     VALUE cPointer   = Qnil;
     VALUE cArray     = Qnil;
@@ -70,6 +72,8 @@ VALUE cxx2rb::class_of(Typelib::Type const& type)
 	case Type::Array:       return cArray;
 	case Type::Enum:        return cEnum;
         case Type::Container:   return cContainer;
+        case Type::Opaque:      return cOpaque;
+        case Type::NullType:    return cNull;
 	default:                return cType;
     }
 }

@@ -17,6 +17,8 @@ namespace typelib_ruby {
     extern VALUE cNumeric;
     extern VALUE cEnum;
     extern VALUE cContainer;
+    extern VALUE cOpaque;
+    extern VALUE cNull;
     extern VALUE cRegistry;
 
     extern VALUE eNotFound;
