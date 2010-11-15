@@ -38,7 +38,7 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
     // main algorithm (here) is meant to limit switching between namespaces.
     TypeMap free_types(nameSort);
     std::string last_namespace;
-    do
+    while (!types.empty())
     {
         TypeMap::iterator it = types.begin();
         TypeMap::iterator const end = types.end();
@@ -107,7 +107,6 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
             free_types.erase(save_it++);
         }
     }
-    while (!types.empty());
 
     // Now save the remaining types in free_types
     for (TypeMap::iterator it = free_types.begin(); it != free_types.end(); ++it)
