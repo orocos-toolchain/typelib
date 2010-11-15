@@ -76,6 +76,8 @@ public:
     static Container const& factory(Typelib::Registry& registry, std::list<Type const*> const& on);
     ContainerFactory getFactory() const;
 
+    static Type const& getElementType(Typelib::Registry const& registry);
+
     // This method is never called since we redefine modifiedDependencyAliases
     std::string getIndirectTypeName(std::string const& element_name) const { return ""; }
     void modifiedDependencyAliases(Typelib::Registry& registry) const {}

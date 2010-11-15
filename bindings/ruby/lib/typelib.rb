@@ -1126,6 +1126,7 @@ require 'typelib_ruby'
 module Typelib
     # Get the name for 'char'
     reg = Registry.new(false)
+    Registry.add_standard_cxx_types(reg)
     CHAR_T = reg.get('/char')
 
     convert_from_ruby String, '/std/string' do |value, typelib_type|

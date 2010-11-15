@@ -1,6 +1,8 @@
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
+#include <lang/cimport/standard_types.hh>
+
 #include <test/testsuite.hh>
 #include <utilmm/configfile/configset.hh>
 #include <typelib/pluginmanager.hh>
@@ -17,6 +19,7 @@ BOOST_AUTO_TEST_CASE(test_csv)
 {
     {
 	Registry registry;
+        Typelib::CXX::addStandardTypes(registry);
 
 	float    f32  = 0.52;
 	Type const& type = *registry.get("float");

@@ -106,8 +106,6 @@ namespace Typelib
         NameMap                 m_current;
         std::string             m_namespace;
 
-        void addStandardTypes();
-
         static bool isPersistent(std::string const& name, Type const& type, std::string const& source_id);
         void add(std::string const& name, Type* new_type, bool persistent, std::string const& source_id);
 
@@ -116,7 +114,6 @@ namespace Typelib
         std::set<Type*> reverseDepends(Type const& type);
 
     public:
-        static std::string const s_stdsource;
 	typedef RegistryIterator Iterator;
 
         Registry();

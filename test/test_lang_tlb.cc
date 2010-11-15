@@ -1,5 +1,7 @@
 #include <boost/test/auto_unit_test.hpp>
 
+#include <lang/cimport/standard_types.hh>
+
 #include <test/testsuite.hh>
 #include <utilmm/configfile/configset.hh>
 #include <typelib/pluginmanager.hh>
@@ -97,6 +99,7 @@ BOOST_AUTO_TEST_CASE( test_tlb_import )
     { 
 	ifstream file(TEST_DATA_PATH("rflex.tlb"));
 	Registry registry;
+        Typelib::CXX::addStandardTypes(registry);
 	importer->load(file, config, registry);
 
 	BOOST_CHECK( registry.get("/custom_null") );

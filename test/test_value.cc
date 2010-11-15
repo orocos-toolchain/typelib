@@ -1,5 +1,7 @@
 #include <boost/test/auto_unit_test.hpp>
 
+#include <lang/cimport/standard_types.hh>
+
 #include <test/testsuite.hh>
 #include <utilmm/configfile/configset.hh>
 #include <typelib/pluginmanager.hh>
@@ -17,6 +19,7 @@ using namespace std;
 BOOST_AUTO_TEST_CASE( test_value_simple )
 {
     Registry registry;
+    Typelib::CXX::addStandardTypes(registry);
 
     float    f32  = 0.52;
     uint16_t ui16 = 15;
@@ -87,6 +90,7 @@ BOOST_AUTO_TEST_CASE( test_value_array )
 {
     // Get the test file into repository
     Registry registry;
+    Typelib::CXX::addStandardTypes(registry);
 
     float test[10];
 

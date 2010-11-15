@@ -5,6 +5,8 @@
 #include <boost/tuple/tuple.hpp>
 #include <string.h>
 
+#include <iostream>
+
 using namespace Typelib;
 using namespace std;
 
@@ -319,8 +321,16 @@ Container const& Vector::factory(Registry& registry, std::list<Type const*> cons
 }
 Container::ContainerFactory Vector::getFactory() const { return factory; }
 
+
+Type const& String::getElementType(Typelib::Registry const& registry)
+{
+    if (std::numeric_limits<char>::is_signed)
+        return *registry.get("/int8_t");
+    else
+        return *registry.get("/uint8_t");
+}
 String::String(Typelib::Registry const& registry)
-    : Container("/std/string", "/std/string", getNaturalSize(), *registry.get("char")) {}
+    : Container("/std/string", "/std/string", getNaturalSize(), String::getElementType(registry)) {}
 
 size_t String::getElementCount(void const* ptr) const
 {
@@ -426,8 +436,9 @@ Container const& String::factory(Registry& registry, std::list<Type const*> cons
         throw std::runtime_error("expected only one template argument for std::string");
 
     Type const& contained_type = *on.front();
-    if (contained_type != *registry.get("char"))
-        throw std::runtime_error("std::string can only be built on top of 'char'");
+    Type const& expected_type  = String::getElementType(registry);
+    if (contained_type != expected_type)
+        throw std::runtime_error("std::string can only be built on top of '" + expected_type.getName() + "' -- found " + contained_type.getName());
 
     String* new_type = new String(registry);
     registry.add(new_type);

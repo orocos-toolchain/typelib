@@ -1,5 +1,7 @@
 #include <boost/test/auto_unit_test.hpp>
 
+#include <lang/cimport/standard_types.hh>
+
 #include <test/testsuite.hh>
 #include <typelib/typemodel.hh>
 #include <typelib/typename.hh>
@@ -188,6 +190,7 @@ BOOST_AUTO_TEST_CASE( test_repositories_merge )
 BOOST_AUTO_TEST_CASE( test_array_auto_alias )
 {
     Registry registry;
+    Typelib::CXX::addStandardTypes(registry);
     registry.alias("/int", "/A");
     registry.add(new Array(*registry.get("/int"), 10));
     BOOST_REQUIRE(registry.get("/A[10]"));
@@ -200,6 +203,8 @@ BOOST_AUTO_TEST_CASE( test_array_auto_alias )
 BOOST_AUTO_TEST_CASE( test_registry_merge_keeps_alias_persistent_flag )
 {
     Registry registry;
+    Typelib::CXX::addStandardTypes(registry);
+
     registry.alias("/int", "/Persistent", true);
     registry.alias("/int", "/Temporary", false);
     BOOST_REQUIRE(registry.get("/Persistent"));
@@ -221,7 +226,9 @@ BOOST_AUTO_TEST_CASE( test_registry_merge_keeps_alias_persistent_flag )
 BOOST_AUTO_TEST_CASE( test_registry_minimal_keeps_alias_persistent_flag )
 {
     Registry registry;
+    Typelib::CXX::addStandardTypes(registry);
     Registry target;
+    Typelib::CXX::addStandardTypes(target);
     target.alias("/int", "/Persistent", true);
     target.alias("/int", "/Temporary", false);
 
@@ -240,6 +247,7 @@ BOOST_AUTO_TEST_CASE( test_registry_minimal_keeps_alias_persistent_flag )
 BOOST_AUTO_TEST_CASE( test_registry_range )
 {
     Registry registry;
+    Typelib::CXX::addStandardTypes(registry);
     registry.alias("/int", "/A/A", true);
     registry.alias("/int", "/A/C", true);
     registry.alias("/int", "/A/F", true);

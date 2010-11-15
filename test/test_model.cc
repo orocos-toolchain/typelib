@@ -1,5 +1,7 @@
 #include <boost/test/auto_unit_test.hpp>
 
+#include <lang/cimport/standard_types.hh>
+
 #include <test/testsuite.hh>
 #include <utilmm/configfile/configset.hh>
 #include <typelib/pluginmanager.hh>
@@ -31,6 +33,7 @@ static pair<Compound*, Compound*> recursive_types(Registry& reg)
 BOOST_AUTO_TEST_CASE( test_compound_size )
 {
     Registry r;
+    Typelib::CXX::addStandardTypes(r);
 
     Compound str("");
     str.addField("a", *r.get("/int32_t"), 0);
@@ -51,6 +54,8 @@ BOOST_AUTO_TEST_CASE( test_compound_size )
 BOOST_AUTO_TEST_CASE( test_equality )
 {
     Registry ra, rb;
+    Typelib::CXX::addStandardTypes(ra);
+    Typelib::CXX::addStandardTypes(rb);
 
     //// Test numerics
     BOOST_REQUIRE(*ra.get("/int32_t") == *ra.get("/int32_t"));
@@ -143,6 +148,8 @@ BOOST_AUTO_TEST_CASE( test_equality )
 BOOST_AUTO_TEST_CASE( test_cast )
 {
     Registry ra, rb;
+    Typelib::CXX::addStandardTypes(ra);
+    Typelib::CXX::addStandardTypes(rb);
 
     //// Test numerics
     BOOST_REQUIRE(*ra.get("/int32_t") == *ra.get("/int32_t"));
@@ -248,6 +255,8 @@ BOOST_AUTO_TEST_CASE( test_cast )
 BOOST_AUTO_TEST_CASE( test_model_merge )
 {
     Registry ra, rb;
+    Typelib::CXX::addStandardTypes(ra);
+    Typelib::CXX::addStandardTypes(rb);
 
     //// Add definitions of /A and /B in rb
     Compound* str_a = new Compound("/A");
