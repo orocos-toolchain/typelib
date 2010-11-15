@@ -273,10 +273,6 @@ module Typelib
                 end
             elsif kind == "FundamentalType"
             elsif kind == "Typedef"
-                if !(pointed_to_type = resolve_type_id(xml, xmlnode['type']))
-                    return ignore(xmlnode, "cannot create the #{name} typedef, as it points to #{type_names[xmlnode['type']]} which is ignored")
-                end
-
                 if !(namespace = resolve_context(xml, xmlnode['context']))
                     return ignore(xmlnode, "ignoring typedef #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
                 end
@@ -286,6 +282,18 @@ module Typelib
                         "#{namespace}#{name}"
                     else name
                     end
+
+                type_names[id] = full_name
+                id_to_name[id] = full_name
+                if opaque?(full_name)
+                    # Nothing to do ...
+                    return full_name
+                end
+
+                if !(pointed_to_type = resolve_type_id(xml, xmlnode['type']))
+                    return ignore(xmlnode, "cannot create the #{full_name} typedef, as it points to #{type_names[xmlnode['type']]} which is ignored")
+                end
+
                 type_def << "<alias name=\"#{emit_type_name(full_name)}\" source=\"#{emit_type_name(pointed_to_type)}\" />"
 
                 # And always resolve the typedef as the type it is pointing to
