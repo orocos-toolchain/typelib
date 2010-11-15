@@ -55,7 +55,9 @@ module Typelib
             end
         end
 
-        def parse_template(name)
+        # Parses the Typelib or C++ type name +name+ and returns basename,
+        # template_arguments
+        def self.parse_template(name)
             level = 0
             type_name = nil
             arguments = []
@@ -98,7 +100,7 @@ module Typelib
         end
 
         def cxx_to_typelib(name, absolute = true)
-            type_name, template_arguments = parse_template(name)
+            type_name, template_arguments = GCCXMLLoader.parse_template(name)
 
             type_name = type_name.gsub('::', '/')
             if absolute && type_name[0, 1] != "/" && type_name !~ /^\d+$/
@@ -220,7 +222,7 @@ module Typelib
             end
 
             if kind == "Struct" || kind == "Class"
-                type_name, template_args = parse_template(name)
+                type_name, template_args = GCCXMLLoader.parse_template(name)
                 if type_name == "/std/string"
                     # This is internally known to typelib
                 elsif Typelib::Registry.available_containers.include?(type_name)
