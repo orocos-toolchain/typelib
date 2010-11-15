@@ -48,50 +48,83 @@ namespace Typelib
         return identifier[0] == NamespaceMark;
     }
 
+    static bool isValidTypeBasename(std::string s, bool absolute, bool accept_integers)
+    {
+        if (accept_integers && s.find_first_not_of("0123456789") == string::npos)
+            return true;
+
+        int pos = 0;
+        if (absolute && s[0] != '/')
+            return false;
+
+        if (s[0] == '/')
+            ++pos;
+
+        size_t modifiers = s.find_first_of("*[");
+        if (modifiers != string::npos)
+            return isValidIdentifier(string(s, pos, modifiers - pos));
+        else
+            return isValidIdentifier(string(s, pos));
+
+    }
+
+    static pair<bool, int> isValidTypename(std::string const& s, int pos, bool absolute, bool accept_integers)
+    {
+        unsigned int start_pos = pos;
+        if (s[pos] == '/')
+            pos++;
+
+        for (unsigned int i = pos; i < s.length(); ++i)
+        {
+            if (s[i] == '/')
+            {
+                if (!isValidTypeBasename(string(s, start_pos, i - start_pos), absolute, accept_integers))
+                    return make_pair(false, i);
+                start_pos = i;
+            }
+            else if (s[i] == '<')
+            {
+                if (!isValidTypeBasename(string(s, start_pos, i - start_pos), absolute, accept_integers))
+                    return make_pair(false, i);
+
+                while (s[i] != '>')
+                {
+                    pair<bool, int> valid_arg = isValidTypename(s, i + 1, true, true);
+                    i = valid_arg.second;
+
+                    if (!valid_arg.first)
+                        return valid_arg;
+                    else if (i == s.length() || (s[i] != ',' && s[i] != '>'))
+                        return make_pair(false, i);
+                }
+
+
+                start_pos = i + 1;
+                if (i + 1 < s.length())
+                {
+                    if (s[i + 1] != '/')
+                        return make_pair(false, i + 1);
+                    i++;
+                }
+            }
+            else if (s[i] == '>' || s[i] == ',')
+            {
+                if (!isValidTypeBasename(string(s, start_pos, i - start_pos), true, true))
+                    return make_pair(false, i);
+                return make_pair(true, i);
+            }
+        }
+
+        if (start_pos != s.length())
+            return make_pair(isValidTypeBasename(string(s, start_pos, s.length() - start_pos), absolute, accept_integers), s.length());
+        else return make_pair(true, s.length());
+    }
+
     bool isValidTypename(const std::string& name, bool absolute)
     {
         if (name.empty())
             return false;
-
-        typedef string::size_type size_t;
-        size_t template_start = name.find("<");
-        if (template_start != string::npos)
-        {
-            size_t template_end = name.rfind(">");
-            if (template_end == string::npos)
-                return false;
-
-            if (!isValidTypename(string(name, 0, template_start), absolute))
-                return false;
-
-            string template_args = string(name, template_start + 1, template_end - template_start - 1);
-            stringlist args = split(string(template_args, 0, template_args.size()), ",");
-            for (stringlist::const_iterator it = args.begin(); it != args.end(); ++it)
-            {
-                if ((*it).find_first_not_of("0123456789") != string::npos && !isValidTypename(*it, true))
-                    return false;
-            }
-
-            return true;
-        }
-
-        size_t last_mark = name.rfind(NamespaceMark);
-        if (last_mark == string::npos)
-	{
-	    if (absolute)
-		return false;
-
-            last_mark = -1;
-	}
-	else if (! isValidNamespace( string(name, 0, last_mark + 1), absolute) )
-            return false;
-
-        std::string type_part = string(name, last_mark + 1);
-        // a valid type is a valid identifier followed by modifiers
-        size_t modifiers = type_part.find_first_of("*[");
-        if (modifiers != string::npos)
-            type_part = string(type_part, 0, modifiers);
-        return isValidIdentifier(type_part);
+        return isValidTypename(name, 0, absolute, false).first;
     }
 
     bool isValidNamespace(const string& name, bool absolute)

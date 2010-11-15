@@ -13,10 +13,19 @@ BOOST_AUTO_TEST_CASE( test_typename_validation )
 {
     BOOST_CHECK(!isValidTypename("std::string", false));
     BOOST_CHECK(!isValidTypename("std::string", true));
-    BOOST_CHECK(isValidTypename("/std/string<double>", false));
+    BOOST_CHECK(!isValidTypename("/std/string<double>", false));
+    BOOST_CHECK(isValidTypename("/std/string</double>", false));
     BOOST_CHECK(isValidTypename("/std/string</double>", true));
-    BOOST_CHECK(isValidTypename("std/string<double>", false));
+    BOOST_CHECK(!isValidTypename("std/string<double>", false));
+    BOOST_CHECK(isValidTypename("std/string</double>", false));
     BOOST_CHECK(!isValidTypename("std/string</double>", true));
+
+    BOOST_CHECK(isValidTypename("/std/string</double,9,/std/string>", true));
+    BOOST_CHECK(isValidTypename("/std/string<3>", true));
+
+    BOOST_CHECK(isValidTypename("/double[3]", true));
+    BOOST_CHECK(isValidTypename("/std/string</double[3]>", true));
+    BOOST_CHECK(isValidTypename("/wrappers/Matrix</double,3,1>/Scalar", true));
 
     BOOST_CHECK(isValidTypename("s", false));
     BOOST_CHECK(!isValidTypename(":blabla", false));
@@ -60,10 +69,10 @@ BOOST_AUTO_TEST_CASE( test_typename_manipulation )
 
 BOOST_AUTO_TEST_CASE( test_typename_path_to )
 {
-    BOOST_CHECK_EQUAL("B",    getMinimalPathTo("/A/B/Type", "/A/C"));
-    BOOST_CHECK_EQUAL("B",    getMinimalPathTo("/A/B/Type", "/A/C/"));
-    BOOST_CHECK_EQUAL("B/B", getMinimalPathTo("/B/B/Type", "/B/A"));
-    BOOST_CHECK_EQUAL("B/B", getMinimalPathTo("/B/B/Type", "/B/A/"));
+    BOOST_CHECK_EQUAL("B/",    getMinimalPathTo("/A/B/Type", "/A/C"));
+    BOOST_CHECK_EQUAL("B/",    getMinimalPathTo("/A/B/Type", "/A/C/"));
+    BOOST_CHECK_EQUAL("B/B/", getMinimalPathTo("/B/B/Type", "/B/A"));
+    BOOST_CHECK_EQUAL("B/B/", getMinimalPathTo("/B/B/Type", "/B/A/"));
     BOOST_CHECK_EQUAL("/A/B/", getMinimalPathTo("/A/B/Type", "/A/B/C"));
     BOOST_CHECK_EQUAL("/A/B/", getMinimalPathTo("/A/B/Type", "/A/B/C/"));
     BOOST_CHECK_EQUAL("C/", getMinimalPathTo("/A/B/C/Type", "/A/B"));
