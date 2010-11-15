@@ -102,9 +102,10 @@ namespace Typelib
                 start_pos = i + 1;
                 if (i + 1 < s.length())
                 {
-                    if (s[i + 1] != '/')
+                    if (s[i + 1] == '/')
+                        i++;
+                    else if (s[i + 1] != '>')
                         return make_pair(false, i + 1);
-                    i++;
                 }
             }
             else if (s[i] == '>' || s[i] == ',')
