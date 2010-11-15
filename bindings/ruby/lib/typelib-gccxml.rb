@@ -207,6 +207,9 @@ module Typelib
             end
 
             name = cxx_to_typelib(xmlnode['demangled'] || xmlnode['name'])
+            if name =~ /gccxml_workaround/
+                return
+            end
 
             if name =~ /\/__\w+$/
                 # This is defined as private STL/Compiler implementation
