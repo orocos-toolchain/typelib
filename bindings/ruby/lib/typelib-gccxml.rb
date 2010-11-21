@@ -359,7 +359,10 @@ module Typelib
                 name = typelib_to_cxx(name)
                 (xml / "Typedef[name=\"#{name}\"]").each do |typedef|
                     next if context && typedef["context"].to_s != context
-                    full_name = cxx_to_typelib(node_from_id(typedef["type"].to_s)["name"])
+                    type_node = node_from_id(typedef["type"].to_s)
+                    namespace = resolve_context(xml, type_node['context'])
+                    base = cxx_to_typelib(type_node["name"])
+                    full_name = "#{namespace}#{base}"
 
                     opaques << full_name
                     self.type_aliases[full_name] = opaque_name
