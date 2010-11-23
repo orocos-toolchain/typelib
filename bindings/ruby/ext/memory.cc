@@ -206,7 +206,7 @@ static VALUE
 memory_zone_address(VALUE self)
 {
     void* ptr = memory_cptr(self);
-    return LONG2NUM((long)ptr);
+    return ULL2NUM(reinterpret_cast<uint64_t>(ptr));
 }
 
 static VALUE

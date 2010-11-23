@@ -33,8 +33,9 @@ library_wrap(VALUE self, VALUE name, VALUE auto_unload)
 static VALUE
 library_find(VALUE self, VALUE name)
 {
-    void* libhandle;
-    Data_Get_Struct(self, void, libhandle);
+    //void* libhandle;
+    DLLib* libhandle; 
+    Data_Get_Struct(self, DLLib, libhandle);
 
     void* symhandle = dlFindSymbol(libhandle, StringValuePtr(name));
     if (!symhandle)
