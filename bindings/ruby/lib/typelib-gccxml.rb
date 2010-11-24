@@ -124,6 +124,28 @@ module Typelib
             end
         end
 
+        # Given a full Typelib type name, returns a [name, id] pair where +name+
+        # is the type's basename and +id+ the context ID (i.e. the GCCXML
+        # namespace ID)
+        def resolve_namespace_of(xml, name)
+            context = nil
+            while name =~ /\/(\w+)\/(.*)/
+                ns   = $1
+                name = "/#{$2}"
+                candidates = (xml / "Namespace[name=\"#{ns}\"]")
+                if !context
+                    context = candidates.to_a.first
+                else
+                    context = candidates.find { |node| node['context'].to_s == context }
+                end
+                if !context
+                    break
+                else context = context["id"].to_s
+                end
+            end
+            return name, context
+        end
+
         def resolve_namespace(xml, id)
             ns = (xml / "Namespace[id=\"#{id}\"]").first
             name = ns['name']
@@ -236,10 +258,16 @@ module Typelib
                     contained_node = (xml / "[demangled=\"#{contained_type}\"]").to_a.first
                     if !contained_node
                         contained_node = (xml / "[name=\"#{contained_type}\"]").to_a.first
-                        if !contained_node
-                            raise "Internal error: cannot find definition for #{contained_type}"
-                        end
                     end
+                    if !contained_node
+                        contained_basename, contained_context = resolve_namespace_of(xml, template_args[0])
+                        contained_node = (xml / "[name=\"#{typelib_to_cxx(contained_basename)}\"]").
+                            find { |node| node['context'].to_s == contained_context }
+                    end
+                    if !contained_node
+                        raise "Internal error: cannot find definition for #{contained_type}"
+                    end
+
                     if resolve_type_id(xml, contained_node["id"])
                         type_def << "<container name=\"#{emit_type_name(name)}\" of=\"#{emit_type_name(template_args[0])}\" kind=\"#{emit_type_name(type_name)}\"/>"
                     else return ignore("ignoring #{name} as its element type #{contained_type} is ignored as well")
@@ -339,23 +367,7 @@ module Typelib
             # First do typedefs. Search for the typedefs that are named like our
             # type, if we find one, alias it
             opaques.each do |opaque_name|
-                context = nil
-                name = opaque_name
-                while name =~ /\/(\w+)\/(.*)/
-                    ns   = $1
-                    name = "/#{$2}"
-                    candidates = (xml / "Namespace[name=\"#{ns}\"]")
-                    if !context
-                        context = candidates.to_a.first
-                    else
-                        context = candidates.find { |node| node['context'].to_s == context }
-                    end
-                    if !context
-                        break
-                    else context = context["id"].to_s
-                    end
-                end
-
+                name, context = resolve_namespace_of(xml, opaque_name)
                 name = typelib_to_cxx(name)
                 (xml / "Typedef[name=\"#{name}\"]").each do |typedef|
                     next if context && typedef["context"].to_s != context
