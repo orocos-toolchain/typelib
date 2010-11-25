@@ -98,13 +98,39 @@ namespace Typelib
                         return make_pair(false, i);
                 }
 
+                start_pos = i + 1;
+                if (i + 1 < s.length())
+                {
+                    if (s[i + 1] == '/')
+                        i++;
+                    else if (s[i + 1] != '>' && s[i + 1] != '[')
+                        return make_pair(false, i + 1);
+                }
+            }
+            else if (s[i] == '[')
+            {
+                // start_pos == i if we are parsing an array of templates
+                if (start_pos != i && !isValidTypeBasename(string(s, start_pos, i - start_pos), absolute, accept_integers))
+                    return make_pair(false, i);
+
+                if (i + 1 == s.length())
+                    return make_pair(false, i);
+
+                start_pos = i + 1;
+            }
+            else if (s[i] == ']')
+            {
+                if (start_pos == i)
+                    return make_pair(false, start_pos);
+                if (string(s, start_pos, i - start_pos).find_first_not_of("0123456789") != string::npos)
+                    return make_pair(false, start_pos);
 
                 start_pos = i + 1;
                 if (i + 1 < s.length())
                 {
                     if (s[i + 1] == '/')
                         i++;
-                    else if (s[i + 1] != '>')
+                    else if (s[i + 1] != '>' && s[i + 1] != '[')
                         return make_pair(false, i + 1);
                 }
             }

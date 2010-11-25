@@ -29,6 +29,7 @@ BOOST_AUTO_TEST_CASE( test_typename_validation )
     BOOST_CHECK(isValidTypename("/std/string</double[3]>", true));
     BOOST_CHECK(isValidTypename("/wrappers/Matrix</double,3,1>/Scalar", true));
     BOOST_CHECK(isValidTypename("/std/vector</wrappers/Matrix</double,3,1>>", true));
+    BOOST_CHECK(isValidTypename("/std/vector</wrappers/Matrix</double,3,1>>[4]", true));
 
     BOOST_CHECK(isValidTypename("s", false));
     BOOST_CHECK(!isValidTypename(":blabla", false));
