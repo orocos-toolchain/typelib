@@ -18,6 +18,8 @@ module Typelib
         attr_reader :id_to_name
         # A mapping from the type ID to the corresponding XML node
         attr_reader :id_to_node
+        attr_reader :name_to_nodes
+        attr_reader :demangled_to_node
 
         # A mapping from the type ID to the type names
         #
@@ -132,7 +134,7 @@ module Typelib
             while name =~ /\/(\w+)\/(.*)/
                 ns   = $1
                 name = "/#{$2}"
-                candidates = (xml / "Namespace[name=\"#{ns}\"]")
+                candidates = name_to_nodes[ns].find_all { |n| n.name == "Namespace" }
                 if !context
                     context = candidates.to_a.first
                 else
@@ -147,7 +149,7 @@ module Typelib
         end
 
         def resolve_namespace(xml, id)
-            ns = (xml / "Namespace[id=\"#{id}\"]").first
+            ns = id_to_node[id]
             name = ns['name']
 
             if name == "::"
@@ -255,13 +257,13 @@ module Typelib
                 elsif Typelib::Registry.available_containers.include?(type_name)
                     # This is known to Typelib as a container
                     contained_type = typelib_to_cxx(template_args[0])
-                    contained_node = (xml / "[demangled=\"#{contained_type}\"]").to_a.first
+                    contained_node = demangled_to_node[contained_type]
                     if !contained_node
-                        contained_node = (xml / "[name=\"#{contained_type}\"]").to_a.first
+                        contained_node = name_to_nodes[contained_type].first
                     end
                     if !contained_node
                         contained_basename, contained_context = resolve_namespace_of(xml, template_args[0])
-                        contained_node = (xml / "[name=\"#{typelib_to_cxx(contained_basename)}\"]").
+                        contained_node = name_to_nodes[typelib_to_cxx(contained_basename)].
                             find { |node| node['context'].to_s == contained_context }
                     end
                     if !contained_node
@@ -369,7 +371,7 @@ module Typelib
             opaques.each do |opaque_name|
                 name, context = resolve_namespace_of(xml, opaque_name)
                 name = typelib_to_cxx(name)
-                (xml / "Typedef[name=\"#{name}\"]").each do |typedef|
+                name_to_nodes[name].find_all { |n| n.name == "Typedef" }.each do |typedef|
                     next if context && typedef["context"].to_s != context
                     type_node = node_from_id(typedef["type"].to_s)
                     namespace = resolve_context(xml, type_node['context'])
@@ -386,11 +388,39 @@ module Typelib
             @result = Array.new
 
             @id_to_node = Hash.new
+            @name_to_nodes = Hash.new { |h, k| h[k] = Array.new }
+            @demangled_to_node = Hash.new
+
             # Enumerate all children of the root node in an id-to-node map, to
             # speed up lookup during the type resolution process
             root = (xml / "GCC_XML").first
+            types_per_file = Hash.new { |h, k| h[k] = Array.new }
+            typedefs_per_file = Hash.new { |h, k| h[k] = Array.new }
+            root_file_ids = Array.new
             root.children.each do |child_node|
                 id_to_node[child_node["id"].to_s] = child_node
+                if (child_node_name = child_node['name'])
+                    name_to_nodes[child_node_name] << child_node
+                end
+                if (child_node_name = child_node['demangled'])
+                    demangled_to_node[child_node_name] = child_node
+                end
+
+                if child_node.name == "File"
+                    if required_files.include?(child_node['name'])
+                        root_file_ids << child_node['id']
+                    end
+                elsif %w{Struct Class Enumeration}.include?(child_node.name) && child_node['incomplete'] != '1'
+                    types_per_file[child_node['file']] << child_node
+                elsif child_node.name == "Typedef"
+                    typedefs_per_file[child_node['file']] << child_node
+                end
+            end
+            all_types = Array.new
+            all_typedefs = Array.new
+            root_file_ids.each do |file_id|
+                all_types.concat(types_per_file[file_id])
+                all_typedefs.concat(typedefs_per_file[file_id])
             end
 
             if !opaques.empty?
@@ -403,27 +433,6 @@ module Typelib
                 resolve_opaques(xml)
             end
 
-            # Extract the "root" type definitions, i.e. the type definitions
-            # that are actually included in the files we are loading
-            # First, find +path+ in the set of files
-            files = required_files.map do |path|
-                if node = (xml / "File[name=\"#{path}\"]").first
-                    node
-                else
-                    warn("#{path} contains no type definition")
-                end
-            end.compact
-            file_ids = files.map { |f| f["id"] }
-
-            all_types  = []
-            all_typedefs = []
-            file_ids.each do |id|
-                all_types.concat((xml / "Struct[file=\"#{id}\"]").to_a)
-                all_types.concat((xml / "Class[file=\"#{id}\"]").to_a)
-                all_types.concat((xml / "Enumeration[file=\"#{id}\"]").to_a)
-                all_types.delete_if { |t| t['incomplete'] == '1' }
-                all_typedefs.concat((xml / "Typedef[file=\"#{id}\"]").to_a)
-            end
 
             # Resolve structs and classes
             all_types.each do |node|
