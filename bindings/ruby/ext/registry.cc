@@ -102,6 +102,27 @@ VALUE registry_remove(VALUE self, VALUE rbtype)
 }
 
 /* call-seq:
+ *   registry.source_id_of(type) => source_or_nil
+ *
+ * Returns the source ID for the given type, if one is set
+ */
+static
+VALUE registry_source_id_of(VALUE self, VALUE rbtype)
+{
+    RbRegistry& rbregistry = rb2cxx::object<RbRegistry>(self);
+    Registry&   registry = *(rbregistry.registry);
+    Type const& type(rb2cxx::object<Type>(rbtype));
+
+    RegistryIterator it = registry.find(type.getName());
+    if (it == registry.end())
+        rb_raise(rb_eArgError, "this registry has no type called %s", type.getName().c_str());
+
+    std::string source = it.getSource();
+    if (source.empty()) return Qnil;
+    return rb_str_new(it.getSource().c_str(), it.getSource().length());
+}
+
+/* call-seq:
  *   registry.reverse_depends(type) => types
  *
  * Returns the array of types that depend on +type+, including +type+ itself
@@ -526,6 +547,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "do_resize", RUBY_METHOD_FUNC(registry_resize), 1);
     rb_define_method(cRegistry, "reverse_depends", RUBY_METHOD_FUNC(registry_reverse_depends), 1);
     rb_define_method(cRegistry, "remove", RUBY_METHOD_FUNC(registry_remove), 1);
+    rb_define_method(cRegistry, "source_id_of", RUBY_METHOD_FUNC(registry_source_id_of), 1);
 
     rb_define_singleton_method(cRegistry, "add_standard_cxx_types", RUBY_METHOD_FUNC(registry_add_standard_cxx_types), 1);
 

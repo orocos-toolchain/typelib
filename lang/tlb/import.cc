@@ -272,7 +272,10 @@ namespace
         }
         else
         {
-            map[name] = TypeNode(type_node, name, file, cat.loader);
+            string type_file = file;
+            try { type_file = getStringAttribute(type_node, "source_id"); }
+            catch(Parsing::MissingAttribute) {}
+            map[name] = TypeNode(type_node, name, type_file, cat.loader);
         }
     }
 

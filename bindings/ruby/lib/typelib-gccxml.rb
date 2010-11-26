@@ -18,6 +18,9 @@ module Typelib
         attr_reader :id_to_name
         # A mapping from the type ID to the corresponding XML node
         attr_reader :id_to_node
+        # A mapping from a node ID to the name of the file that defines it
+        attr_reader :id_to_file
+
         attr_reader :name_to_nodes
         attr_reader :demangled_to_node
 
@@ -271,7 +274,7 @@ module Typelib
                     end
 
                     if resolve_type_id(xml, contained_node["id"])
-                        type_def << "<container name=\"#{emit_type_name(name)}\" of=\"#{emit_type_name(template_args[0])}\" kind=\"#{emit_type_name(type_name)}\"/>"
+                        type_def << "<container name=\"#{emit_type_name(name)}\" of=\"#{emit_type_name(template_args[0])}\" kind=\"#{emit_type_name(type_name)}\" source_id=\"#{id_to_file[id]}\"/>"
                     else return ignore("ignoring #{name} as its element type #{contained_type} is ignored as well")
                     end
                 else
@@ -291,7 +294,7 @@ module Typelib
                         return ignore(xmlnode, "ignoring the empty struct/class #{name}")
                     end
 
-                    type_def << "<compound name=\"#{emit_type_name(name)}\" size=\"#{Integer(xmlnode['size']) / 8}\">"
+                    type_def << "<compound name=\"#{emit_type_name(name)}\" size=\"#{Integer(xmlnode['size']) / 8}\" source_id=\"#{id_to_file[id]}\">"
                     fields.each do |field|
                         if field['access'] == 'private'
                             return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is private")
@@ -326,7 +329,7 @@ module Typelib
                     return ignore(xmlnode, "cannot create the #{full_name} typedef, as it points to #{type_names[xmlnode['type']]} which is ignored")
                 end
 
-                type_def << "<alias name=\"#{emit_type_name(full_name)}\" source=\"#{emit_type_name(pointed_to_type)}\" />"
+                type_def << "<alias name=\"#{emit_type_name(full_name)}\" source=\"#{emit_type_name(pointed_to_type)}\" source_id=\"#{id_to_file[id]}\"/>"
 
                 # And always resolve the typedef as the type it is pointing to
                 name = id_to_name[id] = pointed_to_type
@@ -344,7 +347,7 @@ module Typelib
 
                 name = id_to_name[id] = full_name
 
-                type_def << "<enum name=\"#{emit_type_name(full_name)}\">"
+                type_def << "<enum name=\"#{emit_type_name(full_name)}\" source_id=\"#{id_to_file[id]}\">"
                 (xmlnode / "EnumValue").each do |enum_value|
                     type_def << "  <value symbol=\"#{enum_value["name"]}\" value=\"#{enum_value["init"]}\"/>"
                 end
@@ -388,6 +391,7 @@ module Typelib
             @result = Array.new
 
             @id_to_node = Hash.new
+            @id_to_file = Hash.new
             @name_to_nodes = Hash.new { |h, k| h[k] = Array.new }
             @demangled_to_node = Hash.new
 
@@ -416,11 +420,18 @@ module Typelib
                     typedefs_per_file[child_node['file']] << child_node
                 end
             end
+
             all_types = Array.new
             all_typedefs = Array.new
             root_file_ids.each do |file_id|
                 all_types.concat(types_per_file[file_id])
                 all_typedefs.concat(typedefs_per_file[file_id])
+            end
+            all_types.each do |type_node|
+                id_to_file[type_node["id"].to_s] = id_to_node[type_node['file']]['name']
+            end
+            all_typedefs.each do |type_node|
+                id_to_file[type_node["id"].to_s] = id_to_node[type_node['file']]['name']
             end
 
             if !opaques.empty?

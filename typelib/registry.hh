@@ -282,6 +282,13 @@ namespace Typelib
 
         /** Returns the set of aliases that exist for +type+ */
         std::set<std::string> getAliasesOf(Type const& type) const;
+
+        /** Changes the source ID of a particular type */
+        void setSourceID(Type const& type, std::string const& source_id);
+
+        /** Get from the provided all registry all source IDs from types in
+         * +this+ which have no source ID yet */
+        void copySourceIDs(Registry const& registry);
         
     public:
         enum DumpMode

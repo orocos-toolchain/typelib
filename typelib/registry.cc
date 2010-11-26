@@ -168,6 +168,21 @@ namespace Typelib
 		alias(it->getName(), it.getName(), it.isPersistent(), it.getSource());
 	    }
 	}
+        copySourceIDs(registry);
+    }
+
+    void Registry::copySourceIDs(Registry const& registry)
+    {
+        for (Iterator it = begin(); it != end(); ++it)
+        {
+            RegistryIterator other_it = registry.find(it.getName());
+            if (other_it == registry.end())
+                continue;
+
+            string source_id = other_it.getSource();
+            if (!source_id.empty() && it.getSource().empty())
+                setSourceID(*it, source_id);
+        }
     }
 
     Registry* Registry::minimal(std::string const& name, bool with_aliases) const
@@ -190,6 +205,7 @@ namespace Typelib
             }
         }
 
+        result->copySourceIDs(*this);
         return result.release();
     }
 
@@ -601,6 +617,13 @@ namespace Typelib
                 result.insert(it.getName());
         }
         return result;
+    }
+
+    void Registry::setSourceID(Type const& type, std::string const& source_id)
+    {
+        TypeMap::iterator it = m_global.find(type.getName());
+        if (it != m_global.end())
+            it->second.source_id = source_id;
     }
 }; // namespace Typelib
 
