@@ -608,12 +608,16 @@ module Typelib
                 end
 	    end
 
-            def pretty_print(pp) # :nodoc:
-		super
+            def pretty_print(pp, verbose = false) # :nodoc:
+		super(pp)
 		pp.text ' '
 		pretty_print_common(pp) do |name, offset, type|
 		    pp.text name
-		    pp.text "[#{offset}] <"
+                    if verbose
+                        pp.text "[#{offset}] <"
+                    else
+                        pp.text " <"
+                    end
 		    pp.nest(2) do
                         type.pretty_print(pp)
 		    end
