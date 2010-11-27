@@ -827,6 +827,7 @@ module Typelib
                 super
 		pp.text '{'
                 pp.nest(2) do
+                    keys = self.keys.sort_by(&:last)
 		    pp.breakable
                     pp.seplist(keys) do |keydef|
                         pp.text keydef.join(" = ")
