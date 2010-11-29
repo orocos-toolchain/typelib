@@ -196,7 +196,7 @@ namespace Typelib
          * @return true on success, false if the type was already
          * defined in the registry
          */
-        void        add(Type* type, bool persistent, std::string const& source_id = "");
+        void        add(Type* type, bool persistent, std::string const& source_id);
 
         /** Creates an alias
          * While base can be a derived type, all aliases are considered persistent since
