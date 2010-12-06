@@ -371,7 +371,7 @@ module Typelib
         def resolve_opaques(xml)
             # First do typedefs. Search for the typedefs that are named like our
             # type, if we find one, alias it
-            opaques.each do |opaque_name|
+            opaques.dup.each do |opaque_name|
                 name, context = resolve_namespace_of(xml, opaque_name)
                 name = typelib_to_cxx(name)
                 name_to_nodes[name].find_all { |n| n.name == "Typedef" }.each do |typedef|
