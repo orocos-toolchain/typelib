@@ -64,7 +64,7 @@ IF(RUBY_EXTENSIONS_AVAILABLE)
     endif (DOXYGEN_FOUND)
 ENDIF(RUBY_EXTENSIONS_AVAILABLE)
 
-FIND_PACKAGE(Boost COMPONENTS unit_test_framework system)
+FIND_PACKAGE(Boost COMPONENTS unit_test_framework system filesystem)
 IF (Boost_UNIT_TEST_FRAMEWORK_FOUND)
     MESSAGE(STATUS "boost/test found ... building test suite")
     ADD_SUBDIRECTORY(test)
