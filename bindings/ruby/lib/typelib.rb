@@ -773,11 +773,32 @@ module Typelib
     class ContainerType < IndirectType
         include Enumerable
 
+        attr_reader :element_t
+
+        def initialize(*args)
+            super
+            @element_t = self.class.deference
+        end
+
+        def self.from_ruby(value)
+            if value.class != self && value.respond_to?(:each)
+                result = new
+                for v in value
+                    result.insert(v)
+                end
+                result
+            end
+        end
+
+        def insert(value)
+            do_insert(Typelib.from_ruby(value, element_t))
+        end
+
         # True if this container is empty
         def empty?; length == 0 end
 
         # Appends a new element to this container
-        def <<(value); insert(Typelib.from_ruby(value)) end
+        def <<(value); insert(value) end
 
         # Used by CompoundType#[] to initialize an array from a Ruby enumerable
         def set_values(enumerable) # :nodoc:

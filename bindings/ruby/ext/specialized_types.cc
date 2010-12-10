@@ -451,18 +451,15 @@ static VALUE container_clear(VALUE self)
  *
  * Inserts a new element in the container
  */
-static VALUE container_insert(VALUE self, VALUE obj)
+static VALUE container_do_insert(VALUE self, VALUE obj)
 {
     Value container_v = rb2cxx::object<Value>(self);
+    Value element_v   = rb2cxx::object<Value>(obj);
     Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
+    if (container_t.getIndirection() != element_v.getType())
+        rb_raise(rb_eArgError, "wrong type %s for new element, expected %s", element_v.getType().getName().c_str(), container_t.getIndirection().getName().c_str());
 
-    Type const& element_t = container_t.getIndirection();
-    vector<int8_t> buffer(element_t.getSize());
-    Value v(&buffer[0], element_t);
-    Typelib::init(v);
-    typelib_from_ruby(v, obj);
-
-    container_t.insert(container_v.getData(), v);
+    container_t.insert(container_v.getData(), element_v);
     return self;
 }
 
@@ -624,7 +621,7 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_method(cContainer, "length",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "size",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "clear",    RUBY_METHOD_FUNC(container_clear), 0);
-    rb_define_method(cContainer, "insert",    RUBY_METHOD_FUNC(container_insert), 1);
+    rb_define_method(cContainer, "do_insert",    RUBY_METHOD_FUNC(container_do_insert), 1);
     rb_define_method(cContainer, "each",      RUBY_METHOD_FUNC(container_each), 0);
     rb_define_method(cContainer, "erase",     RUBY_METHOD_FUNC(container_erase), 1);
     rb_define_method(cContainer, "delete_if", RUBY_METHOD_FUNC(container_delete_if), 0);
