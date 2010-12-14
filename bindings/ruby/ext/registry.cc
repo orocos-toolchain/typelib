@@ -461,6 +461,18 @@ static VALUE registry_aliases_of(VALUE self, VALUE type_)
 
 /*
  * call-seq:
+ *  registry.size => size
+ *
+ * Returns the number of types registered in +self+
+ */
+static VALUE registry_size(VALUE self)
+{
+    Registry& registry = rb2cxx::object<Registry>(self);
+    return INT2NUM(registry.size());
+}
+
+/*
+ * call-seq:
  *  Registry.available_containers => container_names
  *
  * Returns the set of known container names
@@ -531,6 +543,7 @@ void typelib_ruby::Typelib_init_registry()
     cRegistry = rb_define_class_under(mTypelib, "Registry", rb_cObject);
     eNotFound = rb_define_class_under(mTypelib, "NotFound", rb_eRuntimeError);
     rb_define_alloc_func(cRegistry, registry_alloc);
+    rb_define_method(cRegistry, "size", RUBY_METHOD_FUNC(registry_size), 0);
     rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_do_get), 1);
     rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_do_build), 1);
     rb_define_method(cRegistry, "each_type", RUBY_METHOD_FUNC(registry_each_type), 2);
