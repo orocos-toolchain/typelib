@@ -140,12 +140,14 @@ namespace Typelib
 
     void Registry::merge(Registry const& registry)
     {
+        Typelib::Type::RecursionStack stack;
+
 	// Merge non aliased types. Aliases are never used by type model classes
 	// so we can safely call merge()
 	for(Iterator it = registry.begin(); it != registry.end(); ++it)
 	{
 	    if (it.isAlias()) continue;
-	    it->merge(*this);
+	    it->merge(*this, stack);
 	}
 
 	for (Iterator it = registry.begin(); it != registry.end(); ++it)

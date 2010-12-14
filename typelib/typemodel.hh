@@ -50,7 +50,6 @@ namespace Typelib
         static bool isValidIdentifier(const std::string& identifier);
 
     protected:
-        typedef std::map<Type const*, Type const*> RecursionStack;
 
         // Creates a basic type from \c name, \c size and \c category
         Type(const std::string& name, size_t size, Category category);
@@ -113,6 +112,9 @@ namespace Typelib
          * already present in +registry+.
 	 */
 	Type const& merge(Registry& registry) const;
+
+        /** Foreign => local mapping for merge() and isSame() */
+        typedef std::map<Type const*, Type const*> RecursionStack;
 
         /** Base merge method. The default implementation should be fine for
          * most types.

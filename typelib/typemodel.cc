@@ -73,9 +73,13 @@ namespace Typelib
         }
 
         RecursionStack::iterator new_it = stack.insert( make_pair(&left, &right) ).first;
-        bool result = left.do_compare(right, equality, stack);
-        stack.erase(new_it);
-        return result;
+        try {
+            return left.do_compare(right, equality, stack);
+        }
+        catch(...) {
+            stack.erase(new_it);
+            throw;
+        }
     }
     bool Type::do_compare(Type const& other, bool equality, RecursionStack& stack) const
     { return (getSize() == other.getSize() && getCategory() == other.getCategory()); }
@@ -108,6 +112,7 @@ namespace Typelib
             return *old_type;
 
 	Type* new_type = do_merge(registry, stack);
+        stack.insert(make_pair(this, new_type));
 	registry.add(new_type);
 	return *new_type;
     }
@@ -273,10 +278,15 @@ namespace Typelib
 	auto_ptr<Compound> result(new Compound(getName()));
         RecursionStack::iterator it = stack.insert(make_pair(this, result.get())).first;
 
-	for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
-	    result->addField(it->getName(), it->getType().merge(registry, stack), it->getOffset());
+        try  {
+            for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
+                result->addField(it->getName(), it->getType().merge(registry, stack), it->getOffset());
+        }
+        catch(...) {
+            stack.erase(it);
+            throw;
+        }
 
-        stack.erase(it);
         result->setSize(getSize());
 	return result.release();
     }
