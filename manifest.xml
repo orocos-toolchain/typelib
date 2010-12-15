@@ -24,5 +24,7 @@
   <rosdep name="antlr" />
   <rosdep name="doxygen" type="doc" />
   <rosdep name="rdoc" type="doc" />
+
+  <tags>stable</tags>
 </package>
 
