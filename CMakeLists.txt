@@ -65,6 +65,12 @@ IF(RUBY_EXTENSIONS_AVAILABLE)
 ENDIF(RUBY_EXTENSIONS_AVAILABLE)
 
 FIND_PACKAGE(Boost COMPONENTS unit_test_framework system filesystem)
+IF(NOT Boost_FOUND)
+    MESSAGE(FATAL_ERROR "please install boost or check BOOST_ROOT setting -- before building typelib")
+ELSE(NOT Boost_FOUND)
+	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+ENDIF()
+
 IF (Boost_UNIT_TEST_FRAMEWORK_FOUND)
     MESSAGE(STATUS "boost/test found ... building test suite")
     ADD_SUBDIRECTORY(test)
