@@ -10,9 +10,12 @@ static bool is_string_handler(Registry const& registry, Type const& type, bool k
     if (type.getCategory() != Type::Array && type.getCategory() != Type::Pointer)
         return false;
 
-    Type const& char_type(*registry.get("/char"));
+    Type const* char_type(registry.get("/char"));
+    if (!char_type)
+        return false;
+
     Type const& data_type(static_cast<Indirect const&>(type).getIndirection());
-    if (data_type.getName() != char_type.getName())
+    if (data_type.getName() != char_type->getName())
         return false;
 
     if (known_size && type.getCategory() == Type::Pointer)
