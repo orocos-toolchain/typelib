@@ -1131,6 +1131,10 @@ module Typelib
             @typelib_object
         end
 
+        def pretty_print(pp)
+            pp @typelib_object
+        end
+
         def method_missing(m, *args, &block)
             if @typelib_object.respond_to?(m)
                 return @typelib_object.send(m, *args, &block)
