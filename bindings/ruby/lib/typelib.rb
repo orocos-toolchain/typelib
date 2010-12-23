@@ -1135,7 +1135,7 @@ module Typelib
             if @typelib_object.respond_to?(m)
                 return @typelib_object.send(m, *args, &block)
             end
-            return @ruby_object.respond_to?(m)
+            super
         end
     end
 
