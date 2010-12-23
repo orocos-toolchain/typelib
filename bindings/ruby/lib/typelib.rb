@@ -64,7 +64,7 @@ module Typelib
     @load_type_plugins = true
     @value_specializations = Hash.new
     @type_specializations = Hash.new
-    @convertions    = Hash.new
+    @convertions    = Hash.new { |h, k| h[k] = Array.new }
 
     # Adds methods to the type objects.
     #
@@ -98,9 +98,10 @@ module Typelib
     #
     # See Typelib.specialize to add instance methods to the values of a given
     # Typelib type
-    def self.specialize_model(name, &block)
+    def self.specialize_model(name, options = Hash.new, &block)
+        options = Kernel.validate_options options, :if => lambda { true }
         type_specializations[name] ||= Array.new
-        type_specializations[name] << Module.new(&block)
+        type_specializations[name] << [options, Module.new(&block)]
     end
 
     class << self
@@ -136,9 +137,10 @@ module Typelib
     #   end
     #
     # will make it possible to add two values of the Vector3 type in Ruby
-    def self.specialize(name, &block)
+    def self.specialize(name, options = Hash.new, &block)
+        options = Kernel.validate_options options, :if => lambda { true }
         value_specializations[name] ||= Array.new
-        value_specializations[name] << Module.new(&block)
+        value_specializations[name] << [options, Module.new(&block)]
     end
 
     # Declares how to convert values of the given type to an equivalent Ruby
@@ -180,15 +182,18 @@ module Typelib
     # This behaviour can be turned off on a type-by-type basis by calling
     # convert_to_ruby with 'false' as use_dynamic_wrapper argument, or globally
     # by setting Typelib.use_dynamic_wrappers to false.
-    def self.convert_to_ruby(typename, use_dynamic_wrapper = Typelib.use_dynamic_wrappers, &block)
-        Typelib.specialize_model(typename) do
-            if use_dynamic_wrapper
-                define_method(:to_ruby) do |value|
-                    Typelib::DynamicWrapper(lambda(&block).call(value), value)
+    def self.convert_to_ruby(typename, options = Hash.new, &block)
+        options, specialize_options = Kernel.filter_options options,
+            :dynamic_wrappers => true
+
+        Typelib.specialize(typename, specialize_options) do
+            if options[:dynamic_wrappers]
+                define_method(:to_ruby) do
+                    Typelib::DynamicWrapper(lambda(&block).call(self), self)
                 end
             else
-                define_method(:to_ruby) do |value|
-                    block[value]
+                define_method(:to_ruby) do
+                    block[self]
                 end
             end
         end
@@ -219,8 +224,9 @@ module Typelib
     #     timeval time;
     #   };
     #
-    def self.convert_from_ruby(ruby_class, typename, &block)
-        convertions[[ruby_class, typename]] = lambda(&block)
+    def self.convert_from_ruby(ruby_class, typename, options = Hash.new, &block)
+        options = Kernel.validate_options options, :if => lambda { true }
+        convertions[typename] << [ruby_class, options, lambda(&block)]
     end 
 
     # The namespace separator character used by Typelib
@@ -232,6 +238,11 @@ module Typelib
     #
     # Value objects are wrapped into instances of these classes
     class Type
+        class << self
+            attr_reader :convertions
+        end
+        @convertions = Hash.new
+
         # Creates an instance of Type (or one of its subclasses) that represents
         # +arg+.
         #
@@ -252,10 +263,27 @@ module Typelib
         # Called by Typelib when a subclass is created.
         def self.subclass_initialize
             if mods = Typelib.type_specializations[name]
-                mods.each { |m| extend m }
+                mods.each do |opts, m|
+                    if opts[:if].call(self)
+                        extend m
+                    end
+                end
             end
             if mods = Typelib.value_specializations[name]
-                mods.each { |m| include m }
+                mods.each do |opts, m|
+                    if opts[:if].call(self)
+                        include m
+                    end
+                end
+            end
+
+            @convertions = Hash.new
+            if Typelib.convertions.has_key?(name)
+                Typelib.convertions[name].each do |ruby_class, options, block|
+                    if options[:if].call(self)
+                        self.convertions[ruby_class] = block
+                    end
+                end
             end
             super if defined? super
         end
@@ -1474,8 +1502,8 @@ module Typelib
             return arg
         elsif arg.class < Type && arg.class.casts_to?(expected_type)
             arg.cast(expected_type)
-        elsif converter = convertions[[arg.class, expected_type.name]]
-            converter.call(arg, expected_type)
+        elsif convertion = expected_type.convertions[arg.class]
+            convertion.call(arg, expected_type)
         elsif expected_type.respond_to?(:from_ruby)
             expected_type.from_ruby(arg)
         end
