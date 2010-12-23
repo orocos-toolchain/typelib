@@ -617,9 +617,15 @@ module Typelib
 	    # The list of fields
             attr_reader :fields
 	    # Returns the type of +name+
-            def [](name); @fields.find { |n, t| n == name }.last end
+            def [](name)
+                name = name.to_str
+                @fields.find { |n, t| n == name }.last
+            end
             # True if the given field is defined
-            def has_field?(name); @fields.any? { |n, t| n == name } end
+            def has_field?(name)
+                name = name.to_str
+                @fields.any? { |n, t| n == name }
+            end
 	    # Iterates on all fields
             def each_field # :yield:name, type
 		@fields.each { |field| yield(*field) } 
