@@ -714,12 +714,8 @@ module Typelib
 		    @fields[name] = value
 		end
 	    end
-            field_type = self.class[name]
-            if field_type.respond_to?(:to_ruby)
-                field_type.to_ruby(value)
-            else
-                value
-            end
+
+            Typelib.to_ruby(value)
 	end
 
         def to_ruby # :nodoc:
@@ -735,6 +731,13 @@ module Typelib
     # See the Typelib module documentation for an overview about how types are
     # values are represented.
     class ArrayType < IndirectType
+        attr_reader :element_t
+
+        def initialize(*args)
+            super
+            @element_t = self.class.deference
+        end
+
 	def pretty_print(pp) # :nodoc:
 	    all_fields = enum_for(:each_with_index).to_a
 
@@ -756,6 +759,14 @@ module Typelib
             enumerable.each_with_index do |value, i|
                 self[i] = value
             end
+        end
+
+        def [](index)
+            Typelib.to_ruby(do_get(index))
+        end
+
+        def []=(index, value)
+            do_set(index, Typelib.from_ruby(value, element_t))
         end
 
 	# Returns the pointed-to type (defined for consistency reasons)

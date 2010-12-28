@@ -610,8 +610,8 @@ void typelib_ruby::Typelib_init_specialized_types()
 
     cArray    = rb_define_class_under(mTypelib, "ArrayType", cIndirect);
     rb_define_singleton_method(cArray, "length", RUBY_METHOD_FUNC(array_class_length), 0);
-    rb_define_method(cArray, "[]",      RUBY_METHOD_FUNC(array_get), -1);
-    rb_define_method(cArray, "[]=",     RUBY_METHOD_FUNC(array_set), 2);
+    rb_define_method(cArray, "do_get",  RUBY_METHOD_FUNC(array_get), -1);
+    rb_define_method(cArray, "do_set",  RUBY_METHOD_FUNC(array_set), 2);
     rb_define_method(cArray, "each",    RUBY_METHOD_FUNC(array_each), 0);
     rb_define_method(cArray, "size",    RUBY_METHOD_FUNC(array_size), 0);
 
