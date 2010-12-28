@@ -608,6 +608,7 @@ module Typelib
 
             # Returns the offset, in bytes, of the given field
             def offset_of(fieldname)
+                fieldname = fieldname.to_str
                 get_fields.each do |name, offset, _|
                     return offset if name == fieldname
                 end
