@@ -1529,6 +1529,8 @@ module Typelib
             convertion.call(arg, expected_type)
         elsif expected_type.respond_to?(:from_ruby)
             expected_type.from_ruby(arg)
+        else
+            arg
         end
     end
 
