@@ -571,7 +571,7 @@ struct VectorInputStream : public ValueOps::InputStream
     void read(uint8_t* out_buffer, size_t size)
     {
         if (size + in_index > buffer.size())
-            throw std::runtime_error("error in load(): buffer too small");
+            throw std::runtime_error("error in load(): not enough data as input, expected at least " + lexical_cast<string>(size + in_index) + " bytes but got " + lexical_cast<string>(buffer.size()));
 
         memcpy(&out_buffer[0], &buffer[in_index], size);
         in_index += size;
