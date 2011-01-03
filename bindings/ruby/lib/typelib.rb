@@ -827,12 +827,17 @@ module Typelib
         end
 
         def self.from_ruby(value)
-            if value.class != self && value.respond_to?(:each)
-                result = new
-                for v in value
-                    result.insert(v)
+            if value.class != self
+                if value.respond_to?(:each)
+                    result = new
+                    for v in value
+                        result.insert(v)
+                    end
+                    result
+                else
+                    raise TypeError, "cannot convert #{value} of type #{value.class} to #{name}"
                 end
-                result
+            else value
             end
         end
 
