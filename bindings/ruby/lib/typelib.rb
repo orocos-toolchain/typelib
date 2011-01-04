@@ -554,6 +554,12 @@ module Typelib
             end
         end
 
+        def each_field
+            self.class.each_field do |field_name, _|
+                yield(field_name, self[field_name])
+            end
+        end
+
         # Initializes a new structure value from +arg+
         #
         # +arg+ can either be a value of this type, or a hash. In the latter
