@@ -923,8 +923,13 @@ module Typelib
         end
 
         ENV['TYPELIB_RUBY_PLUGIN_PATH'].split(':').each do |dir|
-            Dir.glob(File.join(dir, '*.rb')) do |file|
-                require file
+            specific_file = File.join(dir, "typelib_plugin.rb")
+            if File.exists?(specific_file)
+                require specific_file
+            else
+                Dir.glob(File.join(dir, '*.rb')) do |file|
+                    require file
+                end
             end
         end
 
