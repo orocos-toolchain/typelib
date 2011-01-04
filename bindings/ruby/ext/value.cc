@@ -411,6 +411,19 @@ VALUE value_to_byte_array(VALUE self)
     return rb_str_new(reinterpret_cast<char*>(&buffer[0]), buffer.size());
 }
 
+/* call-seq:
+ *  obj.marshalling_size => integer
+ *
+ * Returns the size of this value once marshalled by Typelib, i.e. the size of
+ * the byte array returned by #to_byte_array
+ */
+static
+VALUE value_marshalling_size(VALUE self)
+{
+    Value& value = rb2cxx::object<Value>(self);
+    return INT2NUM(Typelib::getDumpSize(value));
+}
+
 VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)
 {
     Value& self = rb2cxx::object<Value>(rbself);
@@ -573,6 +586,7 @@ void typelib_ruby::Typelib_init_values()
     rb_define_singleton_method(cType, "to_csv", RUBY_METHOD_FUNC(type_to_csv), -1);
     rb_define_method(cType, "to_csv", RUBY_METHOD_FUNC(value_to_csv), -1);
     rb_define_method(cType, "to_byte_array", RUBY_METHOD_FUNC(value_to_byte_array), 0);
+    rb_define_method(cType, "marshalling_size", RUBY_METHOD_FUNC(value_marshalling_size), 0);
 
     Typelib_init_specialized_types();
 }
