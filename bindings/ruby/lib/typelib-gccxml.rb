@@ -294,7 +294,7 @@ module Typelib
                     end
                 else
                     # Make sure that we can digest it. Forbidden are: inheritance,
-                    # private members
+                    # non-public members
                     #
                     # TODO: add inheritance support
                     if xmlnode['bases'] && !xmlnode['bases'].empty?
@@ -311,7 +311,7 @@ module Typelib
 
                     type_def << "<compound name=\"#{emit_type_name(name)}\" size=\"#{Integer(xmlnode['size']) / 8}\" source_id=\"#{id_to_file[id]}\">"
                     fields.each do |field|
-                        if field['access'] == 'private'
+                        if field['access'] != 'public'
                             return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is private")
                         elsif field_type_name = resolve_type_id(xml, field['type'])
                             type_def << "  <field name=\"#{field['name']}\" type=\"#{emit_type_name(field_type_name)}\" offset=\"#{Integer(field['offset']) / 8}\" />"
