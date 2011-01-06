@@ -96,9 +96,24 @@ module Typelib
         end
 
         def typelib_to_cxx(name)
-            name = name.gsub('/', '::').
-                gsub('<::', '<').
-                gsub(',', ', ')
+            type_name, template_arguments = GCCXMLLoader.parse_template(name)
+            if !template_arguments.empty?
+                template_arguments = template_arguments.map do |arg_name|
+                    if arg_name =~ /^\d/
+                        arg_name
+                    else
+                        typelib_to_cxx(arg_name)
+                    end
+                end
+                type_name = type_name.gsub('/', '::')
+                name = "#{type_name}<#{template_arguments.join(",")}>"
+            else
+                name = name.gsub('/', '::')
+            end
+
+            name = name.gsub('<::', '<').
+                gsub(',::', ',').
+                gsub(',([^\s])', ', \1')
             if name[0, 2] == "::"
                 name[2..-1]
             else
