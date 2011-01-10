@@ -99,7 +99,7 @@ module Typelib
     # See Typelib.specialize to add instance methods to the values of a given
     # Typelib type
     def self.specialize_model(name, options = Hash.new, &block)
-        options = Kernel.validate_options options, :if => lambda { true }
+        options = Kernel.validate_options options, :if => lambda { |t| true }
         type_specializations[name] ||= Array.new
         type_specializations[name] << [options, Module.new(&block)]
     end
@@ -138,7 +138,7 @@ module Typelib
     #
     # will make it possible to add two values of the Vector3 type in Ruby
     def self.specialize(name, options = Hash.new, &block)
-        options = Kernel.validate_options options, :if => lambda { true }
+        options = Kernel.validate_options options, :if => lambda { |t| true }
         value_specializations[name] ||= Array.new
         value_specializations[name] << [options, Module.new(&block)]
     end
@@ -225,7 +225,7 @@ module Typelib
     #   };
     #
     def self.convert_from_ruby(ruby_class, typename, options = Hash.new, &block)
-        options = Kernel.validate_options options, :if => lambda { true }
+        options = Kernel.validate_options options, :if => lambda { |t| true }
         convertions[typename] << [ruby_class, options, lambda(&block)]
     end 
 
