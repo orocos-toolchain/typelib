@@ -11,23 +11,29 @@ class TC_Value < Test::Unit::TestCase
 	GC.start
     end
 
+    class CXXRegistry < Typelib::Registry
+        def initialize
+            super
+            Typelib::Registry.add_standard_cxx_types(self)
+        end
+    end
+
     # Not in setup() since we want to make sure
     # that the registry is not destroyed by the GC
     def make_registry
         registry = Registry.new
         testfile = File.join(SRCDIR, "test_cimport.1")
-        assert_raises(RuntimeError) { registry.import( testfile  ) }
+        assert_raises(RuntimeError) { registry.import( testfile ) }
         registry.import( testfile, "c" )
-
         registry
     end
 
     def test_to_ruby
-	int = Registry.new.get("/int").new
+	int = CXXRegistry.new.get("/int").new
 	int.zero!
 	assert_equal(0, int.to_ruby)
 
-	str = Registry.new.build("/char[20]").new
+	str = CXXRegistry.new.build("/char[20]").new
         20.times do |i|
             str[i] = ?a + i
         end
@@ -35,7 +41,7 @@ class TC_Value < Test::Unit::TestCase
     end
 
     def test_value_init
-        type = Registry.new.build("/int")
+        type = CXXRegistry.new.build("/int")
 	value = type.new
 
 	assert(ptr = value.instance_variable_get(:@ptr))
@@ -44,14 +50,14 @@ class TC_Value < Test::Unit::TestCase
 
     def test_wrap_argument_check
         registry = make_registry
-        type = Registry.new.build("/int")
+        type = CXXRegistry.new.build("/int")
 
         assert_raises(ArgumentError) { type.wrap(nil) }
         assert_raises(ArgumentError) { type.wrap(10) }
     end
 
     def test_value_equality
-        type = Registry.new.build("/int")
+        type = CXXRegistry.new.build("/int")
 	v1 = type.new.zero!
 	v2 = type.new.zero!
 	assert_equal(0, v1)
@@ -62,7 +68,7 @@ class TC_Value < Test::Unit::TestCase
 	# compounds are equal, regardless of padding bytes. So we prepare a
 	# pattern which will be used as "blank" memory and then fill the fields
         registry = make_registry
-        a_type    = registry.get("/struct A")
+        a_type    = registry.get("/A")
 	a_pattern = (1..a_type.size).to_a.pack("c*")
 	a1 = a_type.wrap a_pattern
 	a2 = a_type.wrap a_pattern.reverse
@@ -98,7 +104,7 @@ class TC_Value < Test::Unit::TestCase
 
     def test_byte_array
 	as_string = [5].pack('S')
-	long_t = Registry.new.build("/short")
+	long_t = CXXRegistry.new.build("/short")
 
 	assert_raises(ArgumentError) { long_t.wrap "" }
 	rb_value = long_t.wrap as_string
@@ -114,14 +120,14 @@ class TC_Value < Test::Unit::TestCase
     end
 
     def test_pointer
-        type = Registry.new.build("/int*")
+        type = CXXRegistry.new.build("/int*")
 	value = type.new
 	value.zero!
         assert_raises(ArgumentError) { value.deference }
 	assert(value.null?)
 	assert_equal(nil, value.to_ruby)
 
-        type  = Registry.new.build("/int")
+        type  = CXXRegistry.new.build("/int")
         value = type.new
         assert_equal(value.class, type)
         ptr   = value.to_ptr
@@ -129,13 +135,13 @@ class TC_Value < Test::Unit::TestCase
     end
 
     def test_string_handling
-        buffer_t = Registry.new.build("/char[256]")
+        buffer_t = CXXRegistry.new.build("/char[256]")
         buffer = buffer_t.new
 	assert( buffer.string_handler? )
 	assert( buffer.respond_to?(:to_str) )
 	assert( buffer.respond_to?(:from_str) )
 
-	int_value = Registry.new.get("/int").new
+	int_value = CXXRegistry.new.get("/int").new
 	assert( !int_value.respond_to?(:to_str) )
 	assert( !int_value.respond_to?(:from_str) )
         
@@ -146,13 +152,13 @@ class TC_Value < Test::Unit::TestCase
     end
 
     def test_pretty_printing
-        b = make_registry.get("/struct B").new
+        b = make_registry.get("/B").new
         b.zero!
         assert_nothing_raised { pp b }
     end
 
     def test_to_csv
-        klass = make_registry.get("/struct DisplayTest")
+        klass = make_registry.get("/DisplayTest")
         assert_equal("t.fields[0] t.fields[1] t.fields[2] t.fields[3] t.f t.d t.a.a t.a.b t.a.c t.a.d t.mode", klass.to_csv('t'));
         assert_equal(".fields[0] .fields[1] .fields[2] .fields[3] .f .d .a.a .a.b .a.c .a.d .mode", klass.to_csv);
         assert_equal(".fields[0],.fields[1],.fields[2],.fields[3],.f,.d,.a.a,.a.b,.a.c,.a.d,.mode", klass.to_csv('', ','));
@@ -175,20 +181,20 @@ class TC_Value < Test::Unit::TestCase
         assert_in_delta(2.2, Float(space_sep[5]), 0.00001)
         space_sep[4] = "1.1"
         space_sep[5] = "2.2"
-        assert_equal("0 1 2 3 1.1 2.2 10 20 b 42 OUTPUT", space_sep.join(" "))
+        assert_equal("0 1 2 3 1.1 2.2 10 20 98 42 OUTPUT", space_sep.join(" "))
 
         comma_sep = value.to_csv(",").split(",")
         assert_in_delta(1.1, Float(space_sep[4]), 0.00001)
         assert_in_delta(2.2, Float(space_sep[5]), 0.00001)
         comma_sep[4] = "1.1"
         comma_sep[5] = "2.2"
-        assert_equal("0,1,2,3,1.1,2.2,10,20,b,42,OUTPUT", comma_sep.join(","))
+        assert_equal("0,1,2,3,1.1,2.2,10,20,98,42,OUTPUT", comma_sep.join(","))
     end
 	
 
     def test_is_a
         registry = make_registry
-        a = registry.get("/struct A").new
+        a = registry.get("/A").new
 	assert( a.is_a?("/A") )
 	assert( a.is_a?(/A$/) )
 
@@ -198,7 +204,7 @@ class TC_Value < Test::Unit::TestCase
 
     def test_dup
         registry = make_registry
-        a = registry.get("/struct A").new
+        a = registry.get("/A").new
 	a.a = 20
 	b = a.dup
 
@@ -212,7 +218,7 @@ class TC_Value < Test::Unit::TestCase
 
     def test_clone
         registry = make_registry
-        a = registry.get("/struct A").new
+        a = registry.get("/A").new
 	a.a = 20
 	b = a.clone
 
@@ -226,7 +232,7 @@ class TC_Value < Test::Unit::TestCase
 
 
     def test_to_s
-	int_value = Registry.new.get("/int").new
+	int_value = CXXRegistry.new.get("/int").new
 	int_value.zero!
 	assert_equal("0", int_value.to_s)
     end
@@ -235,8 +241,8 @@ class TC_Value < Test::Unit::TestCase
         r0 = make_registry
         r1 = make_registry
 
-        type0 = r0.get "/struct B"
-        type1 = r1.get "/struct B"
+        type0 = r0.get "/B"
+        type1 = r1.get "/B"
 
         v0 = type0.new
         v1 = type1.new
