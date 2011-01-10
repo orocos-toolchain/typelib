@@ -27,7 +27,7 @@ class TC_Functions < Test::Unit::TestCase
 
     def test_void_return_type
         wrapper = lib.find('test_ptr_argument_changes').
-	    returns("void").returns('struct B*')
+	    returns("void").returns('B*')
         b = wrapper.call
         assert(check_B_c_value(b))
     end
@@ -63,9 +63,9 @@ class TC_Functions < Test::Unit::TestCase
 
     def test_pointer_argument
 	wrapper = lib.find('test_pointer_argument').
-	    with_arguments("struct A*")
+	    with_arguments("A*")
 
-	a = registry.get("struct A").new
+	a = registry.get("A").new
 	a.a = 10
 	a.b = 20
 	a.c = 30
@@ -77,7 +77,7 @@ class TC_Functions < Test::Unit::TestCase
 	assert_nothing_raised { wrapper[a] }
 
         # Check that pointers are properly typechecked
-        b = registry.get("struct B").new
+        b = registry.get("B").new
         assert_raises(TypeError) { wrapper[b] }
     end
 
@@ -89,7 +89,7 @@ class TC_Functions < Test::Unit::TestCase
 
     def test_returns_pointer
 	setter = lib.find('test_returns_pointer').
-	    returns("struct A*")
+	    returns("A*")
 
 	a = setter.call.deference
 	assert_equal(10, a.a)
@@ -114,7 +114,7 @@ class TC_Functions < Test::Unit::TestCase
         assert_equal(42, wrapper.call)
 	
 	wrapper = lib.find('test_ptr_argument_changes').
-	    returns(nil).returns('struct B*')
+	    returns(nil).returns('B*')
 	b = wrapper.call
 	assert(check_B_c_value(b))
 	
@@ -155,12 +155,12 @@ class TC_Functions < Test::Unit::TestCase
         assert_equal(5, wrapper[10, :BOTH])
 
 	wrapper = lib.find('test_ptr_argument_changes').
-	    returns(nil).returns('struct B*')
+	    returns(nil).returns('B*')
 	b = wrapper.call
 	assert(check_B_c_value(b))
 
         wrapper = lib.find('test_ptr_argument_changes').
-	    modifies('struct B*')
+	    modifies('B*')
         b.a.a = 250;
         new_b = wrapper[b]
         # b and new_b are supposed to be the same objects
@@ -196,7 +196,7 @@ class TC_Functions < Test::Unit::TestCase
 	end
         assert_nothing_raised do 
 	    lib.find('test_ptr_argument_changes').
-		returns(nil).with_arguments('struct B*')
+		returns(nil).with_arguments('B*')
 	end
         GC.start
 
@@ -207,7 +207,7 @@ class TC_Functions < Test::Unit::TestCase
         assert_raises(ArgumentError) do 
 	    lib.find('test_simple_function_findping').
 		returns("int").
-		with_arguments("struct A")
+		with_arguments("A")
 	end
         assert_raises(ArgumentError) do 
 	    lib.find('test_simple_function_findping').

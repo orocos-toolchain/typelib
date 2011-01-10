@@ -37,7 +37,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     def test_compound_def
         # First, check compound Type objects
         registry = make_registry
-        a_type = registry.get("/struct A")
+        a_type = registry.get("/A")
         assert(a_type.respond_to?(:b))
         assert_same(registry.get("/int"), a_type.b)
 
@@ -45,7 +45,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         a = a_type.new
         check_respond_to_fields(a)
 
-	b = make_registry.get("/struct B").new
+	b = make_registry.get("/B").new
         assert(b.respond_to?(:h))
         assert(b.respond_to?(:h=))
         assert(b.h.kind_of?(Typelib::ArrayType))
@@ -55,7 +55,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     end
 
     def test_compound_init
-	a_type = make_registry.get('/struct A')
+	a_type = make_registry.get('/A')
 
         # Check initialization
         a = a_type.new :b => 20, :a => 10, :c => 30, :d => 40
@@ -69,7 +69,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     end
 
     def test_compound_get
-        a = make_registry.get("/struct A").new
+        a = make_registry.get("/A").new
         GC.start
         a = set_struct_A_value(a)
         assert_equal(10, a.a)
@@ -77,7 +77,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal(30, a.c)
         assert_equal(40, a.d)
 
-        a = make_registry.get("/struct A").new
+        a = make_registry.get("/A").new
         GC.start
         a = set_struct_A_value(a)
         assert_equal(10, a.a)
@@ -87,7 +87,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     end
 
     def test_compound_set
-        a = make_registry.get("/struct A").new
+        a = make_registry.get("/A").new
         GC.start
         a.a = 10;
         a.b = 20;
@@ -101,7 +101,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     end
 
     def test_compound_recursive
-        b = make_registry.get("/struct B").new
+        b = make_registry.get("/B").new
         GC.start
         assert(b.respond_to?(:a))
         check_respond_to_fields(b.a)
@@ -124,7 +124,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     end
 
     def test_compound_complex_field_assignment
-        b0 = make_registry.get("/struct B").new
+        b0 = make_registry.get("/B").new
         array = make_registry.get("/float[3]").new
         3.times do |i|
             array[i] = i
@@ -133,12 +133,12 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 
         assert_equal [0, 1, 2], b0.f.to_a
 
-        a = make_registry.get("/struct A").new
+        a = make_registry.get("/A").new
         b0.a = a
     end
 
     def test_array_def
-        b = make_registry.get("/struct B").new
+        b = make_registry.get("/B").new
 
 	assert_equal(100, b.c.class.length)
         assert_equal('/float[100]', b.c.class.name)
@@ -159,7 +159,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     end
 
     def test_array_set
-        b = make_registry.get("/struct B").new
+        b = make_registry.get("/B").new
         (0..(b.c.size - 1)).each do |i|
             b.c[i] = Float(i)/10.0
         end
@@ -167,7 +167,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     end
 
     def test_array_get
-        b = make_registry.get("/struct B").new
+        b = make_registry.get("/B").new
         set_B_c_value(b)
         (0..(b.c.size - 1)).each do |i|
 	    assert_in_delta(Float(i) / 10.0, b.c[i], 0.01)
@@ -193,7 +193,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 
     def test_array_each
 	registry = make_registry
-        b = registry.get("/struct B").new
+        b = registry.get("/B").new
         set_B_c_value(b)
 	
 	# Test arrays of arrays
@@ -211,7 +211,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 
 	## Test arrays of Type types
 	b.h.each do |el|
-	    assert_kind_of(registry.get('struct A'), el)
+	    assert_kind_of(registry.get('A'), el)
 	end
     end
 

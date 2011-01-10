@@ -116,7 +116,7 @@ class TC_MemoryManagement < Test::Unit::TestCase
 
     def test_array_handling
 	registry = make_registry
-	type = registry.build("/struct B[100]")
+	type = registry.build("/B[100]")
 
 	assert_finalization do
 	    assert_finalization do
@@ -152,7 +152,7 @@ class TC_MemoryManagement < Test::Unit::TestCase
 
     def test_memory_handling
 	registry = make_registry
-	type   = registry.build("/struct B")
+	type   = registry.build("/B")
 	struct = type.new
 
 	test = type.wrap(struct.instance_variable_get(:@ptr))
@@ -163,7 +163,7 @@ class TC_MemoryManagement < Test::Unit::TestCase
 
     def test_structure_handling
 	registry = make_registry
-	type = registry.build("/struct B")
+	type = registry.build("/B")
 
 	assert_finalization do
 	    other_el = nil
@@ -201,7 +201,7 @@ class TC_MemoryManagement < Test::Unit::TestCase
 
     def test_to_ptr
 	registry = make_registry
-	type = registry.build("/struct B")
+	type = registry.build("/B")
 
 	assert_finalization do
 	    assert_finalization do

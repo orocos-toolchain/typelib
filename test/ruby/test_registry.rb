@@ -3,8 +3,9 @@ require 'set'
 
 class TC_Registry < Test::Unit::TestCase
     Registry = Typelib::Registry
+    CXXRegistry = Typelib::CXXRegistry
     def test_aliasing
-	registry = Registry.new
+	registry = CXXRegistry.new
 	registry.alias "/my_own_and_only_int", "/int"
         current_aliases = registry.aliases_of(registry.get("int"))
 	assert_equal(registry.get("my_own_and_only_int"), registry.get("int"))
@@ -20,13 +21,13 @@ class TC_Registry < Test::Unit::TestCase
     end
 
     def test_import_fails_if_files_does_not_exist
-        assert_raises(RuntimeError) { Registry.new.import("bla.c") }
+        assert_raises(ArgumentError) { Registry.import("bla.c") }
     end
 
     def test_import_raises_if_import_has_errors
         registry = Registry.new
         testfile = File.join(SRCDIR, "test_cimport.h")
-        assert_raises(RuntimeError) { registry.import(testfile) }
+        assert_raises(ArgumentError) { registry.import(testfile) }
     end
 
     def test_import_include_option
@@ -38,21 +39,14 @@ class TC_Registry < Test::Unit::TestCase
     def test_import_raw_option
         registry = Registry.new
         testfile = File.join(SRCDIR, "test_cimport.h")
-        registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
+        registry.import(testfile, nil, :rawflags => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
     end
 
     def test_import_merge
         registry = Registry.new
         testfile = File.join(SRCDIR, "test_cimport.h")
-        registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
-        registry.import(testfile, nil, :merge => true, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
-    end
-
-    def test_import_fails_if_merge_is_required_but_not_present
-        registry = Registry.new
-        testfile = File.join(SRCDIR, "test_cimport.h")
-	registry.import(testfile, nil, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
-	assert_raises(RuntimeError) { registry.import(testfile, nil, :merge => false, :rawflag => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ]) }
+        registry.import(testfile, nil, :rawflags => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
+        registry.import(testfile, nil, :merge => true, :rawflags => [ "-I#{File.join(SRCDIR, '..')}", "-DGOOD" ])
     end
 
     def make_registry
@@ -88,11 +82,10 @@ class TC_Registry < Test::Unit::TestCase
 	values = reg.each.to_a
 	assert_not_equal(0, values.size)
 	assert(values.include?(reg.get("/int")))
-	assert(values.include?(reg.get("/struct EContainer")))
+	assert(values.include?(reg.get("/EContainer")))
 
 	values = reg.each(:with_aliases => true).to_a
 	assert_not_equal(0, values.size)
-	assert(values.include?(["/struct EContainer", reg.get("/struct EContainer")]))
 	assert(values.include?(["/EContainer", reg.get("/EContainer")]))
 
 	values = reg.each('/NS1').to_a

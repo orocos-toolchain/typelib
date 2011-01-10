@@ -26,7 +26,7 @@ class TC_Type < Test::Unit::TestCase
         # Check that == returns false when the two objects aren't of the same class
         # (for instance type == nil shall return false)
 	type = nil
-        type = Registry.new.get("/int32_t")
+        type = CXXRegistry.new.get("/int32_t")
         assert_equal("/int32_t", type.name)
         assert_nothing_raised { type == nil }
         assert(type != nil)
@@ -64,7 +64,7 @@ class TC_Type < Test::Unit::TestCase
     end
 
     def test_pointer
-        type = Registry.new.build("/int*")
+        type = CXXRegistry.new.build("/int*")
         assert_not_equal(type, type.deference)
         assert_not_equal(type, type.to_ptr)
         assert_not_equal(type.to_ptr, type.deference)
