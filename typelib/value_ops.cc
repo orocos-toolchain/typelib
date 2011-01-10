@@ -250,6 +250,12 @@ void Typelib::copy(Value dst, Value src)
 
 void Typelib::copy(void* dst, void* src, Type const& type)
 {
+    if (dst == src)
+    {
+        // same object, nothing to do
+        return;
+    }
+
     uint8_t* out_buffer = reinterpret_cast<uint8_t*>(dst);
     uint8_t* in_buffer  = reinterpret_cast<uint8_t*>(src);
     MemoryLayout ops = layout_of(type);
