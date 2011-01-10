@@ -150,7 +150,7 @@ module Typelib
         def resolve_namespace_of(xml, name)
             context = nil
             while name =~ /\/(\w+)\/(.*)/
-                ns   = $1
+                ns   = "/#{$1}"
                 name = "/#{$2}"
                 candidates = name_to_nodes[ns].find_all { |n| n.name == "Namespace" }
                 if !context
@@ -274,14 +274,14 @@ module Typelib
                     # This is internally known to typelib
                 elsif Typelib::Registry.available_containers.include?(type_name)
                     # This is known to Typelib as a container
-                    contained_type = typelib_to_cxx(template_args[0])
+                    contained_type = template_args[0]
                     contained_node = demangled_to_node[contained_type]
                     if !contained_node
                         contained_node = name_to_nodes[contained_type].first
                     end
                     if !contained_node
                         contained_basename, contained_context = resolve_namespace_of(xml, template_args[0])
-                        contained_node = name_to_nodes[typelib_to_cxx(contained_basename)].
+                        contained_node = name_to_nodes[contained_basename].
                             find { |node| node['context'].to_s == contained_context }
                     end
                     if !contained_node
@@ -388,7 +388,6 @@ module Typelib
             # type, if we find one, alias it
             opaques.dup.each do |opaque_name|
                 name, context = resolve_namespace_of(xml, opaque_name)
-                name = typelib_to_cxx(name)
                 name_to_nodes[name].find_all { |n| n.name == "Typedef" }.each do |typedef|
                     next if context && typedef["context"].to_s != context
                     type_node = node_from_id(typedef["type"].to_s)
@@ -419,10 +418,10 @@ module Typelib
             root.children.each do |child_node|
                 id_to_node[child_node["id"].to_s] = child_node
                 if (child_node_name = child_node['name'])
-                    name_to_nodes[child_node_name] << child_node
+                    name_to_nodes[cxx_to_typelib(child_node_name)] << child_node
                 end
                 if (child_node_name = child_node['demangled'])
-                    demangled_to_node[child_node_name] = child_node
+                    demangled_to_node[cxx_to_typelib(child_node_name)] = child_node
                 end
 
                 if child_node.name == "File"
