@@ -344,10 +344,16 @@ module Typelib
                     return ignore(xmlnode, "cannot create the #{full_name} typedef, as it points to #{type_names[xmlnode['type']]} which is ignored")
                 end
 
-                type_def << "<alias name=\"#{emit_type_name(full_name)}\" source=\"#{emit_type_name(pointed_to_type)}\" source_id=\"#{id_to_file[id]}\"/>"
+                full_name  = emit_type_name(full_name)
+                pointed_to = emit_type_name(pointed_to_type)
+                if full_name != pointed_to
+                    type_def << "<alias name=\"#{emit_type_name(full_name)}\" source=\"#{emit_type_name(pointed_to_type)}\" source_id=\"#{id_to_file[id]}\"/>"
 
-                # And always resolve the typedef as the type it is pointing to
-                name = id_to_name[id] = pointed_to_type
+                    # And always resolve the typedef as the type it is pointing to
+                    name = id_to_name[id] = pointed_to_type
+                else
+                    name = full_name
+                end
 
             elsif kind == "Enumeration"
                 if !(namespace = resolve_context(xml, xmlnode['context']))
