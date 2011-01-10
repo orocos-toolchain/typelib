@@ -303,7 +303,7 @@ module Typelib
 
                     fields = (xmlnode['members'] || "").split(" ").
                         map { |member_id| node_from_id(member_id) }.
-                        find_all { |member_node| member_node.name == "Field" }
+                        compact.find_all { |member_node| member_node.name == "Field" }
 
                     if fields.empty?
                         return ignore(xmlnode, "ignoring the empty struct/class #{name}")
@@ -401,6 +401,8 @@ module Typelib
             end
         end
 
+        IGNORED_NODES = %w{Method OperatorMethod Destructor Constructor}.to_set
+
         def load(required_files, xml)
             @result = Array.new
 
@@ -416,6 +418,8 @@ module Typelib
             typedefs_per_file = Hash.new { |h, k| h[k] = Array.new }
             root_file_ids = Array.new
             root.children.each do |child_node|
+                next if IGNORED_NODES.include?(child_node.name)
+
                 id_to_node[child_node["id"].to_s] = child_node
                 if (child_node_name = child_node['name'])
                     name_to_nodes[cxx_to_typelib(child_node_name)] << child_node
