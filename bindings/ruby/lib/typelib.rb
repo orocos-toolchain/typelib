@@ -530,6 +530,7 @@ module Typelib
         def initialize(ptr, *init)
 	    # A hash in which we cache Type objects for each of the structure fields
 	    @fields = Hash.new
+            @field_types = self.class.field_types
 
             super(ptr)
             return if init.empty?
@@ -597,6 +598,7 @@ module Typelib
 	    # the object, and a getter in the singleton class 
 	    # which returns the field type
             def subclass_initialize
+                @field_types = Hash.new
                 @fields = get_fields.map! do |name, offset, type|
                     if !method_defined?(name)
 			define_method(name) { self[name] }
@@ -606,6 +608,7 @@ module Typelib
                         singleton_class.send(:define_method, name) { || type }
                     end
 
+                    field_types[name] = type
                     [name, type]
                 end
 
@@ -623,6 +626,8 @@ module Typelib
 
 	    # The list of fields
             attr_reader :fields
+            # A name => type map of the types of each fiel
+            attr_reader :field_types
 	    # Returns the type of +name+
             def [](name)
                 name = name.to_str
@@ -722,7 +727,7 @@ module Typelib
 		end
 	    end
 
-            Typelib.to_ruby(value)
+            Typelib.to_ruby(value, @field_types[name])
 	end
 
         def to_ruby # :nodoc:
@@ -769,7 +774,7 @@ module Typelib
         end
 
         def [](index)
-            Typelib.to_ruby(do_get(index))
+                Typelib.to_ruby(do_get(index), element_t)
         end
 
         def []=(index, value)
@@ -1517,11 +1522,11 @@ module Typelib
 
     # Generic method that converts a Typelib value into the corresponding Ruby
     # value.
-    def self.to_ruby(value)
+    def self.to_ruby(value, original_type = nil)
         if value.respond_to?(:to_ruby)
             value.to_ruby
-        elsif value.class.respond_to?(:to_ruby)
-            value.class.to_ruby(value)
+        elsif (original_type || value.class).respond_to?(:to_ruby)
+            original_type.to_ruby(value)
         else
             value
         end
