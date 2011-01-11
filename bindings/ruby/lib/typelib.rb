@@ -53,9 +53,13 @@ module Typelib
         # A type name to module mapping of the specializations defined by
         # Typelib.specialize_model
         attr_reader :type_specializations
-        # A [ruby class, type name] to block mapping of the custom convertions
+        # A [ruby class, type name] to [options, block] mapping of the custom convertions
         # defined by Typelib.convert_from_ruby
-        attr_reader :convertions
+        attr_reader :convertions_from_ruby
+        # A type name to [options, ruby_class, block] mapping of the custom convertions
+        # defined by Typelib.convert_to_ruby. The ruby class might be nil if
+        # it has not been specified
+        attr_reader :convertions_to_ruby
 	# If true (the default), typelib will load its type plugins. Otherwise,
         # it will not
         attr_predicate :load_type_plugins, true
@@ -64,37 +68,14 @@ module Typelib
     @load_type_plugins = true
     @value_specializations = Hash.new
     @type_specializations = Hash.new
-    @convertions    = Hash.new { |h, k| h[k] = Array.new }
+    @convertions_from_ruby = Hash.new { |h, k| h[k] = Array.new }
+    @convertions_to_ruby = Hash.new { |h, k| h[k] = Array.new }
 
     # Adds methods to the type objects.
     #
     # The objects returned by registry.get(type_name) are themselves classes.
     # This method allows to define singleton methods, i.e. methods that will be
     # available on the type objects returned by Registry#get
-    #
-    # It can be for instance used to convert a typelib value into the
-    # corresponding Ruby type (if there is one).
-    #
-    # For instance, given a hypothetical timeval type that would be defined (in
-    # C) by
-    #
-    #   struct timeval
-    #   {
-    #       int32_t seconds;
-    #       uint32_t microseconds;
-    #   };
-    #
-    # one could make sure that timeval values get automatically converted to
-    # Ruby's Time with
-    #
-    #   Typelib.specialize_model '/timeval' do
-    #     def to_ruby(value)
-    #       Time.at(value.seconds, value.microseconds)
-    #     end
-    #   end
-    #
-    # NOTE: this specific use of specialize_model is taken care of by
-    # Typelib.convert_to_ruby
     #
     # See Typelib.specialize to add instance methods to the values of a given
     # Typelib type
@@ -111,7 +92,7 @@ module Typelib
         # See Typelib.convert_to_ruby for more information
         attr_accessor :use_dynamic_wrappers
     end
-    @use_dynamic_wrappers = true
+    @use_dynamic_wrappers = false
 
     # Extends instances of a given Typelib type
     #
@@ -161,9 +142,19 @@ module Typelib
     #     Time.at(value.seconds, value.microseconds)
     #   end
     #
-    # The returned value is wrapped using Typelib::DynamicWrapper. What it means
-    # is that the returned value will behave as both the Typelib *and* the
-    # converted value.
+    #
+    # Optionally, for documentation purposes, it is possible to specify in what
+    # type will the Typelib be converted:
+    #
+    #   Typelib.convert_to_ruby '/timeval', Time do |value|
+    #     Time.at(value.seconds, value.microseconds)
+    #   end
+    #
+    # The returned value might be wrapped using Typelib::DynamicWrapper. What it
+    # means is that the returned value will behave as both the Typelib *and*
+    # the converted value. This is turned off by default. It can be turned
+    # globally on by setting Typelib.use_dynamic_wrappers to true, or on a
+    # per-type basis by giving the :dynamic_wrapper => true option
     #
     # For instance, given
     #
@@ -178,25 +169,20 @@ module Typelib
     # and
     #
     #   time.seconds # defined as field of the timeval structure
-    #
-    # This behaviour can be turned off on a type-by-type basis by calling
-    # convert_to_ruby with 'false' as use_dynamic_wrapper argument, or globally
-    # by setting Typelib.use_dynamic_wrappers to false.
-    def self.convert_to_ruby(typename, options = Hash.new, &block)
-        options, specialize_options = Kernel.filter_options options,
-            :dynamic_wrappers => true
-
-        Typelib.specialize(typename, specialize_options) do
-            if options[:dynamic_wrappers]
-                define_method(:to_ruby) do
-                    Typelib::DynamicWrapper(lambda(&block).call(self), self)
-                end
-            else
-                define_method(:to_ruby) do
-                    block[self]
-                end
-            end
+    def self.convert_to_ruby(typename, to = nil, options = Hash.new, &block)
+        if to.kind_of?(Hash)
+            to, options = nil, options
         end
+
+        options = Kernel.validate_options options,
+            :dynamic_wrappers => Typelib.use_dynamic_wrappers, :if => lambda { |t| true }
+        if to && !to.kind_of?(Class)
+            raise ArgumentError, "expected a class as second argument, got #{to}"
+        elsif !typename.respond_to?(:to_str)
+            raise ArgumentError, "expected a Typelib typename as first argument, got #{typename}"
+        end
+
+        convertions_to_ruby[typename] << [options, to, block]
     end
 
     # Define specialized convertions from Ruby objects to Typelib-managed
@@ -226,7 +212,12 @@ module Typelib
     #
     def self.convert_from_ruby(ruby_class, typename, options = Hash.new, &block)
         options = Kernel.validate_options options, :if => lambda { |t| true }
-        convertions[typename] << [ruby_class, options, lambda(&block)]
+        if !ruby_class.kind_of?(Class)
+            raise ArgumentError, "expected a class as first argument, got #{ruby_class}"
+        elsif !typename.respond_to?(:to_str)
+            raise ArgumentError, "expected a Typelib typename as second argument, got #{typename}"
+        end
+        convertions_from_ruby[typename] << [options, ruby_class, lambda(&block)]
     end 
 
     # The namespace separator character used by Typelib
@@ -239,37 +230,76 @@ module Typelib
     # Value objects are wrapped into instances of these classes
     class Type
         class << self
-            attr_reader :convertions
-        end
-        @convertions = Hash.new
+            # Definition of the unique convertion that should be used to convert
+            # this type into a Ruby object
+            #
+            # The value is [ruby_class, options, block]. It is saved there only
+            # for convenience purposes, as it is not used by Typelib.to_ruby
+            #
+            # If nil, no convertions are set. ruby_class might be nil if no
+            # class has been specified
+            attr_accessor :convertion_to_ruby
 
-        # Creates an instance of Type (or one of its subclasses) that represents
-        # +arg+.
-        #
-        # If +arg+ is already a Typelib value of the right type, it will be
-        # returned. In other words, it is not guaranteed that the return value
-        # is different from +arg+ itself.
-        def self.from_ruby(arg)
-            filtered = Typelib.filter_argument(arg, self)
-            if filtered.kind_of?(Typelib::Type)
-                filtered
+            # Definition of the convertions between Ruby objects to this
+            # Typelib type. It is used by Typelib.from_ruby.
+            attr_reader :convertions_from_ruby
+        end
+        @convertions_from_ruby = Hash.new
+
+        # True if this type refers to subtype of the given type, or if it a
+        # subtype of +type+ itself
+        def self.contains?(type)
+            self <= type ||
+                dependencies.any? { |t| t.contains?(type) }
+        end
+
+        # Extends this type class to have values of this type converted by the
+        # given block on C++/Ruby bondary
+        def self.convert_to_ruby(to = nil, options = Hash.new, &block)
+            options = Kernel.validate_options options,
+                :use_dynamic_wrappers => Typelib.use_dynamic_wrappers
+
+            block = lambda(&block)
+            m = Module.new do
+                if options[:use_dynamic_wrappers]
+                    define_method(:to_ruby) do |value|
+                        Typelib::DynamicWrapper(block.call(value), value)
+                    end
+                else
+                    define_method(:to_ruby, &block)
+                end
+            end
+            extend(m)
+
+            self.convertion_to_ruby = [to, options]
+        end
+
+        # Extends this type class to have be able to use the Ruby class +from+
+        # to initialize a value of type +self+
+        def self.convert_from_ruby(from, &block)
+            convertions_from_ruby[from] = lambda(&block)
+        end
+
+        def self.find_custom_convertions(convertion_set, name = self.name)
+            if convertion_set.has_key?(name)
+                convertion_set[name].find_all do |options, _|
+                    options[:if].call(self)
+                end
             else
-                result = new
-                result.initialize_from_ruby(filtered)
-                result
+                []
             end
         end
 
         # Called by Typelib when a subclass is created.
         def self.subclass_initialize
-            if mods = Typelib.type_specializations[name]
+            if mods = find_custom_convertions(Typelib.type_specializations)
                 mods.each do |opts, m|
                     if opts[:if].call(self)
                         extend m
                     end
                 end
             end
-            if mods = Typelib.value_specializations[name]
+            if mods = find_custom_convertions(Typelib.value_specializations)
                 mods.each do |opts, m|
                     if opts[:if].call(self)
                         include m
@@ -277,14 +307,24 @@ module Typelib
                 end
             end
 
-            @convertions = Hash.new
-            if Typelib.convertions.has_key?(name)
-                Typelib.convertions[name].each do |ruby_class, options, block|
-                    if options[:if].call(self)
-                        self.convertions[ruby_class] = block
-                    end
+            @convertions_from_ruby = Hash.new
+            if convertions = find_custom_convertions(Typelib.convertions_from_ruby)
+                convertions.each do |options, ruby_class, block|
+                    convert_from_ruby(ruby_class, &block)
                 end
             end
+
+            if convertions = find_custom_convertions(Typelib.convertions_to_ruby)
+                convertions.each do |options, ruby_class, block|
+                    convert_to_ruby(ruby_class, &block)
+                    break
+                end
+            end
+
+            if respond_to?(:extend_for_custom_convertions)
+                extend_for_custom_convertions
+            end
+
             super if defined? super
         end
 
@@ -437,7 +477,13 @@ module Typelib
             #
             # Note that the value is *not* initialized. To initialize a value to
             # zero, one can call Type#zero!
-            def new; __real_new__(nil) end
+            def new(init = nil)
+                if init
+                    Typelib.from_ruby(init, self)
+                else
+                    __real_new__(nil)
+                end
+            end
 
 	    # Check if this type is a +typename+. If +typename+
 	    # is a string or a regexp, we match it against the type
@@ -453,21 +499,13 @@ module Typelib
 	    end
         end
 
-	# Module that gets mixed into types which can
-	# be converted to strings (char* for instance)
-	module StringHandler
-	    def to_str
-		Type::to_string(self)
-	    end
-	    def from_str(value)
-		Type::from_string(self, value)
-	    end
-	end
-
 	def initialize(*args)
 	    __initialize__(*args)
-	    extend StringHandler if string_handler?
 	end
+
+        def to_ruby
+            Typelib.to_ruby(self, self.class)
+        end
 
 	# Check for value equality
         def ==(other)
@@ -477,7 +515,9 @@ module Typelib
             if Type === other
 		return Typelib.compare(self, other)
 	    else
-		if (ruby_value = self.to_ruby).eql?(self)
+                # +other+ is a Ruby type. Try converting +self+ to ruby and
+                # check for equality in Ruby objects
+		if (ruby_value = Typelib.to_ruby(self)).eql?(self)
 		    return false
 		end
 		other == self.to_ruby
@@ -517,42 +557,115 @@ module Typelib
         end
     end
 
+    # Base class for numeric types
+    class NumericType < Type
+        def self.from_ruby(value)
+            v = self.new
+            v.typelib_from_ruby(value)
+            v
+        end
+    end
+
+    # Base class for opaque types
+    class OpaqueType < Type
+    end
+
     # Base class for compound types (structs, unions)
     #
     # See the Typelib module documentation for an overview about how types are
     # values are represented.
     class CompoundType < Type
+        # Creates a module that can be used to extend a certain Type class to
+        # take into account the convertions.
+        #
+        # I.e. if a convertion is declared as
+        #
+        #   convert_to_ruby '/base/Time', :to => Time
+        # 
+        # and the type T is a structure with a field of type /base/Time, then
+        # if
+        #
+        #   type = registry.get('T')
+        #   type.extend_for_custom_convertions
+        #
+        # then
+        #   t = type.new
+        #   t.time => Time instance
+        #   t.time => the same Time instance
+        def self.extend_for_custom_convertions
+            super if defined? super
+
+            converted_fields = []
+            each_field do |name, type|
+                if type.convertion_to_ruby
+                    converted_fields << name
+                end
+            end
+
+            if !converted_fields.empty?
+                m = Module.new do
+                    converted_fields.each do |field_name|
+                        attr_name = "@#{field_name}"
+                        attr_writer field_name
+                        define_method(field_name) do
+                            if v = instance_variable_get(attr_name)
+                                v
+                            else
+                                v = self[field_name]
+                                instance_variable_set(attr_name, v)
+                            end
+                        end
+                    end
+
+                    define_method(:apply_changes_from_converted_types) do
+                        converted_fields.each do |field_name|
+                            if value = instance_variable_get("@#{field_name}")
+                                puts "#{field_name} #{value.inspect}"
+                                self[field_name] = value
+                            end
+                        end
+                    end
+
+                    define_method(:dup) do
+                        new_value = super
+                        for field_name in converted_fields
+                            if converted_value = instance_variable_get("@#{field_name}")
+                                instance_variable_set("@#{field_name}", converted_value)
+                            end
+                        end
+                    end
+                end
+                include(m)
+            end
+        end
+
+        # Internal method used to initialize a compound from a hash
+        def set_hash(hash) # :nodoc:
+            hash.each do |field_name, field_value|
+                self[field_name] = field_value
+            end
+        end
+
+        # Internal method used to initialize a compound from an array. The array
+        # elements are supposed to be given in the field order
+        def set_array(array) # :nodoc:
+            fields = self.class.fields
+            array.each_with_index do |value, i|
+                self[fields[i][0]] = value
+            end
+        end
+
 	# Initializes this object to the pointer +ptr+, and initializes it
 	# to +init+. Valid values for +init+ are:
 	# * a hash, in which case it is a { field_name => field_value } hash
 	# * an array, in which case the fields are initialized in order
 	# Note that a compound should be either fully initialized or not initialized
-        def initialize(ptr, *init)
+        def initialize(ptr)
 	    # A hash in which we cache Type objects for each of the structure fields
 	    @fields = Hash.new
             @field_types = self.class.field_types
 
             super(ptr)
-            return if init.empty?
-
-            init = init.first if init.size == 1 && Hash === init.first
-
-	    fields = self.class.fields
-	    
-            # init is either an array of values (the fields in order) or a hash
-            # (named parameters)
-            if Hash === init
-                # init.each shall yield (name, value)
-                init.each do |name, value| 
-		    name = name.to_s
-		    self[name] = value 
-		end
-            else
-                # we assume that the values are given in order
-                init.each_with_index do |value, idx| 
-		    self[self.class.fields[idx].first] = value
-		end
-            end
         end
 
         def each_field
@@ -561,31 +674,7 @@ module Typelib
             end
         end
 
-        # Initializes a new structure value from +arg+
-        #
-        # +arg+ can either be a value of this type, or a hash. In the latter
-        # case, each fields of the new value will be initialized one by one
-        # using the hash values.
-        def self.from_ruby(arg)
-            if arg.kind_of?(Hash) then new(arg)
-            else
-                raise ArgumentError, "cannot initialize a value of type #{self} from #{arg.inspect}"
-            end
-        end
-
         class << self
-            def new(*init) # :nodoc:
-                __real_new__(nil, *init)
-            end
-
-            def wrap(ptr, *init) # :nodoc:
-                if !(ptr.kind_of?(String) || ptr.kind_of?(MemoryZone))
-                    raise ArgumentError, "can only wrap strings and memory zones"
-                end
-
-                __real_new__(ptr, *init)
-            end
-
 	    # Check if this type can be used in place of +typename+
 	    # In case of compound types, we check that either self, or
 	    # the first element field is +typename+
@@ -600,19 +689,39 @@ module Typelib
             def subclass_initialize
                 @field_types = Hash.new
                 @fields = get_fields.map! do |name, offset, type|
-                    if !method_defined?(name)
-			define_method(name) { self[name] }
-                        define_method("#{name}=") { |value| self[name] = value }
-                    end
-                    if !singleton_class.method_defined?(name)
-                        singleton_class.send(:define_method, name) { || type }
-                    end
 
                     field_types[name] = type
+                    field_types[name.to_sym] = type
                     [name, type]
                 end
 
                 super if defined? super
+
+                @fields.each do |name, type|
+                    if !method_defined?(name)
+			define_method(name) { self[name] }
+                        define_method("#{name}=") { |value| self[name] = value }
+                    end
+                    if !method_defined?("raw_#{name}")
+			define_method("raw_#{name}") { raw_get(name) }
+                        define_method("raw_#{name}=") { |value| raw_set(name, value) }
+                    end
+                    if !singleton_class.method_defined?(name)
+                        singleton_class.send(:define_method, name) { || type }
+                    end
+                end
+
+                convert_from_ruby Hash do |value, expected_type|
+                    result = expected_type.new
+                    result.set_hash(value)
+                    result
+                end
+
+                convert_from_ruby Array do |value, expected_type|
+                    result = expected_type.new
+                    result.set_array(value)
+                    result
+                end
             end
 
             # Returns the offset, in bytes, of the given field
@@ -630,13 +739,11 @@ module Typelib
             attr_reader :field_types
 	    # Returns the type of +name+
             def [](name)
-                name = name.to_str
-                @fields.find { |n, t| n == name }.last
+                @field_types[name]
             end
             # True if the given field is defined
             def has_field?(name)
-                name = name.to_str
-                @fields.any? { |n, t| n == name }
+                @field_types.has_key?(name)
             end
 	    # Iterates on all fields
             def each_field # :yield:name, type
@@ -680,33 +787,39 @@ module Typelib
 	    end
 	end
 
-        # Sets the value of the field +name+. If +value+ is a hash, we expect
-        # that the field is a compound type and initialize it using the keys of
-        # +value+ as field names
-        def []=(name, value)
-            name = name.to_s
-            attribute = get_field(name)
-	    if Hash === value
-		return value.each { |k, v| attribute[k] = v }
+        # Returns true if +name+ is a valid field name. It can either be given
+        # as a string or a symbol
+        def has_field?(name)
+            @field_types.has_key?(name)
+        end
+
+	# Returns the value of the field +name+
+        def [](name)
+            if !has_field?(name)
+                raise ArgumentError, "#{self.class.name} has no field called #{name}"
             end
 
-            if attribute.kind_of?(Typelib::Type) && value.kind_of?(Typelib::Type)
+            value = raw_get(name.to_s)
+            Typelib.to_ruby(value, @field_types[name])
+	end
+
+        def raw_get(name)
+	    if !(value = @fields[name])
+		value = get_field(name)
+		if value.kind_of?(Type)
+		    @fields[name] = value
+		end
+	    end
+            value
+        end
+
+        def raw_set(name, value)
+            attribute = @fields[name]
+            # If +value+ is already a typelib value, just do a plain copy
+            if attribute && attribute.kind_of?(Typelib::Type) && value.kind_of?(Typelib::Type)
                 return Typelib.copy(attribute, value)
             end
-
-            # Now, try other methods. Either delegate to the subclass if the
-            # subclass wants it, or convert the type from Ruby and copy
-            if attribute.respond_to?(:set_values)
-                attribute.set_values(value)
-	    else
-                value = Typelib.from_ruby(value, self.class[name])
-
-                # If +value+ is already a typelib value, try to copy the attribute
-                if attribute.kind_of?(Typelib::Type) && value.kind_of?(Typelib::Type)
-                    return Typelib.copy(attribute, value)
-                end
-		set_field(name, value)
-	    end
+            set_field(name, value)
 
 	rescue ArgumentError => e
 	    if e.message =~ /^no field \w+ in /
@@ -714,25 +827,24 @@ module Typelib
 	    else
 		raise e, (e.message + " while setting #{name} in #{self.class.name}"), e.backtrace
 	    end
+        end
+
+        # Sets the value of the field +name+. If +value+ is a hash, we expect
+        # that the field is a compound type and initialize it using the keys of
+        # +value+ as field names
+        def []=(name, value)
+            if !has_field?(name)
+                raise ArgumentError, "#{self.class.name} has no field called #{name}"
+            end
+
+            puts "#{name} #{@field_types[name]} #{value.inspect}"
+            value = Typelib.from_ruby(value, @field_types[name])
+            puts "  #{value.inspect}"
+            raw_set(name.to_s, value)
+
 	rescue TypeError => e
 	    raise e, "#{e.message} for #{self.class.name}.#{name}", e.backtrace
 	end
-
-	# Returns the value of the field +name+
-        def [](name)
-	    if !(value = @fields[name])
-		value = get_field(name)
-		if value.kind_of?(Type)
-		    @fields[name] = value
-		end
-	    end
-
-            Typelib.to_ruby(value, @field_types[name])
-	end
-
-        def to_ruby # :nodoc:
-           self
-        end
     end
 
     class IndirectType < Type
@@ -748,6 +860,12 @@ module Typelib
         def initialize(*args)
             super
             @element_t = self.class.deference
+        end
+
+        def self.find_custom_convertions(conversion_set)
+            generic_array_id = deference.name + '[]'
+            super(conversion_set) +
+                super(conversion_set, generic_array_id)
         end
 
 	def pretty_print(pp) # :nodoc:
@@ -766,15 +884,44 @@ module Typelib
 	    pp.text ']'
 	end
 
-        # Used by CompoundType#[] to initialize an array from a Ruby enumerable
-        def set_values(enumerable) # :nodoc:
-            enumerable.each_with_index do |value, i|
-                self[i] = value
+        def self.extend_for_custom_convertions
+            if deference.convertion_to_ruby
+                # There is a custom convertion on the elements of this array. We
+                # have to convert to a Ruby array once and for all
+                #
+                # This can be *very* costly for big arrays
+                convert_to_ruby Array do
+                    converted = value.map do |v|
+                        Typelib.to_ruby(v, deference)
+                    end
+                    def converted.dup
+                        map(&:dup)
+                    end
+                    converted
+                end
+
+                convert_from_ruby Array do |value, expected_type|
+                    t = expected_type.new
+                    value.each_with_index do |el, i|
+                        t[i] = el
+                    end
+                    t
+                end
             end
+
+            super if defined? super
         end
 
-        def [](index)
+        def [](index, range = nil)
+            if range
+                result = []
+                range.times do |i|
+                    result << Typelib.to_ruby(do_get(i + index), element_t)
+                end
+                result
+            else
                 Typelib.to_ruby(do_get(index), element_t)
+            end
         end
 
         def []=(index, value)
@@ -783,12 +930,6 @@ module Typelib
 
 	# Returns the pointed-to type (defined for consistency reasons)
 	def self.[](index); deference end
-
-        def to_ruby # :nodoc:
-	    if respond_to?(:to_str); to_str
-	    else self 
-	    end
-	end
 
         include Enumerable
     end
@@ -810,17 +951,11 @@ module Typelib
             result
         end
 
-	# Converts the pointer to its Ruby equivalent.
-        #
-        # Pointers get converted in the following cases:
-        # * nil if it is NULL
-        # * a String object if it is a pointer to char
-        def to_ruby
-	    if self.null?; nil
-	    elsif respond_to?(:to_str); to_str
-	    else self
-	    end
-       	end
+        def typelib_to_ruby
+            if null? then nil
+            else self
+            end
+        end
     end
 
     # Base class for all dynamic containers
@@ -837,19 +972,38 @@ module Typelib
             @element_t = self.class.deference
         end
 
-        def self.from_ruby(value)
-            if value.class != self
-                if value.respond_to?(:each)
-                    result = new
-                    for v in value
-                        result.insert(v)
-                    end
-                    result
-                else
-                    raise TypeError, "cannot convert #{value} of type #{value.class} to #{name}"
+        def self.subclass_initialize
+            super if defined? super
+
+            convert_from_ruby Array do |value, expected_type|
+                t = expected_type.new
+                puts "#{expected_type.name} #{expected_type.deference.name} #{value.inspect}"
+
+                value.each do |el|
+                    t << el
                 end
-            else value
+                t
             end
+        end
+
+        def self.extend_for_custom_convertions
+            if deference.convertion_to_ruby
+                # There is a custom convertion on the elements of this
+                # container. We have to convert to a Ruby array once and for all
+                #
+                # This can be *very* costly for big containers
+                convert_to_ruby Array do |value|
+                    converted = value.map do |v|
+                        Typelib.to_ruby(v, deference)
+                    end
+                    def converted.dup
+                        map(&:dup)
+                    end
+                    converted
+                end
+            end
+
+            super if defined? super
         end
 
         def insert(value)
@@ -861,14 +1015,6 @@ module Typelib
 
         # Appends a new element to this container
         def <<(value); insert(value) end
-
-        # Used by CompoundType#[] to initialize an array from a Ruby enumerable
-        def set_values(enumerable) # :nodoc:
-            clear
-            enumerable.each do |value|
-                insert(value)
-            end
-        end
 
         def pretty_print(pp)
             index = 0
@@ -884,10 +1030,6 @@ module Typelib
 	    pp.breakable
 	    pp.text ']'
         end
-
-        def to_ruby
-            self
-        end
     end
 
     # Base class for all enumeration types. Enumerations
@@ -897,9 +1039,9 @@ module Typelib
     # values are represented.
     class EnumType < Type
         def self.from_ruby(value)
-            result = new
-            result.initialize_from_ruby(value)
-            result
+            v = new
+            v.typelib_from_ruby(value)
+            v
         end
 
         class << self
@@ -1180,6 +1322,15 @@ module Typelib
         end
     end
 
+    # Convenience registry class that adds the builtin C++ types at construction
+    # time
+    class CXXRegistry < Registry
+        def initialize
+            super
+            Registry.add_standard_cxx_types(self)
+        end
+    end
+
     # This module is used to extend base Ruby types so that they behave like
     # their corresponding Typelib types 
     #
@@ -1226,35 +1377,52 @@ module Typelib
     Registry.add_standard_cxx_types(reg)
     CHAR_T = reg.get('/char')
 
-    convert_from_ruby String, '/std/string' do |value, typelib_type|
-        typelib_type.wrap([value.length, value].pack("QA#{value.length}"))
-    end
     convert_from_ruby TrueClass, '/bool' do |value, typelib_type|
         Typelib.from_ruby(1, typelib_type)
     end
     convert_from_ruby FalseClass, '/bool' do |value, typelib_type|
         Typelib.from_ruby(0, typelib_type)
     end
+    convert_to_ruby '/bool' do |value|
+        value == 1
+    end
 
+    convert_from_ruby String, '/std/string' do |value, typelib_type|
+        typelib_type.wrap([value.length, value].pack("QA#{value.length}"))
+    end
+    convert_to_ruby '/std/string', String do |value|
+        value.to_byte_array[8..-1]
+    end
+
+    ####
+    # C string handling
     convert_from_ruby String, CHAR_T.name do |value, typelib_type|
         Typelib.from_ruby(value[0], typelib_type)
     end
-    specialize_model '/bool' do
-        def to_ruby(value)
-            value == 1
+    convert_from_ruby String, "#{CHAR_T.name}[]" do |value, typelib_type|
+        result = typelib_type.new
+        Type::from_string(result, value)
+        result
+    end
+    convert_to_ruby "#{CHAR_T.name}[]", String do |value|
+        Type::to_string(value)
+    end
+    specialize "#{CHAR_T.name}[]" do
+        def to_str
+            Type::to_string(value)
         end
     end
-    specialize '/bool' do
-        def to_ruby
-            super == 1
-        end
+    convert_from_ruby String, "#{CHAR_T.name}*" do |value, typelib_type|
+        result = typelib_type.new
+        Type::from_string(result, value)
+        result
     end
-    specialize '/std/string' do
-	def set_values(value)
-	    Typelib.copy(self, Typelib.from_ruby(value, self.class))
-	end
-        def to_ruby
-            to_byte_array[8..-1]
+    convert_to_ruby "#{CHAR_T.name}*", String do |value|
+        Type::to_string(value)
+    end
+    specialize "#{CHAR_T.name}*" do
+        def to_str
+            Type::to_string(value)
         end
     end
 end
@@ -1523,10 +1691,14 @@ module Typelib
     # Generic method that converts a Typelib value into the corresponding Ruby
     # value.
     def self.to_ruby(value, original_type = nil)
-        if value.respond_to?(:to_ruby)
-            value.to_ruby
-        elsif (original_type || value.class).respond_to?(:to_ruby)
-            original_type.to_ruby(value)
+        if value.respond_to?(:typelib_to_ruby)
+            value = value.typelib_to_ruby
+        end
+
+        if (t = (original_type || value.class)).respond_to?(:to_ruby)
+            # This allows to override Typelib's internal type convertion (mainly
+            # for numerical types).
+            t.to_ruby(value)
         else
             value
         end
@@ -1537,11 +1709,15 @@ module Typelib
     # expected_type, or a Ruby value that can be converted into a value of
     # +expected_type+.
     def self.from_ruby(arg, expected_type)      
-        if arg.kind_of?(expected_type) 
+        if arg.respond_to?(:apply_changes_from_converted_types)
+            arg.apply_changes_from_converted_types
+        end
+
+        if arg.kind_of?(expected_type)
             return arg
         elsif arg.class < Type && arg.class.casts_to?(expected_type)
             arg.cast(expected_type)
-        elsif convertion = expected_type.convertions[arg.class]
+        elsif convertion = expected_type.convertions_from_ruby[arg.class]
             convertion.call(arg, expected_type)
         elsif expected_type.respond_to?(:from_ruby)
             expected_type.from_ruby(arg)

@@ -61,7 +61,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         a = a_type.new :b => 20, :a => 10, :c => 30, :d => 40
         assert( check_struct_A_value(a) )
 
-        a = a_type.new 40, 30, 20, 10
+        a = a_type.new [40, 30, 20, 10]
         assert_equal(40, a.a)
         assert_equal(30, a.b)
         assert_equal(20, a.c)
@@ -267,6 +267,9 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 	assert(!long.unsigned?)
 	assert_equal(4, long.size)
 
+        long_v = long.from_ruby(10)
+        assert_equal 10, long_v.to_ruby
+
 	ulong = make_registry.get("/unsigned int")
 	assert(ulong < NumericType)
 	assert_equal(4, ulong.size)
@@ -371,9 +374,8 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal 0, value.length
 
         value.insert(?a)
-        assert_equal "a", value.to_ruby
-
-        assert_equal "a_string", Typelib.from_ruby("a_string", reg.get("/std/string")).to_ruby
+        assert_equal "a", Typelib.to_ruby(value)
+        assert_equal "a_string", Typelib.to_ruby(Typelib.from_ruby("a_string", reg.get("/std/string")))
     end
 
     def test_boolean
@@ -383,12 +385,11 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 
         v = Typelib.from_ruby(true, type)
         assert_kind_of type, v
-        assert_equal true, v.to_ruby
-        
+        assert_equal true, Typelib.to_ruby(v, type)
 
         v = Typelib.from_ruby(false, type)
         assert_kind_of type, v
-        assert_equal false, v.to_ruby
+        assert_equal false, Typelib.to_ruby(v, type)
     end
 
     def test_boolean_in_struct

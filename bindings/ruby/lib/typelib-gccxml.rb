@@ -168,6 +168,10 @@ module Typelib
 
         def resolve_namespace(xml, id)
             ns = id_to_node[id]
+            if !ns
+                return []
+            end
+
             name = ns['name']
 
             if name == "::"

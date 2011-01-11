@@ -180,11 +180,6 @@ static VALUE enum_name_of(VALUE self, VALUE integer)
     }
 }
 
-static VALUE enum_initialize_from_ruby(VALUE self, VALUE rbvalue)
-{
-    return typelib_from_ruby(rb2cxx::object<Value>(self), rbvalue);
-}
-
 /**********************************************
  * Typelib::Pointer
  */
@@ -343,7 +338,6 @@ static VALUE pointer_nil_p(VALUE self)
     return Qfalse;
 }
 
-
 /*
  * call-seq:
  *  numeric.integer?	    => true or false
@@ -454,10 +448,24 @@ static VALUE container_clear(VALUE self)
 static VALUE container_do_insert(VALUE self, VALUE obj)
 {
     Value container_v = rb2cxx::object<Value>(self);
-    Value element_v   = rb2cxx::object<Value>(obj);
     Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
-    if (container_t.getIndirection() != element_v.getType())
-        rb_raise(rb_eArgError, "wrong type %s for new element, expected %s", element_v.getType().getName().c_str(), container_t.getIndirection().getName().c_str());
+    Type const& element_t = container_t.getIndirection();
+    Value element_v;
+
+    int64_t buffer[10];
+    if (element_t.getCategory() == Type::Numeric && sizeof(int64_t) * 10 >= element_t.getSize())
+    {
+        // Special case: allow the caller to use Ruby numeric directly. This is
+        // way faster if a lot of insertions need to be done
+        element_v = Value(buffer, element_t);
+        typelib_from_ruby(element_v, obj);
+    }
+    else
+    {
+        element_v   = rb2cxx::object<Value>(obj);
+        if (container_t.getIndirection() != element_v.getType())
+            rb_raise(rb_eArgError, "wrong type %s for new element, expected %s", element_v.getType().getName().c_str(), container_t.getIndirection().getName().c_str());
+    }
 
     container_t.insert(container_v.getData(), element_v);
     return self;
@@ -555,6 +563,43 @@ static VALUE container_delete_if(VALUE self)
     return self;
 }
 
+/* 
+ * call-seq:
+ *   value.to_ruby	=> non-Typelib object or self
+ *
+ * Converts +self+ to its Ruby equivalent. If no equivalent
+ * type is available, returns self
+ */
+static VALUE numeric_to_ruby(VALUE self)
+{
+    Value const& value(rb2cxx::object<Value>(self));
+    VALUE registry = value_get_registry(self);
+    try {
+	return typelib_to_ruby(value, registry, Qnil);
+    } catch(Typelib::NullTypeFound) { }
+    rb_raise(rb_eTypeError, "trying to convert 'void'");
+}
+
+/*
+ * call-seq:
+ *   value.from_ruby(ruby_object) => self
+ *
+ * Initializes +self+ with the information contained in +ruby_object+.
+ *
+ * This particular method is not type-safe. You should use Typelib.from_ruby
+ * unless you know what you are doing.
+ */
+static VALUE numeric_from_ruby(VALUE self, VALUE arg)
+{
+    Value& value(rb2cxx::object<Value>(self));
+    try {
+	typelib_from_ruby(value, arg);
+        return self;
+    } catch(Typelib::UnsupportedType) { }
+    rb_raise(rb_eTypeError, "cannot perform the requested convertion");
+}
+
+
 /* Document-class: Typelib::NumericType
  *
  * Wrapper for numeric types (int, float, ...)
@@ -586,6 +631,8 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_singleton_method(cNumeric, "integer?", RUBY_METHOD_FUNC(numeric_type_integer_p), 0);
     rb_define_singleton_method(cNumeric, "unsigned?", RUBY_METHOD_FUNC(numeric_type_unsigned_p), 0);
     rb_define_singleton_method(cNumeric, "size", RUBY_METHOD_FUNC(numeric_type_size), 0);
+    rb_define_method(cNumeric, "typelib_to_ruby",      RUBY_METHOD_FUNC(&numeric_to_ruby), 0);
+    rb_define_method(cNumeric, "typelib_from_ruby", RUBY_METHOD_FUNC(&numeric_from_ruby), 1);
 
     cOpaque    = rb_define_class_under(mTypelib, "OpaqueType", cType);
     cNull      = rb_define_class_under(mTypelib, "NullType", cType);
@@ -606,7 +653,8 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_singleton_method(cEnum, "keys", RUBY_METHOD_FUNC(enum_keys), 0);
     rb_define_singleton_method(cEnum, "value_of",      RUBY_METHOD_FUNC(enum_value_of), 1);
     rb_define_singleton_method(cEnum, "name_of",      RUBY_METHOD_FUNC(enum_name_of), 1);
-    rb_define_method(cEnum, "initialize_from_ruby",  RUBY_METHOD_FUNC(enum_initialize_from_ruby), 1);
+    rb_define_method(cEnum, "typelib_to_ruby",      RUBY_METHOD_FUNC(&numeric_to_ruby), 0);
+    rb_define_method(cEnum, "typelib_from_ruby",    RUBY_METHOD_FUNC(&numeric_from_ruby), 1);
 
     cArray    = rb_define_class_under(mTypelib, "ArrayType", cIndirect);
     rb_define_singleton_method(cArray, "length", RUBY_METHOD_FUNC(array_class_length), 0);

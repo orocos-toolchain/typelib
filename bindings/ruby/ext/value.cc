@@ -443,42 +443,6 @@ VALUE typelib_ruby::value_get_registry(VALUE self)
     return rb_iv_get(type, "@registry");
 }
 
-/* 
- * call-seq:
- *   value.to_ruby	=> non-Typelib object or self
- *
- * Converts +self+ to its Ruby equivalent. If no equivalent
- * type is available, returns self
- */
-static VALUE value_to_ruby(VALUE self)
-{
-    Value const& value(rb2cxx::object<Value>(self));
-    VALUE registry = value_get_registry(self);
-    try {
-	return typelib_to_ruby(value, registry, Qnil);
-    } catch(Typelib::NullTypeFound) { }
-    rb_raise(rb_eTypeError, "trying to convert 'void'");
-}
-
-/*
- * call-seq:
- *   value.from_ruby(ruby_object) => self
- *
- * Initializes +self+ with the information contained in +ruby_object+.
- *
- * This particular method is not type-safe. You should use Typelib.from_ruby
- * unless you know what you are doing.
- */
-static VALUE value_from_ruby(VALUE self, VALUE arg)
-{
-    Value& value(rb2cxx::object<Value>(self));
-    try {
-	typelib_from_ruby(value, arg);
-        return self;
-    } catch(Typelib::UnsupportedType) { }
-    rb_raise(rb_eTypeError, "cannot perform the requested convertion");
-}
-
 /** 
  * call-seq:
  *   value.to_csv([separator])	    => string
@@ -572,8 +536,6 @@ void typelib_ruby::Typelib_init_values()
     rb_define_singleton_method(cType, "dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
     rb_define_singleton_method(cType, "casts_to?",     RUBY_METHOD_FUNC(&type_can_cast_to), 1);
     rb_define_method(cType, "__initialize__",   RUBY_METHOD_FUNC(&value_initialize), 1);
-    rb_define_method(cType, "to_ruby",      RUBY_METHOD_FUNC(&value_to_ruby), 0);
-    rb_define_method(cType, "initialize_from_ruby", RUBY_METHOD_FUNC(&value_from_ruby), 1);
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
     rb_define_method(cType, "memory_eql?",      RUBY_METHOD_FUNC(&value_memory_eql_p), 1);
     rb_define_method(cType, "endian_swap",      RUBY_METHOD_FUNC(&value_endian_swap), 0);

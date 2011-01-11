@@ -138,17 +138,13 @@ class TC_Value < Test::Unit::TestCase
         buffer_t = CXXRegistry.new.build("/char[256]")
         buffer = buffer_t.new
 	assert( buffer.string_handler? )
-	assert( buffer.respond_to?(:to_str) )
-	assert( buffer.respond_to?(:from_str) )
+        assert( buffer.respond_to?(:to_str))
 
-	int_value = CXXRegistry.new.get("/int").new
-	assert( !int_value.respond_to?(:to_str) )
-	assert( !int_value.respond_to?(:from_str) )
-        
         # Check that .from_str.to_str is an identity
-        assert_equal("first test", buffer.from_str("first test").to_str)
-	assert_equal("first test", buffer.to_ruby)
-        assert_raises(ArgumentError) { buffer.from_str("a"*512) }
+        typelib_value = Typelib.from_ruby("first test", buffer_t)
+        assert_kind_of buffer_t, typelib_value
+	assert_equal("first test", typelib_value.to_ruby)
+        assert_raises(ArgumentError) { Typelib.from_ruby("a"*512, buffer_t) }
     end
 
     def test_pretty_printing
@@ -269,5 +265,37 @@ class TC_Value < Test::Unit::TestCase
 	assert_equal(1.0/0.0, wrapper.call);
     end
 
+    def test_convertion_to_from_ruby
+        Typelib.convert_to_ruby '/NS1/Test', Integer do |value|
+            value.a
+        end
+        Typelib.convert_from_ruby Fixnum, '/NS1/Test' do |value, expected_type|
+            result = expected_type.new
+            result.a = value
+            result
+        end
+
+        registry = make_registry
+        ns1_test_t = registry.get('/NS1/Test')
+        assert_equal Integer, ns1_test_t.convertion_to_ruby[0]
+        vector_ns1_test_t = registry.get('/std/vector</NS1/Test>')
+        assert_equal Array, vector_ns1_test_t.convertion_to_ruby[0]
+        vector_vector_ns1_test_t = registry.get('/std/vector</std/vector</NS1/Test>>')
+        assert_equal Array, vector_vector_ns1_test_t.convertion_to_ruby[0]
+
+        containers_t = registry.get('Collections')
+        containers = containers_t.new
+
+        v_v_struct = containers.v_v_struct
+        assert_kind_of Array, v_v_struct
+        assert_same v_v_struct, containers.v_v_struct
+
+        v_v_struct << [10]
+        puts v_v_struct.inspect
+        puts containers_t.v_v_struct.name
+        assert_equal [], containers.raw_v_v_struct.to_ruby
+        containers.apply_changes_from_converted_types
+        assert_equal [[10]], containers.raw_v_v_struct.to_ruby
+    end
 end
 
