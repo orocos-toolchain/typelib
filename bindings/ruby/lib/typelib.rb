@@ -4,6 +4,7 @@ require 'utilrb/kernel/options'
 require 'utilrb/module/attr_predicate'
 require 'delegate'
 require 'pp'
+require 'facets/string/camelcase'
 
 # Typelib is the main module for Ruby-side Typelib functionality.
 #
@@ -1185,6 +1186,200 @@ module Typelib
             includes?(name)
         end
 
+        attr_reader :exported_type_to_real_type
+        attr_reader :real_type_to_exported_type
+
+        def export_solve_namespace(base_module, typename)
+            namespace = Typelib.split_typename(typename)
+            basename = namespace.pop
+            
+            mod = namespace.inject(base_module) do |mod, ns|
+                template_basename, template_args = GCCXMLLoader.parse_template(ns)
+                ns = template_basename.gsub(/\s+/, '_').camelcase(:upper)
+
+                if template_args.empty?
+                    if mod.const_defined?(ns)
+                        mod.const_get(ns)
+                    else
+                        result = Module.new
+                        mod.const_set(ns, result)
+                        result
+                    end
+                else
+                    # Must already be defined as it is an actual type object,
+                    # not a namespace
+                    template_args.map! do |s|
+                        if s =~ /^\d+$/ then Integer(s)
+                        else s
+                        end
+                    end
+                    if !mod.respond_to?(:find_exported_template)
+                        return
+                    end
+                    template = mod.find_exported_template(ns, [], template_args)
+                    return if !template
+                    template
+                end
+            end
+            return [basename, mod]
+        end
+
+        attr_reader :export_typemap
+
+        # Export this registry in the Ruby namespace. The base namespace under
+        # which it should be done is given in +base_module+
+        def export_to_ruby(base_module = Kernel, options = Hash.new)
+            options = Kernel.validate_options options,
+                :override => false, :excludes => nil
+
+            override   = options[:override]
+            exclude_rx = /^$/
+            if options[:excludes].respond_to?(:each)
+                rx_elements = []
+                options[:excludes].each do |s|
+                    if s.respond_to?(:to_str)
+                        rx_elements << "^#{Regexp.quote(s)}$"
+                    elsif s.kind_of?(Regexp)
+                        rx_elements << s.to_s
+                    end
+                end
+                exclude_rx = Regexp.new(rx_elements.join("|"))
+            elsif options[:excludes]
+                exclude_rx = Regexp.new("^#{Regexp.quote(options[:excludes])}$")
+            end
+
+            new_export_typemap = Hash.new
+            each(:with_aliases => true) do |name, type|
+                next if name =~ exclude_rx
+
+                basename, mod = export_solve_namespace(base_module, name)
+                next if !mod
+
+                exported_type =
+                    if type.convertion_to_ruby
+                        type.convertion_to_ruby[0] || type
+                    else
+                        type
+                    end
+
+                if block_given?
+                    exported_type = yield(name, type, mod, basename, exported_type)
+                    next if !exported_type
+                    if !exported_type.kind_of?(Class)
+                        raise ArgumentError, "the block given to export_to_ruby must return a Ruby class or nil (got #{exported_type})"
+                    end
+
+                    if exported_type.respond_to?(:convertion_to_ruby) && exported_type.convertion_to_ruby
+                        exported_type = exported_type.convertion_to_ruby[0] || exported_type
+                    end
+                end
+
+                new_export_typemap[exported_type] ||= Array.new
+                new_export_typemap[exported_type] << [type, mod, basename]
+
+                if (existing_exports = @export_typemap[exported_type]) && existing_exports.include?([type, mod, basename])
+                    next
+                end
+
+                if basename =~ /(.*)\[(\d+)\]$/
+                    # We ignore arrays for now
+                    # export_array_to_ruby(mod, $1, Integer($2), exported_type)
+                    next
+                end
+
+                template_basename, template_args = GCCXMLLoader.parse_template(basename)
+                if template_args.empty?
+                    basename = basename.gsub(/\s+/, '_').camelcase(:upper)
+                    puts "exporting #{name}=#{type.name} as #{exported_type} at #{mod.name}::#{basename} (#{mod.object_id})"
+
+                    if mod.const_defined?(basename)
+                        existing_type = mod.const_get(basename)
+                        if override
+                            mod.const_set(basename, exported_type)
+                        elsif existing_type != exported_type
+                            raise ArgumentError, "there is a type registered at #{mod.name}::#{basename} which differs from the one in the registry, and override is false"
+                        end
+                    else
+                        mod.const_set(basename, exported_type)
+                    end
+                else
+                    export_template_to_ruby(mod, template_basename, template_args, type, exported_type)
+                end
+            end
+
+            @export_typemap = new_export_typemap
+        end
+
+        module TypeExportNamespace
+            attr_accessor :registry
+
+            def find_exported_template(template_basename, args, remaining)
+                if remaining.empty?
+                    return @exported_templates[[template_basename, args]]
+                end
+
+                head, *tail = remaining
+
+                # Accept Ruby types in place of the corresponding Typelib type,
+                # and accept type objects in place of type names
+                if head.kind_of?(Class)
+                    if real_types = registry.export_typemap[head]
+                        head = real_types.map do |t, _|
+                            t.name
+                        end
+                    else
+                        raise ArgumentError, "#{arg} is not a type exported from a Typelib registry"
+                    end
+                end
+
+                if head.respond_to?(:each)
+                    args << nil
+                    for a in head
+                        args[-1] = a
+                        if result = find_exported_template(template_basename, args, tail)
+                            return result
+                        end
+                    end
+                    return nil
+                else
+                    args << head
+                    return find_exported_template(template_basename, args, tail)
+                end
+            end
+        end
+
+        def export_template_to_ruby(mod, template_basename, template_args, actual_type, exported_type)
+            template_basename = template_basename.gsub(/\s+/, '_').camelcase(:upper)
+            puts "exporting #{actual_type.name} as #{exported_type} at #{mod.name}::#{template_basename}(#{template_args.join(",")})"
+
+            if !mod.respond_to?('find_exported_template')
+                mod.extend(TypeExportNamespace)
+                mod.registry = self
+                mod.instance_variable_set :@exported_templates, Hash.new
+            end
+                                        
+            if !mod.respond_to?(template_basename)
+                mod.singleton_class.class_eval do
+                    define_method(template_basename) do |*args|
+                        if !(result = find_exported_template(template_basename, [], args))
+                            raise ArgumentError, "there is no template instanciation #{template_basename}<#{args.join(",")}> available"
+                        end
+                        result
+                    end
+                end
+            end
+
+            template_args = template_args.map do |arg|
+                if arg =~ /^\d+$/
+                    Integer(arg)
+                else
+                    arg
+                end
+            end
+            exports = mod.instance_variable_get :@exported_templates
+            exports[[template_basename, template_args]] = exported_type
+        end
+
 	# Returns the file type as expected by Typelib from 
 	# the extension of +file+ (see TYPE_BY_EXT)
 	#
@@ -1231,6 +1426,7 @@ module Typelib
 	    if load_plugins || (load_plugins.nil? && Typelib.load_type_plugins?)
             	Typelib.load_typelib_plugins
             end
+            @export_typemap = Hash.new
 	    super()
         end
 
