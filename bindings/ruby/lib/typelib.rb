@@ -284,7 +284,8 @@ module Typelib
         # given block on C++/Ruby bondary
         def self.convert_to_ruby(to = nil, options = Hash.new, &block)
             options = Kernel.validate_options options,
-                :use_dynamic_wrappers => Typelib.use_dynamic_wrappers
+                :use_dynamic_wrappers => Typelib.use_dynamic_wrappers,
+                :recursive => true
 
             block = lambda(&block)
             m = Module.new do
@@ -577,6 +578,18 @@ module Typelib
 
     # Base class for numeric types
     class NumericType < Type
+        def self.subclass_initialize
+            super if defined? super
+
+            if integer?
+                # This is only a hint for the rest of Typelib. The actual
+                # convertion is done internally by Typelib
+                self.convertion_to_ruby = [Numeric, { :recursive => false }]
+            else
+                self.convertion_to_ruby = [Float, { :recursive => false }]
+            end
+        end
+
         def self.from_ruby(value)
             v = self.new
             v.typelib_from_ruby(value)
@@ -615,7 +628,7 @@ module Typelib
 
             converted_fields = []
             each_field do |name, type|
-                if type.convertion_to_ruby
+                if type.convertion_to_ruby && type.convertion_to_ruby[1][:recursive]
                     converted_fields << name
                 end
             end
@@ -924,7 +937,7 @@ module Typelib
         end
 
         def self.extend_for_custom_convertions
-            if deference.convertion_to_ruby
+            if deference.convertion_to_ruby && deference.convertion_to_ruby[1][:recursive]
                 # There is a custom convertion on the elements of this array. We
                 # have to convert to a Ruby array once and for all
                 #
@@ -1018,7 +1031,7 @@ module Typelib
         end
 
         def self.extend_for_custom_convertions
-            if deference.convertion_to_ruby
+            if deference.convertion_to_ruby && deference.convertion_to_ruby[1][:recursive]
                 # There is a custom convertion on the elements of this
                 # container. We have to convert to a Ruby array once and for all
                 #
