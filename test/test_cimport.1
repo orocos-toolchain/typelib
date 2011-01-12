@@ -1,4 +1,4 @@
-#ifndef __orogen
+#ifdef __GCCXML__
 #include <vector>
 #include <stdint.h>
 #include <string>
@@ -21,8 +21,7 @@ typedef struct A ADef;
 typedef int array_typedef[256];
 typedef int multi_array_typedef[256][512];
 
-#define NO_RECURSIVE_TYPE
-#ifndef NO_RECURSIVE_TYPE
+#ifndef __GCCXML__
 typedef struct Recursive {
     struct Recursive* next;
 } Recursive;
