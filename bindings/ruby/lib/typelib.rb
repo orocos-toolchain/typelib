@@ -942,7 +942,7 @@ module Typelib
                 # have to convert to a Ruby array once and for all
                 #
                 # This can be *very* costly for big arrays
-                convert_to_ruby Array do
+                convert_to_ruby Array do |value|
                     converted = value.map do |v|
                         Typelib.to_ruby(v, deference)
                     end
