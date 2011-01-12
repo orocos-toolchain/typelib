@@ -147,18 +147,29 @@ static VALUE type_to_csv(int argc, VALUE* argv, VALUE rbself)
  * Returns the type name of the receiver with the namespace part
  * removed
  */
-static VALUE type_basename(VALUE rbself)
+static VALUE typelib_do_basename(VALUE mod, VALUE name)
 {
-    Type const& self(rb2cxx::object<Type>(rbself));
-    return rb_str_new2(self.getBasename().c_str());
+    std::string result = Typelib::getTypename(StringValuePtr(name));
+    return rb_str_new(result.c_str(), result.length());
 }
 
 /* Internal helper method for Type#namespace */
-static VALUE type_do_namespace(VALUE rbself)
+static VALUE typelib_do_namespace(VALUE mod, VALUE name)
 {
-    Type const& self(rb2cxx::object<Type>(rbself));
-    return rb_str_new2(self.getNamespace().c_str());
+    std::string result = Typelib::getNamespace(StringValuePtr(name));
+    return rb_str_new(result.c_str(), result.length());
 }
+
+/* Internal helper method for Type#namespace */
+static VALUE typelib_do_split_name(VALUE mod, VALUE name)
+{
+    std::list<std::string> splitted = Typelib::splitTypename(StringValuePtr(name));
+    VALUE result = rb_ary_new();
+    for (std::list<std::string>::const_iterator it = splitted.begin(); it != splitted.end(); ++it)
+        rb_ary_push(result, rb_str_new(it->c_str(), it->length()));
+    return result;
+}
+
 
 /* call-seq:
  *  t1 == t2 => true or false
@@ -542,8 +553,10 @@ void typelib_ruby::Typelib_init_values()
     rb_define_method(cType, "endian_swap!",      RUBY_METHOD_FUNC(&value_endian_swap_b), 0);
     rb_define_method(cType, "zone_address", RUBY_METHOD_FUNC(&value_address), 0);
     rb_define_method(cType, "do_cast", RUBY_METHOD_FUNC(&value_do_cast), 1);
-    rb_define_singleton_method(cType, "do_basename", RUBY_METHOD_FUNC(type_basename), 0);
-    rb_define_singleton_method(cType, "do_namespace", RUBY_METHOD_FUNC(type_do_namespace), 0);
+
+    rb_define_singleton_method(mTypelib, "do_basename",  RUBY_METHOD_FUNC(typelib_do_basename), 1);
+    rb_define_singleton_method(mTypelib, "do_namespace", RUBY_METHOD_FUNC(typelib_do_namespace), 1);
+    rb_define_singleton_method(mTypelib, "split_typename", RUBY_METHOD_FUNC(typelib_do_split_name), 1);
 
     rb_define_singleton_method(cType, "to_csv", RUBY_METHOD_FUNC(type_to_csv), -1);
     rb_define_method(cType, "to_csv", RUBY_METHOD_FUNC(value_to_csv), -1);

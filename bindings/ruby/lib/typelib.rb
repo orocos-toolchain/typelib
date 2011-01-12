@@ -223,6 +223,33 @@ module Typelib
     # The namespace separator character used by Typelib
     NAMESPACE_SEPARATOR = '/'
 
+    # Returns the basename part of +name+, i.e. the type name
+    # without the namespace part.
+    #
+    # See also Type.basename
+    def self.basename(name, separator = Typelib::NAMESPACE_SEPARATOR)
+        name = do_basename(name)
+        if separator && separator != Typelib::NAMESPACE_SEPARATOR
+            name.gsub!(Typelib::NAMESPACE_SEPARATOR, separator)
+        end
+        name
+    end
+
+    # Returns the namespace part of +name+.  If +separator+ is
+    # given, the namespace components are separated by it, otherwise,
+    # the default of Typelib::NAMESPACE_SEPARATOR is used. If nil is
+    # used as new separator, no change is made either.
+    def self.namespace(name, separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
+        ns = do_namespace(name)
+        if remove_leading
+            ns = ns[1..-1]
+        end
+        if separator && separator != Typelib::NAMESPACE_SEPARATOR
+            ns.gsub!(Typelib::NAMESPACE_SEPARATOR, separator)
+        end
+        ns
+    end
+
     # Base class for all types
     # Registry types are wrapped into subclasses of Type
     # or other Type-derived classes (Array, Pointer, ...)
@@ -390,24 +417,15 @@ module Typelib
 	    # the default of Typelib::NAMESPACE_SEPARATOR is used. If nil is
 	    # used as new separator, no change is made either.
 	    def namespace(separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
-		ns = do_namespace
-		if remove_leading
-		    ns = ns[1..-1]
-		end
-		if separator && separator != Typelib::NAMESPACE_SEPARATOR
-		    ns.gsub!(Typelib::NAMESPACE_SEPARATOR, separator)
-		end
-		ns
+                Typelib.namespace(name, separator, remove_leading)
 	    end
 
             # Returns the basename part of the type's name, i.e. the type name
             # without the namespace part.
+            #
+            # See also Typelib.basename
             def basename(separator = Typelib::NAMESPACE_SEPARATOR)
-                name = do_basename
-		if separator && separator != Typelib::NAMESPACE_SEPARATOR
-		    name.gsub!(Typelib::NAMESPACE_SEPARATOR, separator)
-		end
-		name
+                Typelib.basename(name, separator)
             end
 
             # Returns the complete name for the type (both namespace and
