@@ -14,7 +14,7 @@ namespace
 
     static string normalizeIDLName(std::string const& name)
     {
-        int template_mark;
+        unsigned int template_mark;
         string result = name;
         while ((template_mark = result.find_first_of("<>/,")) != string::npos)
             result.replace(template_mark, 1, "_");
