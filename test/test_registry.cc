@@ -68,7 +68,14 @@ BOOST_AUTO_TEST_CASE( test_typename_manipulation )
     BOOST_CHECK_EQUAL("NS2/", getNormalizedNamespace("NS2"));
 
     BOOST_CHECK_EQUAL("NS3/Test", getRelativeName("/NS2/NS3/Test", "/NS2"));
+
     BOOST_CHECK_EQUAL("/NS2/NS3/", getNamespace("/NS2/NS3/Test"));
+    BOOST_CHECK_EQUAL("/wrappers/Matrix</double,3,1>/", getNamespace("/wrappers/Matrix</double,3,1>/Scalar"));
+    BOOST_CHECK_EQUAL("/std/", getNamespace("/std/vector</wrappers/Matrix</double,3,1>>"));
+
+    BOOST_CHECK_EQUAL("Test", getTypename("/NS2/NS3/Test"));
+    BOOST_CHECK_EQUAL("Scalar", getTypename("/wrappers/Matrix</double,3,1>/Scalar"));
+    BOOST_CHECK_EQUAL("vector</wrappers/Matrix</double,3,1>>", getTypename("/std/vector</wrappers/Matrix</double,3,1>>"));
 }
 
 BOOST_AUTO_TEST_CASE( test_typename_path_to )

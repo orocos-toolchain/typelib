@@ -2,6 +2,7 @@
 #define __TYPELIB_TYPENAME_H__
 
 #include <string>
+#include <list>
 #include <boost/tokenizer.hpp>
 
 namespace Typelib
@@ -23,6 +24,12 @@ namespace Typelib
     bool isValidNamespace(const std::string& name, bool absolute);
     bool isValidTypename(const std::string& name, bool absolute);
     bool isInNamespace(const std::string& type, const std::string& nspace, bool recursive = false);
+
+    /** Splits a type name into its components. It is non-validating, i.e. is
+     * guaranteed to return a valid value only for names for which
+     * isValidTypename returns true
+     */
+    std::list<std::string> splitTypename(std::string const& name);
     
     /** Returns +name+ as a namespace name, valid to build an absolute type
      * name by simple concatenation */

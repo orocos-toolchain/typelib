@@ -68,6 +68,35 @@ namespace Typelib
 
     }
 
+    std::list<std::string> splitTypename(std::string const& name)
+    {
+        unsigned int start_pos = 0;
+        if (name[0] == '/')
+            start_pos++;
+
+        int template_level = 0;
+        std::list<std::string> result;
+        for (unsigned int i = start_pos; i < name.length(); ++i)
+        {
+            if (name[i] == '/')
+            {
+                if (template_level == 0)
+                {
+                    result.push_back(string(name, start_pos, i - start_pos));
+                    start_pos = i + 1;
+                }
+            }
+            else if (name[i] == '<')
+                template_level++;
+            else if (name[i] == '>')
+                template_level--;
+        }
+        if (start_pos < name.length())
+            result.push_back(string(name, start_pos, name.length() - start_pos));
+
+        return result;
+    }
+
     static pair<bool, int> isValidTypename(std::string const& s, int pos, bool absolute, bool accept_integers)
     {
         unsigned int start_pos = pos;
@@ -191,12 +220,10 @@ namespace Typelib
 
     std::string getTypename(const std::string& name)
     {
-        size_t template_position = name.find(TemplateMark);
-        size_t position = name.rfind(NamespaceMark, template_position);
-        if (position == string::npos)
-            return name;
-
-        return string(name, position + 1, string::npos);
+        list<string> split = splitTypename(name);
+        if (split.empty())
+            return std::string();
+        return split.back();
     }
 
     std::string getRelativeName(std::string const& name, std::string const& ns)
@@ -254,12 +281,17 @@ namespace Typelib
 
     std::string getNamespace(const std::string& name)
     {
-        size_t template_position = name.find(TemplateMark);
-        size_t position = name.rfind(NamespaceMark, template_position);
-        if (position == string::npos)
-            return name;
+        list<string> split = splitTypename(name);
+        if (split.empty())
+            return "/";
+        split.pop_back();
 
-        return string(name, 0, position + 1);
+        std::string result;
+        for (list<string>::const_iterator it = split.begin(); it != split.end(); ++it)
+            result += "/" + *it;
+
+        result += "/";
+        return result;
     }
 };
 
