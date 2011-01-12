@@ -646,8 +646,8 @@ void typelib_ruby::Typelib_init_specialized_types()
     
     cCompound = rb_define_class_under(mTypelib, "CompoundType", cType);
     rb_define_singleton_method(cCompound, "get_fields",   RUBY_METHOD_FUNC(compound_get_fields), 0);
-    rb_define_method(cCompound, "get_field", RUBY_METHOD_FUNC(compound_field_get), 1);
-    rb_define_method(cCompound, "set_field", RUBY_METHOD_FUNC(compound_field_set), 2);
+    rb_define_method(cCompound, "typelib_get_field", RUBY_METHOD_FUNC(compound_field_get), 1);
+    rb_define_method(cCompound, "typelib_set_field", RUBY_METHOD_FUNC(compound_field_set), 2);
 
     cEnum = rb_define_class_under(mTypelib, "EnumType", cType);
     rb_define_singleton_method(cEnum, "keys", RUBY_METHOD_FUNC(enum_keys), 0);

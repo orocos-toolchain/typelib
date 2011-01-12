@@ -629,7 +629,7 @@ module Typelib
                             if v = instance_variable_get(attr_name)
                                 v
                             else
-                                v = self[field_name]
+                                v = get_field[field_name]
                                 instance_variable_set(attr_name, v)
                             end
                         end
@@ -638,8 +638,7 @@ module Typelib
                     define_method(:apply_changes_from_converted_types) do
                         converted_fields.each do |field_name|
                             if value = instance_variable_get("@#{field_name}")
-                                puts "#{field_name} #{value.inspect}"
-                                self[field_name] = value
+                                set_field(field_name, value)
                             end
                         end
                     end
@@ -660,7 +659,7 @@ module Typelib
         # Internal method used to initialize a compound from a hash
         def set_hash(hash) # :nodoc:
             hash.each do |field_name, field_value|
-                self[field_name] = field_value
+                set_field(field_name, field_value)
             end
         end
 
@@ -669,7 +668,7 @@ module Typelib
         def set_array(array) # :nodoc:
             fields = self.class.fields
             array.each_with_index do |value, i|
-                self[fields[i][0]] = value
+                set_field(fields[i][0], value)
             end
         end
 
@@ -688,7 +687,7 @@ module Typelib
 
         def each_field
             self.class.each_field do |field_name, _|
-                yield(field_name, self[field_name])
+                yield(field_name, get_field[field_name])
             end
         end
 
@@ -717,12 +716,12 @@ module Typelib
 
                 @fields.each do |name, type|
                     if !method_defined?(name)
-			define_method(name) { self[name] }
-                        define_method("#{name}=") { |value| self[name] = value }
+			define_method(name) { get_field(name) }
+                        define_method("#{name}=") { |value| set_field(name, value) }
                     end
                     if !method_defined?("raw_#{name}")
-			define_method("raw_#{name}") { raw_get(name) }
-                        define_method("raw_#{name}=") { |value| raw_set(name, value) }
+			define_method("raw_#{name}") { raw_get_field(name) }
+                        define_method("raw_#{name}=") { |value| raw_set_field(name, value) }
                     end
                     if !singleton_class.method_defined?(name)
                         singleton_class.send(:define_method, name) { || type }
@@ -801,7 +800,7 @@ module Typelib
 	    self.class.pretty_print_common(pp) do |name, offset, type|
 		pp.text name
 		pp.text "="
-		self[name].pretty_print(pp)
+		get_field[name].pretty_print(pp)
 	    end
 	end
 
@@ -811,19 +810,23 @@ module Typelib
             @field_types.has_key?(name)
         end
 
-	# Returns the value of the field +name+
         def [](name)
+            get_field(name)
+        end
+
+	# Returns the value of the field +name+
+        def get_field(name)
             if !has_field?(name)
                 raise ArgumentError, "#{self.class.name} has no field called #{name}"
             end
 
-            value = raw_get(name.to_s)
+            value = raw_get_field(name.to_s)
             Typelib.to_ruby(value, @field_types[name])
 	end
 
-        def raw_get(name)
+        def raw_get_field(name)
 	    if !(value = @fields[name])
-		value = get_field(name)
+		value = typelib_get_field(name)
 		if value.kind_of?(Type)
 		    @fields[name] = value
 		end
@@ -831,13 +834,13 @@ module Typelib
             value
         end
 
-        def raw_set(name, value)
+        def raw_set_field(name, value)
             attribute = @fields[name]
             # If +value+ is already a typelib value, just do a plain copy
             if attribute && attribute.kind_of?(Typelib::Type) && value.kind_of?(Typelib::Type)
                 return Typelib.copy(attribute, value)
             end
-            set_field(name, value)
+            typelib_set_field(name, value)
 
 	rescue ArgumentError => e
 	    if e.message =~ /^no field \w+ in /
@@ -847,18 +850,20 @@ module Typelib
 	    end
         end
 
+        def []=(name, value)
+            raw_set_field(name, value)
+        end
+
         # Sets the value of the field +name+. If +value+ is a hash, we expect
         # that the field is a compound type and initialize it using the keys of
         # +value+ as field names
-        def []=(name, value)
+        def set_field(name, value)
             if !has_field?(name)
                 raise ArgumentError, "#{self.class.name} has no field called #{name}"
             end
 
-            puts "#{name} #{@field_types[name]} #{value.inspect}"
             value = Typelib.from_ruby(value, @field_types[name])
-            puts "  #{value.inspect}"
-            raw_set(name.to_s, value)
+            raw_set_field(name.to_s, value)
 
 	rescue TypeError => e
 	    raise e, "#{e.message} for #{self.class.name}.#{name}", e.backtrace
