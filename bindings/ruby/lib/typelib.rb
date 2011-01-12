@@ -647,7 +647,7 @@ module Typelib
                             if v = instance_variable_get(attr_name)
                                 v
                             else
-                                v = get_field[field_name]
+                                v = get_field(field_name)
                                 instance_variable_set(attr_name, v)
                             end
                         end
