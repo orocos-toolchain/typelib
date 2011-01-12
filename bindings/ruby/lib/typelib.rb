@@ -271,6 +271,8 @@ module Typelib
             # Definition of the convertions between Ruby objects to this
             # Typelib type. It is used by Typelib.from_ruby.
             attr_reader :convertions_from_ruby
+
+            attr_predicate :contains_converted_types?, true
         end
         @convertions_from_ruby = Hash.new
 
@@ -300,6 +302,7 @@ module Typelib
             end
             extend(m)
 
+            self.contains_converted_types = options[:recursive]
             self.convertion_to_ruby = [to, options]
         end
 
@@ -629,12 +632,13 @@ module Typelib
 
             converted_fields = []
             each_field do |name, type|
-                if type.convertion_to_ruby && type.convertion_to_ruby[1][:recursive]
+                if type.contains_converted_types?
                     converted_fields << name
                 end
             end
 
             if !converted_fields.empty?
+                self.contains_converted_types = true
                 m = Module.new do
                     converted_fields.each do |field_name|
                         attr_name = "@#{field_name}"
@@ -938,7 +942,9 @@ module Typelib
         end
 
         def self.extend_for_custom_convertions
-            if deference.convertion_to_ruby && deference.convertion_to_ruby[1][:recursive]
+            if deference.contains_converted_types?
+                self.contains_converted_types = true
+
                 # There is a custom convertion on the elements of this array. We
                 # have to convert to a Ruby array once and for all
                 #
@@ -1032,7 +1038,9 @@ module Typelib
         end
 
         def self.extend_for_custom_convertions
-            if deference.convertion_to_ruby && deference.convertion_to_ruby[1][:recursive]
+            if deference.contains_converted_types?
+                self.contains_converted_types = true
+
                 # There is a custom convertion on the elements of this
                 # container. We have to convert to a Ruby array once and for all
                 #
