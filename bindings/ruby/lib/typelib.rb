@@ -907,6 +907,22 @@ module Typelib
 	    pp.text ']'
 	end
 
+        def self.subclass_initialize
+            super if defined? super
+
+            convert_from_ruby Array do |value, expected_type|
+                if value.size != expected_type.length
+                    raise ArgumentError, "expected an array of size #{expected_type.length}, got #{value.size}"
+                end
+
+                t = expected_type.new
+                value.each_with_index do |el, i|
+                    t[i] = el
+                end
+                t
+            end
+        end
+
         def self.extend_for_custom_convertions
             if deference.convertion_to_ruby
                 # There is a custom convertion on the elements of this array. We
@@ -921,14 +937,6 @@ module Typelib
                         map(&:dup)
                     end
                     converted
-                end
-
-                convert_from_ruby Array do |value, expected_type|
-                    t = expected_type.new
-                    value.each_with_index do |el, i|
-                        t[i] = el
-                    end
-                    t
                 end
             end
 
