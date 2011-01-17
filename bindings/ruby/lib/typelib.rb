@@ -811,7 +811,7 @@ module Typelib
 	    self.class.pretty_print_common(pp) do |name, offset, type|
 		pp.text name
 		pp.text "="
-		get_field[name].pretty_print(pp)
+		raw_get_field(name).pretty_print(pp)
 	    end
 	end
 
