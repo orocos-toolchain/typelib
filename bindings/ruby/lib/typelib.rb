@@ -1955,14 +1955,22 @@ module Typelib
         if arg.kind_of?(expected_type)
             return arg
         elsif arg.class < Type && arg.class.casts_to?(expected_type)
-            arg.cast(expected_type)
+            return arg.cast(expected_type)
         elsif convertion = expected_type.convertions_from_ruby[arg.class]
-            convertion.call(arg, expected_type)
+            converted = convertion.call(arg, expected_type)
         elsif expected_type.respond_to?(:from_ruby)
-            expected_type.from_ruby(arg)
+            converted = expected_type.from_ruby(arg)
         else
-            arg
+            if !(expected_type < NumericType) && !arg.kind_of?(expected_type)
+                raise ArgumentError, "cannot convert #{arg} to #{expected_type.name}"
+            end
+            converted = arg
         end
+        if !(expected_type < NumericType) && !converted.kind_of?(expected_type)
+            raise InternalError, "invalid conversion of #{arg} to #{expected_type.name}"
+        end
+
+        converted
     end
 
     # Creates an array of objects that can safely be passed to function call mechanism
