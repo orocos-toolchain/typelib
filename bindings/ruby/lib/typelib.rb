@@ -661,6 +661,7 @@ module Typelib
                                 instance_variable_set("@#{field_name}", converted_value)
                             end
                         end
+                        new_value
                     end
                 end
                 include(m)
