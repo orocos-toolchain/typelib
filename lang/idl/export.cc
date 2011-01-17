@@ -16,7 +16,7 @@ namespace
     {
         unsigned int template_mark;
         string result = name;
-        while ((template_mark = result.find_first_of("<>/,")) != string::npos)
+        while ((template_mark = result.find_first_of("<>/,")) < result.length())
             result.replace(template_mark, 1, "_");
         return result;
     }
