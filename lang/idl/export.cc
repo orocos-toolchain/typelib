@@ -105,7 +105,7 @@ namespace
 
             std::string ns = getMinimalPathTo(base.first + type.getBasename(), relative_to);
             boost::replace_all(ns, Typelib::NamespaceMarkString, "::");
-            return ns + base.second;
+            return normalizeIDLName(ns) + base.second;
         }
         else return base.second;
     }
@@ -120,7 +120,7 @@ namespace
         {
             std::string ns = base.first;
             boost::replace_all(ns, Typelib::NamespaceMarkString, "::");
-            return ns + base.second;
+            return normalizeIDLName(ns) + base.second;
         }
         else return base.second;
     }
@@ -438,7 +438,7 @@ void IDLExport::adaptNamespace(ostream& stream, string const& ns)
 
 	while (!new_namespace.empty())
 	{
-	    stream << m_indent << "module " << new_namespace.front() << " {\n";
+	    stream << m_indent << "module " << normalizeIDLName(new_namespace.front()) << " {\n";
 	    m_indent += "    ";
 	    new_namespace.pop_front();
 	}
