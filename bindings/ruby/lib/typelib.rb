@@ -1021,8 +1021,6 @@ module Typelib
 
             convert_from_ruby Array do |value, expected_type|
                 t = expected_type.new
-                puts "#{expected_type.name} #{expected_type.deference.name} #{value.inspect}"
-
                 value.each do |el|
                     t << el
                 end
