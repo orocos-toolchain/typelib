@@ -324,33 +324,26 @@ module Typelib
 
         # Called by Typelib when a subclass is created.
         def self.subclass_initialize
-            if mods = find_custom_convertions(Typelib.type_specializations)
-                mods.each do |opts, m|
-                    if opts[:if].call(self)
-                        extend m
-                    end
-                end
+            mods = find_custom_convertions(Typelib.type_specializations)
+            mods.each do |opts, m|
+                extend m
             end
-            if mods = find_custom_convertions(Typelib.value_specializations)
-                mods.each do |opts, m|
-                    if opts[:if].call(self)
-                        include m
-                    end
-                end
+
+            mods = find_custom_convertions(Typelib.value_specializations)
+            mods.each do |opts, m|
+                include m
             end
 
             @convertions_from_ruby = Hash.new
-            if convertions = find_custom_convertions(Typelib.convertions_from_ruby)
-                convertions.each do |options, ruby_class, block|
-                    convert_from_ruby(ruby_class, &block)
-                end
+            convertions = find_custom_convertions(Typelib.convertions_from_ruby)
+            convertions.each do |options, ruby_class, block|
+                convert_from_ruby(ruby_class, &block)
             end
 
-            if convertions = find_custom_convertions(Typelib.convertions_to_ruby)
-                convertions.each do |options, ruby_class, block|
-                    convert_to_ruby(ruby_class, &block)
-                    break
-                end
+            convertions = find_custom_convertions(Typelib.convertions_to_ruby)
+            convertions.each do |options, ruby_class, block|
+                convert_to_ruby(ruby_class, &block)
+                break
             end
 
             if respond_to?(:extend_for_custom_convertions)
