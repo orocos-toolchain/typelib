@@ -699,7 +699,7 @@ module Typelib
 
         def each_field
             self.class.each_field do |field_name, _|
-                yield(field_name, get_field[field_name])
+                yield(field_name, get_field(field_name))
             end
         end
 
