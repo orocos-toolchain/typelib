@@ -431,11 +431,13 @@ module Typelib
                 next if IGNORED_NODES.include?(child_node.name)
 
                 id_to_node[child_node["id"].to_s] = child_node
-                if (child_node_name = child_node['name'])
-                    name_to_nodes[cxx_to_typelib(child_node_name)] << child_node
-                end
-                if (child_node_name = child_node['demangled'])
-                    demangled_to_node[cxx_to_typelib(child_node_name)] = child_node
+                if child_node.name != "File"
+                    if (child_node_name = child_node['name'])
+                        name_to_nodes[cxx_to_typelib(child_node_name)] << child_node
+                    end
+                    if (child_node_name = child_node['demangled'])
+                        demangled_to_node[cxx_to_typelib(child_node_name)] = child_node
+                    end
                 end
 
                 if child_node.name == "File"
