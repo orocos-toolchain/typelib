@@ -122,14 +122,23 @@ module Typelib
         end
 
         def cxx_to_typelib(name, absolute = true)
-            type_name, template_arguments = GCCXMLLoader.parse_template(name)
-
-            type_name = type_name.gsub('::', '/')
-            if absolute && type_name[0, 1] != "/" && type_name !~ /^\d+$/
-                type_name = "/#{type_name}"
+            if name =~ /^\d+$/
+                return name
             end
+
+            name = name.gsub('::', '/')
+            name = name.gsub('> >', '>>')
+
+            basename  = Typelib.basename(name)
+            namespace = Typelib.namespace(name)
+            if namespace != "/"
+                namespace = cxx_to_typelib(namespace) + "/"
+            end
+
+            type_name, template_arguments = GCCXMLLoader.parse_template(basename)
             template_arguments.map! { |n| cxx_to_typelib(n, absolute) }
 
+            type_name = namespace + type_name
             if !template_arguments.empty?
                 # std::vector has only one parameter for us ...
                 if type_name == "/std/vector"
