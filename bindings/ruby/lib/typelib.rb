@@ -1349,7 +1349,6 @@ module Typelib
 
         def export_template_to_ruby(mod, template_basename, template_args, actual_type, exported_type)
             template_basename = template_basename.gsub(/\s+/, '_').camelcase(:upper)
-            puts "exporting #{actual_type.name} as #{exported_type} at #{mod.name}::#{template_basename}(#{template_args.join(",")})"
 
             if !mod.respond_to?('find_exported_template')
                 mod.extend(TypeExportNamespace)
