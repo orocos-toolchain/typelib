@@ -1290,7 +1290,6 @@ module Typelib
                 template_basename, template_args = GCCXMLLoader.parse_template(basename)
                 if template_args.empty?
                     basename = basename.gsub(/\s+/, '_').camelcase(:upper)
-                    puts "exporting #{name}=#{type.name} as #{exported_type} at #{mod.name}::#{basename} (#{mod.object_id})"
 
                     if mod.const_defined?(basename)
                         existing_type = mod.const_get(basename)
