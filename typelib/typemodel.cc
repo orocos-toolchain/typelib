@@ -1,6 +1,9 @@
 #include "typemodel.hh"
 #include "registry.hh"
 
+#include "typename.hh"
+#include <boost/tuple/tuple.hpp>
+  
 #include <iostream>
 #include <sstream>
 

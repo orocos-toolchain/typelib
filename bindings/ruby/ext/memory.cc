@@ -97,9 +97,9 @@ memory_delete(void *ptr)
         if (layout_it != memory_layouts.end())
         {
             RbMemoryLayout& layout = layout_it->second;
-            Typelib::ValueOps::destroy(
+            Typelib::destroy(
                     static_cast<uint8_t*>(ptr),
-                    layout.layout.begin(), layout.layout.end());
+                    layout.layout);
         }
     }
 
@@ -165,7 +165,7 @@ typelib_ruby::memory_init(VALUE ptr, VALUE type)
         ++layout.refcount;
 
         memory_types.insert( make_pair(cptr, &t) );
-        Typelib::ValueOps::init(static_cast<uint8_t*>(cptr), layout.layout.begin(), layout.layout.end());
+        Typelib::init(static_cast<uint8_t*>(cptr), layout.layout);
     } catch(std::runtime_error const& e) {
         rb_raise(rb_eArgError, "internal error: %s", e.what());
     }

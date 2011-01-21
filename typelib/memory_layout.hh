@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <typelib/typevisitor.hh>
 #include <vector>
+#include <boost/static_assert.hpp>
 
 namespace Typelib
 {

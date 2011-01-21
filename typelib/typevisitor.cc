@@ -1,4 +1,5 @@
 #include "typevisitor.hh"
+#include <cassert>
 
 namespace Typelib
 {

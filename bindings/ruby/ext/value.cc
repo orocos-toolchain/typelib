@@ -9,6 +9,7 @@
 #include <typelib/csvoutput.hh>
 #include <typelib/endianness.hh>
 #include <typelib/value_ops.hh>
+#include <typelib/typename.hh>
 
 #include <iostream>
 

@@ -1,6 +1,7 @@
 #include "standard_types.hh"
 #include "containers.hh"
 #include <boost/lexical_cast.hpp>
+#include "typelib/typename.hh"
 
 using namespace Typelib;
 

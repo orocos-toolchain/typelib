@@ -5,11 +5,10 @@
 #include <list>
 #include <map>
 #include <set>
-#include <boost/tuple/tuple.hpp>
+#include <vector>
 #include <stdint.h>
+#include <stdexcept>
 
-#include "typename.hh"
-  
 namespace Typelib
 {
     namespace ValueOps

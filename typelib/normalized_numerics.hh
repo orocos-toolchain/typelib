@@ -1,6 +1,8 @@
 #ifndef NORMALIZED_NUMERICS_HH
 #define NORMALIZED_NUMERICS_HH
 
+#include <boost/static_assert.hpp>
+
 namespace Typelib {
     namespace details {
         template<int Bits> class sint_t;

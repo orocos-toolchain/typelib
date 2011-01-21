@@ -2,8 +2,10 @@
 #include <typelib/registry.hh>
 #include <typelib/typemodel.hh>
 #include <typelib/value_ops.hh>
+#include <typelib/value_ops_details.hh>
 #include <boost/tuple/tuple.hpp>
 #include <string.h>
+#include <limits>
 
 #include <iostream>
 

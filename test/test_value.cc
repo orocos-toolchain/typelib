@@ -10,6 +10,7 @@
 #include <typelib/registry.hh>
 #include <typelib/value.hh>
 #include <typelib/endianness.hh>
+#include <typelib/value_cast.hh>
 using namespace Typelib;
 using namespace std;
 

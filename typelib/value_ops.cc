@@ -1,6 +1,9 @@
 #include <typelib/value_ops.hh>
 #include <string.h>
 #include <boost/lexical_cast.hpp>
+#include <iostream>
+#include "value_ops_details.hh"
+#include <cstdio>
 
 using namespace Typelib;
 using namespace boost;
@@ -566,23 +569,53 @@ void Typelib::dump(Value v, std::vector<uint8_t>& buffer, MemoryLayout const& op
     dump(reinterpret_cast<uint8_t const*>(v.getData()), buffer, ops);
 }
 
-struct VectorInputStream : public ValueOps::InputStream
+struct ByteArrayOutputStream : public ValueOps::OutputStream
 {
-    std::vector<uint8_t> const& buffer;
-    size_t in_index;
+    uint8_t* buffer;
+    unsigned int   buffer_size;
+    unsigned int   current;
+    ByteArrayOutputStream(uint8_t* buffer, int buffer_size)
+        : buffer(buffer), buffer_size(buffer_size), current(0) {}
 
-    VectorInputStream(std::vector<uint8_t> const& buffer)
-        : buffer(buffer), in_index(0) {}
-
-    void read(uint8_t* out_buffer, size_t size)
+    void write(uint8_t const* data, size_t size)
     {
-        if (size + in_index > buffer.size())
-            throw std::runtime_error("error in load(): not enough data as input, expected at least " + lexical_cast<string>(size + in_index) + " bytes but got " + lexical_cast<string>(buffer.size()));
+        if (current + size > buffer_size)
+            throw std::exception();
 
-        memcpy(&out_buffer[0], &buffer[in_index], size);
-        in_index += size;
+        memcpy(&buffer[current], data, size);
+        current += size;
     }
 };
+
+int Typelib::dump(uint8_t const* v, uint8_t* buffer, unsigned int buffer_size, MemoryLayout const& ops)
+{
+    ByteArrayOutputStream stream(buffer, buffer_size);
+    MemoryLayout::const_iterator end;
+    try {
+        end = ValueOps::dump(
+                v, 0, stream, ops.begin(), ops.end()).get<1>();
+    }
+    catch(std::exception const& e) {
+        std::cout << "failed to marshal: " << e.what() << std::endl;
+        return 0;
+    }
+    if (end != ops.end())
+        throw std::runtime_error("internal error in the marshalling process");
+    return stream.current;
+}
+
+int Typelib::dump(Value v, uint8_t* buffer, unsigned int buffer_size)
+{
+    MemoryLayout ops;
+    MemLayout::Visitor visitor(ops);
+    visitor.apply(v.getType());
+    return dump(v, buffer, buffer_size, ops);
+}
+
+int Typelib::dump(Value v, uint8_t* buffer, unsigned int buffer_size, MemoryLayout const& ops)
+{
+    return dump(reinterpret_cast<uint8_t const*>(v.getData()), buffer, buffer_size, ops);
+}
 
 struct VectorOutputStream : public ValueOps::OutputStream
 {
@@ -737,6 +770,24 @@ size_t Typelib::getDumpSize(uint8_t const* v, MemoryLayout const& ops)
 }
 
 
+struct VectorInputStream : public ValueOps::InputStream
+{
+    std::vector<uint8_t> const& buffer;
+    size_t in_index;
+
+    VectorInputStream(std::vector<uint8_t> const& buffer)
+        : buffer(buffer), in_index(0) {}
+
+    void read(uint8_t* out_buffer, size_t size)
+    {
+        if (size + in_index > buffer.size())
+            throw std::runtime_error("error in load(): not enough data as input, expected at least " + lexical_cast<string>(size + in_index) + " bytes but got " + lexical_cast<string>(buffer.size()));
+
+        memcpy(&out_buffer[0], &buffer[in_index], size);
+        in_index += size;
+    }
+};
+
 void Typelib::load(Value v, std::vector<uint8_t> const& buffer)
 {
     MemoryLayout ops = layout_of(v.getType());
@@ -760,4 +811,48 @@ void Typelib::load(uint8_t* v, Type const& type, std::vector<uint8_t> const& buf
         throw std::runtime_error("parts of the provided buffer has not been used (used " + 
                 lexical_cast<string>(stream.in_index) + " bytes, got " + lexical_cast<string>(buffer.size()) + "as input)");
 }
+
+struct ByteArrayInputStream : public ValueOps::InputStream
+{
+    uint8_t const* buffer;
+    unsigned int buffer_size;
+    unsigned int in_index;
+
+    ByteArrayInputStream(uint8_t const* buffer, int buffer_size)
+        : buffer(buffer), buffer_size(buffer_size), in_index(0) {}
+
+    void read(uint8_t* out_buffer, size_t size)
+    {
+        if (size + in_index > buffer_size)
+            throw std::runtime_error("error in load(): not enough data as input, expected at least " + lexical_cast<string>(size + in_index) + " bytes but got " + lexical_cast<string>(buffer_size));
+
+        memcpy(&out_buffer[0], &buffer[in_index], size);
+        in_index += size;
+    }
+};
+
+void Typelib::load(Value v, uint8_t const* buffer, unsigned int buffer_size)
+{
+    MemoryLayout ops = layout_of(v.getType());
+    return load(v, buffer, buffer_size, ops);
+}
+
+void Typelib::load(Value v, uint8_t const* buffer, unsigned int buffer_size, MemoryLayout const& ops)
+{ load(reinterpret_cast<uint8_t*>(v.getData()), v.getType(), buffer, buffer_size, ops); }
+
+void Typelib::load(uint8_t* v, Type const& type, uint8_t const* buffer, unsigned int buffer_size, MemoryLayout const& ops)
+{
+    MemoryLayout::const_iterator it;
+    ByteArrayInputStream stream(buffer, buffer_size);
+
+    size_t out_offset;
+    tie(out_offset, it) =
+        ValueOps::load(v, 0, stream, ops.begin(), ops.end());
+    if (it != ops.end())
+        throw std::runtime_error("internal error in the memory layout");
+    if (stream.in_index != buffer_size && stream.in_index + type.getTrailingPadding() != buffer_size)
+        throw std::runtime_error("parts of the provided buffer has not been used (used " + 
+                lexical_cast<string>(stream.in_index) + " bytes, got " + lexical_cast<string>(buffer_size) + "as input)");
+}
+
 

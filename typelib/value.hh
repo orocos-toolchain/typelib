@@ -5,10 +5,6 @@
 #include "typevisitor.hh"
 #include "registry.hh"
 #include <boost/ref.hpp>
-#include <boost/mpl/if.hpp>
-#include <boost/mpl/bool.hpp>
-#include <limits>
-#include "normalized_numerics.hh"
 
 namespace Typelib
 {
@@ -88,52 +84,6 @@ namespace Typelib
     /** Raised by value_cast when the type of a Value object
      * is not compatible with the wanted C type */
     class BadValueCast : public std::exception {};
-
-    /** This visitor checks that a given Value object
-     * is of the C type T. It either returns a reference to the
-     * typed value or throws BadValueCast
-     */
-    template<typename T>
-    class CastingVisitor : public ValueVisitor
-    {
-        bool m_found;
-        T    m_value;
-
-        bool visit_( typename normalized_numeric_type<T>::type& v)
-        {
-            m_value = v;
-            m_found = true;
-            return false;
-        }
-         
-    public:
-        CastingVisitor()
-            : ValueVisitor(false), m_found(false), m_value() {};
-        T& apply(Value v)
-        {
-            m_found = false;
-            ValueVisitor::apply(v);
-            if (!m_found)
-                throw BadValueCast();
-
-            return m_value;
-        }
-    };
-
-    /** Casts a Value object to a given simple type T 
-     * @throws BadValueCast */
-    template<typename T>
-    T& value_cast(Value v)
-    {
-        CastingVisitor<T> caster;
-        return caster.apply(v);
-    }
-
-    /** Casts a pointer to a given simple type T using \c type as the type for \c *ptr 
-     * @throws BadValueCast */
-    template<typename T>
-    T& value_cast(void* ptr, Type const& type)
-    { return value_cast<T>(Value(ptr, type)); }
 
     /** Exception raised if a non existent field is required */
     class FieldNotFound : public BadValueCast 

@@ -2,6 +2,7 @@
 
 #include <dyncall.h>
 #include <dynload.h>
+#include <boost/static_assert.hpp>
 
 static VALUE cCallVM;
 static VALUE cLibrary;

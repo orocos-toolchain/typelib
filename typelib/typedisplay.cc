@@ -1,5 +1,6 @@
 #include "typedisplay.hh"
 #include <string>
+#include <iostream>
 
 using namespace Typelib;
 using namespace std;
