@@ -273,6 +273,15 @@ module Typelib
             attr_reader :convertions_from_ruby
 
             attr_predicate :contains_converted_types?, true
+
+            def compatible_with_memcpy?
+                layout = begin memory_layout
+                         rescue
+                             return false # no layout for this type
+                         end
+                layout.size == 2 &&
+                    ((layout[0] == :FLAG_MEMCPY) || layout[0] == :FLAG_SKIP)
+            end
         end
         @convertions_from_ruby = Hash.new
 
