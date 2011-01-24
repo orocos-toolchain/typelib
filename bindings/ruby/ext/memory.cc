@@ -166,7 +166,7 @@ typelib_ruby::memory_init(VALUE ptr, VALUE type)
 
         memory_types.insert( make_pair(cptr, &t) );
         Typelib::init(static_cast<uint8_t*>(cptr), layout.layout);
-    } catch(std::runtime_error const& e) {
+    } catch(std::exception const& e) {
         rb_raise(rb_eArgError, "internal error: %s", e.what());
     }
 }

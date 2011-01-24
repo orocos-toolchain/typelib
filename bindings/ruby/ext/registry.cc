@@ -163,7 +163,7 @@ VALUE registry_do_build(VALUE self, VALUE name)
             rb_raise(eNotFound, "cannot find %s in registry", StringValuePtr(name));
         return cxx2rb::type_wrap(*type, self);
     }
-    catch(std::runtime_error const& e) { rb_raise(rb_eRuntimeError, e.what()); }
+    catch(std::exception const& e) { rb_raise(rb_eRuntimeError, e.what()); }
 }
 
 
@@ -250,8 +250,8 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE opt
 	    PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, registry); 
 	return Qnil;
     }
-    catch(std::runtime_error const& e) { error_string = e.what(); }
     catch(boost::bad_lexical_cast e)   { error_string = e.what(); }
+    catch(std::exception const& e) { error_string = e.what(); }
 
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
@@ -273,7 +273,7 @@ VALUE registry_export(VALUE self, VALUE kind, VALUE options)
 	std::string exported = PluginManager::save(StringValuePtr(kind), config, registry);
 	return rb_str_new(exported.c_str(), exported.length());
     }
-    catch (std::runtime_error e) { error_message = e.what(); }
+    catch (std::exception const& e) { error_message = e.what(); }
     rb_raise(rb_eRuntimeError, error_message.c_str());
 }
 
@@ -295,7 +295,7 @@ VALUE registry_merge(VALUE self, VALUE rb_merged)
 	registry.merge(merged);
 	return self;
     }
-    catch(std::runtime_error& e) { error_string = e.what(); }
+    catch(std::exception const& e) { error_string = e.what(); }
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
 }
 
@@ -326,7 +326,7 @@ VALUE registry_resize(VALUE self, VALUE new_sizes)
 	registry.resize(sizes);
 	return Qnil;
     }
-    catch(std::runtime_error& e) {
+    catch(std::exception const& e) {
         rb_raise(rb_eRuntimeError, "%s", e.what());
     }
 }
@@ -349,7 +349,7 @@ VALUE registry_minimal(VALUE self, VALUE rb_auto)
             Registry* result = registry.minimal(StringValuePtr(rb_auto));
             return registry_wrap(cRegistry, result);
         }
-        catch(std::runtime_error e)
+        catch(std::exception const& e)
         { rb_raise(rb_eRuntimeError, "%s", e.what()); }
     }
     else
@@ -359,7 +359,7 @@ VALUE registry_minimal(VALUE self, VALUE rb_auto)
             Registry* result = registry.minimal(auto_types);
             return registry_wrap(cRegistry, result);
         }
-        catch(std::runtime_error e)
+        catch(std::exception const& e)
         { rb_raise(rb_eRuntimeError, "%s", e.what()); }
     }
 }
@@ -412,7 +412,7 @@ VALUE registry_each_type(VALUE self, VALUE filter_, VALUE with_aliases_)
 
 	return self;
     }
-    catch(std::runtime_error e)
+    catch(std::exception const& e)
     {
         rb_raise(rb_eRuntimeError, "%s", e.what());
     }
@@ -432,9 +432,9 @@ VALUE registry_merge_xml(VALUE rb_registry, VALUE xml)
     std::istringstream istream(StringValuePtr(xml));
     config_set config;
     try { PluginManager::load("tlb", istream, config, registry); }
-    catch(std::runtime_error e)
-    { rb_raise(rb_eArgError, "cannot load xml: %s", e.what()); }
     catch(boost::bad_lexical_cast e)
+    { rb_raise(rb_eArgError, "cannot load xml: %s", e.what()); }
+    catch(std::exception const& e)
     { rb_raise(rb_eArgError, "cannot load xml: %s", e.what()); }
 
     return rb_registry;
