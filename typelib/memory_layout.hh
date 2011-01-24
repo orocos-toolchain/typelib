@@ -8,12 +8,17 @@
 
 namespace Typelib
 {
+    /** Exception raised when generating a memory layout for an unsupported type
+     */
     struct NoLayout : public std::runtime_error
     { 
         NoLayout(Type const& type, std::string const& reason)
             : std::runtime_error("there is no memory layout for type " + type.getName() + ": " + reason) { }
     };
 
+    /** Thrown in operations that are using memlayout bytecode and found an
+     * invalid bytecode.
+     */
     struct UnknownLayoutBytecode : public std::runtime_error
     { 
         UnknownLayoutBytecode() : std::runtime_error("found an unknown marshalling bytecode operation") { }
@@ -48,8 +53,11 @@ namespace Typelib
             FLAG_END
         };
 
-        /* This visitor computes the memory layout for a given type. This memory
+        /** This visitor computes the memory layout for a given type. This memory
          * layout is used by quite a few memory operations
+         *
+         * You should not have to use this directly. Use
+         * Typelib.layout_of(type) instead
          */
         class Visitor : public TypeVisitor
         {
@@ -83,17 +91,39 @@ namespace Typelib
             void apply(Type const& type, bool merge_skip_copy = true, bool remove_trailing_skips = true);
         };
 
-        /** Returns the iterator on the next FLAG_END, taking into account nesting */
+        /** Skips the block starting at \c begin. \c end is the end of the
+         * complete layout (to avoid invalid memory accesses if the layout is
+         * incorrect)
+         *
+         * It returns the position of the block's FLAG_END
+         */
         MemoryLayout::const_iterator skip_block(
                 MemoryLayout::const_iterator begin,
                 MemoryLayout::const_iterator end);
     }
 
-    inline MemoryLayout layout_of(Type const& t, bool accept_pointers = false, bool accept_opaques = false)
+    /** Returns the memory layout of the given type
+     *
+     * @param accept_pointers if false (the default), will throw a NoLayout
+     * exception if the type given contains pointers. If true, they will simply
+     * be skipped
+     * @param accept_opaques if false (the default), will throw a NoLayout
+     * exception if the type given contains opaques. If true, they will simply
+     * be skipped
+     * @param merge_skip_copy in a layout, zones that contain data are copied,
+     * while zones that are there because of C++ padding rules are skipped. If
+     * this is true (the default), consecutive copy/skips are merged into one
+     * bigger copy, as doine one big memcpy() is probably more efficient than
+     * skipping the few padding bytes. Set to false to turn that off.
+     * @param remove_trailing_skips because of C/C++ padding rules, structures
+     * might contain trailing bytes that don't contain information. If this
+     * option is true (the default), these bytes are removed from the layout.
+     */
+    inline MemoryLayout layout_of(Type const& t, bool accept_pointers = false, bool accept_opaques = false, bool merge_skip_copy = true, bool remove_trailing_skips = true)
     {
         MemoryLayout ret;
         MemLayout::Visitor visitor(ret, accept_pointers, accept_opaques);
-        visitor.apply(t);
+        visitor.apply(t, merge_skip_copy, remove_trailing_skips);
         return ret;
     }
 }

@@ -255,9 +255,7 @@ static VALUE type_memory_layout(VALUE self, VALUE pointers, VALUE opaques, VALUE
     VALUE rb_container = ID2SYM(rb_intern("FLAG_CONTAINER"));
 
     try {
-        MemoryLayout layout;
-        MemLayout::Visitor visitor(layout, RTEST(pointers), RTEST(opaques));
-        visitor.apply(type, RTEST(merge), RTEST(remove_trailing_skips));
+        MemoryLayout layout = Typelib::layout_of(type, RTEST(pointers), RTEST(opaques), RTEST(merge), RTEST(remove_trailing_skips));
 
         // Now, convert into something representable in Ruby
         for (MemoryLayout::const_iterator it = layout.begin(); it != layout.end(); ++it)
@@ -400,26 +398,14 @@ VALUE value_do_cast(VALUE self, VALUE target_type)
 }
 
 
-/* call-seq:
- *  obj.to_byte_array => a_string
- *
- * Returns a string whose content is a marshalled representation of the memory
- * hold by +obj+
- *
- * This can be used to create a new object later by using value_type.wrap, where
- * +value_type+ is the object returned by Registry#get. Example:
- *
- *   # Do complex computation
- *   marshalled_data = result.to_byte_array
- *
- *   # Later on ...
- *   value = my_registry.get('/base/Type').wrap(marshalled_data)
- */
 static
-VALUE value_to_byte_array(VALUE self)
+VALUE value_do_byte_array(VALUE self, VALUE pointers, VALUE opaques, VALUE merge, VALUE remove_trailing_skips)
 {
     Value& value = rb2cxx::object<Value>(self);
-    vector<uint8_t> buffer = Typelib::dump(value);
+    MemoryLayout layout = Typelib::layout_of(value.getType(), RTEST(pointers), RTEST(opaques), RTEST(merge), RTEST(remove_trailing_skips));
+
+    vector<uint8_t> buffer;
+    Typelib::dump(value, buffer, layout);
     return rb_str_new(reinterpret_cast<char*>(&buffer[0]), buffer.size());
 }
 
@@ -561,7 +547,7 @@ void typelib_ruby::Typelib_init_values()
 
     rb_define_singleton_method(cType, "to_csv", RUBY_METHOD_FUNC(type_to_csv), -1);
     rb_define_method(cType, "to_csv", RUBY_METHOD_FUNC(value_to_csv), -1);
-    rb_define_method(cType, "to_byte_array", RUBY_METHOD_FUNC(value_to_byte_array), 0);
+    rb_define_method(cType, "do_byte_array", RUBY_METHOD_FUNC(value_do_byte_array), 4);
     rb_define_method(cType, "marshalling_size", RUBY_METHOD_FUNC(value_marshalling_size), 0);
 
     Typelib_init_specialized_types();

@@ -405,13 +405,41 @@ module Typelib
 		end
 	    end
 
-            # Returns a representation of the MemoryLayout for this type.
-            def memory_layout(options = Hash.new)
-                options = Kernel.validate_options options, :accept_opaques => false,
+            # Helper class that validates the options given to
+            # Type.memory_layout and Type#to_byte_array
+            def validate_layout_options(options)
+                Kernel.validate_options options, :accept_opaques => false,
                     :accept_pointers => false,
                     :merge_skip_copy => true,
                     :remove_trailing_skips => true
+            end
 
+            # Returns a representation of the MemoryLayout for this type.
+            #
+            # The generated layout can be changed by setting one or more
+            # following options:
+            #
+            # accept_opaques::
+            #   accept types with opaques. Fields/values that are opaques are
+            #   simply skipped. This is false by default: types with opaques are
+            #   generating an error.
+            # accept_pointers::
+            #   accept types with pointers. Fields/values that are pointer are
+            #   simply skipped. This is false by default: types with pointers
+            #   are generating an error.
+            # merge_skip_copy::
+            #   in a layout, zones that contain data are copied, while zones
+            #   that are there because of C++ padding rules are skipped. If this
+            #   is true (the default), consecutive copy/skips are merged into
+            #   one bigger copy, as doine one big memcpy() is probably more
+            #   efficient than skipping the few padding bytes. Set to false to
+            #   turn that off.
+            # remove_trailing_skips::
+            #   because of C/C++ padding rules, structures might contain
+            #   trailing bytes that don't contain information. If this option is
+            #   true (the default), these bytes are removed from the layout.
+            def memory_layout(options = Hash.new)
+                options = validate_layout_options(options)
                 do_memory_layout(
                     options[:accept_pointers],
                     options[:accept_opaques],
@@ -523,6 +551,27 @@ module Typelib
 		end
 	    end
         end
+
+        # Returns a string whose content is a marshalled representation of the memory
+        # hold by +obj+
+        #
+        # This can be used to create a new object later by using value_type.wrap, where
+        # +value_type+ is the object returned by Registry#get. Example:
+        #
+        #   # Do complex computation
+        #   marshalled_data = result.to_byte_array
+        #
+        #   # Later on ...
+        #   value = my_registry.get('/base/Type').wrap(marshalled_data)
+        def to_byte_array(options = Hash.new)
+            options = Type.validate_layout_options(options)
+            do_byte_array(
+                options[:accept_pointers],
+                options[:accept_opaques],
+                options[:merge_skip_copy],
+                options[:remove_trailing_skips])
+        end
+
 
 	def initialize(*args)
 	    __initialize__(*args)
