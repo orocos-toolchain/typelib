@@ -1109,15 +1109,24 @@ module Typelib
             super if defined? super
         end
 
-        def insert(value)
-            do_insert(Typelib.from_ruby(value, element_t))
+        # DEPRECATED. Use #push instead
+        def insert(value) # :nodoc:
+            STDERR.puts "WARN: Typelib::ContainerType#insert(value) is deprecated, use #push(value) instead"
+            push(value)
+        end
+
+        # Adds a new value at the end of the sequence
+        def push(*values)
+            for v in values
+                do_insert(Typelib.from_ruby(v, element_t))
+            end
         end
 
         # True if this container is empty
         def empty?; length == 0 end
 
         # Appends a new element to this container
-        def <<(value); insert(value) end
+        def <<(value); push(value) end
 
         def pretty_print(pp)
             index = 0
