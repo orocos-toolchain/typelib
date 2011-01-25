@@ -1294,6 +1294,43 @@ module Typelib
 
         attr_reader :export_typemap
 
+        class InconsistentTypeExport < RuntimeError
+            attr_reader :path
+            attr_reader :existing_type
+            attr_reader :new_type
+
+            def initialize(path, existing_type, new_type, message = nil)
+                super(message)
+                @path = path
+                @existing_type = existing_type
+                @new_type = new_type
+            end
+
+            def exception(message = nil)
+                if message.respond_to?(:to_str)
+                    self.class.new(path, existing_type, new_type, message)
+                else
+                    self
+                end
+            end
+
+            def pretty_print(pp)
+                pp.text "there is a type registered at #{path} that differs from the one we are trying to register"
+                pp.breakable
+                pp.text "registered type is"
+                pp.nest(2) do
+                    pp.breakable
+                    existing_type.pretty_print(pp)
+                end
+                pp.breakable
+                pp.text "new type is"
+                pp.nest(2) do
+                    pp.breakable
+                    new_type.pretty_print(pp)
+                end
+            end
+        end
+
         # Export this registry in the Ruby namespace. The base namespace under
         # which it should be done is given in +base_module+
         def export_to_ruby(base_module = Kernel, options = Hash.new)
@@ -1364,7 +1401,7 @@ module Typelib
                         if override
                             mod.const_set(basename, exported_type)
                         elsif !(existing_type <= exported_type)
-                            raise ArgumentError, "there is a type registered at #{mod.name}::#{basename} which differs from the one in the registry, and override is false"
+                            raise InconsistentTypeExport.new("#{mod.name}::#{basename}", existing_type, exported_type), "there is a type registered at #{mod.name}::#{basename} which differs from the one in the registry, and override is false"
                         end
                     else
                         mod.const_set(basename, exported_type)
