@@ -2,6 +2,7 @@ require 'enumerator'
 require 'utilrb/object/singleton_class'
 require 'utilrb/kernel/options'
 require 'utilrb/module/attr_predicate'
+require 'utilrb/module/const_defined_here_p'
 require 'delegate'
 require 'pp'
 require 'facets/string/camelcase'
@@ -1265,7 +1266,7 @@ module Typelib
                 ns = template_basename.gsub(/\s+/, '_').camelcase(:upper)
 
                 if template_args.empty?
-                    if mod.const_defined?(ns)
+                    if mod.const_defined_here?(ns)
                         mod.const_get(ns)
                     else
                         result = Module.new
@@ -1358,7 +1359,7 @@ module Typelib
                 if template_args.empty?
                     basename = basename.gsub(/\s+/, '_').camelcase(:upper)
 
-                    if mod.const_defined?(basename)
+                    if mod.const_defined_here?(basename)
                         existing_type = mod.const_get(basename)
                         if override
                             mod.const_set(basename, exported_type)
