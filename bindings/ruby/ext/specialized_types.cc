@@ -699,7 +699,7 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_method(cContainer, "length",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "size",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "clear",    RUBY_METHOD_FUNC(container_clear), 0);
-    rb_define_method(cContainer, "do_insert",    RUBY_METHOD_FUNC(container_do_insert), 1);
+    rb_define_method(cContainer, "do_push",    RUBY_METHOD_FUNC(container_do_push), 1);
     rb_define_method(cContainer, "do_get",    RUBY_METHOD_FUNC(container_do_get), 1);
     rb_define_method(cContainer, "do_set",    RUBY_METHOD_FUNC(container_do_set), 2);
     rb_define_method(cContainer, "do_each",      RUBY_METHOD_FUNC(container_each), 0);

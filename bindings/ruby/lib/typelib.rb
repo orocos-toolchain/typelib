@@ -1144,7 +1144,7 @@ module Typelib
         # Adds a new value at the end of the sequence
         def push(*values)
             for v in values
-                do_insert(Typelib.from_ruby(v, element_t))
+                do_push(Typelib.from_ruby(v, element_t))
             end
         end
 
