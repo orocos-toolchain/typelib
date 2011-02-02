@@ -439,7 +439,7 @@ static VALUE container_length(VALUE self)
 
 /*
  * call-seq:
- *  container.clear => value
+ *  container.clear
  *
  * Removes all elements from that container
  */
