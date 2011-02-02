@@ -1123,6 +1123,26 @@ module Typelib
             end
         end
 
+        # Enumerates the elements of this container
+        def each
+            do_each do |el|
+                yield(Typelib.to_ruby(el, element_t))
+            end
+        end
+
+        # Erases an element from this container
+        def erase(el)
+            el = Typelib.from_ruby(el, element_t)
+            do_erase(el)
+        end
+
+        # Deletes the elements
+        def delete_if
+            do_delete_if do |el|
+                yield(Typelib.to_ruby(el, element_t))
+            end
+        end
+
         # True if this container is empty
         def empty?; length == 0 end
 
