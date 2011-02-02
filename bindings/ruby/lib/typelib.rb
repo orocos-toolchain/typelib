@@ -1123,7 +1123,7 @@ module Typelib
                 # This can be *very* costly for big containers
                 convert_to_ruby Array do |value|
                     converted = value.map do |v|
-                        Typelib.to_ruby(v, deference)
+                        Typelib.to_ruby(v, element_t)
                     end
                     def converted.dup
                         map(&:dup)
