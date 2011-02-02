@@ -186,6 +186,39 @@ BOOST_AUTO_TEST_CASE( test_vector_delete_if )
         BOOST_REQUIRE_EQUAL(i + 2, vector[i]);
 }
 
+BOOST_AUTO_TEST_CASE( test_vector_getElement )
+{ 
+    Registry registry;
+    import_test_types(registry);
+
+    Container const& container = Container::createContainer(registry, "/std/vector", *registry.get("int32_t"));
+
+    std::vector<int32_t> v;
+    v.resize(10);
+    for (int i = 0; i < 10; ++i)
+        v[i] = i;
+
+    for (int i = 0; i < 10; ++i)
+        BOOST_REQUIRE_EQUAL(i, *reinterpret_cast<int*>(container.getElement(&v, i).getData()));
+}
+
+BOOST_AUTO_TEST_CASE( test_vector_setElement )
+{ 
+    Registry registry;
+    import_test_types(registry);
+
+    Container const& container = Container::createContainer(registry, "/std/vector", *registry.get("int32_t"));
+
+    std::vector<int32_t> v;
+    v.resize(10);
+
+    for (int i = 0; i < 10; ++i)
+        container.setElement(&v, i, Typelib::Value(&i, container.getIndirection()));
+
+    for (int i = 0; i < 10; ++i)
+        BOOST_REQUIRE_EQUAL(i, v[i]);
+}
+
 BOOST_AUTO_TEST_CASE( test_vector_visit )
 { 
     Registry registry;

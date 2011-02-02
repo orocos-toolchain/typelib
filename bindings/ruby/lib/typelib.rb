@@ -1076,8 +1076,33 @@ module Typelib
             @element_t = self.class.deference
         end
 
+        # Module included in container types that offer random access
+        # functionality
+        module RandomAccessContainer
+            # Returns the value at the given index
+            def [](index)
+                if index < 0 || index >= size
+                    raise ArgumentError, "index out of bounds"
+                end
+
+                Typelib.to_ruby(do_get(index), element_t)
+            end
+
+            def []=(index, value)
+                if index < 0 || index >= size
+                    raise ArgumentError, "index out of bounds"
+                end
+
+                do_set(index, Typelib.from_ruby(value, element_t))
+            end
+        end
+
         def self.subclass_initialize
             super if defined? super
+
+            if random_access?
+                include RandomAccessContainer
+            end
 
             convert_from_ruby Array do |value, expected_type|
                 t = expected_type.new

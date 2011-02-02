@@ -1,4 +1,5 @@
 #include "typemodel.hh"
+#include "value.hh"
 #include "registry.hh"
 
 #include "typename.hh"
@@ -495,6 +496,11 @@ namespace Typelib
         return result;
     }
 
+    bool Container::isRandomAccess() const { return false; }
+    void Container::setElement(void* ptr, int idx, Typelib::Value value) const
+    { throw std::logic_error("trying to use setElement on a container that is not random-access"); }
+    Typelib::Value Container::getElement(void* ptr, int idx) const
+    { throw std::logic_error("trying to use getElement on a container that is not random-access"); }
 
     Field::Field(const std::string& name, const Type& type)
         : m_name(name), m_type(type), m_offset(0) {}

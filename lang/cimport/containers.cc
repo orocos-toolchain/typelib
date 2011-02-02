@@ -55,6 +55,24 @@ void Vector::clear(void* ptr) const
     resize(vector_ptr, 0);
 }
 
+bool Vector::isRandomAccess() const
+{ return true; }
+void Vector::setElement(void* ptr, int idx, Typelib::Value value) const
+{
+    std::vector<uint8_t>* vector_ptr =
+        reinterpret_cast< std::vector<uint8_t>* >(ptr);
+    Typelib::copy(
+        Value(&(*vector_ptr)[idx * getIndirection().getSize()], getIndirection()),
+        value);
+}
+
+Typelib::Value Vector::getElement(void* ptr, int idx) const
+{
+    std::vector<uint8_t>* vector_ptr =
+        reinterpret_cast< std::vector<uint8_t>* >(ptr);
+    return Value(&(*vector_ptr)[idx * getIndirection().getSize()], getIndirection());
+}
+
 long Vector::getNaturalSize() const
 {
     return sizeof(std::vector<void*>);

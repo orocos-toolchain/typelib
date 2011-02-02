@@ -464,6 +464,33 @@ namespace Typelib
         virtual void destroy(void* ptr) const = 0;
         virtual bool visit(void* ptr, ValueVisitor& visitor) const = 0;
 
+        /** If true, this is a random access container and both the
+         * getElement(int) and setElement(int) methods can be used
+         *
+         * Containers are not random-access by default
+         */
+        virtual bool isRandomAccess() const;
+
+        /** On random access containers, allows to access elements by their
+         * index
+         *
+         * Random access containers are containers for which isRandomAccess()
+         * returns true.
+         *
+         * Throws std::logic_error on containers that are not random access
+         */
+        virtual Typelib::Value getElement(void* ptr, int idx) const;
+
+        /** On random access containers, allows to set an element's value by its
+         * index
+         *
+         * Random access containers are containers for which isRandomAccess()
+         * returns true.
+         *
+         * Throws std::logic_error on containers that are not random access
+         */
+        virtual void setElement(void* ptr, int idx, Typelib::Value value) const;
+
         /** Removes all elements from this container
          */
         virtual void clear(void* ptr) const = 0;

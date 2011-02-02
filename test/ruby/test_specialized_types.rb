@@ -324,6 +324,15 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal(expected, value.dbl_vector.to_a)
     end
 
+    def test_container_random_access
+        std = make_registry.get("StdCollections")
+        value = std.new
+        value.dbl_vector.push(20)
+        assert_equal 20, value.dbl_vector[0]
+        value.dbl_vector[0] = 10
+        assert_equal 10, value.dbl_vector[0]
+    end
+
     def test_container_of_container
         std      = make_registry.get("StdCollections")
         assert(std.v_of_v < Typelib::ContainerType)

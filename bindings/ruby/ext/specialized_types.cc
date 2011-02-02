@@ -412,6 +412,19 @@ static VALUE container_natural_size(VALUE self)
 
 /*
  * call-seq:
+ *  container.random_access?
+ *
+ * Returns true if this container type is a random access container
+ */
+static VALUE container_random_access_p(VALUE self)
+{
+    Container const& type(dynamic_cast<Container const&>(rb2cxx::object<Type>(self)));
+    return type.isRandomAccess() ? Qtrue : Qfalse;
+}
+
+
+/*
+ * call-seq:
  *  container.length => value
  *
  * Returns the count of elements in +container+
@@ -439,36 +452,55 @@ static VALUE container_clear(VALUE self)
     return Qnil;
 }
 
-/*
- * call-seq:
- *  container.insert(element) => container
- *
- * Inserts a new element in the container
- */
-static VALUE container_do_insert(VALUE self, VALUE obj)
+static Typelib::Value container_element(uint64_t* buffer10, Type const& element_t, VALUE obj)
 {
-    Value container_v = rb2cxx::object<Value>(self);
-    Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
-    Type const& element_t = container_t.getIndirection();
-    Value element_v;
-
-    int64_t buffer[10];
+    Typelib::Value element_v;
     if (element_t.getCategory() == Type::Numeric && sizeof(int64_t) * 10 >= element_t.getSize())
     {
         // Special case: allow the caller to use Ruby numeric directly. This is
         // way faster if a lot of insertions need to be done
-        element_v = Value(buffer, element_t);
+        element_v = Value(buffer10, element_t);
         typelib_from_ruby(element_v, obj);
     }
     else
     {
         element_v   = rb2cxx::object<Value>(obj);
-        if (container_t.getIndirection() != element_v.getType())
-            rb_raise(rb_eArgError, "wrong type %s for new element, expected %s", element_v.getType().getName().c_str(), container_t.getIndirection().getName().c_str());
+        if (element_t != element_v.getType())
+            rb_raise(rb_eArgError, "wrong type %s for new element, expected %s", element_v.getType().getName().c_str(), element_t.getName().c_str());
     }
+    return element_v;
+}
 
-    container_t.insert(container_v.getData(), element_v);
+static VALUE container_do_push(VALUE self, VALUE obj)
+{
+    Value container_v = rb2cxx::object<Value>(self);
+    Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
+
+    uint64_t buffer[10];
+    Value element_v = container_element(buffer, container_t.getIndirection(), obj);
+    container_t.push(container_v.getData(), element_v);
     return self;
+}
+
+static VALUE container_do_set(VALUE self, VALUE index, VALUE obj)
+{
+    Value container_v = rb2cxx::object<Value>(self);
+    Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
+
+    uint64_t buffer[10];
+    Value element_v = container_element(buffer, container_t.getIndirection(), obj);
+    container_t.setElement(container_v.getData(), NUM2INT(index), element_v);
+    return self;
+}
+
+static VALUE container_do_get(VALUE self, VALUE index)
+{
+    Value container_v = rb2cxx::object<Value>(self);
+    Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
+    VALUE registry = value_get_registry(self);
+
+    Value v = container_t.getElement(container_v.getData(), NUM2INT(index));
+    return typelib_to_ruby(v, registry, self);
 }
 
 struct ContainerIterator : public RubyGetter
@@ -527,13 +559,10 @@ static VALUE container_erase(VALUE self, VALUE obj)
     Value container_v = rb2cxx::object<Value>(self);
     Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
 
-    Type const& element_t = container_t.getIndirection();
-    vector<int8_t> buffer(element_t.getSize());
-    Value v(&buffer[0], element_t);
-    Typelib::init(v);
-    typelib_from_ruby(v, obj);
+    uint64_t buffer[10];
+    Value element_v = container_element(buffer, container_t.getIndirection(), obj);
 
-    if (container_t.erase(container_v.getData(), v))
+    if (container_t.erase(container_v.getData(), element_v))
         return Qtrue;
     else
         return Qfalse;
@@ -666,10 +695,13 @@ void typelib_ruby::Typelib_init_specialized_types()
     cContainer = rb_define_class_under(mTypelib, "ContainerType", cIndirect);
     rb_define_singleton_method(cContainer, "container_kind", RUBY_METHOD_FUNC(container_kind), 0);
     rb_define_singleton_method(cContainer, "natural_size",   RUBY_METHOD_FUNC(container_natural_size), 0);
+    rb_define_singleton_method(cContainer, "random_access?",   RUBY_METHOD_FUNC(container_random_access_p), 0);
     rb_define_method(cContainer, "length",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "size",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "clear",    RUBY_METHOD_FUNC(container_clear), 0);
     rb_define_method(cContainer, "do_insert",    RUBY_METHOD_FUNC(container_do_insert), 1);
+    rb_define_method(cContainer, "do_get",    RUBY_METHOD_FUNC(container_do_get), 1);
+    rb_define_method(cContainer, "do_set",    RUBY_METHOD_FUNC(container_do_set), 2);
     rb_define_method(cContainer, "do_each",      RUBY_METHOD_FUNC(container_each), 0);
     rb_define_method(cContainer, "do_erase",     RUBY_METHOD_FUNC(container_erase), 1);
     rb_define_method(cContainer, "do_delete_if", RUBY_METHOD_FUNC(container_delete_if), 0);

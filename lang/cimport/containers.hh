@@ -15,6 +15,10 @@ public:
     static std::string fullName(std::string const& element_name);
     Vector(Typelib::Type const& on);
 
+    bool isRandomAccess() const;
+    void setElement(void* ptr, int idx, Typelib::Value value) const;
+    Typelib::Value getElement(void* ptr, int idx) const;
+
     size_t getElementCount(void const* ptr) const;
     void init(void* ptr) const;
     void destroy(void* ptr) const;
