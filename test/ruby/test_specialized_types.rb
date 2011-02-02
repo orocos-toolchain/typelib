@@ -338,11 +338,15 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         new_element = inner_t.new
         new_element.push(10)
         outer.push(new_element)
+        new_element.push(20)
+        outer.push(new_element)
 
-        assert_equal(1, outer.length)
+        assert_equal(2, outer.length)
         elements = outer.to_a
         assert_kind_of(Typelib::ContainerType, elements[0])
         assert_equal([10], elements[0].to_a)
+        assert_kind_of(Typelib::ContainerType, elements[1])
+        assert_equal([10, 20], elements[1].to_a)
     end
 
     def test_container_clear

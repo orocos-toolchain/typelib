@@ -17,6 +17,13 @@ using namespace std;
 using utilmm::split;
 using utilmm::join;
 
+template<int ptrsize> struct ptr_value_getter { };
+template<> struct ptr_value_getter<4> { typedef uint32_t result; };
+template<> struct ptr_value_getter<8> { typedef uint64_t result; };
+
+typedef ptr_value_getter<sizeof(void*)>::result ptr_value_t;
+ptr_value_t ptr_value(void* ptr) { return reinterpret_cast<ptr_value_t>(ptr); };
+
 BOOST_AUTO_TEST_CASE( test_vector_assumptions )
 {
     // It is expected that ->size() depends on the type of the vector elements,
@@ -32,6 +39,28 @@ BOOST_AUTO_TEST_CASE( test_vector_assumptions )
         values.resize(10);
         BOOST_REQUIRE_EQUAL(10, values.size());
         BOOST_REQUIRE_EQUAL(10 * sizeof(vector<double>), reinterpret_cast< vector<int8_t>& >(values).size());
+    }
+
+    // To resize the containers efficiently, we assume that moving the bytes
+    // around is fine. This is a valid assumption only if the std::vector's
+    // internal structure does not store any pointer to the memory location
+    // 
+    // This tests that this assumption is valid
+    {
+        vector< vector<double> > values;
+        values.resize(10);
+
+        uint8_t* values_p = reinterpret_cast<uint8_t*>(&values);
+        uint8_t* it_p     = reinterpret_cast<uint8_t*>(&values);
+        ptr_value_t vector_min = ptr_value(&values);
+        ptr_value_t vector_max = ptr_value(&values) + sizeof(values);
+
+        while ((it_p + sizeof(void*)) - values_p < sizeof(values))
+        {
+            ptr_value_t p = *reinterpret_cast<ptr_value_t*>(it_p);
+            BOOST_REQUIRE(!(p >= vector_min && p < vector_max));
+            ++it_p;
+        }
     }
 }
 

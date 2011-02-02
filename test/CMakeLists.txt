@@ -2,6 +2,8 @@ FIND_PACKAGE(Antlr REQUIRED COMPONENTS CPP)
 
 set_source_files_properties(test_value.cc PROPERTIES
     COMPILE_FLAGS -fno-strict-aliasing)
+set_source_files_properties(test_containers.cc PROPERTIES
+    COMPILE_FLAGS -fno-strict-aliasing)
 
 CONFIGURE_FILE(testsuite.hh.in ${CMAKE_BINARY_DIR}/test/testsuite.hh @ONLY)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../lang/cimport ${CMAKE_CURRENT_BINARY_DIR}/../lang/cimport)

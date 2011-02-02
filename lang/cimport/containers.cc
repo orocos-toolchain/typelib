@@ -65,13 +65,25 @@ void Vector::resize(std::vector<uint8_t>* ptr, size_t new_size) const
     Type const& element_t = getIndirection();
     size_t element_size = getIndirection().getSize();
 
+    //
+    // BIG FAT WARNING
+    //
+    // This assumes that std::vector is implemented so that the data structure
+    // does *not* contain pointers towards its own location
+    //
+    // If this assumption is broken, we would need to have a saner (but less
+    // efficient) implementation
+    //
+    // This assumption is tested in test_containers.cc in the C++ test suite
+    //
+
     size_t old_raw_size   = ptr->size();
     size_t old_size       = getElementCount(ptr);
     size_t new_raw_size   = new_size * element_size;
 
     if (!is_memcpy && old_size > new_size)
     {
-        // Need to destroy the old elements
+        // Need to destroy the elements that are at the end of the container
         for (size_t i = new_raw_size; i < old_raw_size; i += element_size)
             Typelib::destroy(Value(&(*ptr)[i], element_t));
     }
@@ -80,7 +92,7 @@ void Vector::resize(std::vector<uint8_t>* ptr, size_t new_size) const
 
     if (!is_memcpy && old_size < new_size)
     {
-        // Need to initialize the new elements
+        // Need to initialize the new elements at the end of the container
         for (size_t i = old_raw_size; i < new_raw_size; i += element_size)
             Typelib::init(Value(&(*ptr)[i], element_t));
     }
