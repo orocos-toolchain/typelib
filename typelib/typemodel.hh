@@ -468,9 +468,9 @@ namespace Typelib
          */
         virtual void clear(void* ptr) const = 0;
 
-        /** Insert the given element \c v into the container at +ptr+
+        /** Pushes the given element \c v into the container at +ptr+
          */
-        virtual void insert(void* ptr, Value v) const = 0;
+        virtual void push(void* ptr, Value v) const = 0;
 
         /** Removes the element equal to \c in \c ptr.
          *

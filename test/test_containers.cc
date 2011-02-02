@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( test_vector_init_destroy )
     free(v_memory);
 }
 
-BOOST_AUTO_TEST_CASE( test_vector_insert )
+BOOST_AUTO_TEST_CASE( test_vector_push )
 {
     Registry registry;
     import_test_types(registry);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE( test_vector_insert )
     std::vector<int> vector;
     for (int value = 0; value < 10; ++value)
     {
-        container.insert(&vector, Value(&value, container.getIndirection()));
+        container.push(&vector, Value(&value, container.getIndirection()));
         BOOST_REQUIRE_EQUAL(value + 1, vector.size());
 
         for (int i = 0; i < value; ++i)

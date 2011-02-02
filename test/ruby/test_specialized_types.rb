@@ -303,13 +303,13 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal(0, value.dbl_vector.length)
         assert(value.dbl_vector.empty?)
 
-        value.dbl_vector.insert(10)
+        value.dbl_vector.push(10)
         assert_equal(1, value.dbl_vector.length)
         assert_equal([10], value.dbl_vector.to_a)
 
         expected = [10]
         10.times do |i|
-            value.dbl_vector.insert(i)
+            value.dbl_vector.push(i)
             assert_equal(i + 2, value.dbl_vector.length)
             expected << i
             assert_equal(expected, value.dbl_vector.to_a)
@@ -336,8 +336,8 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal(0, outer.length)
 
         new_element = inner_t.new
-        new_element.insert(10)
-        outer.insert(new_element)
+        new_element.push(10)
+        outer.push(new_element)
 
         assert_equal(1, outer.length)
         elements = outer.to_a
@@ -348,7 +348,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     def test_container_clear
         value = make_registry.get("StdCollections").new
 
-        value.dbl_vector.insert(10)
+        value.dbl_vector.push(10)
         assert(!value.dbl_vector.empty?)
         value.dbl_vector.clear
         assert(value.dbl_vector.empty?)
@@ -373,7 +373,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert value.empty?
         assert_equal 0, value.length
 
-        value.insert(?a)
+        value.push(?a)
         assert_equal "a", Typelib.to_ruby(value)
         assert_equal "a_string", Typelib.to_ruby(Typelib.from_ruby("a_string", reg.get("/std/string")))
     end

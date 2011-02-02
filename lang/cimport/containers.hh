@@ -20,7 +20,7 @@ public:
     void destroy(void* ptr) const;
     void clear(void*) const;
     long getNaturalSize() const;
-    void insert(void* ptr, Typelib::Value v) const;
+    void push(void* ptr, Typelib::Value v) const;
     bool erase(void* ptr, Typelib::Value v) const;
     bool compare(void* ptr, void* other) const;
     void copy(void* dst, void* src) const;
@@ -52,7 +52,7 @@ public:
 
     long getNaturalSize() const;
 
-    void insert(void* ptr, Typelib::Value v) const;
+    void push(void* ptr, Typelib::Value v) const;
 
     bool erase(void* ptr, Typelib::Value v) const;
 

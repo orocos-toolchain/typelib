@@ -86,7 +86,7 @@ void Vector::resize(std::vector<uint8_t>* ptr, size_t new_size) const
     }
 }
 
-void Vector::insert(void* ptr, Value v) const
+void Vector::push(void* ptr, Value v) const
 {
     if (v.getType() != getIndirection())
         throw std::runtime_error("type mismatch in vector insertion");
@@ -358,7 +358,7 @@ long String::getNaturalSize() const
     return sizeof(std::string);
 }
 
-void String::insert(void* ptr, Value v) const
+void String::push(void* ptr, Value v) const
 {
     if (v.getType() != getIndirection())
         throw std::runtime_error("type mismatch in string insertion");
