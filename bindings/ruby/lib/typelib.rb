@@ -1121,10 +1121,13 @@ module Typelib
                 # container. We have to convert to a Ruby array once and for all
                 #
                 # This can be *very* costly for big containers
+                #
+                # Note that it is called before super() so that it gets
+                # overriden by convertions that are explicitely defined for this
+                # type (i.e. that reference this type by name)
                 convert_to_ruby Array do |value|
-                    converted = value.map do |v|
-                        Typelib.to_ruby(v, element_t)
-                    end
+                    # Convertion is done by #map
+                    converted = value.map { |v| v }
                     def converted.dup
                         map(&:dup)
                     end
@@ -1132,6 +1135,8 @@ module Typelib
                 end
             end
 
+            # This is done last so that convertions to ruby that refer to this
+            # type by name can override the default convertion above
             super if defined? super
         end
 
