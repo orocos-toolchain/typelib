@@ -978,6 +978,12 @@ module Typelib
 	    pp.text ']'
 	end
 
+        def each
+            do_each do |el|
+                yield(Typelib.to_ruby(el, element_t))
+            end
+        end
+
         def self.subclass_initialize
             super if defined? super
 
@@ -1002,10 +1008,12 @@ module Typelib
                 # have to convert to a Ruby array once and for all
                 #
                 # This can be *very* costly for big arrays
+                #
+                # Note that it is overriden by convertions that are explicitely
+                # defined for this type (i.e. that reference this type by name)
                 convert_to_ruby Array do |value|
-                    converted = value.map do |v|
-                        Typelib.to_ruby(v, deference)
-                    end
+                    # Convertion is done by value#each directly
+                    converted = value.each { |v| v}
                     def converted.dup
                         map(&:dup)
                     end
@@ -1013,6 +1021,8 @@ module Typelib
                 end
             end
 
+            # This is done last so that convertions to ruby that refer to this
+            # type by name can override the default convertion above
             super if defined? super
         end
 
