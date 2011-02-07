@@ -1812,7 +1812,7 @@ module Typelib
     end
     specialize "#{CHAR_T.name}[]" do
         def to_str
-            Type::to_string(value)
+            Type::to_string(self)
         end
     end
     convert_from_ruby String, "#{CHAR_T.name}*" do |value, typelib_type|
@@ -1825,7 +1825,7 @@ module Typelib
     end
     specialize "#{CHAR_T.name}*" do
         def to_str
-            Type::to_string(value)
+            Type::to_string(self)
         end
     end
 end
