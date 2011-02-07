@@ -271,6 +271,9 @@ module Typelib
 
             # Definition of the convertions between Ruby objects to this
             # Typelib type. It is used by Typelib.from_ruby.
+            #
+            # It is a mapping from a Ruby class K to a block which can convert a
+            # value of class K to the corresponding Typelib value
             attr_reader :convertions_from_ruby
 
             attr_predicate :contains_converted_types?, true
@@ -311,6 +314,8 @@ module Typelib
                 end
             end
             extend(m)
+
+            options[:block] = block
 
             self.contains_converted_types = options[:recursive]
             self.convertion_to_ruby = [to, options]
