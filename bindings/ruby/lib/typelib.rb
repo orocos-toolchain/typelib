@@ -253,6 +253,16 @@ module Typelib
         ns
     end
 
+    def self.define_method_if_possible(on, reference_class, name, &block)
+        if !reference_class.method_defined?(name) || Type::ALLOWED_OVERLOADINGS.include?(name)
+            on.send(:define_method, name, &block)
+            true
+        else
+            STDERR.puts "WARN: NOT defining #{name} on #{on.name} as it would overload a necessary method"
+            false
+        end
+    end
+
     # Base class for all types
     # Registry types are wrapped into subclasses of Type
     # or other Type-derived classes (Array, Pointer, ...)
@@ -296,13 +306,7 @@ module Typelib
             end
 
             def define_method_if_possible(name, &block)
-                if !method_defined?(name) || ALLOWED_OVERLOADINGS.include?(name)
-                    define_method(name, &block)
-                    true
-                else
-                    STDERR.puts "WARN: NOT defining #{name} on #{self.name} as it would overload a necessary method"
-                    false
-                end
+                Typelib.define_method_if_possible(self, self, name, &block)
             end
         end
         @convertions_from_ruby = Hash.new
@@ -705,20 +709,19 @@ module Typelib
         def self.extend_for_custom_convertions
             super if defined? super
 
-            converted_fields = []
-            each_field do |name, type|
-                if type.contains_converted_types?
-                    converted_fields << name
-                end
-            end
-
             if !converted_fields.empty?
                 self.contains_converted_types = true
+                # Make it local so that it can be accessed in the module we define below
+                converted_fields = self.converted_fields
+                type_klass = self
+
                 m = Module.new do
                     converted_fields.each do |field_name|
                         attr_name = "@#{field_name}"
-                        attr_writer field_name
-                        define_method(field_name) do
+                        Typelib.define_method_if_possible(self, type_klass, "#{field_name}=") do |value|
+                            instance_variable_set(attr_name, value)
+                        end
+                        Typelib.define_method_if_possible(self, type_klass, field_name) do
                             if v = instance_variable_get(attr_name)
                                 v
                             else
@@ -793,6 +796,10 @@ module Typelib
 		super || self.fields[0].last.is_a?(typename)
 	    end
 
+            # The set of fields that are converted to a different type when
+            # accessed from Ruby, as a set of names
+            attr_reader :converted_fields
+
 	    # Called by the extension to initialize the subclass
 	    # For each field, it creates getters and setters on 
 	    # the object, and a getter in the singleton class 
@@ -800,22 +807,32 @@ module Typelib
             def subclass_initialize
                 @field_types = Hash.new
                 @fields = get_fields.map! do |name, offset, type|
-
                     field_types[name] = type
                     field_types[name.to_sym] = type
                     [name, type]
                 end
 
-                super if defined? super
+                @converted_fields = []
+                each_field do |name, type|
+                    if type.contains_converted_types?
+                        converted_fields << name
+                    end
+                end
 
                 @fields.each do |name, type|
-                    if define_method_if_possible(name) { get_field(name) }
+                    if converted_fields.include?(name)
                         singleton_class.send(:define_method, name) { || type }
+                    else
+                        if define_method_if_possible(name) { get_field(name) }
+                            singleton_class.send(:define_method, name) { || type }
+                        end
+                        define_method_if_possible("#{name}=") { |value| set_field(name, value) }
                     end
-                    define_method_if_possible("#{name}=") { |value| set_field(name, value) }
                     define_method_if_possible("raw_#{name}") { raw_get_field(name) }
                     define_method_if_possible("raw_#{name}=") { |value| raw_set_field(name, value) }
                 end
+
+                super if defined? super
 
                 convert_from_ruby Hash do |value, expected_type|
                     result = expected_type.new
