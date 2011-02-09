@@ -6,6 +6,7 @@ require 'utilrb/module/const_defined_here_p'
 require 'delegate'
 require 'pp'
 require 'facets/string/camelcase'
+require 'set'
 
 # Typelib is the main module for Ruby-side Typelib functionality.
 #
@@ -258,6 +259,13 @@ module Typelib
     #
     # Value objects are wrapped into instances of these classes
     class Type
+        allowed_overloadings = instance_methods
+        allowed_overloadings.delete(:class)
+        allowed_overloadings.delete('class')
+        allowed_overloadings.map! { |n| n.to_sym }
+        allowed_overloadings.concat(allowed_overloadings.map { |n| n.to_s })
+        ALLOWED_OVERLOADINGS = allowed_overloadings.to_set
+
         class << self
             # Definition of the unique convertion that should be used to convert
             # this type into a Ruby object
@@ -285,6 +293,16 @@ module Typelib
                          end
                 layout.size == 2 &&
                     ((layout[0] == :FLAG_MEMCPY) || layout[0] == :FLAG_SKIP)
+            end
+
+            def define_method_if_possible(name, &block)
+                if !method_defined?(name) || ALLOWED_OVERLOADINGS.include?(name)
+                    define_method(name, &block)
+                    true
+                else
+                    STDERR.puts "WARN: NOT defining #{name} on #{self.name} as it would overload a necessary method"
+                    false
+                end
             end
         end
         @convertions_from_ruby = Hash.new
@@ -791,17 +809,12 @@ module Typelib
                 super if defined? super
 
                 @fields.each do |name, type|
-                    if !method_defined?(name)
-			define_method(name) { get_field(name) }
-                        define_method("#{name}=") { |value| set_field(name, value) }
-                    end
-                    if !method_defined?("raw_#{name}")
-			define_method("raw_#{name}") { raw_get_field(name) }
-                        define_method("raw_#{name}=") { |value| raw_set_field(name, value) }
-                    end
-                    if !singleton_class.method_defined?(name)
+                    if define_method_if_possible(name) { get_field(name) }
                         singleton_class.send(:define_method, name) { || type }
                     end
+                    define_method_if_possible("#{name}=") { |value| set_field(name, value) }
+                    define_method_if_possible("raw_#{name}") { raw_get_field(name) }
+                    define_method_if_possible("raw_#{name}=") { |value| raw_set_field(name, value) }
                 end
 
                 convert_from_ruby Hash do |value, expected_type|
