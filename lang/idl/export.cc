@@ -555,10 +555,12 @@ bool IDLExport::save
                 if (marshalOpaquesAsAny())
                     stream << "any " << type.getBasename() << ";";
             }
-            else
+            else if (type.getBasename().find_first_of(" ") == string::npos)
 		stream << getIDLRelative(*type, type_namespace) << " " << type.getBasename() << ";";
 
-            m_typedefs[type_namespace].push_back(stream.str());
+            std::string def = stream.str();
+            if (!def.empty())
+                m_typedefs[type_namespace].push_back(def);
             return true;
 	}
         else return false;
