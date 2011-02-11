@@ -1048,7 +1048,7 @@ module Typelib
                 # defined for this type (i.e. that reference this type by name)
                 convert_to_ruby Array do |value|
                     # Convertion is done by value#each directly
-                    converted = value.each { |v| v}
+                    converted = value.map { |v| v }
                     def converted.dup
                         map(&:dup)
                     end

@@ -283,19 +283,30 @@ class TC_Value < Test::Unit::TestCase
         vector_vector_ns1_test_t = registry.get('/std/vector</std/vector</NS1/Test>>')
         assert_equal Array, vector_vector_ns1_test_t.convertion_to_ruby[0]
 
+        # Test that containers get converted to array because of the custom
+        # convertion on /NS1/Test
         containers_t = registry.get('Collections')
         containers = containers_t.new
-
         v_v_struct = containers.v_v_struct
         assert_kind_of Array, v_v_struct
         assert_same v_v_struct, containers.v_v_struct
-
         v_v_struct << [10]
-        puts v_v_struct.inspect
-        puts containers_t.v_v_struct.name
         assert_equal [], containers.raw_v_v_struct.to_ruby
         containers.apply_changes_from_converted_types
         assert_equal [[10]], containers.raw_v_v_struct.to_ruby
+
+        # Test that C++ Arrays get converted to Ruby Array because of the custom
+        # convertion on /NS1/Test
+        array_t = registry.get('Arrays')
+        arrays = array_t.new
+        arrays.zero!
+        a_struct = arrays.a_struct
+        assert_kind_of Array, a_struct
+        assert_same a_struct, arrays.a_struct
+        a_struct[0] = 10
+        assert_equal [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], arrays.raw_a_struct.to_ruby
+        arrays.apply_changes_from_converted_types
+        assert_equal [10, 0, 0, 0, 0, 0, 0, 0, 0, 0], arrays.raw_a_struct.to_ruby
     end
 end
 
