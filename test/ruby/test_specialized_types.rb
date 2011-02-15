@@ -137,6 +137,24 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         b0.a = a
     end
 
+    def test_compound_method_overloading
+        registry = make_registry
+        t = registry.get("/CompoundWithOverloadingClashes")
+        v = t.new
+        v.zero!
+
+        # .name should not be overloaded on the class, but OK on the instance
+        assert_equal "/CompoundWithOverloadingClashes", t.name
+        assert_equal 0, v.name
+
+        # .cast should not be overloaded on the instance, but OK on the class
+        assert_same registry.get("/int"), t.cast
+        assert_equal v, v.cast(t)
+
+        # #object_id should be overloaded on the instance, not on the class
+        assert_equal 0, v.object_id
+    end
+
     def test_array_def
         b = make_registry.get("/B").new
 

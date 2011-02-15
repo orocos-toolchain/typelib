@@ -253,12 +253,13 @@ module Typelib
         ns
     end
 
-    def self.define_method_if_possible(on, reference_class, name, &block)
-        if !reference_class.method_defined?(name) || Type::ALLOWED_OVERLOADINGS.include?(name)
+    def self.define_method_if_possible(on, reference_class, name, allowed_overloadings = [], msg_name = nil, &block)
+        if !reference_class.method_defined?(name) || allowed_overloadings.include?(name)
             on.send(:define_method, name, &block)
             true
         else
-            STDERR.puts "WARN: NOT defining #{name} on #{on.name} as it would overload a necessary method"
+            msg_name ||= "instances of #{reference_class.name}"
+            STDERR.puts "WARN: NOT defining #{name} on #{msg_name} as it would overload a necessary method"
             false
         end
     end
@@ -270,10 +271,10 @@ module Typelib
     # Value objects are wrapped into instances of these classes
     class Type
         allowed_overloadings = instance_methods
-        allowed_overloadings.delete(:class)
-        allowed_overloadings.delete('class')
-        allowed_overloadings.map! { |n| n.to_sym }
-        allowed_overloadings.concat(allowed_overloadings.map { |n| n.to_s })
+        allowed_overloadings = allowed_overloadings.map(&:to_s).to_set
+        allowed_overloadings.delete_if { |n| n =~ /^__/ }
+        allowed_overloadings -= "class"
+        allowed_overloadings |= allowed_overloadings.map(&:to_sym).to_set
         ALLOWED_OVERLOADINGS = allowed_overloadings.to_set
 
         class << self
@@ -306,7 +307,7 @@ module Typelib
             end
 
             def define_method_if_possible(name, &block)
-                Typelib.define_method_if_possible(self, self, name, &block)
+                Typelib.define_method_if_possible(self, self, name, Type::ALLOWED_OVERLOADINGS, &block)
             end
         end
         @convertions_from_ruby = Hash.new
@@ -718,10 +719,10 @@ module Typelib
                 m = Module.new do
                     converted_fields.each do |field_name|
                         attr_name = "@#{field_name}"
-                        Typelib.define_method_if_possible(self, type_klass, "#{field_name}=") do |value|
+                        Typelib.define_method_if_possible(self, type_klass, "#{field_name}=", Type::ALLOWED_OVERLOADINGS) do |value|
                             instance_variable_set(attr_name, value)
                         end
-                        Typelib.define_method_if_possible(self, type_klass, field_name) do
+                        Typelib.define_method_if_possible(self, type_klass, field_name, Type::ALLOWED_OVERLOADINGS) do
                             if v = instance_variable_get(attr_name)
                                 v
                             else
@@ -819,17 +820,22 @@ module Typelib
                     end
                 end
 
-                @fields.each do |name, type|
-                    if converted_fields.include?(name)
-                        singleton_class.send(:define_method, name) { || type }
-                    else
-                        if define_method_if_possible(name) { get_field(name) }
-                            singleton_class.send(:define_method, name) { || type }
-                        end
+                fields = @fields
+                converted_fields = @converted_fields
+                fields.each do |name, type|
+                    if !converted_fields.include?(name)
+                        define_method_if_possible(name) { get_field(name) }
                         define_method_if_possible("#{name}=") { |value| set_field(name, value) }
                     end
                     define_method_if_possible("raw_#{name}") { raw_get_field(name) }
                     define_method_if_possible("raw_#{name}=") { |value| raw_set_field(name, value) }
+                end
+
+                class_name = self.name
+                singleton_class.class_eval do
+                    fields.each do |name, type|
+                        Typelib.define_method_if_possible(self, self, name, [], class_name) { || type }
+                    end
                 end
 
                 super if defined? super

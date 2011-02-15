@@ -197,5 +197,11 @@ struct BoolHandling {
     bool value;
 };
 
+struct CompoundWithOverloadingClashes {
+    int name; // should not be overloaded on the class, but OK on the instance
+    int cast; // should not be overloaded on the instance, but OK on the class
+    int object_id; // should be overloaded in both cases
+};
+
 #endif
 
