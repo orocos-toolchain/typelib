@@ -273,7 +273,7 @@ module Typelib
         allowed_overloadings = instance_methods
         allowed_overloadings = allowed_overloadings.map(&:to_s).to_set
         allowed_overloadings.delete_if { |n| n =~ /^__/ }
-        allowed_overloadings -= "class"
+        allowed_overloadings -= ["class"]
         allowed_overloadings |= allowed_overloadings.map(&:to_sym).to_set
         ALLOWED_OVERLOADINGS = allowed_overloadings.to_set
 
