@@ -26,5 +26,9 @@
   <rosdep name="rdoc" type="doc" />
 
   <tags>stable</tags>
+
+  <export>
+    <cpp cflags="-I${prefix}/install/include" lflags="-L${prefix}/install/lib -ltypeLib -Wl,-rpath,-L${prefix}/lib"/>
+  </export>
 </package>
 
