@@ -11,13 +11,8 @@
 
 namespace Typelib
 {
-    namespace ValueOps
-    {
-        // Forward declarations for load/dump support in containers
-
-        struct OutputStream;
-        struct InputStream;
-    }
+    struct OutputStream;
+    struct InputStream;
 
     class Registry;
 
@@ -551,7 +546,7 @@ namespace Typelib
          */
         virtual MarshalOps::const_iterator dump(
             void const* container_ptr, size_t element_count,
-            ValueOps::OutputStream& stream,
+            OutputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const = 0;
 
         /** The marshalling process calls this method so that the contents of
@@ -572,7 +567,7 @@ namespace Typelib
          */
         virtual MarshalOps::const_iterator load(
             void* container_ptr, size_t element_count,
-            ValueOps::InputStream& stream,
+            InputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const = 0;
 
         typedef Container const& (*ContainerFactory)(Registry& r, std::list<Type const*> const& base_type);

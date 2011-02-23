@@ -50,9 +50,26 @@ namespace Typelib
     int dump(Value v, uint8_t* buffer, unsigned int buffer_size, MemoryLayout const& ops);
     int dump(uint8_t const* v, uint8_t* buffer, unsigned int buffer_size, MemoryLayout const& ops);
 
+    struct OutputStream
+    {
+        virtual void write(uint8_t const* data, size_t size) = 0;
+    };
+    void dump(Value v, OutputStream& stream);
+    void dump(Value v, OutputStream& stream, MemoryLayout const& ops);
+    void dump(uint8_t const* v, OutputStream& stream, MemoryLayout const& ops);
+
+
     size_t getDumpSize(Value v);
     size_t getDumpSize(Value v, MemoryLayout const& ops);
     size_t getDumpSize(uint8_t const* v, MemoryLayout const& ops);
+
+    struct InputStream
+    {
+        virtual void read(uint8_t* data, size_t size) = 0;
+    };
+    void load(Value v, InputStream& stream);
+    void load(Value v, InputStream& stream, MemoryLayout const& ops);
+    void load(uint8_t* v, Type const& type, InputStream& stream, MemoryLayout const& ops);
 
     void load(Value v, std::vector<uint8_t> const& buffer);
     void load(Value v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops);

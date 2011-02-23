@@ -269,7 +269,7 @@ void Vector::delete_if_impl(void* ptr, DeleteIfPredicate& pred) const
 }
 
 Container::MarshalOps::const_iterator Vector::dump(
-        void const* container_ptr, size_t element_count, ValueOps::OutputStream& stream,
+        void const* container_ptr, size_t element_count, OutputStream& stream,
         MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const
 {
     std::vector<uint8_t> const* vector_ptr =
@@ -299,7 +299,7 @@ Container::MarshalOps::const_iterator Vector::dump(
 
 Container::MarshalOps::const_iterator Vector::load(
         void* container_ptr, size_t element_count,
-        ValueOps::InputStream& stream,
+        InputStream& stream,
         MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const
 {
     std::vector<uint8_t>* vector_ptr =
@@ -432,7 +432,7 @@ bool String::visit(void* ptr, ValueVisitor& visitor) const
 }
 
 Container::MarshalOps::const_iterator String::dump(
-        void const* container_ptr, size_t element_count, ValueOps::OutputStream& stream,
+        void const* container_ptr, size_t element_count, OutputStream& stream,
         MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const
 {
     const std::string* string_ptr =
@@ -444,7 +444,7 @@ Container::MarshalOps::const_iterator String::dump(
 
 Container::MarshalOps::const_iterator String::load(
         void* container_ptr, size_t element_count,
-        ValueOps::InputStream& stream,
+        InputStream& stream,
         MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const
 {
     std::string* string_ptr =

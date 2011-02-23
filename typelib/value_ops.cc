@@ -58,7 +58,7 @@ void Typelib::display(std::ostream& io, MemoryLayout::const_iterator const begin
 
 tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
         uint8_t const* data, size_t in_offset,
-        ValueOps::OutputStream& stream, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
+        OutputStream& stream, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
 {
     MemoryLayout::const_iterator it;
     for (it = begin; it != end && *it != MemLayout::FLAG_END; ++it)
@@ -556,20 +556,160 @@ std::vector<uint8_t> Typelib::dump(Value v)
     return buffer;
 }
 
+/*--------------------------------------------------
+ * Dump support to std::vector<uint8_t>
+ */
+struct VectorOutputStream : public OutputStream
+{
+    std::vector<uint8_t>& buffer;
+    VectorOutputStream(std::vector<uint8_t>& buffer)
+        : buffer(buffer) {}
+
+    void write(uint8_t const* data, size_t size)
+    {
+        size_t out_index = buffer.size(); buffer.resize(out_index + size);
+        memcpy(&buffer[out_index], data, size);
+    }
+};
 void Typelib::dump(Value v, std::vector<uint8_t>& buffer)
+{
+    VectorOutputStream stream(buffer);
+    return dump(v, stream);
+}
+void Typelib::dump(Value v, std::vector<uint8_t>& buffer, MemoryLayout const& ops)
+{
+    VectorOutputStream stream(buffer);
+    return dump(v, stream, ops);
+}
+void Typelib::dump(uint8_t const* v, std::vector<uint8_t>& buffer, MemoryLayout const& ops)
+{
+    VectorOutputStream stream(buffer);
+    return dump(v, stream, ops);
+}
+
+/*--------------------------------------------------
+ * Dump support to std::ostream
+ */
+struct OstreamOutputStream : public OutputStream
+{
+    std::ostream& stream;
+    OstreamOutputStream(std::ostream& stream)
+        : stream(stream) {}
+
+    void write(uint8_t const* data, size_t size)
+    {
+        stream.write(reinterpret_cast<char const*>(data), size);
+    }
+};
+void Typelib::dump(Value v, std::ostream& ostream)
+{
+    OstreamOutputStream stream(ostream);
+    return dump(v, stream);
+}
+void Typelib::dump(Value v, std::ostream& ostream, MemoryLayout const& ops)
+{
+    OstreamOutputStream stream(ostream);
+    return dump(v, stream, ops);
+}
+void Typelib::dump(uint8_t const* v, std::ostream& ostream, MemoryLayout const& ops)
+{
+    OstreamOutputStream stream(ostream);
+    return dump(v, stream, ops);
+}
+
+
+/*--------------------------------------------------
+ * Dump support to std::ostream
+ */
+struct FDOutputStream : public OutputStream
+{
+    int fd;
+    FDOutputStream(int fd)
+        : fd(fd) {}
+
+    void write(uint8_t const* data, size_t size)
+    {
+        ::write(fd, data, size);
+    }
+};
+void Typelib::dump(Value v, int fd)
+{
+    FDOutputStream stream(fd);
+    return dump(v, stream);
+}
+void Typelib::dump(Value v, int fd, MemoryLayout const& ops)
+{
+    FDOutputStream stream(fd);
+    return dump(v, stream, ops);
+}
+void Typelib::dump(uint8_t const* v, int fd, MemoryLayout const& ops)
+{
+    FDOutputStream stream(fd);
+    return dump(v, stream, ops);
+}
+
+
+/*--------------------------------------------------
+ * Dump support to FILE
+ */
+struct FileOutputStream : public OutputStream
+{
+    FILE* fd;
+    FileOutputStream(FILE* fd)
+        : fd(fd) {}
+
+    void write(uint8_t const* data, size_t size)
+    {
+        ::fwrite(data, size, 1, fd);
+    }
+};
+void Typelib::dump(Value v, FILE* fd)
+{
+    FileOutputStream stream(fd);
+    return dump(v, stream);
+}
+void Typelib::dump(Value v, FILE* fd, MemoryLayout const& ops)
+{
+    FileOutputStream stream(fd);
+    return dump(v, stream, ops);
+}
+void Typelib::dump(uint8_t const* v, FILE* fd, MemoryLayout const& ops)
+{
+    FileOutputStream stream(fd);
+    return dump(v, stream, ops);
+}
+
+
+/*--------------------------------------------------
+ * Dump support to a generic OutputStream instance
+ */
+void Typelib::dump(Value v, OutputStream& stream)
 {
     MemoryLayout ops;
     MemLayout::Visitor visitor(ops);
     visitor.apply(v.getType());
-    return dump(v, buffer, ops);
+    return dump(v, stream, ops);
 }
-
-void Typelib::dump(Value v, std::vector<uint8_t>& buffer, MemoryLayout const& ops)
+void Typelib::dump(Value v, OutputStream& stream, MemoryLayout const& ops)
 {
-    dump(reinterpret_cast<uint8_t const*>(v.getData()), buffer, ops);
+    return dump(reinterpret_cast<uint8_t*>(v.getData()), stream, ops);
+}
+void Typelib::dump(uint8_t const* v, OutputStream& stream, MemoryLayout const& ops)
+{
+    MemoryLayout::const_iterator end = ValueOps::dump(
+            v, 0, stream, ops.begin(), ops.end()).get<1>();
+    if (end != ops.end())
+        throw std::runtime_error("internal error in the marshalling process");
 }
 
-struct ByteArrayOutputStream : public ValueOps::OutputStream
+
+/*--------------------------------------------------
+ * Dump support to char*
+ *
+ * It is not using the generic dump() methods as it will return 0 on buffer
+ * overrun or marshalling error, instead of throwing an exception
+ */
+struct ByteArrayOutputStream : public OutputStream
 {
     uint8_t* buffer;
     unsigned int   buffer_size;
@@ -586,7 +726,18 @@ struct ByteArrayOutputStream : public ValueOps::OutputStream
         current += size;
     }
 };
+int Typelib::dump(Value v, uint8_t* buffer, unsigned int buffer_size)
+{
+    MemoryLayout ops;
+    MemLayout::Visitor visitor(ops);
+    visitor.apply(v.getType());
+    return dump(v, buffer, buffer_size, ops);
+}
 
+int Typelib::dump(Value v, uint8_t* buffer, unsigned int buffer_size, MemoryLayout const& ops)
+{
+    return dump(reinterpret_cast<uint8_t const*>(v.getData()), buffer, buffer_size, ops);
+}
 int Typelib::dump(uint8_t const* v, uint8_t* buffer, unsigned int buffer_size, MemoryLayout const& ops)
 {
     ByteArrayOutputStream stream(buffer, buffer_size);
@@ -604,146 +755,12 @@ int Typelib::dump(uint8_t const* v, uint8_t* buffer, unsigned int buffer_size, M
     return stream.current;
 }
 
-int Typelib::dump(Value v, uint8_t* buffer, unsigned int buffer_size)
-{
-    MemoryLayout ops;
-    MemLayout::Visitor visitor(ops);
-    visitor.apply(v.getType());
-    return dump(v, buffer, buffer_size, ops);
-}
-
-int Typelib::dump(Value v, uint8_t* buffer, unsigned int buffer_size, MemoryLayout const& ops)
-{
-    return dump(reinterpret_cast<uint8_t const*>(v.getData()), buffer, buffer_size, ops);
-}
-
-struct VectorOutputStream : public ValueOps::OutputStream
-{
-    std::vector<uint8_t>& buffer;
-    VectorOutputStream(std::vector<uint8_t>& buffer)
-        : buffer(buffer) {}
-
-    void write(uint8_t const* data, size_t size)
-    {
-        size_t out_index = buffer.size(); buffer.resize(out_index + size);
-        memcpy(&buffer[out_index], data, size);
-    }
-};
-
-void Typelib::dump(uint8_t const* v, std::vector<uint8_t>& buffer, MemoryLayout const& ops)
-{
-    VectorOutputStream stream(buffer);
-    MemoryLayout::const_iterator end = ValueOps::dump(
-            v, 0, stream, ops.begin(), ops.end()).get<1>();
-    if (end != ops.end())
-        throw std::runtime_error("internal error in the marshalling process");
-}
 
 
-void Typelib::dump(Value v, std::ostream& stream)
-{
-    MemoryLayout ops;
-    MemLayout::Visitor visitor(ops);
-    visitor.apply(v.getType());
-    return dump(v, stream, ops);
-}
-
-void Typelib::dump(Value v, std::ostream& stream, MemoryLayout const& ops)
-{
-    dump(reinterpret_cast<uint8_t const*>(v.getData()), stream, ops);
-}
-
-struct OstreamOutputStream : public ValueOps::OutputStream
-{
-    std::ostream& stream;
-    OstreamOutputStream(std::ostream& stream)
-        : stream(stream) {}
-
-    void write(uint8_t const* data, size_t size)
-    {
-        stream.write(reinterpret_cast<char const*>(data), size);
-    }
-};
-
-void Typelib::dump(uint8_t const* v, std::ostream& ostream, MemoryLayout const& ops)
-{
-    OstreamOutputStream stream(ostream);
-    MemoryLayout::const_iterator end = ValueOps::dump(
-            v, 0, stream, ops.begin(), ops.end()).get<1>();
-    if (end != ops.end())
-        throw std::runtime_error("internal error in the marshalling process");
-}
-
-void Typelib::dump(Value v, int fd)
-{
-    MemoryLayout ops;
-    MemLayout::Visitor visitor(ops);
-    visitor.apply(v.getType());
-    return dump(v, fd, ops);
-}
-
-void Typelib::dump(Value v, int fd, MemoryLayout const& ops)
-{
-    dump(reinterpret_cast<uint8_t const*>(v.getData()), fd, ops);
-}
-
-struct FDOutputStream : public ValueOps::OutputStream
-{
-    int fd;
-    FDOutputStream(int fd)
-        : fd(fd) {}
-
-    void write(uint8_t const* data, size_t size)
-    {
-        ::write(fd, data, size);
-    }
-};
-
-void Typelib::dump(uint8_t const* v, int fd, MemoryLayout const& ops)
-{
-    FDOutputStream stream(fd);
-    MemoryLayout::const_iterator end = ValueOps::dump(
-            v, 0, stream, ops.begin(), ops.end()).get<1>();
-    if (end != ops.end())
-        throw std::runtime_error("internal error in the marshalling process");
-}
-
-void Typelib::dump(Value v, FILE* fd)
-{
-    MemoryLayout ops;
-    MemLayout::Visitor visitor(ops);
-    visitor.apply(v.getType());
-    return dump(v, fd, ops);
-}
-
-void Typelib::dump(Value v, FILE* fd, MemoryLayout const& ops)
-{
-    dump(reinterpret_cast<uint8_t const*>(v.getData()), fd, ops);
-}
-
-struct FileOutputStream : public ValueOps::OutputStream
-{
-    FILE* fd;
-    FileOutputStream(FILE* fd)
-        : fd(fd) {}
-
-    void write(uint8_t const* data, size_t size)
-    {
-        ::fwrite(data, size, 1, fd);
-    }
-};
-
-void Typelib::dump(uint8_t const* v, FILE* fd, MemoryLayout const& ops)
-{
-    FileOutputStream stream(fd);
-    MemoryLayout::const_iterator end = ValueOps::dump(
-            v, 0, stream, ops.begin(), ops.end()).get<1>();
-    if (end != ops.end())
-        throw std::runtime_error("internal error in the marshalling process");
-}
-
-
-struct ByteCounterStream : public ValueOps::OutputStream
+/*--------------------------------------------------
+ * Marshalling size calculations
+ */
+struct ByteCounterStream : public OutputStream
 {
     size_t result;
     ByteCounterStream()
@@ -752,7 +769,6 @@ struct ByteCounterStream : public ValueOps::OutputStream
     void write(uint8_t const* data, size_t size)
     { result += size; }
 };
-
 size_t Typelib::getDumpSize(Value v)
 { 
     MemoryLayout ops;
@@ -770,7 +786,34 @@ size_t Typelib::getDumpSize(uint8_t const* v, MemoryLayout const& ops)
 }
 
 
-struct VectorInputStream : public ValueOps::InputStream
+
+
+
+
+/*--------------------------------------------------
+ * Generic load support from InputStream
+ */
+void Typelib::load(Value v, InputStream& stream)
+{
+    MemoryLayout ops = layout_of(v.getType());
+    return load(v, stream, ops);
+}
+void Typelib::load(Value v, InputStream& stream, MemoryLayout const& ops)
+{ load(reinterpret_cast<uint8_t*>(v.getData()), v.getType(), stream, ops); }
+void Typelib::load(uint8_t* v, Type const& type, InputStream& stream, MemoryLayout const& ops)
+{
+    MemoryLayout::const_iterator it;
+    size_t out_offset;
+    tie(out_offset, it) =
+        ValueOps::load(v, 0, stream, ops.begin(), ops.end());
+    if (it != ops.end())
+        throw std::runtime_error("internal error in the memory layout");
+}
+
+/*--------------------------------------------------
+ * Load support from std::vector<uint8_t>
+ */
+struct VectorInputStream : public InputStream
 {
     std::vector<uint8_t> const& buffer;
     size_t in_index;
@@ -787,16 +830,13 @@ struct VectorInputStream : public ValueOps::InputStream
         in_index += size;
     }
 };
-
 void Typelib::load(Value v, std::vector<uint8_t> const& buffer)
 {
     MemoryLayout ops = layout_of(v.getType());
     return load(v, buffer, ops);
 }
-
 void Typelib::load(Value v, std::vector<uint8_t> const& buffer, MemoryLayout const& ops)
 { load(reinterpret_cast<uint8_t*>(v.getData()), v.getType(), buffer, ops); }
-
 void Typelib::load(uint8_t* v, Type const& type, std::vector<uint8_t> const& buffer, MemoryLayout const& ops)
 {
     MemoryLayout::const_iterator it;
@@ -812,7 +852,13 @@ void Typelib::load(uint8_t* v, Type const& type, std::vector<uint8_t> const& buf
                 lexical_cast<string>(stream.in_index) + " bytes, got " + lexical_cast<string>(buffer.size()) + "as input)");
 }
 
-struct ByteArrayInputStream : public ValueOps::InputStream
+
+
+
+/*--------------------------------------------------
+ * Load support from uint8_t*
+ */
+struct ByteArrayInputStream : public InputStream
 {
     uint8_t const* buffer;
     unsigned int buffer_size;
@@ -830,16 +876,13 @@ struct ByteArrayInputStream : public ValueOps::InputStream
         in_index += size;
     }
 };
-
 void Typelib::load(Value v, uint8_t const* buffer, unsigned int buffer_size)
 {
     MemoryLayout ops = layout_of(v.getType());
     return load(v, buffer, buffer_size, ops);
 }
-
 void Typelib::load(Value v, uint8_t const* buffer, unsigned int buffer_size, MemoryLayout const& ops)
 { load(reinterpret_cast<uint8_t*>(v.getData()), v.getType(), buffer, buffer_size, ops); }
-
 void Typelib::load(uint8_t* v, Type const& type, uint8_t const* buffer, unsigned int buffer_size, MemoryLayout const& ops)
 {
     MemoryLayout::const_iterator it;

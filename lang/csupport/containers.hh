@@ -32,12 +32,12 @@ public:
     void delete_if_impl(void* ptr, DeleteIfPredicate& pred) const;
 
     MarshalOps::const_iterator dump(
-            void const* container_ptr, size_t element_count, Typelib::ValueOps::OutputStream& stream,
+            void const* container_ptr, size_t element_count, Typelib::OutputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const;
 
     MarshalOps::const_iterator load(
             void* container_ptr, size_t element_count,
-            Typelib::ValueOps::InputStream& stream,
+            Typelib::InputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const;
 
     static Container const& factory(Typelib::Registry& registry, std::list<Typelib::Type const*> const& on);
@@ -67,12 +67,12 @@ public:
     bool visit(void* ptr, Typelib::ValueVisitor& visitor) const;
 
     MarshalOps::const_iterator dump(
-            void const* container_ptr, size_t element_count, Typelib::ValueOps::OutputStream& stream,
+            void const* container_ptr, size_t element_count, Typelib::OutputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const;
 
     MarshalOps::const_iterator load(
             void* container_ptr, size_t element_count,
-            Typelib::ValueOps::InputStream& stream,
+            Typelib::InputStream& stream,
             MarshalOps::const_iterator const begin, MarshalOps::const_iterator const end) const;
 
     void delete_if_impl(void* ptr, DeleteIfPredicate& pred) const;

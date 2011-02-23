@@ -14,18 +14,10 @@ namespace Typelib
      */
     namespace ValueOps
     {
-        struct OutputStream
-        {
-            virtual void write(uint8_t const* data, size_t size) = 0;
-        };
         boost::tuple<size_t, MemoryLayout::const_iterator>
             dump(uint8_t const* data, size_t in_offset,
                 OutputStream& stream, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end);
 
-        struct InputStream
-        {
-            virtual void read(uint8_t* data, size_t size) = 0;
-        };
         boost::tuple<size_t, MemoryLayout::const_iterator>
             load(uint8_t* data, size_t out_offset,
                 InputStream& stream,
