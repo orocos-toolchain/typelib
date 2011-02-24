@@ -410,6 +410,17 @@ module Typelib
             do_cast(target_type)
         end
 
+        # Called internally to apply any change from a converted value to the
+        # underlying Typelib value
+        def apply_changes_from_converted_types
+        end
+
+        # Called internally to tell typelib that converted values should be
+        # updated next time from the underlying Typelib value
+        # underlying Typelib value
+        def invalidate_changes_from_converted_types
+        end
+
         # Creates a deep copy of this value.
         #
         # It is guaranteed that this value will be referring to a different
@@ -732,7 +743,15 @@ module Typelib
                         end
                     end
 
+                    define_method(:invalidate_changes_from_converted_types) do
+                        super
+                        converted_fields.each do |field_name|
+                            instance_variable_set("@#{field_name}", nil)
+                        end
+                    end
+
                     define_method(:apply_changes_from_converted_types) do
+                        super
                         converted_fields.each do |field_name|
                             if value = instance_variable_get("@#{field_name}")
                                 set_field(field_name, value)
