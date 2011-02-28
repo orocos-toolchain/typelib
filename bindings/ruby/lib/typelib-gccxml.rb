@@ -268,7 +268,7 @@ module Typelib
                 return
             end
 
-            if name =~ /\/__\w+$/
+            if kind != "Typedef" && name =~ /\/__\w+$/
                 # This is defined as private STL/Compiler implementation
                 # structures. Just ignore it
                 return ignore(xmlnode)
