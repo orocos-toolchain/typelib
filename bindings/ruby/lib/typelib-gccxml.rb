@@ -369,8 +369,10 @@ module Typelib
                 end
 
             elsif kind == "Enumeration"
-                if !(namespace = resolve_context(xml, xmlnode['context']))
-                    return ignore(xmlnode, "ignoring typedef #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
+                if xmlnode['name'] =~ /^\._(\d+)$/ # this represents anonymous enums
+                    return ignore(xmlnode, "ignoring anonymous enumeration, as they can't be represented in Typelib")
+                elsif !(namespace = resolve_context(xml, xmlnode['context']))
+                    return ignore(xmlnode, "ignoring enumeration #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
                 end
 
                 full_name =
