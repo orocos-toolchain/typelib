@@ -22,8 +22,8 @@
   <rosdep name="boost" />
   <rosdep name="libxml2" />
   <rosdep name="antlr" />
-  <rosdep name="doxygen" type="doc" />
-  <rosdep name="rdoc" type="doc" />
+  <depend_optional name="doxygen" type="doc" />
+  <depend_optional name="rdoc" type="doc" />
 
   <tags>stable</tags>
 
