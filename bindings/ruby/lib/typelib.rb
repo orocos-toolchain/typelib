@@ -744,14 +744,14 @@ module Typelib
                     end
 
                     define_method(:invalidate_changes_from_converted_types) do
-                        super
+                        super()
                         converted_fields.each do |field_name|
                             instance_variable_set("@#{field_name}", nil)
                         end
                     end
 
                     define_method(:apply_changes_from_converted_types) do
-                        super
+                        super()
                         converted_fields.each do |field_name|
                             if value = instance_variable_get("@#{field_name}")
                                 set_field(field_name, value)
@@ -760,7 +760,7 @@ module Typelib
                     end
 
                     define_method(:dup) do
-                        new_value = super
+                        new_value = super()
                         for field_name in converted_fields
                             if converted_value = instance_variable_get("@#{field_name}")
                                 instance_variable_set("@#{field_name}", converted_value)
