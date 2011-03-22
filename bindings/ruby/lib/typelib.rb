@@ -2167,6 +2167,22 @@ module Typelib
         end
     end
 
+    # call-seq:
+    #  Typelib.copy(to, from) => to
+    # 
+    # Proper copy of a value to another. +to+ and +from+ do not have to be from the
+    # same registry, as long as the types can be casted into each other
+    def self.copy(to, from)
+        if to.respond_to?(:invalidate_changes_from_converted_types)
+            to.invalidate_changes_from_converted_types
+        end
+        if from.respond_to?(:apply_changes_from_converted_types)
+            from.apply_changes_from_converted_types
+        end
+        do_copy(to, from)
+        to
+    end
+
     # Initializes +expected_type+ from +arg+, where +arg+ can either be a value
     # of expected_type, a value that can be casted into a value of
     # expected_type, or a Ruby value that can be converted into a value of

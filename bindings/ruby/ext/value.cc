@@ -471,13 +471,7 @@ static VALUE value_zero(VALUE self)
     return self;
 }
 
-/* call-seq:
- *  Typelib.copy(to, from) => to
- *
- * Proper copy of a value to another. +to+ and +from+ do not have to be from the
- * same registry, as long as the types can be casted into each other
- */
-static VALUE typelib_copy(VALUE, VALUE to, VALUE from)
+static VALUE typelib_do_copy(VALUE, VALUE to, VALUE from)
 {
     Value v_from = rb2cxx::object<Value>(from);
     Value v_to   = rb2cxx::object<Value>(to);
@@ -523,7 +517,7 @@ static VALUE typelib_compare(VALUE, VALUE to, VALUE from)
 void typelib_ruby::Typelib_init_values()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
-    rb_define_singleton_method(mTypelib, "copy", RUBY_METHOD_FUNC(typelib_copy), 2);
+    rb_define_singleton_method(mTypelib, "do_copy", RUBY_METHOD_FUNC(typelib_do_copy), 2);
     rb_define_singleton_method(mTypelib, "compare", RUBY_METHOD_FUNC(typelib_compare), 2);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
