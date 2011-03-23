@@ -45,8 +45,10 @@ ELSEIF(NOT RUBY_EXTENSIONS_AVAILABLE)
 	SET_SOURCE_FILES_PROPERTIES(${ARGN} PROPERTIES COMPILE_FLAGS "${RUBY_CFLAGS}")
 	ADD_LIBRARY(${target} MODULE ${ARGN})
         target_link_libraries(${target} ${RUBY_LIBRARY})
-        set_target_properties(${target} PROPERTIES
+	if(NOT APPLE)
+          set_target_properties(${target} PROPERTIES
             LINK_FLAGS "-z noexecstack")
+	endif()
 	SET_TARGET_PROPERTIES(${target} PROPERTIES PREFIX "")
     ENDMACRO(ADD_RUBY_EXTENSION)
 ENDIF(NOT RUBY_INCLUDE_PATH)
