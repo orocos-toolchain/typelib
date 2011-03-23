@@ -9,7 +9,7 @@ set_source_files_properties(pluginmanager.cc PROPERTIES
 set_source_files_properties(endianness.cc PROPERTIES
     COMPILE_FLAGS -fno-strict-aliasing)
 
-target_link_libraries(typeLib ${Utilmm_LIBRARIES} ${CMAKE_DL_LIBS})
+target_link_libraries(typeLib ${Utilmm_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
 #TARGET_LINK_LIBRARIES(typeLib typeLang_c typeLang_tlb typeLang_idl)
 
 install(TARGETS typeLib
