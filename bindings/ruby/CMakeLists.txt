@@ -50,7 +50,7 @@ IF(ENABLE_DYNCALL)
     ADD_DEPENDENCIES(typelib_ruby dyncall)
 ENDIF(ENABLE_DYNCALL)
 
-TARGET_LINK_LIBRARIES(typelib_ruby typeLib typeLang_c ${Utilmm_LIBRARIES})
+TARGET_LINK_LIBRARIES(typelib_ruby typeLib typeLang_cSupport ${Utilmm_LIBRARIES})
 
 CONFIGURE_FILE(typelib_ruby.pc.in ${CMAKE_CURRENT_BINARY_DIR}/typelib_ruby.pc @ONLY)
 

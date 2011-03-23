@@ -1,7 +1,7 @@
 #include <boost/test/auto_unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
-#include <lang/cimport/standard_types.hh>
+#include <lang/csupport/standard_types.hh>
 
 #include <test/testsuite.hh>
 #include <utilmm/configfile/configset.hh>

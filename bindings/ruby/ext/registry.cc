@@ -4,7 +4,7 @@
 #include <typelib/importer.hh>
 #include <typelib/exporter.hh>
 #include <typelib/registryiterator.hh>
-#include <lang/cimport/standard_types.hh>
+#include <lang/csupport/standard_types.hh>
 #include <utilmm/configfile/configset.hh>
 #include <set>
 
