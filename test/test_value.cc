@@ -38,13 +38,13 @@ BOOST_AUTO_TEST_CASE( test_value_struct )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("c"));
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     {
 	A a = { 10, 20, 'b', 52 };
-	Value v_a(&a, *registry.get("/struct A"));
+	Value v_a(&a, *registry.get("/A"));
 
 	BOOST_CHECK_THROW( value_get_field(v_a, "does_not_exists"), FieldNotFound );
 	BOOST_CHECK(a.a == value_cast<long long>(value_get_field(v_a, "a")));
@@ -108,9 +108,9 @@ BOOST_AUTO_TEST_CASE( test_value_endian_swap )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("c"));
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     A a = { 
 	utilmm::endian::swap((long long)10), 
@@ -143,9 +143,9 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("c"));
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     size_t expected_a[]  = {
 	CompileEndianSwapVisitor::FLAG_SWAP_8,
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
 
     /* Check a simple structure with alignment issues */
     {
-	Type const& a_t = *registry.get("/struct A");
+	Type const& a_t = *registry.get("/A");
 	CompileEndianSwapVisitor compiled_a;
 	compiled_a.apply(a_t);
 
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
 
     /* Check a structure with arrays */
     {
-	Type const& type = *registry.get("/struct B");
+	Type const& type = *registry.get("/B");
 	CompileEndianSwapVisitor compiled;
 	compiled.apply(type);
 
@@ -239,9 +239,9 @@ BOOST_AUTO_TEST_CASE( test_apply_endian_swap )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("c"));
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     A a = { 
 	utilmm::endian::swap((long long)10), 

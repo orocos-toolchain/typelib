@@ -16,32 +16,29 @@
 using namespace Typelib;
 using namespace std;
 
+#ifdef HAS_INTERNAL_CPARSER
 BOOST_AUTO_TEST_CASE( test_tlb_rejects_recursive_types )
 {
     PluginManager::self manager;
     Registry registry;
 
-    static const char* test_file = TEST_DATA_PATH("test_cimport.h");
+    static const char* test_file = TEST_DATA_PATH("test_cimport.1");
     utilmm::config_set config;
-    config.set("include", TEST_DATA_PATH(".."));
-    config.insert("define", "GOOD");
     manager->load("c", test_file, config, registry);
 
     BOOST_REQUIRE_THROW(manager->save("tlb", registry), ExportError);
 }
+#endif
 
 BOOST_AUTO_TEST_CASE( test_tlb_idempotent )
 {
     PluginManager::self manager;
     Registry registry;
 
-    static const char* test_file = TEST_DATA_PATH("test_cimport.h");
+    static const char* test_file = TEST_DATA_PATH("test_cimport.tlb");
     {
         utilmm::config_set config;
-        config.set("include", TEST_DATA_PATH(".."));
-        config.insert("define", "GOOD");
-        config.insert("define", "NO_RECURSIVE_TYPE");
-        manager->load("c", test_file, config, registry);
+        manager->load("tlb", test_file, config, registry);
     }
 
     string result;

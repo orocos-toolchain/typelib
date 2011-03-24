@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(test_csv)
     {
 	// Get the test file into repository
 	utilmm::config_set config;
-	auto_ptr<Registry> registry(PluginManager::self()->load("c", TEST_DATA_PATH("test_cimport.1"), config));
+	auto_ptr<Registry> registry(PluginManager::self()->load("tlb", TEST_DATA_PATH("test_cimport.tlb"), config));
 
 	{
 	    ostringstream stream;
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(test_csv)
 	    test.a.d = 42;
 	    test.mode = OUTPUT;
 
-	    Type const& display_type = *registry->get("/struct DisplayTest");
+	    Type const& display_type = *registry->get("/DisplayTest");
 	    stream << csv_header(display_type, "t");
 	    BOOST_CHECK_EQUAL("t.fields[0] t.fields[1] t.fields[2] t.fields[3] t.f t.d t.a.a t.a.b t.a.c t.a.d t.mode", stream.str());
 	}

@@ -20,13 +20,13 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("c"));
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     /* Check a simple structure which translates into MEMCPY */
     {
-        Type const& type = *registry.get("/struct A");
+        Type const& type = *registry.get("/A");
         A a;
         memset(&a, 1, sizeof(A));
         a.a = 10000;
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
         MemoryLayout ops;
         ops.insert(ops.end(), raw_ops, raw_ops + 14);
 
-        Type const& type = *registry.get("/struct A");
+        Type const& type = *registry.get("/A");
         memset(&a, 1, sizeof(A));
         a.a = 10000;
         a.b = 1000;
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
         MemoryLayout ops;
         ops.insert(ops.end(), raw_ops, raw_ops + 9);
 
-        Type const& type = *registry.get("/struct B");
+        Type const& type = *registry.get("/B");
         vector<uint8_t> buffer;
         dump(Value(&b, type), buffer, ops);
         BOOST_REQUIRE_EQUAL( sizeof(B), buffer.size());
@@ -149,9 +149,9 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("c"));
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     StdCollections offset_discovery;
     uint8_t* base_ptr     = reinterpret_cast<uint8_t*>(&offset_discovery);
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
         data.v16 = 5235;
         data.v64 = 5230971546LL;
 
-        Type const& type       = *registry.get("/struct StdCollections");
+        Type const& type       = *registry.get("/StdCollections");
         vector<uint8_t> buffer = dump(Value(&data, type));
 
         size_t size_without_trailing_padding = 
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
         data.v16 = 2;
         data.v64 = 3;
 
-        Type const& type       = *registry.get("/struct StdCollections");
+        Type const& type       = *registry.get("/StdCollections");
         vector<uint8_t> buffer = dump(Value(&data, type));
         size_t size_without_trailing_padding = 
             reinterpret_cast<uint8_t const*>(&data.padding) + sizeof(data.padding) - reinterpret_cast<uint8_t const*>(&data);

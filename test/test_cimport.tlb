@@ -1,0 +1,221 @@
+<?xml version="1.0"?>
+<typelib>
+  <enum name="/ANONYMOUS_ENUM" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <value symbol="ANONYMOUS_ENUM_OK" value="0"/>
+  </enum>
+  <enum name="/E" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <value symbol="E_FIRST" value="0"/>
+    <value symbol="E_FROM_SIZEOF_SPEC" value="1328"/>
+    <value symbol="E_FROM_SIZEOF_STD" value="4"/>
+    <value symbol="E_FROM_SYMBOL" value="255"/>
+    <value symbol="E_HEX" value="255"/>
+    <value symbol="E_OCT" value="7"/>
+    <value symbol="E_PARENS" value="-2"/>
+    <value symbol="E_SECOND" value="1"/>
+    <value symbol="E_SET" value="-1"/>
+    <value symbol="LAST" value="8"/>
+  </enum>
+  <enum name="/INPUT_OUTPUT_MODE" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <value symbol="BOTH" value="1"/>
+    <value symbol="OUTPUT" value="0"/>
+  </enum>
+  <numeric name="/bool" category="uint" size="1" />
+  <numeric name="/double" category="float" size="8" />
+  <numeric name="/float" category="float" size="4" />
+  <numeric name="/int16_t" category="sint" size="2" />
+  <numeric name="/int32_t" category="sint" size="4" />
+  <numeric name="/int64_t" category="sint" size="8" />
+  <numeric name="/int8_t" category="sint" size="1" />
+  <null  name="/nil" />
+  <numeric name="/uint16_t" category="uint" size="2" />
+  <numeric name="/uint32_t" category="uint" size="4" />
+  <numeric name="/uint64_t" category="uint" size="8" />
+  <numeric name="/uint8_t" category="uint" size="1" />
+  <compound name="/A" size="16" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="a" type="/int64_t" offset="0"/>
+    <field name="b" type="/int32_t" offset="8"/>
+    <field name="c" type="/int8_t" offset="12"/>
+    <field name="d" type="/int16_t" offset="14"/>
+  </compound>
+  <alias name="/ANONYMOUS_ENUM_PTR" source="/ANONYMOUS_ENUM*"/>
+  <compound name="/BoolHandling" size="1" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="value" type="/bool" offset="0"/>
+  </compound>
+  <compound name="/C" size="32" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="x" type="/float[4]" offset="0"/>
+    <field name="y" type="/float*" offset="16"/>
+    <field name="z" type="/float" offset="24"/>
+  </compound>
+  <compound name="/CompoundWithOverloadingClashes" size="12" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="name" type="/int32_t" offset="0"/>
+    <field name="cast" type="/int32_t" offset="4"/>
+    <field name="object_id" type="/int32_t" offset="8"/>
+  </compound>
+  <compound name="/DEFINE_STR" size="8" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="field" type="/int32_t" offset="0"/>
+    <field name="value" type="/float" offset="4"/>
+  </compound>
+  <compound name="/EContainer" size="4" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="value" type="/E" offset="0"/>
+  </compound>
+  <alias name="/ADef" source="/A"/>
+  <compound name="/B" size="1328" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="a" type="/A" offset="0"/>
+    <field name="c" type="/float[100]" offset="16"/>
+    <field name="d" type="/float[1]" offset="416"/>
+    <field name="e" type="/float[1]" offset="420"/>
+    <field name="f" type="/float[3]" offset="424"/>
+    <field name="g" type="/float[2]" offset="436"/>
+    <field name="h" type="/A[4]" offset="448"/>
+    <field name="i" type="/float[20][10]" offset="512"/>
+    <field name="x" type="/float" offset="1312"/>
+    <field name="y" type="/float" offset="1316"/>
+    <field name="z" type="/float" offset="1320"/>
+  </compound>
+  <alias name="/DEFINE_ID" source="/DEFINE_STR*"/>
+  <compound name="/DisplayTest" size="56" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="fields" type="/int32_t[4]" offset="0"/>
+    <field name="f" type="/float" offset="16"/>
+    <field name="d" type="/double" offset="24"/>
+    <field name="a" type="/A" offset="32"/>
+    <field name="mode" type="/INPUT_OUTPUT_MODE" offset="48"/>
+  </compound>
+  <alias name="/OPAQUE_TYPE" source="/nil*"/>
+  <compound name="/TEST_ENUM_FIELDS" size="12" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="mode" type="/INPUT_OUTPUT_MODE" offset="0"/>
+    <field name="mode_enum" type="/INPUT_OUTPUT_MODE" offset="4"/>
+    <field name="anonymous_enum" type="/ANONYMOUS_ENUM" offset="8"/>
+  </compound>
+  <compound name="/TestMemoryManagement" size="132800" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="b" type="/B[10][10]" offset="0"/>
+  </compound>
+  <compound name="/TestMultiDimArray" size="400" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="fields" type="/int32_t[10][10]" offset="0"/>
+  </compound>
+  <alias name="/array_typedef" source="/int32_t[256]"/>
+  <alias name="/char" source="/int8_t"/>
+  <alias name="/int" source="/int32_t"/>
+  <alias name="/int long long" source="/int64_t"/>
+  <alias name="/int long unsigned" source="/uint64_t"/>
+  <alias name="/int short unsigned" source="/uint16_t"/>
+  <alias name="/int signed" source="/int32_t"/>
+  <alias name="/int signed long" source="/int64_t"/>
+  <alias name="/int signed long long" source="/int64_t"/>
+  <alias name="/int signed short" source="/int16_t"/>
+  <alias name="/int unsigned" source="/uint32_t"/>
+  <alias name="/int unsigned long long" source="/uint64_t"/>
+  <alias name="/long" source="/int64_t"/>
+  <alias name="/long int" source="/int64_t"/>
+  <alias name="/long int long" source="/int64_t"/>
+  <alias name="/long int unsigned" source="/uint64_t"/>
+  <alias name="/long long" source="/int64_t"/>
+  <alias name="/long long int" source="/int64_t"/>
+  <alias name="/long long int signed" source="/int64_t"/>
+  <alias name="/long long int unsigned" source="/uint64_t"/>
+  <alias name="/long long signed" source="/int64_t"/>
+  <alias name="/long long signed int" source="/int64_t"/>
+  <alias name="/long long unsigned" source="/uint64_t"/>
+  <alias name="/long long unsigned int" source="/uint64_t"/>
+  <alias name="/long signed" source="/int64_t"/>
+  <alias name="/long signed int" source="/int64_t"/>
+  <alias name="/long signed long" source="/int64_t"/>
+  <alias name="/long signed long int" source="/int64_t"/>
+  <alias name="/long unsigned" source="/uint64_t"/>
+  <alias name="/long unsigned int" source="/uint64_t"/>
+  <alias name="/long unsigned long" source="/uint64_t"/>
+  <alias name="/long unsigned long int" source="/uint64_t"/>
+  <alias name="/multi_array_typedef" source="/int32_t[512][256]"/>
+  <alias name="/short" source="/int16_t"/>
+  <alias name="/short int" source="/int16_t"/>
+  <alias name="/short int unsigned" source="/uint16_t"/>
+  <alias name="/short signed" source="/int16_t"/>
+  <alias name="/short signed int" source="/int16_t"/>
+  <alias name="/short unsigned" source="/uint16_t"/>
+  <alias name="/short unsigned int" source="/uint16_t"/>
+  <alias name="/signed" source="/int32_t"/>
+  <alias name="/signed char" source="/int8_t"/>
+  <alias name="/signed int" source="/int32_t"/>
+  <alias name="/signed int long" source="/int64_t"/>
+  <alias name="/signed int long long" source="/int64_t"/>
+  <alias name="/signed int short" source="/int16_t"/>
+  <alias name="/signed long" source="/int64_t"/>
+  <alias name="/signed long int" source="/int64_t"/>
+  <alias name="/signed long int long" source="/int64_t"/>
+  <alias name="/signed long long" source="/int64_t"/>
+  <alias name="/signed long long int" source="/int64_t"/>
+  <alias name="/signed short" source="/int16_t"/>
+  <alias name="/signed short int" source="/int16_t"/>
+  <alias name="/unsigned" source="/uint32_t"/>
+  <alias name="/unsigned char" source="/uint8_t"/>
+  <alias name="/unsigned int" source="/uint32_t"/>
+  <alias name="/unsigned int long long" source="/uint64_t"/>
+  <alias name="/unsigned long" source="/uint64_t"/>
+  <alias name="/unsigned long int" source="/uint64_t"/>
+  <alias name="/unsigned long int long" source="/uint64_t"/>
+  <alias name="/unsigned long long" source="/uint64_t"/>
+  <alias name="/unsigned long long int" source="/uint64_t"/>
+  <alias name="/unsigned short" source="/uint16_t"/>
+  <alias name="/unsigned short int" source="/uint16_t"/>
+  <alias name="/void" source="/nil"/>
+  <compound name="/NS1/Bla/Test" size="1" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="a" type="/int8_t" offset="0"/>
+  </compound>
+  <compound name="/NS1/NS1_1/Foo" size="8" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="a" type="/int32_t" offset="0"/>
+    <field name="b" type="/int16_t" offset="4"/>
+  </compound>
+  <compound name="/NS1/Foo" size="8" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="test" type="/NS1/NS1_1/Foo" offset="0"/>
+  </compound>
+  <compound name="/NS1/Test" size="4" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="a" type="/int16_t" offset="0"/>
+    <field name="b" type="/NS1/Bla/Test" offset="2"/>
+  </compound>
+  <alias name="/NS1/NS1_2/Foo" source="/NS1/NS1_1/Foo"/>
+  <compound name="/NS1/NS2/Test" size="4" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="a" type="/int32_t" offset="0"/>
+  </compound>
+  <alias name="/VeryLongNamespaceName/test" source="/double[4]"/>
+  <container  name="/std/string" of="/int8_t" size="8" kind="/std/string" />
+  <container  name="/std/vector&lt;/NS1/Test&gt;" of="/NS1/Test" size="24" kind="/std/vector" />
+  <container  name="/std/vector&lt;/double&gt;" of="/double" size="24" kind="/std/vector" />
+  <container  name="/std/vector&lt;/std/vector&lt;/NS1/Test&gt;&gt;" of="/std/vector&lt;/NS1/Test&gt;" size="24" kind="/std/vector" />
+  <container  name="/std/vector&lt;/std/vector&lt;/double&gt;&gt;" of="/std/vector&lt;/double&gt;" size="24" kind="/std/vector" />
+  <compound name="/Arrays" size="624" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="a_numeric" type="/double[10]" offset="0"/>
+    <field name="padding1" type="/int8_t" offset="80"/>
+    <field name="a_struct" type="/NS1/Test[10]" offset="82"/>
+    <field name="padding2" type="/int8_t" offset="122"/>
+    <field name="a_v_numeric" type="/std/vector&lt;/double&gt;[10]" offset="128"/>
+    <field name="padding3" type="/int8_t" offset="368"/>
+    <field name="a_v_struct" type="/std/vector&lt;/NS1/Test&gt;[10]" offset="376"/>
+    <field name="padding4" type="/int8_t" offset="616"/>
+  </compound>
+  <compound name="/Collections" size="128" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="v_numeric" type="/std/vector&lt;/double&gt;" offset="0"/>
+    <field name="padding1" type="/int8_t" offset="24"/>
+    <field name="v_struct" type="/std/vector&lt;/NS1/Test&gt;" offset="32"/>
+    <field name="padding2" type="/int8_t" offset="56"/>
+    <field name="v_v_numeric" type="/std/vector&lt;/std/vector&lt;/double&gt;&gt;" offset="64"/>
+    <field name="padding3" type="/int8_t" offset="88"/>
+    <field name="v_v_struct" type="/std/vector&lt;/std/vector&lt;/NS1/Test&gt;&gt;" offset="96"/>
+    <field name="padding4" type="/int8_t" offset="120"/>
+  </compound>
+  <compound name="/StdCollections" size="88" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="iv" type="/int32_t" offset="0"/>
+    <field name="dbl_vector" type="/std/vector&lt;/double&gt;" offset="8"/>
+    <field name="v8" type="/int8_t" offset="32"/>
+    <field name="v_of_v" type="/std/vector&lt;/std/vector&lt;/double&gt;&gt;" offset="40"/>
+    <field name="v16" type="/int16_t" offset="64"/>
+    <field name="v64" type="/int64_t" offset="72"/>
+    <field name="padding" type="/int8_t" offset="80"/>
+  </compound>
+  <compound name="/StringHandling" size="24" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="a" type="/int8_t" offset="0"/>
+    <field name="b" type="/std/string" offset="8"/>
+    <field name="c" type="/int16_t" offset="16"/>
+  </compound>
+  <compound name="/TemplateArray" size="240" source_id="/home/doudou/dfki/imoby/tools/typelib/test/test_cimport.1">
+    <field name="dbl_vector_array" type="/std/vector&lt;/double&gt;[10]" offset="0"/>
+  </compound>
+</typelib>

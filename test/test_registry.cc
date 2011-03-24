@@ -182,12 +182,12 @@ static void assert_registries_equal(Registry const& registry, Registry const& re
 
 BOOST_AUTO_TEST_CASE( test_repositories_merge )
 {
-    static const char* test_file = TEST_DATA_PATH("test_cimport.1");
+    static const char* test_file = TEST_DATA_PATH("test_cimport.tlb");
 
     utilmm::config_set config;
     PluginManager::self manager;
 
-    std::auto_ptr<Registry> ref( manager->load("c", test_file, config));
+    std::auto_ptr<Registry> ref( manager->load("tlb", test_file, config));
     Registry target;
     target.merge(*ref);
     assert_registries_equal(target, *ref);

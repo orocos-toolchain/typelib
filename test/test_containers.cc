@@ -66,13 +66,11 @@ BOOST_AUTO_TEST_CASE( test_vector_assumptions )
 
 static void import_test_types(Registry& registry)
 {
-    static const char* test_file = TEST_DATA_PATH("test_cimport.h");
+    static const char* test_file = TEST_DATA_PATH("test_cimport.tlb");
 
     utilmm::config_set config;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("c"));
-    config.set("include", TEST_DATA_PATH(".."));
-    config.set("define", "GOOD");
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
 }
 

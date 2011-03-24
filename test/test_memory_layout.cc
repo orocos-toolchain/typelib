@@ -22,13 +22,13 @@ BOOST_AUTO_TEST_CASE( test_layout_simple )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("c"));
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     /* Check a simple structure with alignment issues */
     {
-        Type const& type = *registry.get("/struct A");
+        Type const& type = *registry.get("/A");
         MemoryLayout ops = Typelib::layout_of(type);
 
         BOOST_REQUIRE_EQUAL(2U, ops.size());
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE( test_layout_simple )
 
     /* Check a structure with arrays */
     {
-        Type const& type = *registry.get("/struct B");
+        Type const& type = *registry.get("/B");
         MemoryLayout ops = Typelib::layout_of(type);
 
         BOOST_REQUIRE_EQUAL(2U, ops.size());
@@ -93,9 +93,9 @@ BOOST_AUTO_TEST_CASE(test_layout_arrays)
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("c"));
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     {
         Type const& type      = *registry.get("/Arrays");
@@ -153,9 +153,9 @@ BOOST_AUTO_TEST_CASE(test_layout_containers)
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("c"));
+    auto_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.1"), config, registry) );
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     {
         Type const& type      = *registry.get("/Collections");
