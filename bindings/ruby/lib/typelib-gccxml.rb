@@ -121,7 +121,7 @@ module Typelib
             end
         end
 
-        def cxx_to_typelib(name, absolute = true)
+        def self.cxx_to_typelib(name, absolute = true)
             if name =~ /^\d+$/
                 return name
             end
@@ -151,6 +151,10 @@ module Typelib
             else
                 type_name
             end
+        end
+
+        def cxx_to_typelib(name, absolute = true)
+            self.class.cxx_to_typelib(name, absolute)
         end
 
         # Given a full Typelib type name, returns a [name, id] pair where +name+
