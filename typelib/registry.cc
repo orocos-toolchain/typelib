@@ -522,10 +522,7 @@ namespace Typelib
         while (left_it != left_end)
         {
             if (!left_it->second.type->isSame(*right_it->second.type))
-            {
-                throw;
                 return false;
-            }
             left_it++; left_end++;
         }
         return true;
