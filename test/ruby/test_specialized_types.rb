@@ -38,10 +38,6 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         # First, check compound Type objects
         registry = make_registry
         a_type = registry.get("/A")
-        assert(a_type.respond_to?(:b))
-        assert_same(registry.get("/int"), a_type.b)
-
-        # Then, the same on values
         a = a_type.new
         check_respond_to_fields(a)
 
@@ -142,16 +138,8 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         t = registry.get("/CompoundWithOverloadingClashes")
         v = t.new
         v.zero!
-
-        # .name should not be overloaded on the class, but OK on the instance
-        assert_equal "/CompoundWithOverloadingClashes", t.name
         assert_equal 0, v.name
-
-        # .cast should not be overloaded on the instance, but OK on the class
-        assert_same registry.get("/int"), t.cast
         assert_equal v, v.cast(t)
-
-        # #object_id should be overloaded on the instance, not on the class
         assert_equal 0, v.object_id
     end
 
@@ -260,8 +248,7 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     def test_enum
         registry = make_registry
         e_type = registry.get("EContainer")
-        assert(e_type.respond_to?(:value))
-        enum = e_type.value
+        enum   = e_type[:value]
         assert_equal([["E_FIRST", 0], ["E_SECOND", 1], ["E_SET", -1], ["E_PARENS", -2],
                       ["E_OCT", 7],   ["E_HEX", 255],  ["LAST", 8],   ["E_FROM_SIZEOF_STD", 4],
                       ["E_FROM_SIZEOF_SPEC", registry.get("B").size],
@@ -314,8 +301,8 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 
     def test_containers
         std = make_registry.get("StdCollections")
-        assert(std.dbl_vector < Typelib::ContainerType)
-        assert_equal("/std/vector", std.dbl_vector.container_kind)
+        assert(std[:dbl_vector] < Typelib::ContainerType)
+        assert_equal("/std/vector", std[:dbl_vector].container_kind)
 
         value = std.new
         assert_equal(0, value.dbl_vector.length)
@@ -353,10 +340,10 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 
     def test_container_of_container
         std      = make_registry.get("StdCollections")
-        assert(std.v_of_v < Typelib::ContainerType)
-        assert(std.v_of_v.deference < Typelib::ContainerType)
+        assert(std[:v_of_v] < Typelib::ContainerType)
+        assert(std[:v_of_v].deference < Typelib::ContainerType)
 
-        inner_t = std.v_of_v.deference
+        inner_t = std[:v_of_v].deference
 
         value = std.new
         outer = value.v_of_v
