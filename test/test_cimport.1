@@ -46,7 +46,7 @@ typedef struct C
     float x[sizeof(unsigned int)], *y, z;
 } C;
 
-typedef enum E {
+enum E {
     E_FIRST,
     E_SECOND,
     E_SET = -1,
@@ -57,7 +57,38 @@ typedef enum E {
     E_FROM_SYMBOL = E_FIRST + E_HEX,
     E_FROM_SIZEOF_STD  = sizeof(unsigned int),
     E_FROM_SIZEOF_SPEC = sizeof(B)
-} E;
+};
+
+namespace E_comparison_1 {
+    enum E_with_added_values {
+        E_FIRST,
+        E_SECOND,
+        E_SET = -1,
+        E_PARENS = (-2),
+        E_HEX = 0xFF,
+        E_OCT = 07,
+        LAST,
+        E_FROM_SYMBOL = E_FIRST + E_HEX,
+        E_FROM_SIZEOF_STD  = sizeof(unsigned int),
+        E_FROM_SIZEOF_SPEC = sizeof(B),
+        E_NEW_FIELD = 100
+    };
+}
+
+namespace E_comparison_2 {
+    enum E_with_modified_values {
+        E_FIRST,
+        E_SECOND,
+        E_SET = -1,
+        E_PARENS = (-2),
+        E_HEX = 0xFF,
+        E_OCT = 06,
+        LAST,
+        E_FROM_SYMBOL = E_FIRST + E_HEX,
+        E_FROM_SIZEOF_STD  = sizeof(unsigned int),
+        E_FROM_SIZEOF_SPEC = sizeof(B)
+    };
+}
 
 typedef struct EContainer
 {

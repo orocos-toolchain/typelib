@@ -265,6 +265,30 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal(:E_SECOND, e.value)
     end
 
+    def test_enum_can_cast_to_superset
+        registry = make_registry
+        e_type  = registry.get("E")
+        e_added = registry.get("E_comparison_1/E_with_added_values")
+        assert(!(e_type == e_added))
+        assert(e_type.casts_to?(e_added))
+    end
+
+    def test_enum_cannot_cast_to_subset
+        registry = make_registry
+        e_type  = registry.get("E")
+        e_added = registry.get("E_comparison_1/E_with_added_values")
+        assert(!(e_type == e_added))
+        assert(!(e_added.casts_to?(e_type)))
+    end
+
+    def test_enum_cannot_cast_to_modified
+        registry = make_registry
+        e_type  = registry.get("E")
+        e_modified = registry.get("E_comparison_2/E_with_modified_values")
+        assert(!(e_type == e_modified))
+        assert(!(e_modified.casts_to?(e_type)))
+    end
+
     def test_numeric
 	long = make_registry.get("/int")
 	assert(long < NumericType)

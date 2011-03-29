@@ -342,8 +342,29 @@ namespace Typelib
         , m_last_value(initial_value - 1) { }
     Enum::ValueMap const& Enum::values() const { return m_values; }
     bool Enum::do_compare(Type const& type, bool equality, RecursionStack& stack) const
-    { return Type::do_compare(type, equality, stack) &&
-	m_values == static_cast<Enum const&>(type).m_values; }
+    {
+        Enum const& other_type = static_cast<Enum const&>(type);
+        if (!Type::do_compare(type, equality, stack))
+            return true;
+        if (equality)
+            return (m_values == other_type.m_values);
+        else
+        {
+            ValueMap const& other_values = other_type.m_values;
+            // returns true if +self+ is a subset of +type+
+            if (m_values.size() > other_values.size())
+                return false;
+            for (ValueMap::const_iterator it = m_values.begin(); it != m_values.end(); ++it)
+            {
+                ValueMap::const_iterator other_it = other_values.find(it->first);
+                if (other_it == other_values.end())
+                    return false;
+                if (other_it->second != it->second)
+                    return false;
+            }
+            return true;
+        }
+    }
 
     Enum::integral_type Enum::getNextValue() const { return m_last_value + 1; }
     void Enum::add(std::string const& name, int value)
