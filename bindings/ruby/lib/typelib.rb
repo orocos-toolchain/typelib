@@ -1345,6 +1345,12 @@ module Typelib
 
         TYPE_HANDLERS = Hash.new
 
+        def dup
+            copy = self.class.new
+            copy.merge(self)
+            copy
+        end
+
         # Creates a new registry by loading a typelib XML file
         #
         # See also Registry#merge_xml
