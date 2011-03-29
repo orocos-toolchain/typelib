@@ -71,6 +71,9 @@ BOOST_AUTO_TEST_CASE( test_typename_manipulation )
 
     BOOST_CHECK_EQUAL("/NS2/NS3/", getNamespace("/NS2/NS3/Test"));
     BOOST_CHECK_EQUAL("/wrappers/Matrix</double,3,1>/", getNamespace("/wrappers/Matrix</double,3,1>/Scalar"));
+    BOOST_CHECK_EQUAL("Scalar", getTypename("/wrappers/Matrix</double,3,1>/Scalar"));
+    BOOST_CHECK_EQUAL("/wrappers/Matrix</double,3,1>/Gaussian</double,3>/", getNamespace("/wrappers/Matrix</double,3,1>/Gaussian</double,3>/Scalar"));
+    BOOST_CHECK_EQUAL("Scalar", getTypename("/wrappers/Matrix</double,3,1>/Gaussian</double,3>/Scalar"));
     BOOST_CHECK_EQUAL("/std/", getNamespace("/std/vector</wrappers/Matrix</double,3,1>>"));
 
     BOOST_CHECK_EQUAL("Test", getTypename("/NS2/NS3/Test"));
