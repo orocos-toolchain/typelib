@@ -850,13 +850,6 @@ module Typelib
                     define_method_if_possible("raw_#{name}=") { |value| raw_set_field(name, value) }
                 end
 
-                class_name = self.name
-                singleton_class.class_eval do
-                    fields.each do |name, type|
-                        Typelib.define_method_if_possible(self, self, name, [], class_name) { || type }
-                    end
-                end
-
                 super if defined? super
 
                 convert_from_ruby Hash do |value, expected_type|
