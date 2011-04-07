@@ -747,6 +747,9 @@ module Typelib
                         super()
                         converted_fields.each do |field_name|
                             instance_variable_set("@#{field_name}", nil)
+                            if @fields[field_name]
+                                @fields[field_name].invalidate_changes_from_converted_types
+                            end
                         end
                     end
 
@@ -754,6 +757,9 @@ module Typelib
                         super()
                         converted_fields.each do |field_name|
                             if value = instance_variable_get("@#{field_name}")
+                                if @fields[field_name]
+                                    @fields[field_name].apply_changes_from_converted_types
+                                end
                                 set_field(field_name, value)
                             end
                         end
@@ -763,7 +769,7 @@ module Typelib
                         new_value = super()
                         for field_name in converted_fields
                             if converted_value = instance_variable_get("@#{field_name}")
-                                instance_variable_set("@#{field_name}", converted_value)
+                                instance_variable_set("@#{field_name}", converted_value.dup)
                             end
                         end
                         new_value
