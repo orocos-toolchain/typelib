@@ -113,6 +113,11 @@ namespace Typelib
          */
         std::set<Type*> reverseDepends(Type const& type);
 
+        /** Updates +m_current+ based on +m_global+ and the current default
+         * namespace
+         */
+        void updateCurrentNameMap();
+
     public:
 	typedef RegistryIterator Iterator;
 
@@ -289,6 +294,10 @@ namespace Typelib
         /** Get from the provided all registry all source IDs from types in
          * +this+ which have no source ID yet */
         void copySourceIDs(Registry const& registry);
+
+        /** Removes all defined aliases
+         */
+        void clearAliases();
         
     public:
         enum DumpMode

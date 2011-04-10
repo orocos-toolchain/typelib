@@ -72,14 +72,9 @@ namespace Typelib
     }
     Registry::~Registry() { clear(); }
 
-    std::string Registry::getDefaultNamespace() const { return m_namespace; }
-    bool Registry::setDefaultNamespace(const std::string& space)
+    void Registry::updateCurrentNameMap()
     {
-        if (! isValidNamespace(space, true))
-            return false;
-
 	m_current.clear();
-        m_namespace = getNormalizedNamespace(space);
 
         for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
             m_current.insert( make_pair(it->first, it->second) );
@@ -93,6 +88,16 @@ namespace Typelib
             cur_space += *ns_it + NamespaceMarkString;
             importNamespace(cur_space, true);
         }
+    }
+
+    std::string Registry::getDefaultNamespace() const { return m_namespace; }
+    bool Registry::setDefaultNamespace(const std::string& space)
+    {
+        if (! isValidNamespace(space, true))
+            return false;
+
+        m_namespace = getNormalizedNamespace(space);
+        updateCurrentNameMap();
         return true;
     }
 
@@ -418,6 +423,21 @@ namespace Typelib
         {
             (*trigger_it)->modifiedDependencyAliases(*this);
         }
+    }
+
+    void Registry::clearAliases()
+    {
+        // We remove the aliases from +m_global+ and recompute m_current from
+        // scratch
+        TypeMap::iterator global_it = m_global.begin(), global_end = m_global.end();
+        while (global_it != global_end)
+        {
+            if (global_it->first != global_it->second.type->getName())
+                m_global.erase(global_it++);
+            else ++global_it;
+        }
+
+        updateCurrentNameMap();
     }
 
     size_t Registry::size() const { return m_global.size(); }
