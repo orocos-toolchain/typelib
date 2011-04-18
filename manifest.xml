@@ -21,6 +21,7 @@
   <depend package="gccxml" />
   <rosdep name="boost" />
   <rosdep name="libxml2" />
+  <rosdep name="nokogiri" />
   <rosdep name="doxygen" type="doc" />
   <rosdep name="rdoc" type="doc" />
   <rosdep name="antlr" />
