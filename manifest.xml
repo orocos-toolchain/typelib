@@ -24,7 +24,6 @@
   <rosdep name="nokogiri" />
   <rosdep name="doxygen" type="doc" />
   <rosdep name="rdoc" type="doc" />
-  <rosdep name="antlr" />
 
   <tags>stable</tags>
 </package>
