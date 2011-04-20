@@ -1233,6 +1233,10 @@ module Typelib
             end
         end
 
+        def concat(array)
+            push(*array)
+        end
+
         # Enumerates the elements of this container
         def each
             do_each do |el|
