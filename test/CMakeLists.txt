@@ -1,5 +1,3 @@
-FIND_PACKAGE(Antlr REQUIRED COMPONENTS CPP)
-
 set_source_files_properties(test_value.cc PROPERTIES
     COMPILE_FLAGS -fno-strict-aliasing)
 set_source_files_properties(test_containers.cc PROPERTIES
