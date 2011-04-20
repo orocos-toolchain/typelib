@@ -1149,12 +1149,23 @@ module Typelib
         # functionality
         module RandomAccessContainer
             # Returns the value at the given index
-            def [](index)
-                if index < 0 || index >= size
-                    raise ArgumentError, "index out of bounds"
-                end
+            def [](index, chunk_size = nil)
+                if chunk_size
+                    if index < 0 || (index + chunk_size) > size
+                        raise ArgumentError, "index out of bounds"
+                    end
+                    result = self.class.new
+                    chunk_size.times do |i|
+                        result.push(do_get(index + i))
+                    end
+                    result
+                else
+                    if index < 0 || index >= size
+                        raise ArgumentError, "index out of bounds"
+                    end
 
-                Typelib.to_ruby(do_get(index), element_t)
+                    Typelib.to_ruby(do_get(index), element_t)
+                end
             end
 
             def []=(index, value)
