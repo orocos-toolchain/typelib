@@ -18,13 +18,16 @@
 
   <depend package="utilmm" />
   <depend package="utilrb" />
-  <depend package="gccxml" />
+  <rosdep name="gccxml" />
   <rosdep name="boost" />
   <rosdep name="libxml2" />
-  <rosdep name="nokogiri" />
-  <rosdep name="doxygen" type="doc" />
-  <rosdep name="rdoc" type="doc" />
+  <!-- <depend_optional name="doxygen" type="doc" /> -->
+  <!-- <depend_optional name="rdoc" type="doc" /> -->
 
   <tags>stable</tags>
+
+  <export>
+    <cpp cflags="-I${prefix}/install/include" lflags="-L${prefix}/install/lib -ltypeLib -Wl,-rpath,-L${prefix}/lib"/>
+  </export>
 </package>
 
