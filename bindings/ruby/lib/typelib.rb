@@ -1982,6 +1982,11 @@ module Typelib
     convert_to_ruby '/std/string', String do |value|
         value.to_byte_array[8..-1]
     end
+    specialize '/std/string' do
+        def to_str
+            Typelib.to_ruby(self)
+        end
+    end
 
     ####
     # C string handling
