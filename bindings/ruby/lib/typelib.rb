@@ -880,6 +880,12 @@ module Typelib
             super(ptr)
         end
 
+        def raw_each_field
+            self.class.each_field do |field_name, _|
+                yield(field_name, raw_get_field(field_name))
+            end
+        end
+
         def each_field
             self.class.each_field do |field_name, _|
                 yield(field_name, get_field(field_name))
@@ -1109,7 +1115,21 @@ module Typelib
 	    pp.text ']'
 	end
 
+        def raw_each
+            if !block_given?
+                return enum_for(:raw_each)
+            end
+
+            do_each do |el|
+                yield(el)
+            end
+        end
+
         def each
+            if !block_given?
+                return enum_for(:each)
+            end
+
             do_each do |el|
                 yield(Typelib.to_ruby(el, element_t))
             end
@@ -1309,8 +1329,22 @@ module Typelib
             push(*array)
         end
 
+        def raw_each
+            if !block_given?
+                return enum_for(:raw_each)
+            end
+
+            do_each do |el|
+                yield(el)
+            end
+        end
+
         # Enumerates the elements of this container
         def each
+            if !block_given?
+                return enum_for(:each)
+            end
+
             do_each do |el|
                 yield(Typelib.to_ruby(el, element_t))
             end
