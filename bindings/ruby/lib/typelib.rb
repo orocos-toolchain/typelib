@@ -1033,6 +1033,10 @@ module Typelib
 	end
 
         def raw_get_field(name)
+            raw_get(name)
+        end
+
+        def raw_get(name)
 	    if !(value = @fields[name])
 		value = typelib_get_field(name)
 		if value.kind_of?(Type)
@@ -1177,6 +1181,10 @@ module Typelib
             super if defined? super
         end
 
+        def raw_get(index)
+            do_get(index)
+        end
+
         def [](index, range = nil)
             if range
                 result = []
@@ -1240,6 +1248,14 @@ module Typelib
         # Module included in container types that offer random access
         # functionality
         module RandomAccessContainer
+            def raw_get(index)
+                if index < 0 || index >= size
+                    raise ArgumentError, "index out of bounds"
+                end
+
+                do_get(index)
+            end
+
             # Returns the value at the given index
             def [](index, chunk_size = nil)
                 if chunk_size
