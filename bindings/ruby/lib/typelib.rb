@@ -964,7 +964,11 @@ module Typelib
             attr_reader :field_types
 	    # Returns the type of +name+
             def [](name)
-                @field_types[name]
+                if result = @field_types[name]
+                    result
+                else
+                    raise ArgumentError, "#{name} is not a field of #{self.name}"
+                end
             end
             # True if the given field is defined
             def has_field?(name)
