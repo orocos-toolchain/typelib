@@ -4,6 +4,7 @@
 #include "exporter.hh"
 
 #include <boost/filesystem.hpp>
+#include <boost/version.hpp>
 #include <dlfcn.h>
 
 using namespace std;
@@ -48,7 +49,11 @@ PluginManager::PluginManager()
     for (directory_iterator it(plugin_dir); it != end_it; ++it)
     {
         if (it->path().extension() == ".so")
+#if BOOST_VERSION >= 104600
+            loadPlugin(it->path().string());
+#else
             loadPlugin(it->path().file_string());
+#endif
     }
 }
 
