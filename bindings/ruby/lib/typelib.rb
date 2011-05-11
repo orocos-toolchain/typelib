@@ -1993,7 +1993,7 @@ module Typelib
         Typelib.from_ruby(0, typelib_type)
     end
     convert_to_ruby '/bool' do |value|
-        value == 1
+        value != 0
     end
 
     convert_from_ruby String, '/std/string' do |value, typelib_type|
