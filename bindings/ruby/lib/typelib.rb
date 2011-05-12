@@ -768,6 +768,9 @@ module Typelib
     class OpaqueType < Type
     end
 
+    # Set of classes that have a #dup method but on which dup is forbidden
+    DUP_FORBIDDEN = [TrueClass, FalseClass, Fixnum, Float, Symbol]
+
     # Base class for compound types (structs, unions)
     #
     # See the Typelib module documentation for an overview about how types are
@@ -806,7 +809,8 @@ module Typelib
                             instance_variable_set(attr_name, value)
                         end
                         Typelib.define_method_if_possible(self, type_klass, field_name, Type::ALLOWED_OVERLOADINGS) do
-                            if v = instance_variable_get(attr_name)
+                            v = instance_variable_get(attr_name)
+                            if !v.nil?
                                 v
                             else
                                 v = get_field(field_name)
@@ -828,7 +832,8 @@ module Typelib
                     define_method(:apply_changes_from_converted_types) do
                         super()
                         converted_fields.each do |field_name|
-                            if value = instance_variable_get("@#{field_name}")
+                            value = instance_variable_get("@#{field_name}")
+                            if !value.nil?
                                 if @fields[field_name]
                                     @fields[field_name].apply_changes_from_converted_types
                                 end
@@ -840,8 +845,13 @@ module Typelib
                     define_method(:dup) do
                         new_value = super()
                         for field_name in converted_fields
-                            if converted_value = instance_variable_get("@#{field_name}")
-                                instance_variable_set("@#{field_name}", converted_value.dup)
+                            converted_value = instance_variable_get("@#{field_name}")
+                            if !converted_value.nil?
+                                # false, nil,  numbers can't be dup'ed
+                                if !DUP_FORBIDDEN.include?(converted_value.class)
+                                    converted_value = converted_value.dup
+                                end
+                                instance_variable_set("@#{field_name}", converted_value)
                             end
                         end
                         new_value
