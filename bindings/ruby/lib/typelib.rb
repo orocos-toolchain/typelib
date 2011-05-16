@@ -2051,6 +2051,77 @@ module Typelib
     end
 end
 
+module Typelib
+    # Generic method that converts a Typelib value into the corresponding Ruby
+    # value.
+    def self.to_ruby(value, original_type = nil)
+        if value.respond_to?(:typelib_to_ruby)
+            value = value.typelib_to_ruby
+        end
+
+        if (t = (original_type || value.class)).respond_to?(:to_ruby)
+            # This allows to override Typelib's internal type convertion (mainly
+            # for numerical types).
+            t.to_ruby(value)
+        else
+            value
+        end
+    end
+
+    # call-seq:
+    #  Typelib.copy(to, from) => to
+    # 
+    # Proper copy of a value to another. +to+ and +from+ do not have to be from the
+    # same registry, as long as the types can be casted into each other
+    def self.copy(to, from)
+        if to.respond_to?(:invalidate_changes_from_converted_types)
+            to.invalidate_changes_from_converted_types
+        end
+        if from.respond_to?(:apply_changes_from_converted_types)
+            from.apply_changes_from_converted_types
+        end
+        do_copy(to, from)
+        to
+    end
+
+    # Initializes +expected_type+ from +arg+, where +arg+ can either be a value
+    # of expected_type, a value that can be casted into a value of
+    # expected_type, or a Ruby value that can be converted into a value of
+    # +expected_type+.
+    def self.from_ruby(arg, expected_type)      
+        if arg.respond_to?(:apply_changes_from_converted_types)
+            arg.apply_changes_from_converted_types
+        end
+
+        if arg.kind_of?(expected_type)
+            return arg
+        elsif arg.class < Type && arg.class.casts_to?(expected_type)
+            return arg.cast(expected_type)
+        elsif convertion = expected_type.convertions_from_ruby[arg.class]
+            converted = convertion.call(arg, expected_type)
+        elsif expected_type.respond_to?(:from_ruby)
+            converted = expected_type.from_ruby(arg)
+        else
+            if !(expected_type < NumericType) && !arg.kind_of?(expected_type)
+                raise ArgumentError, "cannot convert #{arg} to #{expected_type.name}"
+            end
+            converted = arg
+        end
+        if !(expected_type < NumericType) && !converted.kind_of?(expected_type)
+            raise InternalError, "invalid conversion of #{arg} to #{expected_type.name}"
+        end
+
+        converted
+    end
+
+    # A raw, untyped, memory zone
+    class MemoryZone
+	def to_s
+	    "#<MemoryZone:#{object_id} ptr=0x#{address.to_s(16)}>"
+	end
+    end
+end
+
 if Typelib.with_dyncall?
 module Typelib
     # An opened C library
@@ -2312,68 +2383,6 @@ module Typelib
 	filtered
     end
 
-    # Generic method that converts a Typelib value into the corresponding Ruby
-    # value.
-    def self.to_ruby(value, original_type = nil)
-        if value.respond_to?(:typelib_to_ruby)
-            value = value.typelib_to_ruby
-        end
-
-        if (t = (original_type || value.class)).respond_to?(:to_ruby)
-            # This allows to override Typelib's internal type convertion (mainly
-            # for numerical types).
-            t.to_ruby(value)
-        else
-            value
-        end
-    end
-
-    # call-seq:
-    #  Typelib.copy(to, from) => to
-    # 
-    # Proper copy of a value to another. +to+ and +from+ do not have to be from the
-    # same registry, as long as the types can be casted into each other
-    def self.copy(to, from)
-        if to.respond_to?(:invalidate_changes_from_converted_types)
-            to.invalidate_changes_from_converted_types
-        end
-        if from.respond_to?(:apply_changes_from_converted_types)
-            from.apply_changes_from_converted_types
-        end
-        do_copy(to, from)
-        to
-    end
-
-    # Initializes +expected_type+ from +arg+, where +arg+ can either be a value
-    # of expected_type, a value that can be casted into a value of
-    # expected_type, or a Ruby value that can be converted into a value of
-    # +expected_type+.
-    def self.from_ruby(arg, expected_type)      
-        if arg.respond_to?(:apply_changes_from_converted_types)
-            arg.apply_changes_from_converted_types
-        end
-
-        if arg.kind_of?(expected_type)
-            return arg
-        elsif arg.class < Type && arg.class.casts_to?(expected_type)
-            return arg.cast(expected_type)
-        elsif convertion = expected_type.convertions_from_ruby[arg.class]
-            converted = convertion.call(arg, expected_type)
-        elsif expected_type.respond_to?(:from_ruby)
-            converted = expected_type.from_ruby(arg)
-        else
-            if !(expected_type < NumericType) && !arg.kind_of?(expected_type)
-                raise ArgumentError, "cannot convert #{arg} to #{expected_type.name}"
-            end
-            converted = arg
-        end
-        if !(expected_type < NumericType) && !converted.kind_of?(expected_type)
-            raise InternalError, "invalid conversion of #{arg} to #{expected_type.name}"
-        end
-
-        converted
-    end
-
     # Creates an array of objects that can safely be passed to function call mechanism
     def self.filter_function_args(args, function) # :nodoc:
         # Check we have the right count of arguments
@@ -2399,13 +2408,6 @@ module Typelib
 
 	args.each_with_index do |arg, idx|
 	    args[idx] = filter_argument(arg, function.arguments[idx])
-	end
-    end
-
-    # A raw, untyped, memory zone
-    class MemoryZone
-	def to_s
-	    "#<MemoryZone:#{object_id} ptr=0x#{address.to_s(16)}>"
 	end
     end
 end
