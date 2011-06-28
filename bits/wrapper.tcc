@@ -13,7 +13,8 @@ namespace utilmm {
 
     namespace details {
       template<typename Ty>
-      struct wrapper_factory : public dummy_factory {
+      class wrapper_factory : public dummy_factory {
+      public:
           virtual dummy* create() const { return new wrapper<Ty>; }
       };
     }
