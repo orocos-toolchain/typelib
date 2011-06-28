@@ -102,6 +102,8 @@ namespace Typelib
         std::string m_name;
         Value m_field;
 
+        using ValueVisitor::visit_;
+
         bool visit_(Compound const& type) { return true; }
         bool visit_(Value const& value, Compound const&, Field const& field)
         {

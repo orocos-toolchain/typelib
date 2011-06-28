@@ -5,13 +5,13 @@
 
 namespace Typelib {
     namespace details {
-        template<int Bits> class sint_t;
+        template<int Bits> struct sint_t;
         template<> struct sint_t<7>  { typedef int8_t type; };
         template<> struct sint_t<15> { typedef int16_t type; };
         template<> struct sint_t<31> { typedef int32_t type; };
         template<> struct sint_t<63> { typedef int64_t type; };
 
-        template<int Bits> class uint_t;
+        template<int Bits> struct uint_t;
         template<> struct uint_t<8>  { typedef uint8_t type; };
         template<> struct uint_t<16> { typedef uint16_t type; };
         template<> struct uint_t<32> { typedef uint32_t type; };
