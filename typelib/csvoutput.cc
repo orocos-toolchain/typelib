@@ -23,6 +23,7 @@ namespace
             string name = join(m_name, ""); 
             m_headers.push_back(name);
         }
+
         bool visit_ (OpaqueType const& type) { output(); return true; }
         bool visit_ (Numeric const&) { output(); return true; }
         bool visit_ (Enum const&) { output(); return true; }
@@ -69,6 +70,7 @@ namespace
             return true;
         }
  
+        using TypeVisitor::visit_;
     public:
         stringlist apply(Type const& type, std::string const& basename)
         {
@@ -92,6 +94,7 @@ namespace
             m_output.push_back(boost::lexical_cast<string>(value)); 
             return true;
         }
+        using ValueVisitor::visit_;
         bool visit_ (Value value, OpaqueType const& type)
         {
             display("<" + type.getName() + ">");
