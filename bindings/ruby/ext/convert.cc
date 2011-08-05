@@ -13,10 +13,10 @@ using namespace typelib_ruby;
  * and returns the VALUE object which corresponds to
  * the field, or returns nil
  */
-bool RubyGetter::visit_ (int8_t  & value) { m_value = CHR2FIX(value); return false; }
-bool RubyGetter::visit_ (uint8_t & value) { m_value = CHR2FIX(value); return false; }
-bool RubyGetter::visit_ (int16_t & value) { m_value = INT2NUM(value); return false; }
-bool RubyGetter::visit_ (uint16_t& value) { m_value = INT2NUM(value); return false; }
+bool RubyGetter::visit_ (int8_t  & value) { m_value = INT2FIX(value); return false; }
+bool RubyGetter::visit_ (uint8_t & value) { m_value = INT2FIX(value); return false; }
+bool RubyGetter::visit_ (int16_t & value) { m_value = INT2FIX(value); return false; }
+bool RubyGetter::visit_ (uint16_t& value) { m_value = INT2FIX(value); return false; }
 bool RubyGetter::visit_ (int32_t & value) { m_value = INT2NUM(value); return false; }
 bool RubyGetter::visit_ (uint32_t& value) { m_value = INT2NUM(value); return false; }
 bool RubyGetter::visit_ (int64_t & value) { m_value = LL2NUM(value);  return false; }
@@ -68,8 +68,8 @@ VALUE RubyGetter::apply(Typelib::Value value, VALUE registry, VALUE parent)
     return m_value;
 }
 
-bool RubySetter::visit_ (int8_t  & value) { value = NUM2CHR(m_value); return false; }
-bool RubySetter::visit_ (uint8_t & value) { value = NUM2CHR(m_value); return false; }
+bool RubySetter::visit_ (int8_t  & value) { value = NUM2INT(m_value); return false; }
+bool RubySetter::visit_ (uint8_t & value) { value = NUM2INT(m_value); return false; }
 bool RubySetter::visit_ (int16_t & value) { value = NUM2INT(m_value); return false; }
 bool RubySetter::visit_ (uint16_t& value) { value = NUM2UINT(m_value); return false; }
 bool RubySetter::visit_ (int32_t & value) { value = NUM2INT(m_value); return false; }
