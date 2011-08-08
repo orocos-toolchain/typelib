@@ -8,6 +8,16 @@ require 'pp'
 require 'facets/string/camelcase'
 require 'set'
 
+if !defined?(Infinity)
+    Infinity = 1e200 ** 200
+end
+if !defined?(Inf)
+    Inf = Infinity
+end
+if !defined?(NaN)
+    NaN = Infinity / Infinity
+end
+
 # Typelib is the main module for Ruby-side Typelib functionality.
 #
 # Typelib allows to do two things:
