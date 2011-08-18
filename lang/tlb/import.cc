@@ -102,6 +102,9 @@ namespace
                 m_map.erase(it);
 
                 base = type.loader(type, *this);
+
+                if (base->getName() != basename && !m_registry.has(basename, false))
+                    m_registry.alias(base->getName(), basename);
             }
             else if (it != m_map.end())
             {
