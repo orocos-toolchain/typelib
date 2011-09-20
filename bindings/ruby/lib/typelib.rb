@@ -1511,6 +1511,10 @@ module Typelib
             copy
         end
 
+	def minimal(type, with_aliases = true)
+	    do_minimal(type, with_aliases)
+	end
+
         # Creates a new registry by loading a typelib XML file
         #
         # See also Registry#merge_xml

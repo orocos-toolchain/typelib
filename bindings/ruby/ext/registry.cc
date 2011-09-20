@@ -338,7 +338,7 @@ VALUE registry_resize(VALUE self, VALUE new_sizes)
  * but not in +auto_types+
  */
 static
-VALUE registry_minimal(VALUE self, VALUE rb_auto)
+VALUE registry_minimal(VALUE self, VALUE rb_auto, VALUE with_aliases)
 {
     std::string error_string;
     Registry& registry   = rb2cxx::object<Registry>(self);
@@ -346,7 +346,7 @@ VALUE registry_minimal(VALUE self, VALUE rb_auto)
     if (rb_obj_is_kind_of(rb_auto, rb_cString))
     {
         try { 
-            Registry* result = registry.minimal(StringValuePtr(rb_auto));
+            Registry* result = registry.minimal(StringValuePtr(rb_auto), RTEST(with_aliases));
             return registry_wrap(cRegistry, result);
         }
         catch(std::exception const& e)
@@ -569,7 +569,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "clear_aliases", RUBY_METHOD_FUNC(registry_clear_aliases), 0);
     rb_define_method(cRegistry, "aliases_of", RUBY_METHOD_FUNC(registry_aliases_of), 1);
     rb_define_method(cRegistry, "merge", RUBY_METHOD_FUNC(registry_merge), 1);
-    rb_define_method(cRegistry, "minimal", RUBY_METHOD_FUNC(registry_minimal), 1);
+    rb_define_method(cRegistry, "do_minimal", RUBY_METHOD_FUNC(registry_minimal), 2);
     rb_define_method(cRegistry, "includes?", RUBY_METHOD_FUNC(registry_includes_p), 1);
     rb_define_method(cRegistry, "do_resize", RUBY_METHOD_FUNC(registry_resize), 1);
     rb_define_method(cRegistry, "reverse_depends", RUBY_METHOD_FUNC(registry_reverse_depends), 1);
