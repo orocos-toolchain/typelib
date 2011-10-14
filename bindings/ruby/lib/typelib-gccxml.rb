@@ -452,7 +452,7 @@ module Typelib
             end
         end
 
-        IGNORED_NODES = %w{Method OperatorMethod Destructor Constructor}.to_set
+        IGNORED_NODES = %w{Method OperatorMethod Destructor Constructor Function OperatorFunction}.to_set
 
         def load(required_files, xml)
             @result = Array.new
