@@ -66,33 +66,55 @@ module Typelib
             level = 0
             type_name = nil
             arguments = []
-            start = nil
 
-            name.size.times do |i|
-                char = name[i, 1]
+            if !(name =~ /^([^<,>]+)/)
+                raise ArgumentError, "invalid type name #{name.inspect}: not starting with a proper ID"
+            end
+            type_name, suffix = $1.strip, $'
+
+            if suffix.empty?
+                return type_name, []
+            end
+
+            if suffix[0, 1] != "<"
+                raise ArgumentError, "invalid template syntax #{name.inspect}: expected '<' as first character of #{suffix.inspect}"
+            end
+            suffix = suffix[1..-1]
+
+            arguments = [""]
+            level = 1
+            while !suffix.empty?
+                if !(suffix =~ /^([^<,>]*)/)
+                    raise ArgumentError, "expected an ID followed by one of <,>, but got #{suffix.inspect}"
+                end
+                match = $1
+                arguments[-1] << match.strip
+                break if $1.size == suffix.size # nothing left at all
+
+                char   = $'[0, 1]
+                suffix = $'[1..-1]
                 if char == "<"
-                    if level == 0
-                        type_name = name[0, i]
-                        start = i + 1
-                    end
                     level += 1
 
-                elsif char == ","
-                    if level == 1
-                        arguments << name[start, i - start]
-                        start = i + 1
+                    if level > 1
+                        arguments[-1] << char
+                    end
+                elsif char == ">"
+                    if level > 1
+                        arguments[-1] << char
                     end
 
-                elsif char == ">"
                     level -= 1
-                    if level == 0
-                        arguments << name[start, i - start]
+                elsif char == ","
+                    if level == 1
+                        arguments << ""
+                    else
+                        arguments[-1] << char
                     end
                 end
             end
 
-            type_name ||= name
-            return type_name.strip, arguments.map(&:strip)
+            return type_name, arguments
         end
 
         def typelib_to_cxx(name)
@@ -133,6 +155,10 @@ module Typelib
             namespace = Typelib.namespace(name)
             if namespace != "/"
                 namespace = cxx_to_typelib(namespace) + "/"
+            end
+
+            if basename == ""
+                return namespace
             end
 
             type_name, template_arguments = GCCXMLLoader.parse_template(basename)
