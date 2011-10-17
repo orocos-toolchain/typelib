@@ -420,6 +420,27 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal "a_string", Typelib.to_ruby(Typelib.from_ruby("a_string", reg.get("/std/string")))
     end
 
+    def test_std_string_push
+        reg   = make_registry
+        string_t  = reg.get("/std/string")
+
+        str = Typelib.from_ruby("string", string_t)
+        str << "1"
+        assert_equal "string1", Typelib.to_ruby(str)
+
+        assert_raises(ArgumentError) { str << "longer" }
+        assert_raises(ArgumentError) { str << "" }
+    end
+
+    def test_std_string_concat
+        reg   = make_registry
+        string_t  = reg.get("/std/string")
+
+        str = Typelib.from_ruby("string1", string_t)
+        str.concat("string2")
+        assert_equal "string1string2", Typelib.to_ruby(str)
+    end
+
     def test_boolean
         reg = make_registry
 

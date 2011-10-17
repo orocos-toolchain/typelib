@@ -2030,11 +2030,18 @@ module Typelib
         def to_str
             Typelib.to_ruby(self)
         end
+
+        def concat(other_string)
+            super(Typelib.from_ruby(other_string, self.class))
+        end
     end
 
     ####
     # C string handling
     convert_from_ruby String, CHAR_T.name do |value, typelib_type|
+        if value.size != 1
+            raise ArgumentError, "trying to convert a string of length different than one to a character"
+        end
         Typelib.from_ruby(value[0], typelib_type)
     end
     convert_from_ruby String, "#{CHAR_T.name}[]" do |value, typelib_type|
