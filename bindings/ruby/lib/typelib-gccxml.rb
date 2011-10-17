@@ -60,80 +60,89 @@ module Typelib
             end
         end
 
+        def self.template_tokenizer(name)
+            suffix = name
+            result = []
+            while !suffix.empty?
+                suffix =~ /^([^<,>]*)/
+                match = $1.strip
+                if !match.empty?
+                    result << match
+                end
+                char   = $'[0, 1]
+                suffix = $'[1..-1]
+
+                break if !suffix
+
+                result << char
+            end
+            result
+        end
+
         # Parses the Typelib or C++ type name +name+ and returns basename,
         # template_arguments
         def self.parse_template(name)
-            level = 0
-            type_name = nil
-            arguments = []
+            tokens = template_tokenizer(name)
 
-            if !(name =~ /^([^<,>]+)/)
-                raise ArgumentError, "invalid type name #{name.inspect}: not starting with a proper ID"
+            type_name = tokens.shift
+            arguments = collect_template_arguments(tokens)
+            arguments.map! do |arg|
+                arg.join("")
             end
-            type_name, suffix = $1.strip, $'
-
-            if suffix.empty?
-                return type_name, []
-            end
-
-            if suffix[0, 1] != "<"
-                raise ArgumentError, "invalid template syntax #{name.inspect}: expected '<' as first character of #{suffix.inspect}"
-            end
-            suffix = suffix[1..-1]
-
-            arguments = [""]
-            level = 1
-            while !suffix.empty?
-                if !(suffix =~ /^([^<,>]*)/)
-                    raise ArgumentError, "expected an ID followed by one of <,>, but got #{suffix.inspect}"
-                end
-                match = $1
-                arguments[-1] << match.strip
-                break if $1.size == suffix.size # nothing left at all
-
-                char   = $'[0, 1]
-                suffix = $'[1..-1]
-                if char == "<"
-                    level += 1
-
-                    if level > 1
-                        arguments[-1] << char
-                    end
-                elsif char == ">"
-                    if level > 1
-                        arguments[-1] << char
-                    end
-
-                    level -= 1
-                elsif char == ","
-                    if level == 1
-                        arguments << ""
-                    else
-                        arguments[-1] << char
-                    end
-                end
-            end
-
             return type_name, arguments
         end
 
-        def typelib_to_cxx(name)
-            type_name, template_arguments = GCCXMLLoader.parse_template(name)
-            if !template_arguments.empty?
-                template_arguments = template_arguments.map do |arg_name|
-                    if arg_name =~ /^\d/
-                        arg_name
+        def self.collect_template_arguments(tokens)
+            level = 0
+            arguments = []
+            current = []
+            while !tokens.empty?
+                case tk = tokens.shift
+                when "<"
+                    level += 1
+                    if level > 1
+                        current << "<" << tokens.shift
                     else
-                        typelib_to_cxx(arg_name)
+                        current = []
                     end
+                when ">"
+                    level -= 1
+                    if level == 0
+                        arguments << current
+                        current = []
+                        break
+                    else
+                        current << ">"
+                    end
+                when ","
+                    if level == 1
+                        arguments << current
+                        current = []
+                    else
+                        current << "," << tokens.shift
+                    end
+                else
+                    current << tk
                 end
-                type_name = type_name.gsub('/', '::')
-                name = "#{type_name}<#{template_arguments.join(",")}>"
-            else
-                name = name.gsub('/', '::')
+            end
+            if !current.empty?
+                arguments << current
             end
 
-            name = name.gsub('<::', '<').
+            return arguments
+        end
+
+        def typelib_to_cxx(name)
+            tokens = GCCXMLLoader.template_tokenizer(name)
+            tokens.each do |tk|
+                case tk
+                when /[<,>]/, /^\d/
+                else
+                    tk.gsub!('/', '::')
+                end
+            end
+
+            name = tokens.join("").gsub('<::', '<').
                 gsub(',::', ',').
                 gsub(',([^\s])', ', \1')
             if name[0, 2] == "::"
@@ -144,39 +153,37 @@ module Typelib
         end
 
         def self.cxx_to_typelib(name, absolute = true)
-            if name =~ /^\d+$/
-                return name
-            end
-
             name = name.gsub('::', '/')
             name = name.gsub('> >', '>>')
 
-            basename  = Typelib.basename(name)
-            namespace = Typelib.namespace(name)
-            if namespace != "/"
-                namespace = cxx_to_typelib(namespace) + "/"
-            end
+            tokens = GCCXMLLoader.template_tokenizer(name)
+            tokenized_cxx_to_typelib(tokens)
+        end
 
-            if basename == ""
-                return namespace
-            end
-
-            type_name, template_arguments = GCCXMLLoader.parse_template(basename)
-            template_arguments.map! { |n| cxx_to_typelib(n, absolute) }
-
-            type_name = namespace + type_name
-            if !template_arguments.empty?
-                # std::vector has only one parameter for us ...
-                if type_name == "/std/vector"
-                    "#{type_name}<#{template_arguments[0]}>"
-                elsif type_name == "/std/basic_string"
-                    "/std/string"
+        def self.tokenized_cxx_to_typelib(tokens, absolute = true)
+            result = []
+            while !tokens.empty?
+                tk = tokens.shift
+                if tk =~ /^\/?std\/vector/
+                    template_arguments = collect_template_arguments(tokens)
+                    arg = tokenized_cxx_to_typelib(template_arguments.first, absolute)
+                    result << "#{tk}<#{arg}>"
+                elsif tk =~ /^\/?std\/basic_string/
+                    collect_template_arguments(tokens)
+                    result << "/std/string"
+                elsif tk =~ /^[\d<>,]/
+                    result << tk
+                elsif tk[0, 1] != "/"
+                    result << "/#{tk}"
                 else
-                    "#{type_name}<#{template_arguments.join(",")}>"
+                    result << tk
                 end
-            else
-                type_name
             end
+            result = result.join("")
+            if absolute && result[0, 1] != "/"
+                result = "/#{result}"
+            end
+            result
         end
 
         def cxx_to_typelib(name, absolute = true)
@@ -419,7 +426,7 @@ module Typelib
                 end
                 type_def << "</enum>"
             else
-                return ignore(xmlnode, "ignoring #{name} as it is of the unsupported GCCXML type #{kind}")
+                return ignore(xmlnode, "ignoring #{name} as it is of the unsupported GCCXML type #{kind}, XML node is #{xmlnode}")
             end
 
             result.concat(type_def)
