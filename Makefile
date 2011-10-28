@@ -6,7 +6,7 @@ EXTRA_CMAKE_FLAGS=-DCMAKE_INSTALL_PREFIX=`rospack find rtt`/../install\
                   -DLIBRARY_OUTPUT_PATH=`rospack find typelib`/lib
 
 ifdef ROS_STACK_DIR_FINAL
-EXTRA_CMAKE_FLAGS +=-DTYPELIB_PLUGIN_PATH="${ROS_STACK_DIR_FINAL}/orocos_toolchain_ros/install/lib/typelib"
+EXTRA_CMAKE_FLAGS +=-DTYPELIB_PLUGIN_PATH="${ROS_STACK_DIR_FINAL}/orocos_toolchain/install/lib/typelib"
 endif
 
 install: all
