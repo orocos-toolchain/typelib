@@ -522,7 +522,6 @@ module Typelib
                 resolve_opaques(xml)
             end
 
-
             # Resolve structs and classes
             all_types.each do |node|
                 resolve_type_definition(xml, node)
