@@ -21,6 +21,7 @@
   <rosdep name="gccxml" />
   <rosdep name="boost" />
   <rosdep name="libxml2" />
+  <rosdep name="facets" />
   <!-- <depend_optional name="doxygen" type="doc" /> -->
   <!-- <depend_optional name="rdoc" type="doc" /> -->
 
