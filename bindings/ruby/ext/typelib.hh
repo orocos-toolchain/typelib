@@ -8,6 +8,8 @@
 
 #include "typelib_ruby.hh"
 
+#undef VERBOSE
+
 namespace typelib_ruby {
     extern VALUE cType;
     extern VALUE cIndirect;

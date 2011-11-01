@@ -35,6 +35,9 @@ using namespace typelib_ruby;
 VALUE cxx2rb::value_wrap(Value v, VALUE registry, VALUE parent)
 {
     VALUE type = type_wrap(v.getType(), registry);
+#   ifdef VERBOSE
+    fprintf(stderr, "wrapping Typelib::Value %p from C++, type=%s and parent=%lu\n", v.getData(), v.getType().getName().c_str(), parent);
+#   endif
     VALUE ptr  = memory_wrap(v.getData());
     VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, ptr);
     rb_iv_set(wrapper, "@parent", parent);
@@ -44,6 +47,9 @@ VALUE cxx2rb::value_wrap(Value v, VALUE registry, VALUE parent)
 static VALUE value_allocate(Type const& type, VALUE registry)
 {
     VALUE rb_type = cxx2rb::type_wrap(type, registry);
+#   ifdef VERBOSE
+    fprintf(stderr, "allocating new value of type %s\n", type.getName().c_str());
+#   endif
     VALUE ptr     = memory_allocate(type.getSize());
     memory_init(ptr, rb_type);
     VALUE wrapper = rb_funcall(rb_type, rb_intern("wrap"), 1, ptr);
@@ -334,6 +340,9 @@ VALUE value_initialize(VALUE self, VALUE ptr)
 
     if (NIL_P(ptr) || rb_obj_is_kind_of(ptr, rb_cString))
     {
+#       ifdef VERBOSE
+        fprintf(stderr, "allocating new value of type %s to copy an existing buffer\n", t.getName().c_str());
+#       endif
         VALUE buffer = memory_allocate(t.getSize());
         memory_init(buffer, rb_class_of(self));
 	if (! NIL_P(ptr))
@@ -394,6 +403,10 @@ VALUE value_do_cast(VALUE self, VALUE target_type)
 
     VALUE registry = rb_iv_get(target_type, "@registry");
     Value casted(value.getData(), to_type);
+#   ifdef VERBOSE
+    fprintf(stderr, "wrapping casted value\n");
+#   endif
+
     return cxx2rb::value_wrap(casted, registry, self);
 }
 

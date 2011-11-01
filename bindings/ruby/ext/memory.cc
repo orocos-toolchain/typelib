@@ -10,7 +10,6 @@ extern "C" {
 using namespace Typelib;
 using namespace std;
 using namespace typelib_ruby;
-#undef VERBOSE
 
 static VALUE cMemoryZone;
 static st_table* MemoryTable;
@@ -103,6 +102,9 @@ memory_delete(void *ptr)
         }
     }
 
+#   ifdef VERBOSE
+    fprintf(stderr, "%p: deallocated\n", ptr);
+#   endif
     free(ptr);
     memory_unref(ptr);
 }
@@ -136,7 +138,7 @@ typelib_ruby::memory_allocate(size_t size)
     void* ptr = malloc(size);
     VALUE zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_delete, ptr);
 #   ifdef VERBOSE
-    fprintf(stderr, "%x: new allocated zone of size %i\n", ptr, size);
+    fprintf(stderr, "%p: new allocated zone of size %lu\n", ptr, size);
 #   endif
     memory_aset(ptr, zone);
     return zone;
@@ -178,7 +180,7 @@ typelib_ruby::memory_wrap(void* ptr)
     if (NIL_P(zone))
     {
 #	ifdef VERBOSE
-	fprintf(stderr, "%x: wrapping new memory zone\n", ptr);
+	fprintf(stderr, "%p: wrapping new memory zone\n", ptr);
 #	endif
 
 	zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_unref, ptr);
@@ -187,7 +189,7 @@ typelib_ruby::memory_wrap(void* ptr)
     else
     {
 #	ifdef VERBOSE
-	fprintf(stderr, "%x: already known memory zone\n", ptr);
+	fprintf(stderr, "%p: already known memory zone\n", ptr);
 #	endif
     }
 
@@ -212,6 +214,10 @@ memory_zone_address(VALUE self)
 static VALUE
 memory_zone_to_ptr(VALUE self)
 {
+#   ifdef VERBOSE
+    fprintf(stderr, "allocating void* to create a pointer-to-memory\n");
+#   endif
+
     VALUE result = memory_allocate(sizeof(void*));
 
     void* newptr = memory_cptr(result);
@@ -226,6 +232,9 @@ static VALUE
 string_to_memory_ptr(VALUE self)
 {
     rb_str_modify(self);
+#   ifdef VERBOSE
+    fprintf(stderr, "wrapping string value from Ruby\n");
+#   endif
     VALUE ptr = memory_wrap(StringValuePtr(self));
     rb_iv_set(ptr, "@buffer_string", self);
     return ptr;

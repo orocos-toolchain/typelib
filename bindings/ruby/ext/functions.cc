@@ -172,11 +172,17 @@ class VMCall : public TypeVisitor
 
     virtual bool visit_ (Pointer const& type)
     {
+#ifdef  VERBOSE
+        fprintf(stderr, "wrapping dcCallPointer with type=%s\n", type.getName().c_str());
+#endif
 	m_return = memory_wrap(dcCallPointer(m_vm, m_handle));
         return false;
     }
     virtual bool visit_ (Array const& type)
     { 
+#ifdef  VERBOSE
+        fprintf(stderr, "wrapping dcCallPointer with type=%s\n", type.getName().c_str());
+#endif
 	m_return = memory_wrap(dcCallPointer(m_vm, m_handle));
 	return false;
     }
@@ -248,7 +254,12 @@ VALUE filter_value_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
     if (arg_type == expected_type)
     {
         if (arg_type.getCategory() == Type::Pointer)
+        {
+#ifdef      VERBOSE
+            fprintf(stderr, "wrapping filtered argument with arg_type=%s\n", arg_type.getName().c_str());
+#endif
             return memory_wrap(*reinterpret_cast<void**>(arg_value.getData()));
+        }
 	else if (arg_type.getCategory() == Type::Array)
 	    return rb_funcall(arg, rb_intern("to_memory_ptr"), 0);
         else if (arg_type.getCategory() == Type::Numeric)

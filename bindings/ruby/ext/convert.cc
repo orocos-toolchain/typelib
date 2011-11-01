@@ -26,26 +26,41 @@ bool RubyGetter::visit_ (double  & value) { m_value = rb_float_new(value); retur
 
 bool RubyGetter::visit_(Value const& v, Pointer const& p)
 {
+#   ifdef VERBOSE
+    fprintf(stderr, "%p: wrapping from RubyGetter::visit_(pointer)\n", v.getData());
+#   endif
     m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
     return false;
 }
 bool RubyGetter::visit_(Value const& v, Array const& a) 
 {
+#   ifdef VERBOSE
+    fprintf(stderr, "%p: wrapping from RubyGetter::visit_(array)\n", v.getData());
+#   endif
     m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
     return false;
 }
 bool RubyGetter::visit_(Value const& v, Compound const& c)
 { 
+#   ifdef VERBOSE
+    fprintf(stderr, "%p: wrapping from RubyGetter::visit_(compound)\n", v.getData());
+#   endif
     m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
     return false; 
 }
 bool RubyGetter::visit_(Value const& v, OpaqueType const& c)
 { 
+#   ifdef VERBOSE
+    fprintf(stderr, "%p: wrapping from RubyGetter::visit_(opaque)\n", v.getData());
+#   endif
     m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
     return false; 
 }
 bool RubyGetter::visit_(Value const& v, Container const& c)
 { 
+#   ifdef VERBOSE
+    fprintf(stderr, "%p: wrapping from RubyGetter::visit_(container)\n", v.getData());
+#   endif
     m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
     return false; 
 }
