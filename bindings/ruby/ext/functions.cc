@@ -175,7 +175,7 @@ class VMCall : public TypeVisitor
 #ifdef  VERBOSE
         fprintf(stderr, "wrapping dcCallPointer with type=%s\n", type.getName().c_str());
 #endif
-	m_return = memory_wrap(dcCallPointer(m_vm, m_handle));
+	m_return = memory_wrap(new void*(dcCallPointer(m_vm, m_handle)), true);
         return false;
     }
     virtual bool visit_ (Array const& type)
@@ -183,7 +183,7 @@ class VMCall : public TypeVisitor
 #ifdef  VERBOSE
         fprintf(stderr, "wrapping dcCallPointer with type=%s\n", type.getName().c_str());
 #endif
-	m_return = memory_wrap(dcCallPointer(m_vm, m_handle));
+	m_return = memory_wrap(new void*(dcCallPointer(m_vm, m_handle)), true);
 	return false;
     }
 

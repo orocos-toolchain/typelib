@@ -203,7 +203,7 @@ typelib_ruby::memory_init(VALUE ptr, VALUE type)
 }
 
 VALUE
-typelib_ruby::memory_wrap(void* ptr)
+typelib_ruby::memory_wrap(void* ptr, bool take_ownership)
 {
     VALUE zone = memory_aref(ptr);
     if (NIL_P(zone))
@@ -212,7 +212,10 @@ typelib_ruby::memory_wrap(void* ptr)
 	fprintf(stderr, "%p: wrapping new memory zone\n", ptr);
 #	endif
 
-	zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_unref, ptr);
+        if (take_ownership)
+            zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_delete, ptr);
+        else
+            zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_unref, ptr);
 	memory_aset(ptr, zone);
     }
     else

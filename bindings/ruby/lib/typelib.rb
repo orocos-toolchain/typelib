@@ -2378,7 +2378,7 @@ module Typelib
 	    ruby_returns = []
 	    if return_type
 		if MemoryZone === retval
-		    ruby_returns << return_type.wrap(retval.to_ptr)
+		    ruby_returns << return_type.wrap(retval)
 		else
 		    ruby_returns << retval
 		end
