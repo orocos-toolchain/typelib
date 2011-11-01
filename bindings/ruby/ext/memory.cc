@@ -70,9 +70,34 @@ typedef std::map< void const*, RbMemoryLayout > TypeLayouts;
 MemoryTypes memory_types;
 TypeLayouts memory_layouts;
 
-static void
-memory_unref(void *ptr)
+static int
+memory_touch_i(volatile void* ptr, VALUE element, st_data_t)
 {
+    char value = *((char*)ptr);
+    fprintf(stderr, "touching %p\n", ptr);
+    *((char*)ptr) = value;
+    return ST_CONTINUE;
+}
+
+static void
+memory_touch_all()
+{
+    st_foreach(MemoryTable, (int(*)(ANYARGS))memory_touch_i, (st_data_t)0);
+
+}
+
+void
+typelib_ruby::memory_unref(void *ptr)
+{
+#   ifdef VERBOSE
+    fprintf(stderr, "%p: unref\n", ptr);
+#   endif
+
+    // A NULL ptr can happen if the value has been invalidated. Just
+    // ignore.
+    if (!ptr)
+        return;
+
     st_delete(MemoryTable, (st_data_t*)&ptr, 0);
 
     MemoryTypes::iterator type_it = memory_types.find(ptr);
@@ -135,6 +160,10 @@ memory_aset(void *ptr, VALUE obj)
 VALUE
 typelib_ruby::memory_allocate(size_t size)
 {
+#   ifdef VERBOSE
+    memory_touch_all();
+#   endif
+
     void* ptr = malloc(size);
     VALUE zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_delete, ptr);
 #   ifdef VERBOSE
