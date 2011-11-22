@@ -1547,22 +1547,37 @@ module Typelib
         attr_reader :exported_type_to_real_type
         attr_reader :real_type_to_exported_type
 
+        def setup_type_export_module(mod)
+            if !mod.respond_to?('find_exported_template')
+                mod.extend(TypeExportNamespace)
+                mod.registry = self
+                mod.instance_variable_set :@exported_types, Hash.new
+                mod.instance_variable_set :@exported_templates, Hash.new
+            end
+        end
+
         def export_solve_namespace(base_module, typename)
             namespace = Typelib.split_typename(typename)
             basename = namespace.pop
+
+            setup_type_export_module(base_module)
             
             mod = namespace.inject(base_module) do |mod, ns|
                 template_basename, template_args = GCCXMLLoader.parse_template(ns)
                 ns = template_basename.gsub(/\s+/, '_').camelcase(:upper)
 
                 if template_args.empty?
-                    if mod.const_defined_here?(ns)
-                        mod.const_get(ns)
-                    else
-                        result = Module.new
-                        mod.const_set(ns, result)
-                        result
-                    end
+                    mod = 
+                        if mod.const_defined_here?(ns)
+                            mod.const_get(ns)
+                        else
+                            result = Module.new
+                            mod.const_set(ns, result)
+                            result
+                        end
+
+                    setup_type_export_module(mod)
+                    mod
                 else
                     # Must already be defined as it is an actual type object,
                     # not a namespace
@@ -1648,6 +1663,9 @@ module Typelib
                 next if name =~ exclude_rx
 
                 basename, mod = export_solve_namespace(base_module, name)
+                if !mod.respond_to?(:find_exported_template)
+                    next
+                end
                 next if !mod
 
                 exported_type =
@@ -1676,7 +1694,7 @@ module Typelib
                     next
                 end
 
-                if basename =~ /(.*)\[(\d+)\]$/
+                if type <= Typelib::PointerType || type <= Typelib::ArrayType
                     # We ignore arrays for now
                     # export_array_to_ruby(mod, $1, Integer($2), exported_type)
                     next
@@ -1694,6 +1712,7 @@ module Typelib
                             raise InconsistentTypeExport.new("#{mod.name}::#{basename}", existing_type, exported_type), "there is a type registered at #{mod.name}::#{basename} which differs from the one in the registry, and override is false"
                         end
                     else
+                        mod.exported_types[basename] = type
                         mod.const_set(basename, exported_type)
                     end
                 else
@@ -1704,8 +1723,42 @@ module Typelib
             @export_typemap = new_export_typemap
         end
 
+        # Remove all types exported by #export_to_ruby under +mod+, and
+        # de-registers them from the export_typemap
+        def clear_exports(export_target_mod)
+            if !export_target_mod.respond_to?(:exported_types)
+                return
+            end
+
+            found_type_exports = ValueSet.new
+            
+            export_target_mod.exported_types.each do |const_name, type|
+                found_type_exports.insert(export_target_mod.const_get(const_name))
+                export_target_mod.send(:remove_const, const_name)
+            end
+            export_target_mod.exported_types.clear
+            export_target_mod.constants.each do |c|
+                if c.respond_to?(:exported_types)
+                    clear_exports(c)
+                end
+            end
+
+            found_type_exports.each do |exported_type|
+                set = export_typemap[exported_type]
+                set.delete_if do |_, mod, _|
+                    export_target_mod == mod
+                end
+                if set.empty?
+                    export_typemap.delete(exported_type)
+                    puts export_typemap.size
+                end
+            end
+        end
+
         module TypeExportNamespace
             attr_accessor :registry
+            attr_reader :exported_types
+            attr_reader :exported_templates
 
             def find_exported_template(template_basename, args, remaining)
                 if remaining.empty?
@@ -1745,12 +1798,6 @@ module Typelib
         def export_template_to_ruby(mod, template_basename, template_args, actual_type, exported_type)
             template_basename = template_basename.gsub(/\s+/, '_').camelcase(:upper)
 
-            if !mod.respond_to?('find_exported_template')
-                mod.extend(TypeExportNamespace)
-                mod.registry = self
-                mod.instance_variable_set :@exported_templates, Hash.new
-            end
-                                        
             if !mod.respond_to?(template_basename)
                 mod.singleton_class.class_eval do
                     define_method(template_basename) do |*args|

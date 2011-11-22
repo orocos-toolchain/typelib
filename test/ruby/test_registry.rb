@@ -105,6 +105,58 @@ class TC_Registry < Test::Unit::TestCase
         test = "<typelib><opaque name=\"invalid type name\" size=\"0\" /></typelib>"
         assert_raises(ArgumentError) { Typelib::Registry.from_xml(test) }
     end
+
+    def test_export
+	reg = make_registry
+        mod = Module.new
+        reg.export_to_ruby(mod)
+
+        assert_equal reg.get('/E_comparison_1/E_with_added_values'),
+            mod::EComparison_1::EWithAddedValues
+        assert_equal reg.get('/B'),
+            mod::B
+
+    end
+
+    def test_clear_export_keeps_custom_objects
+	reg = make_registry
+        mod = Module.new
+        reg.export_to_ruby(mod)
+
+        obj = Object.new
+        mod.const_set('CustomConstant', obj)
+        reg.clear_exports(mod)
+        assert_equal([:EComparison_1, :EComparison_2, :NS1, :VeryLongNamespaceName, :Std, :CustomConstant].to_set, mod.constants.to_set)
+        assert(mod.exported_types.empty?, "#{mod.exported_types.inspect} was expected to be empty")
+        assert_equal(obj, mod::CustomConstant)
+    end
+
+    def test_export_converted_type
+	reg = make_registry
+        mod = Module.new
+
+        converted_t = reg.get('/B')
+        converted_t.convert_to_ruby(Time) { |bla| }
+        reg.export_to_ruby(mod)
+
+        assert_equal(Time, mod::B)
+    end
+
+    def test_export_converted_type_to_existing_type
+	reg = make_registry
+        mod = Module.new
+        target_t = Class.new
+
+        ns = Module.new
+        mod.const_set(:EComparison_1, ns)
+        ns.const_set(:EWithAddedValues, target_t)
+
+        converted_t = reg.get('/E_comparison_1/E_with_added_values')
+        converted_t.convert_to_ruby(target_t) { |bla| }
+        reg.export_to_ruby(mod)
+
+        assert_equal(target_t, mod::EComparison_1::EWithAddedValues)
+    end
 end
 
     
