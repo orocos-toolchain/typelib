@@ -7,6 +7,7 @@ require 'delegate'
 require 'pp'
 require 'facets/string/camelcase'
 require 'set'
+require 'utilrb/value_set'
 
 if !defined?(Infinity)
     Infinity = 1e200 ** 200
@@ -513,6 +514,38 @@ module Typelib
 	end
         alias clone dup
 
+        module Invalidate
+            def to_memory_ptr; raise TypeError, "invalidated object" end
+        end
+
+        # Call to freeze the object, i.e. to make it readonly
+        def freeze
+            freeze_children
+            @__typelib_frozen = true
+            self
+        end
+
+        def frozen?
+            @__typelib_frozen
+        end
+
+        # Call to forbid any R/W access to the underlying memory zone. This is
+        # usually used by the underlying memory management in cases where the
+        # memory zone itself got deallocated
+        def invalidate
+            do_invalidate
+            invalidate_children
+            @parent = nil
+            @__typelib_invalidated = true
+            extend Invalidate
+            self
+        end
+
+        # True if this object has been invalidated by calling #invalidate
+        def invalidated?
+            @__typelib_invalidated
+        end
+            
         class << self
 	    # The Typelib::Registry this type belongs to
             attr_reader :registry
@@ -697,7 +730,21 @@ module Typelib
 
 	def initialize(*args)
 	    __initialize__(*args)
+            @__typelib_children = ValueSet.new
 	end
+
+        def freeze_children
+            @__typelib_children.each do |child|
+                child.freeze
+            end
+        end
+
+        def invalidate_children
+            @__typelib_children.each do |child|
+                child.invalidate
+            end
+            @__typelib_children.clear
+        end
 
         def to_ruby
             Typelib.to_ruby(self, self.class)
@@ -786,6 +833,39 @@ module Typelib
     # See the Typelib module documentation for an overview about how types are
     # values are represented.
     class CompoundType < Type
+        # Module used to extend frozen values
+        module Freezer
+            def raw_set_field(*args)
+                raise TypeError, "frozen object"
+            end
+        end
+
+        # Module used to extend invalidated values
+        module Invalidate
+            def raw_get_field(*args)
+                raise TypeError, "invalidated object"
+            end
+            def raw_set_field(*args)
+                raise TypeError, "invalidated object"
+            end
+        end
+
+        # Call to freeze the object, i.e. to make it readonly
+        def freeze
+            super
+            extend Freezer
+            self
+        end
+
+        # Call to invalidate the object, i.e. to forbid any R/W access to it.
+        # This is used in the framework when the underlying memory zone has been
+        # made invalid by some operation (as e.g. container resizing)
+        def invalidate
+            super
+            extend Invalidate
+            self
+        end
+
         # Creates a module that can be used to extend a certain Type class to
         # take into account the convertions.
         #
@@ -1116,6 +1196,38 @@ module Typelib
     class ArrayType < IndirectType
         attr_reader :element_t
 
+        # Module used to extend frozen values
+        module Freezer
+            def do_set(*args)
+                raise TypeError, "frozen object"
+            end
+        end
+
+        # Module used to extend invalidated values
+        module Invalidate
+            def do_set(*args); raise TypeError, "invalidated object" end
+            def do_each(*args); raise TypeError, "invalidated object" end
+            def do_get(*args); raise TypeError, "invalidated object" end
+            def size; raise TypeError, "invalidated object" end
+        end
+
+        # Call to freeze the object, i.e. to make it readonly
+        def freeze
+            super
+            # Nothing to do here
+            extend Freezer
+            self
+        end
+
+        # Call to invalidate the object, i.e. to forbid any R/W access to it.
+        # This is used in the framework when the underlying memory zone has been
+        # made invalid by some operation (as e.g. container resizing)
+        def invalidate
+            super
+            extend Invalidate
+            self
+        end
+
         def initialize(*args)
             super
             @element_t = self.class.deference
@@ -1269,6 +1381,45 @@ module Typelib
             @element_t = self.class.deference
         end
 
+        # Module used to extend frozen values
+        module Freezer
+            def clear; raise TypeError, "frozen object" end
+            def do_set(*args); raise TypeError, "frozen object" end
+            def do_delete_if(*args); raise TypeError, "frozen object" end
+            def do_erase(*args); raise TypeError, "frozen object" end
+            def do_push(*args); raise TypeError, "frozen object" end
+        end
+
+        # Module used to extend invalidated values
+        module Invalidate
+            def clear; raise TypeError, "invalidated object" end
+            def size; raise TypeError, "invalidated object" end
+            def length; raise TypeError, "invalidated object" end
+            def do_set(*args); raise TypeError, "invalidated object" end
+            def do_delete_if(*args); raise TypeError, "invalidated object" end
+            def do_erase(*args); raise TypeError, "invalidated object" end
+            def do_push(*args); raise TypeError, "invalidated object" end
+            def do_each(*args); raise TypeError, "invalidated object" end
+            def do_get(*args); raise TypeError, "invalidated object" end
+        end
+
+        # Call to freeze the object, i.e. to make it readonly
+        def freeze
+            super
+            # Nothing to do here
+            extend Freezer
+            self
+        end
+
+        # Call to invalidate the object, i.e. to forbid any R/W access to it.
+        # This is used in the framework when the underlying memory zone has been
+        # made invalid by some operation (as e.g. container resizing)
+        def invalidate
+            super
+            extend Invalidate
+            self
+        end
+
         # Module included in container types that offer random access
         # functionality
         module RandomAccessContainer
@@ -1363,6 +1514,7 @@ module Typelib
             for v in values
                 do_push(Typelib.from_ruby(v, element_t))
             end
+            invalidate_children
         end
 
         def concat(array)
@@ -1394,6 +1546,7 @@ module Typelib
         def erase(el)
             el = Typelib.from_ruby(el, element_t)
             do_erase(el)
+            invalidate_children
         end
 
         # Deletes the elements
@@ -1401,6 +1554,7 @@ module Typelib
             do_delete_if do |el|
                 yield(Typelib.to_ruby(el, element_t))
             end
+            invalidate_children
         end
 
         # True if this container is empty

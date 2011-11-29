@@ -188,6 +188,8 @@ namespace typelib_ruby {
 
     extern VALUE value_get_registry(VALUE self);
     extern VALUE type_get_registry(VALUE self);
+    extern void memory_unref(void* ptr);
+    extern void memory_delete(void* ptr);
     extern VALUE memory_wrap(void* ptr, bool take_ownership = false);
     extern VALUE memory_allocate(size_t size);
     extern void  memory_init(VALUE ptr, VALUE type);

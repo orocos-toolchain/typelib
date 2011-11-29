@@ -473,5 +473,74 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 
         type = reg.get "BoolHandling"
     end
+
+    def test_vector_freeze
+        vector_t = make_registry.get("/std/vector</double>")
+        vector = vector_t.new
+
+        10.times do |i|
+            vector.push(i)
+        end
+        vector.freeze
+        assert(vector.frozen?)
+        assert_raises(TypeError) { vector.push(10) }
+        assert_raises(TypeError) { vector.erase(10) }
+        assert_raises(TypeError) { vector.delete_if { } }
+        assert_raises(TypeError) { vector[0] = 10 }
+        assert_equal(5, vector[5])
+    end
+
+    def test_vector_invalidate_refuses_toplevel_values
+        vector_t = make_registry.get("/std/vector</double>")
+        vector = vector_t.new
+        assert_raises(ArgumentError) { vector.invalidate }
+    end
+
+    def test_vector_invalidate
+        main_t = make_registry.get("StdCollections")
+        main = main_t.new
+        vector = main.dbl_vector
+
+        10.times do |i|
+            vector.push(i)
+        end
+        vector.invalidate
+        assert(vector.invalidated?)
+        assert_raises(TypeError) { vector.push(10) }
+        assert_raises(TypeError) { vector.erase(10) }
+        assert_raises(TypeError) { vector.delete_if { } }
+        assert_raises(TypeError) { vector[0] }
+        assert_raises(TypeError) { vector[0] = 10 }
+    end
+
+    def test_vector_modification_invalidate_existing_values
+        std      = make_registry.get("StdCollections")
+        value_t = std[:v_of_v]
+
+        value   = value_t.new
+        element = value_t.deference.new
+        10.times do
+            value.push(element)
+        end
+
+        v = value[0]
+        assert(!v.invalidated?)
+        value.push(element)
+        assert(v.invalidated?)
+
+        v = value[0]
+        assert(!v.invalidated?)
+        value.erase(element)
+        assert(v.invalidated?)
+
+        10.times do
+            value.push(element)
+        end
+        v = value[0]
+        assert(!v.invalidated?)
+        bool = false
+        value.delete_if { bool = !bool }
+        assert(v.invalidated?)
+    end
 end
 

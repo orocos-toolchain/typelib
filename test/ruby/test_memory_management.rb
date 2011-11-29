@@ -29,28 +29,74 @@ class TC_MemoryManagement < Test::Unit::TestCase
 	nil
     end
 
+    # This method is implemented to test that certain objects get finalized
+    #
+    # It is used in association with #check_finalization. Checks registered with
+    # that method are all evaluated at the end of the block.
+    #
+    # The goal of the method is to make sure that any object that is purely
+    # local to the block gets finalized while objects that are "leaked" to other
+    # scopes are kept. I.e.:
+    #
+    #
+    #   assert_finalization do
+    #     local = Object.new
+    #     assert_finalization(local, true)
+    #   end
+    #
+    # should pass, while
+    #
+    #   leaked = nil
+    #   assert_finalization do
+    #     leaked = Object.new
+    #     assert_finalization(leaked, true)
+    #   end
+    #
+    # will fail.
     def assert_finalization(&block)
 	@finalized << Array.new
 	cleanup_stack(&block)
 	GC.start
-	@finalized.last.each do |id, flag, test_flag, desc|
-	    if test_flag
-		if flag != test_flag
-		    raise FailedFinalizationCheck, "#{desc} has not been finalized"
+	@finalized.last.each do |id, flag, test_flag, desc, backtrace|
+            if flag != test_flag
+                if test_flag
+		    raise FailedFinalizationCheck, "#{desc} has not been finalized", backtrace
+                else
+                    raise FailedFinalizationCheck, "#{desc} has been finalized", backtrace
 		end
-	    else
-		if flag != test_flag
-		    raise FailedFinalizationCheck, "#{desc} has been finalized"
-		end
-	    end
+            end
 	end
 
     ensure
 	@finalized.pop
     end
 
+    # Checks, within an assert_finalization block, that +object+ gets finalized.
+    # See the documentation of assert_finalization
+    #
+    # If +level+ is > 1, the check is added to a parent assert_finalization
+    # block. For instance:
+    #
+    #   assert_finalized do
+    #     child = nil
+    #     assert_finalized do
+    #       parent = Object.new
+    #       child  = Object.new
+    #       child.instance_variable_set(:@parent, parent)
+    #
+    #       # Neither parent nor child will be finalized at this level as
+    #       # +child+ is referred to by the parent scope and +parent+ is referred
+    #       # to by +child+
+    #       check_finalized(child, false)
+    #       check_finalized(parent, false)
+    #       # But they should be finalized in the parent scope
+    #       check_finalized(child, true, 1)
+    #       check_finalized(parent, true, 1)
+    #     end
+    #   end
+    #
     def check_finalization(object, test_finalized, level = 0)
-	@finalized[-level - 1] << [object.object_id, false, test_finalized, object.inspect]
+	@finalized[-level - 1] << [object.object_id, false, test_finalized, object.inspect, caller]
 	ObjectSpace.define_finalizer(object, method(:did_finalize))
 	nil
     end
@@ -142,7 +188,7 @@ class TC_MemoryManagement < Test::Unit::TestCase
 		check_finalization(array.instance_variable_get(:@ptr), false)
 		check_finalization(array, true, 1)
 		check_finalization(array.instance_variable_get(:@ptr), true, 1)
-		check_finalization(first_el, true)
+		check_finalization(first_el, true, 1)
 		check_finalization(other_el, false)
 	    end
 

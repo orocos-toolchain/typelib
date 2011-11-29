@@ -111,8 +111,8 @@ typelib_ruby::memory_unref(void *ptr)
     }
 }
 
-static void
-memory_delete(void *ptr)
+void
+typelib_ruby::memory_delete(void *ptr)
 {
     MemoryTypes::iterator it = memory_types.find(ptr);
     if (it != memory_types.end())

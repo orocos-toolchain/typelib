@@ -40,6 +40,11 @@ VALUE cxx2rb::value_wrap(Value v, VALUE registry, VALUE parent)
 #   endif
     VALUE ptr  = memory_wrap(v.getData());
     VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, ptr);
+    if (!NIL_P(parent))
+    {
+        VALUE child_set = rb_iv_get(parent, "@__typelib_children");
+        rb_funcall(child_set, rb_intern("<<"), 1, wrapper);
+    }
     rb_iv_set(wrapper, "@parent", parent);
     return wrapper;
 }
@@ -410,6 +415,17 @@ VALUE value_do_cast(VALUE self, VALUE target_type)
     return cxx2rb::value_wrap(casted, registry, self);
 }
 
+static
+VALUE value_invalidate(VALUE self)
+{
+    if (NIL_P(rb_iv_get(self, "@parent")))
+        rb_raise(rb_eArgError, "cannot invalidate a toplevel value");
+
+    Value& value = rb2cxx::object<Value>(self);
+    memory_unref(value.getData());
+    value = Value(0, value.getType());
+    return Qnil;
+}
 
 static
 VALUE value_do_byte_array(VALUE self, VALUE pointers, VALUE opaques, VALUE merge, VALUE remove_trailing_skips)
@@ -547,6 +563,7 @@ void typelib_ruby::Typelib_init_values()
     rb_define_method(cType, "endian_swap!",      RUBY_METHOD_FUNC(&value_endian_swap_b), 0);
     rb_define_method(cType, "zone_address", RUBY_METHOD_FUNC(&value_address), 0);
     rb_define_method(cType, "do_cast", RUBY_METHOD_FUNC(&value_do_cast), 1);
+    rb_define_method(cType, "do_invalidate", RUBY_METHOD_FUNC(&value_invalidate), 0);
 
     rb_define_singleton_method(mTypelib, "do_basename",  RUBY_METHOD_FUNC(typelib_do_basename), 1);
     rb_define_singleton_method(mTypelib, "do_namespace", RUBY_METHOD_FUNC(typelib_do_namespace), 1);
