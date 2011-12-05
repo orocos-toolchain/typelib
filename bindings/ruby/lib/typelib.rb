@@ -1905,7 +1905,6 @@ module Typelib
                 end
                 if set.empty?
                     export_typemap.delete(exported_type)
-                    puts export_typemap.size
                 end
             end
         end
