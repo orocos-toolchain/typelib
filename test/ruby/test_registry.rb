@@ -118,6 +118,24 @@ class TC_Registry < Test::Unit::TestCase
 
     end
 
+    def test_clear_export
+	reg = make_registry
+        mod = Module.new
+        reg.export_to_ruby(mod)
+
+        ns = mod.const_get(:NS1).const_get(:NS2)
+        assert(!ns.constants.empty?)
+        assert(!ns.exported_types.empty?, "#{ns.exported_types.inspect} was expected to be empty")
+
+        reg.clear_exports(mod)
+
+        assert_equal([:EComparison_1, :EComparison_2, :NS1, :VeryLongNamespaceName, :Std].to_set, mod.constants.map(&:to_sym).to_set)
+        assert(mod.exported_types.empty?, "#{mod.exported_types.inspect} was expected to be empty")
+
+        assert(ns.constants.empty?)
+        assert(ns.exported_types.empty?, "#{ns.exported_types.inspect} was expected to be empty")
+    end
+
     def test_clear_export_keeps_custom_objects
 	reg = make_registry
         mod = Module.new
