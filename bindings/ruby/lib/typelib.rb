@@ -1892,6 +1892,7 @@ module Typelib
             end
             export_target_mod.exported_types.clear
             export_target_mod.constants.each do |c|
+                c = export_target_mod.const_get(c)
                 if c.respond_to?(:exported_types)
                     clear_exports(c)
                 end

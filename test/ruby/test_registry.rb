@@ -126,7 +126,7 @@ class TC_Registry < Test::Unit::TestCase
         obj = Object.new
         mod.const_set('CustomConstant', obj)
         reg.clear_exports(mod)
-        assert_equal([:EComparison_1, :EComparison_2, :NS1, :VeryLongNamespaceName, :Std, :CustomConstant].to_set, mod.constants.to_set)
+        assert_equal([:EComparison_1, :EComparison_2, :NS1, :VeryLongNamespaceName, :Std, :CustomConstant].to_set, mod.constants.map(&:to_sym).to_set)
         assert(mod.exported_types.empty?, "#{mod.exported_types.inspect} was expected to be empty")
         assert_equal(obj, mod::CustomConstant)
     end
