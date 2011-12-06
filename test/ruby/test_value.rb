@@ -189,6 +189,8 @@ class TC_Value < Test::Unit::TestCase
 	
 
     def test_is_a
+        assert !Typelib::CompoundType.is_a?("/A")
+
         registry = make_registry
         a = registry.get("/A").new
 	assert( a.is_a?("/A") )

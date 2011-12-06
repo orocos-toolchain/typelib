@@ -992,12 +992,13 @@ module Typelib
             end
         end
 
+        @fields = []
         class << self
 	    # Check if this type can be used in place of +typename+
 	    # In case of compound types, we check that either self, or
 	    # the first element field is +typename+
 	    def is_a?(typename)
-		super || self.fields[0].last.is_a?(typename)
+		super || (!self.fields.empty? && self.fields[0].last.is_a?(typename))
 	    end
 
             # The set of fields that are converted to a different type when
