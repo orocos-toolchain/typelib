@@ -385,7 +385,7 @@ static VALUE numeric_type_unsigned_p(VALUE self)
 
 /*
  * call-seq:
- *  klass.container_name => name
+ *  klass.container_kind => name
  *
  * Returns the name of the generic container. For instance, a
  * /std/vector</double> type would return /std/vector.
