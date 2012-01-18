@@ -23,6 +23,7 @@ module Typelib
 
         attr_reader :name_to_nodes
         attr_reader :demangled_to_node
+        attr_reader :ignore_message
 
         # A mapping from the type ID to the type names
         #
@@ -44,6 +45,7 @@ module Typelib
             @id_to_node   = Hash.new
             @type_names   = Hash.new
             @type_aliases = Hash.new
+            @ignore_message = Hash.new
         end
 
         def xml_quote(name)
@@ -263,14 +265,30 @@ module Typelib
 
         def ignore(xmlnode, msg = nil)
             if msg
-                warn("#{file_context(xmlnode)}: #{msg}")
+                if file = file_context(xmlnode)
+                    warn("#{file}: #{msg}")
+                else
+                    warn(msg)
+                end
             end
+            ignore_message[xmlnode['id']] = msg
             id_to_name[xmlnode["id"]] = nil
         end
 
         # Returns if +name+ has been declared as an opaque
         def opaque?(name)
             opaques.include?(name)
+        end
+
+        def resolve_qualified_type(xml, xmlnode)
+            spec = []
+            if xmlnode['const'] == '1'
+                spec << 'const'
+            end
+            if xmlnode['volatile'] == "1"
+                spec << 'volatile'
+            end
+            type_names[xmlnode['id']] = "#{spec.join(" ")} #{resolve_type_id(xml, xmlnode['type'])}"
         end
 
         def resolve_type_definition(xml, xmlnode)
@@ -298,9 +316,17 @@ module Typelib
                     return (id_to_name[id] = "#{pointed_to_type}[#{size}]")
                 else return ignore(xmlnode)
                 end
+            elsif kind == "CvQualifiedType"
+                name = resolve_qualified_type(xml, xmlnode)
+                return ignore(xmlnode, "#{name}: cannot represent qualified types")
             end
 
-            name = cxx_to_typelib(xmlnode['demangled'] || xmlnode['name'])
+            cxx_typename = (xmlnode['demangled'] || xmlnode['name'])
+            if !cxx_typename
+                raise "Internal error: #{xmlnode} has neither a demangled nor a name field"
+            end
+
+            name = cxx_to_typelib(cxx_typename)
             if name =~ /gccxml_workaround/
                 return
             end
