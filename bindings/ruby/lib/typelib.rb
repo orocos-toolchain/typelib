@@ -1110,6 +1110,7 @@ module Typelib
         end
 
 	def pretty_print(pp) # :nodoc:
+            apply_changes_from_converted_types
 	    self.class.pretty_print_common(pp) do |name, offset, type|
 		pp.text name
 		pp.text "="
@@ -1241,6 +1242,7 @@ module Typelib
         end
 
 	def pretty_print(pp) # :nodoc:
+            apply_changes_from_converted_types
 	    all_fields = enum_for(:each_with_index).to_a
 
 	    pp.text '['
@@ -1565,6 +1567,7 @@ module Typelib
         def <<(value); push(value) end
 
         def pretty_print(pp)
+            apply_changes_from_converted_types
             index = 0
 	    pp.text '['
 	    pp.nest(2) do
