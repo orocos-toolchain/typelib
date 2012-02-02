@@ -476,7 +476,7 @@ module Typelib
             # Check here whether the GCC_XML node could be found
             # The actual temporary xml-file might not be empty, e.g. containing the xml version line only
             # thus need to check on the first node and any available children here
-            if !root || root.respond_to("children")
+            if !root || !root.respond_to?("children")
                 raise "gccxml generated incomplete xml, please verify that your /tmp folder has enough space left"
             end
 
