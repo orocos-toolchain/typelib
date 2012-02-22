@@ -1907,7 +1907,7 @@ module Typelib
                     end
                 end
 
-                new_export_typemap[exported_type] ||= Array.new
+                new_export_typemap[exported_type] ||= Set.new
                 new_export_typemap[exported_type] << [type, mod, basename]
 
                 if (existing_exports = @export_typemap[exported_type]) && existing_exports.include?([type, mod, basename])
