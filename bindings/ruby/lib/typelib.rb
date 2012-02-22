@@ -336,6 +336,24 @@ module Typelib
         ns
     end
 
+    def self.filter_methods_that_should_not_be_defined(on, reference_class, names, allowed_overloadings, msg_name, with_raw, &block)
+        names.find_all do |n|
+            candidates = [n, "#{n}="]
+            if with_raw
+                candidates.concat(["raw_#{n}", "raw_#{n}="])
+            end
+            candidates.all? do |method_name|
+                if !reference_class.method_defined?(method_name) || allowed_overloadings.include?(method_name)
+                    true
+                else
+                    msg_name ||= "instances of #{reference_class.name}"
+                    STDERR.puts "WARN: NOT defining #{candidates.join(", ")} on #{msg_name} as it would overload a necessary method"
+                    false
+                end
+            end
+        end
+    end
+
     def self.define_method_if_possible(on, reference_class, name, allowed_overloadings = [], msg_name = nil, &block)
         if !reference_class.method_defined?(name) || allowed_overloadings.include?(name)
             on.send(:define_method, name, &block)
@@ -387,6 +405,10 @@ module Typelib
                          end
                 layout.size == 2 &&
                     ((layout[0] == :FLAG_MEMCPY) || layout[0] == :FLAG_SKIP)
+            end
+
+            def filter_methods_that_should_not_be_defined(names, with_raw, &block)
+                Typelib.filter_methods_that_should_not_be_defined(self, self, names, Type::ALLOWED_OVERLOADINGS, nil, with_raw, &block)
             end
 
             def define_method_if_possible(name, &block)
@@ -866,88 +888,43 @@ module Typelib
             self
         end
 
-        # Creates a module that can be used to extend a certain Type class to
-        # take into account the convertions.
-        #
-        # I.e. if a convertion is declared as
-        #
-        #   convert_to_ruby '/base/Time', :to => Time
-        # 
-        # and the type T is a structure with a field of type /base/Time, then
-        # if
-        #
-        #   type = registry.get('T')
-        #   type.extend_for_custom_convertions
-        #
-        # then
-        #   t = type.new
-        #   t.time => Time instance
-        #   t.time => the same Time instance
-        def self.extend_for_custom_convertions
-            super if defined? super
-
-            if !converted_fields.empty?
-                self.contains_converted_types = true
-                # Make it local so that it can be accessed in the module we define below
-                converted_fields = self.converted_fields
-                type_klass = self
-
-                m = Module.new do
-                    converted_fields.each do |field_name|
-                        attr_name = "@#{field_name}"
-                        Typelib.define_method_if_possible(self, type_klass, "#{field_name}=", Type::ALLOWED_OVERLOADINGS) do |value|
-                            instance_variable_set(attr_name, value)
-                        end
-                        Typelib.define_method_if_possible(self, type_klass, field_name, Type::ALLOWED_OVERLOADINGS) do
-                            v = instance_variable_get(attr_name)
-                            if !v.nil?
-                                v
-                            else
-                                v = get_field(field_name)
-                                instance_variable_set(attr_name, v)
-                            end
-                        end
-                    end
-
-                    define_method(:invalidate_changes_from_converted_types) do
-                        super()
-                        converted_fields.each do |field_name|
-                            instance_variable_set("@#{field_name}", nil)
-                            if @fields[field_name]
-                                @fields[field_name].invalidate_changes_from_converted_types
-                            end
-                        end
-                    end
-
-                    define_method(:apply_changes_from_converted_types) do
-                        super()
-                        converted_fields.each do |field_name|
-                            value = instance_variable_get("@#{field_name}")
-                            if !value.nil?
-                                if @fields[field_name]
-                                    @fields[field_name].apply_changes_from_converted_types
-                                end
-                                set_field(field_name, value)
-                            end
-                        end
-                    end
-
-                    define_method(:dup) do
-                        new_value = super()
-                        for field_name in converted_fields
-                            converted_value = instance_variable_get("@#{field_name}")
-                            if !converted_value.nil?
-                                # false, nil,  numbers can't be dup'ed
-                                if !DUP_FORBIDDEN.include?(converted_value.class)
-                                    converted_value = converted_value.dup
-                                end
-                                instance_variable_set("@#{field_name}", converted_value)
-                            end
-                        end
-                        new_value
+        module CustomConvertionsHandling
+            def invalidate_changes_from_converted_types
+                super()
+                self.class.converted_fields.each do |field_name|
+                    instance_variable_set("@#{field_name}", nil)
+                    if @fields[field_name]
+                        @fields[field_name].invalidate_changes_from_converted_types
                     end
                 end
-                include(m)
+            end
+
+            def apply_changes_from_converted_types
+                super()
+                self.class.converted_fields.each do |field_name|
+                    value = instance_variable_get("@#{field_name}")
+                    if !value.nil?
+                        if @fields[field_name]
+                            @fields[field_name].apply_changes_from_converted_types
+                        end
+                        set_field(field_name, value)
+                    end
+                end
+            end
+
+            def dup
+                new_value = super()
+                for field_name in self.class.converted_fields
+                    converted_value = instance_variable_get("@#{field_name}")
+                    if !converted_value.nil?
+                        # false, nil,  numbers can't be dup'ed
+                        if !DUP_FORBIDDEN.include?(converted_value.class)
+                            converted_value = converted_value.dup
+                        end
+                        instance_variable_set("@#{field_name}", converted_value)
+                    end
+                end
+                new_value
             end
         end
 
@@ -1005,6 +982,81 @@ module Typelib
             # accessed from Ruby, as a set of names
             attr_reader :converted_fields
 
+            @@custom_convertion_modules = Hash.new
+            def custom_convertion_module(converted_fields)
+                @@custom_convertion_modules[converted_fields] ||=
+                    Module.new do
+                        include CustomConvertionsHandling
+
+                        converted_fields.each do |field_name|
+                            attr_name = "@#{field_name}"
+                            define_method("#{field_name}=") do |value|
+                                instance_variable_set(attr_name, value)
+                            end
+                            define_method(field_name) do
+                                v = instance_variable_get(attr_name)
+                                if !v.nil?
+                                    v
+                                else
+                                    v = get_field(field_name)
+                                    instance_variable_set(attr_name, v)
+                                end
+                            end
+                        end
+                    end
+            end
+
+            # Creates a module that can be used to extend a certain Type class to
+            # take into account the convertions.
+            #
+            # I.e. if a convertion is declared as
+            #
+            #   convert_to_ruby '/base/Time', :to => Time
+            # 
+            # and the type T is a structure with a field of type /base/Time, then
+            # if
+            #
+            #   type = registry.get('T')
+            #   type.extend_for_custom_convertions
+            #
+            # then
+            #   t = type.new
+            #   t.time => Time instance
+            #   t.time => the same Time instance
+            def extend_for_custom_convertions
+                super if defined? super
+
+                if !converted_fields.empty?
+                    self.contains_converted_types = true
+                    # Make it local so that it can be accessed in the module we define below
+                    converted_fields = self.converted_fields
+                    type_klass = self
+
+                    converted_fields = Typelib.filter_methods_that_should_not_be_defined(
+                        self, type_klass, converted_fields, Type::ALLOWED_OVERLOADINGS, nil, false)
+
+                    m = custom_convertion_module(converted_fields)
+                    include(m)
+                end
+            end
+
+            @@access_method_modules = Hash.new
+            def access_method_module(full_fields_names, converted_field_names)
+                @@access_method_modules[[full_fields_names, converted_field_names]] ||=
+                    Module.new do
+                        full_fields_names.each do |name|
+                            define_method(name) { get_field(name) }
+                            define_method("#{name}=") { |value| set_field(name, value) }
+                            define_method("raw_#{name}") { raw_get_field(name) }
+                            define_method("raw_#{name}=") { |value| raw_set_field(name, value) }
+                        end
+                        converted_field_names.each do |name|
+                            define_method("raw_#{name}") { raw_get_field(name) }
+                            define_method("raw_#{name}=") { |value| raw_set_field(name, value) }
+                        end
+                    end
+            end
+
 	    # Called by the extension to initialize the subclass
 	    # For each field, it creates getters and setters on 
 	    # the object, and a getter in the singleton class 
@@ -1017,23 +1069,23 @@ module Typelib
                     [name, type]
                 end
 
-                @converted_fields = []
+                converted_fields = []
+                full_fields = []
                 each_field do |name, type|
                     if type.contains_converted_types?
                         converted_fields << name
+                    else
+                        full_fields << name
                     end
                 end
+                converted_fields = converted_fields.sort
+                full_fields = full_fields.sort
 
-                fields = @fields
-                converted_fields = @converted_fields
-                fields.each do |name, type|
-                    if !converted_fields.include?(name)
-                        define_method_if_possible(name) { get_field(name) }
-                        define_method_if_possible("#{name}=") { |value| set_field(name, value) }
-                    end
-                    define_method_if_possible("raw_#{name}") { raw_get_field(name) }
-                    define_method_if_possible("raw_#{name}=") { |value| raw_set_field(name, value) }
-                end
+                @converted_fields = converted_fields
+                overloaded_converted_fields = filter_methods_that_should_not_be_defined(converted_fields, false)
+                overloaded_full_fields = filter_methods_that_should_not_be_defined(full_fields, true)
+                m = access_method_module(overloaded_full_fields, overloaded_converted_fields)
+                include(m)
 
                 super if defined? super
 
