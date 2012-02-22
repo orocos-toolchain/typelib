@@ -554,7 +554,7 @@ void typelib_ruby::Typelib_init_values()
     rb_define_singleton_method(cType, "==",	       RUBY_METHOD_FUNC(type_equal_operator), 1);
     rb_define_singleton_method(cType, "size",          RUBY_METHOD_FUNC(&type_size), 0);
     rb_define_singleton_method(cType, "do_memory_layout", RUBY_METHOD_FUNC(&type_memory_layout), 4);
-    rb_define_singleton_method(cType, "dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
+    rb_define_singleton_method(cType, "do_dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
     rb_define_singleton_method(cType, "casts_to?",     RUBY_METHOD_FUNC(&type_can_cast_to), 1);
     rb_define_method(cType, "__initialize__",   RUBY_METHOD_FUNC(&value_initialize), 1);
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);

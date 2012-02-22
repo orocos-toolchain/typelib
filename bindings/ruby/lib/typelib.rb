@@ -421,7 +421,30 @@ module Typelib
         # subtype of +type+ itself
         def self.contains?(type)
             self <= type ||
-                dependencies.any? { |t| t.contains?(type) }
+                recursive_dependencies.include?(type) || recursive_dependencies.any? { |t| t <= type }
+        end
+
+        def self.dependencies
+            direct_dependencies
+        end
+
+        def self.direct_dependencies
+            @direct_dependencies ||= do_dependencies
+        end
+
+        def self.recursive_dependencies(set = nil)
+            if !@recursive_dependencies
+                @recursive_dependencies = ValueSet.new
+                direct_dependencies.each do |direct_dep|
+                    @recursive_dependencies << direct_dep
+                    direct_dep.recursive_dependencies(@recursive_dependencies)
+                end
+                @recursive_dependencies
+            end
+
+            if set then return set.merge(@recursive_dependencies)
+            else return @recursive_dependencies
+            end
         end
 
         # Extends this type class to have values of this type converted by the
