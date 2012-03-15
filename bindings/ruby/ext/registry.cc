@@ -550,6 +550,67 @@ static VALUE registry_add_standard_cxx_types(VALUE klass, VALUE registry)
     return registry;
 }
 
+/*
+ * call-seq:
+ *   registry.create_compound(name, field_defs)
+ *
+ * Creates a new compound type in which the fields are provided by +field_defs+
+ */
+static VALUE registry_create_compound(VALUE registry, VALUE name, VALUE field_defs)
+{
+    Registry& reg = rb2cxx::object<Registry>(registry);
+
+    std::auto_ptr<Typelib::Compound> new_t(new Typelib::Compound(StringValuePtr(name)));
+
+    int size = RARRAY_LEN(field_defs);
+    for (int i = 0; i < size; ++i)
+    {
+        VALUE field = rb_ary_entry(field_defs, i);
+
+        VALUE rb_name = rb_ary_entry(field, 0);
+        std::string field_name(StringValuePtr(rb_name));
+        Typelib::Type& field_type(rb2cxx::object<Type>(rb_ary_entry(field, 1)));
+        int offset(NUM2INT(rb_ary_entry(field, 2)));
+        new_t->addField(field_name, field_type, offset);
+    }
+
+    Typelib::Compound* type = new_t.release();
+    try { reg.add(type, true, ""); }
+    catch(std::runtime_error e)
+    { rb_raise(rb_eArgError, "%s", e.what()); }
+    return cxx2rb::type_wrap(*type, registry);
+}
+
+/*
+ * call-seq:
+ *   registry.create_enum(name, symbol_defs)
+ *
+ * Creates a new compound type in which the fields are provided by +field_defs+
+ */
+static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs)
+{
+    Registry& reg = rb2cxx::object<Registry>(registry);
+
+    std::auto_ptr<Typelib::Enum> new_t(new Typelib::Enum(StringValuePtr(name)));
+
+    int size = RARRAY_LEN(symbol_defs);
+    for (int i = 0; i < size; ++i)
+    {
+        VALUE sym = rb_ary_entry(symbol_defs, i);
+
+        VALUE rb_name = rb_ary_entry(sym, 0);
+        std::string sym_name(StringValuePtr(rb_name));
+        int sym_value(NUM2INT(rb_ary_entry(sym, 1)));
+        new_t->add(sym_name, sym_value);
+    }
+
+    Typelib::Enum* type = new_t.release();
+    try { reg.add(type, true, ""); }
+    catch(std::runtime_error e)
+    { rb_raise(rb_eArgError, "%s", e.what()); }
+    return cxx2rb::type_wrap(*type, registry);
+}
+
 void typelib_ruby::Typelib_init_registry()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
@@ -575,6 +636,8 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "reverse_depends", RUBY_METHOD_FUNC(registry_reverse_depends), 1);
     rb_define_method(cRegistry, "remove", RUBY_METHOD_FUNC(registry_remove), 1);
     rb_define_method(cRegistry, "source_id_of", RUBY_METHOD_FUNC(registry_source_id_of), 1);
+    rb_define_method(cRegistry, "do_create_compound", RUBY_METHOD_FUNC(registry_create_compound), 2);
+    rb_define_method(cRegistry, "do_create_enum", RUBY_METHOD_FUNC(registry_create_enum), 2);
 
     rb_define_singleton_method(cRegistry, "add_standard_cxx_types", RUBY_METHOD_FUNC(registry_add_standard_cxx_types), 1);
 

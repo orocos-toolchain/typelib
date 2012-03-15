@@ -2245,6 +2245,114 @@ module Typelib
         def to_xml
             export('tlb')
         end
+
+        class CompoundBuilder
+            attr_reader :name
+            attr_reader :registry
+            attr_reader :fields
+
+            def initialize(name, registry)
+                @name, @registry = name, registry
+                @fields = []
+            end
+            
+            def build
+                if @fields.empty?
+                    raise ArgumentError, "trying to create an empty compound"
+                end
+
+                # Create the offsets, if they are not provided
+                current_offset = 0
+                fields.each do |field_def|
+                    field_def[2] ||= current_offset
+                    current_offset = field_def[2] + field_def[1].size
+                end
+                registry.do_create_compound(name, fields)
+            end
+
+            def add(name, type, offset = nil)
+                if type.respond_to?(:to_str) || type.respond_to?(:to_sym)
+                    type = registry.build(type.to_s)
+                end
+                @fields << [name.to_s, type, offset]
+            end
+
+            def method_missing(name, *args, &block)
+                if name.to_s =~ /^(.*)=$/
+                    type = args.first
+                    name = $1
+                    add($1, type)
+                else
+                    super
+                end
+            end
+        end
+
+        def create_compound(name)
+            recorder = CompoundBuilder.new(name, self)
+            yield(recorder)
+            recorder.build
+        end
+
+        def create_container(container_type, element_type)
+            if element_type.respond_to?(:to_str)
+                element_type = build(element_type)
+            end
+            return define_container(container_type.to_str, element_type)
+        end
+
+        def create_array(base_type, size)
+            if base_type.respond_to?(:name)
+                base_type = base_type.name
+            end
+            return build("#{base_type}[#{size}]")
+        end
+
+        class EnumBuilder
+            attr_reader :name
+            attr_reader :registry
+            attr_reader :symbols
+
+            def initialize(name, registry)
+                @name, @registry = name, registry
+                @symbols = []
+            end
+            
+            def build
+                if @symbols.empty?
+                    raise ArgumentError, "trying to create an empty enum"
+                end
+
+                # Create the values, if they are not provided
+                current_value = 0
+                symbols.each do |sym_def|
+                    sym_def[1] ||= current_value
+                    current_value = sym_def[1] + 1
+                end
+                registry.do_create_enum(name, symbols)
+            end
+
+            def add(name, value = nil)
+                symbols << [name.to_s, Integer(value)]
+            end
+
+            def method_missing(name, *args, &block)
+                if name.to_s =~ /^(.*)=$/
+                    value = args.first
+                    add($1, value)
+                elsif args.empty?
+                    add(name.to_s)
+                else
+                    super
+                end
+            end
+        end
+
+        def create_enum(name)
+            recorder = EnumBuilder.new(name, self)
+            yield(recorder)
+            recorder.build
+        end
     end
 
     # Convenience registry class that adds the builtin C++ types at construction

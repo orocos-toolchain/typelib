@@ -175,6 +175,78 @@ class TC_Registry < Test::Unit::TestCase
 
         assert_equal(target_t, mod::EComparison_1::EWithAddedValues)
     end
+
+    def test_create_enum
+        reg = make_registry
+        t = reg.create_enum('/NewEnum') do |t|
+            t.VAL0
+            t.VAL1 = -1
+            t.VAL2
+        end
+
+        assert_equal({'VAL0' => 0, 'VAL1' => -1, 'VAL2' => 0}, t.keys)
+
+        assert_raises(ArgumentError) do
+            reg.create_enum('NewEnum') { |t| t.VAL0 }
+        end
+        assert_raises(ArgumentError) do
+            reg.create_enum('/NewEnum') { |t| }
+        end
+    end
+
+    def test_create_container
+        reg = make_registry
+
+        vector_t = reg.create_container('/std/vector', '/int')
+        assert(vector_t <= Typelib::ContainerType)
+        assert_same(reg.get('int'), vector_t.deference)
+
+        assert_raises(Typelib::NotFound) do
+            reg.create_container('/this_is_an_unknown_container', '/int')
+        end
+
+        assert_raises(Typelib::NotFound) do
+            reg.create_container('/std/vector', '/this_is_an_unknown_type')
+        end
+    end
+
+    def test_create_array
+        reg = make_registry
+
+        array_t = reg.create_array('/int', 20043)
+        assert(array_t <= Typelib::ArrayType)
+        assert_equal(array_t.length, 20043)
+        assert_same(reg.get('int'), array_t.deference)
+
+        assert_raises(Typelib::NotFound) do
+            reg.create_array('/this_is_an_unknown_type', 10000)
+        end
+    end
+
+    def test_create_compound
+        reg = make_registry
+        assert_raises(ArgumentError) do
+            reg.create_compound('NewCompound') { |t| t.field0 = 'int' }
+        end
+        assert_raises(ArgumentError) do
+            reg.create_compound('/NewCompound') { |t| }
+        end
+        assert_raises(Typelib::NotFound) do
+            reg.create_compound('/NewCompound') { |t| t.field0 = 'this_is_an_unknown_type' }
+        end
+        type = reg.create_compound('/NewCompound') do |t|
+            t.field0 = 'int'
+            t.add('field1', 'double', 10)
+            t.field2 = 'double[29459]'
+        end
+        assert(type <= Typelib::CompoundType)
+        assert_same(reg.get('int'), type['field0'])
+        assert_equal(0, type.offset_of('field0'))
+        assert_same(reg.get('double'), type['field1'])
+        assert_equal(10, type.offset_of('field1'))
+        assert_same(reg.get('double[29459]'), type['field2'])
+        assert_equal(10 + type['field1'].size, type.offset_of('field2'))
+    end
 end
 
     
