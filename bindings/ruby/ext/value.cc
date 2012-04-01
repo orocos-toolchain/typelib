@@ -417,6 +417,9 @@ VALUE value_invalidate(VALUE self)
         rb_raise(rb_eArgError, "cannot invalidate a toplevel value");
 
     Value& value = rb2cxx::object<Value>(self);
+#ifdef VERBOSE
+    fprintf(stderr, "invalidating %p\n", value.getData());
+#endif
     memory_unref(value.getData());
     value = Value(0, value.getType());
     return Qnil;
