@@ -1489,6 +1489,12 @@ module Typelib
             self
         end
 
+        # Remove all elements from this container
+        def clear
+            do_clear
+            invalidate_children
+        end
+
         # Call to invalidate the object, i.e. to forbid any R/W access to it.
         # This is used in the framework when the underlying memory zone has been
         # made invalid by some operation (as e.g. container resizing)
