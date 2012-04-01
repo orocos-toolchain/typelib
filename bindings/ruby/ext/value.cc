@@ -40,11 +40,6 @@ VALUE cxx2rb::value_wrap(Value v, VALUE registry, VALUE parent)
 #   endif
     VALUE ptr  = memory_wrap(v.getData());
     VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, ptr);
-    if (!NIL_P(parent))
-    {
-        VALUE child_set = rb_iv_get(parent, "@__typelib_children");
-        rb_funcall(child_set, rb_intern("<<"), 1, wrapper);
-    }
     rb_iv_set(wrapper, "@parent", parent);
     return wrapper;
 }

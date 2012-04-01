@@ -775,20 +775,12 @@ module Typelib
 
 	def initialize(*args)
 	    __initialize__(*args)
-            @__typelib_children = ValueSet.new
 	end
 
         def freeze_children
-            @__typelib_children.each do |child|
-                child.freeze
-            end
         end
 
         def invalidate_children
-            @__typelib_children.each do |child|
-                child.invalidate
-            end
-            @__typelib_children.clear
         end
 
         def to_ruby
@@ -880,6 +872,9 @@ module Typelib
     class CompoundType < Type
         # Module used to extend frozen values
         module Freezer
+            def raw_set(*args)
+                raise TypeError, "frozen object"
+            end
             def raw_set_field(*args)
                 raise TypeError, "frozen object"
             end
@@ -887,6 +882,12 @@ module Typelib
 
         # Module used to extend invalidated values
         module Invalidate
+            def raw_get(*args)
+                raise TypeError, "invalidated object"
+            end
+            def raw_set(*args)
+                raise TypeError, "invalidated object"
+            end
             def raw_get_field(*args)
                 raise TypeError, "invalidated object"
             end
@@ -909,6 +910,21 @@ module Typelib
             super
             extend Invalidate
             self
+        end
+
+        def freeze_children
+            super
+            @fields.each_value do |f|
+                f.freeze
+            end
+        end
+
+        def invalidate_children
+            super
+            @fields.each_value do |f|
+                f.invalidate
+            end
+            @fields.clear
         end
 
         module CustomConvertionsHandling
@@ -1228,10 +1244,16 @@ module Typelib
         end
 
         def raw_set_field(name, value)
-            attribute = @fields[name]
-            # If +value+ is already a typelib value, just do a plain copy
-            if attribute && attribute.kind_of?(Typelib::Type) && value.kind_of?(Typelib::Type)
-                return Typelib.copy(attribute, value)
+            raw_set(name, value)
+        end
+
+        def raw_set(name, value)
+            if value.kind_of?(Type)
+                attribute = raw_get(name)
+                # If +value+ is already a typelib value, just do a plain copy
+                if attribute.kind_of?(Typelib::Type)
+                    return Typelib.copy(attribute, value)
+                end
             end
             typelib_set_field(name, value)
 
@@ -1244,7 +1266,7 @@ module Typelib
         end
 
         def []=(name, value)
-            raw_set_field(name, value)
+            set_field(name, value)
         end
 
         # Sets the value of the field +name+. If +value+ is a hash, we expect
@@ -1308,12 +1330,28 @@ module Typelib
         def initialize(*args)
             super
             @element_t = self.class.deference
+            @elements = Array.new
         end
 
         def self.find_custom_convertions(conversion_set)
             generic_array_id = deference.name + '[]'
             super(conversion_set) +
                 super(conversion_set, generic_array_id)
+        end
+
+        def freeze_children
+            super
+            @elements.compact.each do |obj|
+                obj.freeze
+            end
+        end
+
+        def invalidate_children
+            super
+            @elements.compact.each do |obj|
+                obj.invalidate
+            end
+            @elements.clear
         end
 
 	def pretty_print(pp) # :nodoc:
@@ -1338,8 +1376,8 @@ module Typelib
                 return enum_for(:raw_each)
             end
 
-            do_each do |el|
-                yield(el)
+            self.class.length.times do |i|
+                yield(raw_get(i))
             end
         end
 
@@ -1347,8 +1385,7 @@ module Typelib
             if !block_given?
                 return enum_for(:each)
             end
-
-            do_each do |el|
+            raw_each do |el|
                 yield(Typelib.to_ruby(el, element_t))
             end
         end
@@ -1396,23 +1433,42 @@ module Typelib
         end
 
         def raw_get(index)
-            do_get(index)
+            if v = @elements[index]
+                v
+            else
+                v = do_get(index)
+                if v.kind_of?(Type)
+                    @elements[index] = v
+                end
+                v
+            end
+        end
+
+        def raw_set(index, value)
+            if value.kind_of?(Type)
+                attribute = raw_get(index)
+                # If +value+ is already a typelib value, just do a plain copy
+                if attribute.kind_of?(Typelib::Type)
+                    return Typelib.copy(attribute, value)
+                end
+            end
+            do_set(index, value)
         end
 
         def [](index, range = nil)
             if range
                 result = []
                 range.times do |i|
-                    result << Typelib.to_ruby(do_get(i + index), element_t)
+                    result << Typelib.to_ruby(raw_get(i + index), element_t)
                 end
                 result
             else
-                Typelib.to_ruby(do_get(index), element_t)
+                Typelib.to_ruby(raw_get(index), element_t)
             end
         end
 
         def []=(index, value)
-            do_set(index, Typelib.from_ruby(value, element_t))
+            raw_set(index, Typelib.from_ruby(value, element_t))
         end
 
 	# Returns the pointed-to type (defined for consistency reasons)
@@ -1457,6 +1513,7 @@ module Typelib
         def initialize(*args)
             super
             @element_t = self.class.deference
+            @elements = []
         end
 
         # Module used to extend frozen values
@@ -1504,43 +1561,89 @@ module Typelib
             self
         end
 
+        def freeze_children
+            super
+            @elements.compact.each do |obj|
+                obj.freeze
+            end
+        end
+
+        def invalidate_children
+            super
+            @elements.compact.each do |obj|
+                obj.invalidate
+            end
+            @elements.clear
+        end
+
         # Module included in container types that offer random access
         # functionality
         module RandomAccessContainer
-            def raw_get(index)
-                if index < 0 || index >= size
-                    raise ArgumentError, "index out of bounds"
+            # Private version of the getters, to bypass the index boundary
+            # checks
+            def raw_get_no_boundary_check(index)
+                if ret = @elements[index]
+                    return ret
+                else
+                    value = do_get(index)
+                    if value.kind_of?(Typelib::Type)
+                        @elements[index] = value
+                    end
+                    value
                 end
+            end
 
-                do_get(index)
+            # Private version of the getters, to bypass the index boundary
+            # checks
+            def get_no_boundary_check(index)
+                raw = raw_get_no_boundary_check(index)
+                Typelib.to_ruby(raw, element_t)
+            end
+
+            def raw_get(index)
+                if index < 0
+                    raise ArgumentError, "index out of bounds (#{index} < 0)"
+                elsif index >= size
+                    raise ArgumentError, "index out of bounds (#{index} >= #{size})"
+                end
+                raw_get_no_boundary_check(index)
             end
 
             # Returns the value at the given index
             def [](index, chunk_size = nil)
                 if chunk_size
-                    if index < 0 || (index + chunk_size) > size
-                        raise ArgumentError, "index out of bounds"
+                    if index < 0
+                        raise ArgumentError, "index out of bounds (#{index} < 0)"
+                    elsif (index + chunk_size) > size
+                        raise ArgumentError, "index out of bounds (#{index} + #{chunk_size} >= #{size})"
                     end
                     result = self.class.new
                     chunk_size.times do |i|
-                        result.push(do_get(index + i))
+                        result.push(raw_get_no_boundary_check(index + i))
                     end
                     result
                 else
-                    if index < 0 || index >= size
-                        raise ArgumentError, "index out of bounds"
+                    if index < 0
+                        raise ArgumentError, "index out of bounds (#{index} < 0)"
+                    elsif index >= size
+                        raise ArgumentError, "index out of bounds (#{index} >= #{size})"
                     end
 
-                    Typelib.to_ruby(do_get(index), element_t)
+                    get_no_boundary_check(index)
                 end
             end
 
-            def []=(index, value)
+            def raw_set(index, value)
                 if index < 0 || index >= size
                     raise ArgumentError, "index out of bounds"
                 end
 
-                do_set(index, Typelib.from_ruby(value, element_t))
+                do_set(index, value)
+            end
+
+            def []=(index, value)
+                v = Typelib.from_ruby(value, element_t)
+                raw_set(index, v)
             end
         end
 
