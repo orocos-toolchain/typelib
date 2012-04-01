@@ -4,12 +4,40 @@ require 'typelib'
 require 'test/unit'
 require BUILDDIR + '/ruby/libtest_ruby'
 require 'pp'
+require 'flexmock/test_unit'
 
 class TC_SpecializedTypes < Test::Unit::TestCase
     include Typelib
-    def teardown
-	GC.start
+    def setup
+        super
+
+        @registry = Typelib::Registry.new
+        Typelib::Registry.add_standard_cxx_types(@registry)
+        registry.create_container '/std/vector', '/int8_t'
+        registry.create_compound '/compounds/Subfield' do |t|
+            t.plain = '/int8_t'
+            t.vector = '/std/vector</int8_t>'
+        end
+        registry.create_container '/std/vector', '/compounds/Subfield'
+        @compound_t = registry.create_compound '/compounds/Test' do |t|
+            t.plain = '/int8_t'
+            t.compound = '/compounds/Subfield'
+            t.plain_vector = '/std/vector</int8_t>'
+            t.vector = '/std/vector</compounds/Subfield>'
+        end
+
+        @array_t= registry.create_array '/compounds/Test', 3
+
+        @root_t = registry.create_compound '/Root' do |t|
+            t.compound = compound_t
+            t.array = array_t
+        end
     end
+
+    attr_reader :registry
+    attr_reader :compound_t
+    attr_reader :array_t
+    attr_reader :root_t
 
     # Not in setup() since we want to make sure
     # that the registry is not destroyed by the GC
@@ -22,120 +50,156 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         registry
     end
 
-    def check_respond_to_fields(a)
-        GC.start
-        assert( a.respond_to?("a") )
-        assert( a.respond_to?("b") )
-        assert( a.respond_to?("c") )
-        assert( a.respond_to?("d") )
-        assert( a.respond_to?("a=") )
-        assert( a.respond_to?("b=") )
-        assert( a.respond_to?("c=") )
-        assert( a.respond_to?("d=") )
+    def test_compound_type_definition
+	t = compound_t
+        assert(t < Typelib::CompoundType)
+
+        fields = [['plain', registry.get('/int8_t')],
+            ['compound', registry.get('/compounds/Subfield')],
+            ['plain_vector', registry.get('/std/vector</int8_t>')],
+            ['vector', registry.get('/std/vector</compounds/Subfield>')]]
+        assert_equal fields, t.fields
+
+        assert_same(fields[0][1], t['plain'])
+        assert_same(fields[1][1], t['compound'])
+        assert_same(fields[2][1], t['plain_vector'])
+        assert_same(fields[3][1], t['vector'])
     end
 
-    def test_compound_def
-        # First, check compound Type objects
-        registry = make_registry
-        a_type = registry.get("/A")
-        a = a_type.new
-        check_respond_to_fields(a)
-
-	b = make_registry.get("/B").new
-        assert(b.respond_to?(:h))
-        assert(b.respond_to?(:h=))
-        assert(b.h.kind_of?(Typelib::ArrayType))
-        assert(b.respond_to?(:a))
-        assert(b.respond_to?(:a=))
-        assert(b.a.kind_of?(Typelib::CompoundType))
+    def test_compound_inititialize_with_hash
+        expected_value = { :plain => 10,
+            :compound => { :plain => 10, :vector => [1, 2, 3, 5] }, 
+            :plain_vector => [4, 5, 8, 10],
+            :vector => [
+                { :plain => 1, :vector => [1, 2, 3, 5] }, 
+                { :plain => 5, :vector => [2, 3, 4, 6] }
+            ]
+        }
+        compound = compound_t.new(expected_value)
+        assert_kind_of compound_t, compound
+        assert_typelib_value_equals expected_value, compound
     end
 
-    def test_compound_init
-	a_type = make_registry.get('/A')
-
-        # Check initialization
-        a = a_type.new :b => 20, :a => 10, :c => 30, :d => 40
-        assert( check_struct_A_value(a) )
-
-        a = a_type.new [40, 30, 20, 10]
-        assert_equal(40, a.a)
-        assert_equal(30, a.b)
-        assert_equal(20, a.c)
-        assert_equal(10, a.d)
-    end
-
-    def test_compound_get
-        a = make_registry.get("/A").new
-        GC.start
-        a = set_struct_A_value(a)
-        assert_equal(10, a.a)
-        assert_equal(20, a.b)
-        assert_equal(30, a.c)
-        assert_equal(40, a.d)
-
-        a = make_registry.get("/A").new
-        GC.start
-        a = set_struct_A_value(a)
-        assert_equal(10, a.a)
-        assert_equal(20, a.b)
-        assert_equal(30, a.c)
-        assert_equal(40, a.d)
-    end
-
-    def test_compound_set
-        a = make_registry.get("/A").new
-        GC.start
-        a.a = 10;
-        a.b = 20;
-        a.c = 30;
-        a.d = 40;
-        assert( check_struct_A_value(a) )
-        assert_equal(10, a.a)
-        assert_equal(20, a.b)
-        assert_equal(30, a.c)
-        assert_equal(40, a.d)
-    end
-
-    def test_compound_recursive
-        b = make_registry.get("/B").new
-        GC.start
-        assert(b.respond_to?(:a))
-        check_respond_to_fields(b.a)
-
-	a = b.a
-	assert_same(a, b.a)
-
-        set_struct_A_value(b.a)
-        assert_equal(10, b.a.a)
-        assert_equal(20, b.a.b)
-        assert_equal(30, b.a.c)
-        assert_equal(40, b.a.d)
-
-	# Check struct.substruct = Hash
-	b.a = { :a => 40, :b => 30, :c => 20, :d => 10 }
-        assert_equal(40, b.a.a)
-        assert_equal(30, b.a.b)
-        assert_equal(20, b.a.c)
-        assert_equal(10, b.a.d)
-    end
-
-    def test_compound_complex_field_assignment
-        b0 = make_registry.get("/B").new
-        array = make_registry.get("/float[3]").new
-        3.times do |i|
-            array[i] = i
+    def assert_typelib_value_equals(expected, value)
+        case value
+        when ContainerType, ArrayType
+            assert(value.size >= expected.size)
+            value.each_with_index do |v, i|
+                assert_typelib_value_equals(expected[i], v)
+            end
+        when CompoundType
+            expected.each do |field_name, field_value|
+                assert_typelib_value_equals(field_value, value[field_name])
+            end
+        else
+            assert_equal expected, value
         end
-        b0.f = array
+    end
 
-        assert_equal [0, 1, 2], b0.f.to_a
+    def test_compound_field_raw_set_does_no_typelib_convertion
+        subfield_t = compound_t[:compound]
 
-        a = make_registry.get("/A").new
-        b0.a = a
+        value = compound_t.new
+        expected_value = { :plain => 10, :vector => [1, 2, 3, 5] }
+        subfield = Typelib.from_ruby(expected_value, subfield_t)
+
+        flexmock(Typelib).should_receive(:from_ruby).with(subfield, subfield_t).
+            and_return { |*args| args.first }.never
+
+        value.raw_set('compound', subfield)
+        assert_typelib_value_equals expected_value, value.compound
+    end
+
+    def test_compound_field_set_does_typelib_convertion
+        subfield_t = compound_t[:compound]
+
+        value = compound_t.new
+        expected_value = { :plain => 10, :vector => [1, 2, 3, 5] }
+        subfield = Typelib.from_ruby(expected_value, subfield_t)
+
+        flexmock(Typelib).should_receive(:from_ruby).with(any, subfield_t).
+            and_return { |*args| args.first }.once
+
+        value.set_field('compound', subfield)
+        assert_typelib_value_equals expected_value, value.compound
+    end
+
+    def test_compound_convertion_from_hash
+        expected_value = { :plain => 10,
+            :compound => { :plain => 10, :vector => [1, 2, 3, 5] }, 
+            :plain_vector => [4, 5, 8, 10],
+            :vector => [
+                { :plain => 1, :vector => [1, 2, 3, 5] }, 
+                { :plain => 5, :vector => [2, 3, 4, 6] }
+            ]
+        }
+        compound = Typelib.from_ruby(expected_value, compound_t)
+        assert_kind_of compound_t, compound
+        assert_typelib_value_equals expected_value, compound
+    end
+
+    def test_compound_defines_access_methods
+        value = compound_t.new
+        assert_respond_to value, :plain
+        assert_respond_to value, :plain=
+        assert_respond_to value, :plain_vector
+        assert_respond_to value, :plain_vector=
+        assert_respond_to value, :vector
+        assert_respond_to value, :vector=
+        assert_respond_to value, :compound
+        assert_respond_to value, :compound=
+        assert_respond_to value, :raw_plain
+        assert_respond_to value, :raw_plain=
+        assert_respond_to value, :raw_plain_vector
+        assert_respond_to value, :raw_plain_vector=
+        assert_respond_to value, :raw_vector
+        assert_respond_to value, :raw_vector=
+        assert_respond_to value, :raw_compound
+        assert_respond_to value, :raw_compound=
+    end
+
+    def test_compound_access_methods_call_base_setters_and_getters
+        value = compound_t.new
+
+        flexmock(value).should_receive(:set_field).
+            with('plain', 10).once.ordered.and_return
+        flexmock(value).should_receive(:raw_set).
+            with('plain', 10).once.ordered.and_return
+        flexmock(value).should_receive(:get_field).
+            with('plain').once.ordered.and_return(20)
+        flexmock(value).should_receive(:raw_get).
+            with('plain').once.ordered.and_return(20)
+
+        value.plain = 10
+        value.raw_plain = 10
+        assert_equal 20, value.plain
+        assert_equal 20, value.raw_plain
+    end
+
+    def test_compound_field_access_caches_typelib_wrapper
+        value = compound_t.new
+        assert_same value.vector, value.vector
+    end
+
+    def test_compound_field_assignment_without_convertion_does_a_typelib_copy
+        element_t = compound_t[:vector]
+        field = element_t.new
+        value = compound_t.new
+
+        flexmock(Typelib).should_receive(:copy).with(value.vector, element_t).once
+        value.vector = field
     end
 
     def test_compound_method_overloading
-        registry = make_registry
-        t = registry.get("/CompoundWithOverloadingClashes")
+        t = registry.create_compound '/CompoundWithOverloadingClashes' do |t|
+            # should not be overloaded on the class, but OK on the instance
+            t.name = '/int'
+            # should not be overloaded on the instance, but OK on the class
+            t.cast = '/int'
+            # should be overloaded in both cases
+            t.object_id = '/int'
+        end
+
         v = t.new
         v.zero!
         assert_equal 0, v.name
@@ -143,107 +207,121 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal 0, v.object_id
     end
 
-    def test_array_def
-        b = make_registry.get("/B").new
-
-	assert_equal(100, b.c.class.length)
-        assert_equal('/float[100]', b.c.class.name)
-        assert_equal('/float[1]', b.d.class.name)
-        assert_equal('/float[1]', b.e.class.name)
-        assert_equal('/float[3]', b.f.class.name)
-        assert_equal('/float[2]', b.g.class.name)
-        assert_equal('/A[4]', b.h.class.name)
-        assert_equal('/float[20][10]', b.i.class.name)
-
-        assert_equal(100, b.c.size)
-        assert_equal(1, b.d.size)
-        assert_equal(1, b.e.size)
-        assert_equal(3, b.f.size)
-        assert_equal(2, b.g.size)
-        assert_equal(4, b.h.size)
-        assert_equal(10, b.i.size)
+    def test_compound_invalidate_no_field_accessed
+        value = root_t.new.compound
+        value.invalidate # Nothing should happen
     end
 
-    def test_array_set
-        b = make_registry.get("/B").new
-        (0..(b.c.size - 1)).each do |i|
-            b.c[i] = Float(i)/10.0
-        end
-        check_B_c_value(b)
+    def test_compound_invalidate
+        value = root_t.new.compound
+        flexmock(value.vector).should_receive(:invalidate).once
+        flexmock(value.compound).should_receive(:invalidate).once
+        value.invalidate
     end
 
-    def test_array_get
-        b = make_registry.get("/B").new
-        set_B_c_value(b)
-        (0..(b.c.size - 1)).each do |i|
-	    assert_in_delta(Float(i) / 10.0, b.c[i], 0.01)
+    def test_array_definition
+        array_t = registry.create_array compound_t, 10
+        array = array_t.new
+
+        assert_equal 10, array_t.length
+        assert_same compound_t, array_t.deference
+        assert_equal 10, array.size
+        assert_same compound_t, array.element_t
+    end
+
+    def test_array_plain_set_get
+        array_t = registry.create_array '/float', 10
+        array = array_t.new
+
+        (0..(array.size - 1)).each do |i|
+            array[i] = Float(i)/10.0
         end
-	assert_raises(ArgumentError) { b.c[0, 10, 15] }
-	assert_raises(IndexError) { b.c[b.c.size + 1] }
-
-	v = b.c[0, 10]
-	assert_kind_of(Array, v)
-        (0..(v.size - 1)).each do |i|
-	    assert_in_delta(Float(i) / 10.0, v[i], 0.01)
-        end
-
-	assert_nothing_raised { b.c[b.c.size - 1] }
-	assert_raises(IndexError) { b.c[b.c.size - 1, 2] }
-
-	v = b.c[1, 10]
-	assert_kind_of(Array, v)
-        (0..(v.size - 1)).each do |i|
-	    assert_in_delta(Float(i + 1) / 10.0, v[i], 0.01)
+        (0..(array.size - 1)).each do |i|
+	    assert_in_delta(Float(i) / 10.0, array[i], 0.01)
         end
     end
 
-    def test_array_each
-	registry = make_registry
-        b = registry.get("/B").new
-        set_B_c_value(b)
-	
-	# Test arrays of arrays
-	array = registry.build('float[10][20]').new
-	assert_kind_of(Typelib::ArrayType, array)
-	array.each do |el|
-	    assert_kind_of(registry.get('float[10]'), el)
-	end
-
-	# Test arrays of Ruby types
-        b.c.each_with_index do |v, i|
-	    assert_kind_of(Float, v)
-            assert( ( v - Float(i)/10.0 ).abs < 0.01 )
+    def test_array_plain_initialize_from_ruby_array
+        array_t = registry.create_array '/int', 10
+        # Array too small
+        assert_raises(ArgumentError) do
+            array_t.new([0, 1, 2, 3, 4, 5])
         end
-
-	## Test arrays of Type types
-	b.h.each do |el|
-	    assert_kind_of(registry.get('A'), el)
-	end
+        array = array_t.new((0..9).to_a)
+        array.enum_for(:raw_each).each_with_index do |val, i|
+            assert_equal i, val
+        end
     end
 
-    def test_array_multi_dim
-        registry = make_registry
-	mdarray = registry.get('TestMultiDimArray').new.fields
-
-        int_t = registry.get("/int")
-
-	fill_multi_dim_array(mdarray)
-	mdarray.each_with_index do |line, y|
-	    assert_equal("#{int_t.name}[10]", line.class.name, y)
-	    line.each_with_index do |v, x|
-		assert_equal(10 * y + x, v)
-	    end
-	end
-
-	(0..9).each do |y|
-	    assert_equal(y * 10, mdarray[y][0])
-	    assert_equal(y * 10 + 1, mdarray[y][1])
-
-	    (0..9).each do |x|
-		assert_equal(10 * y + x, mdarray[y][x])
-	    end
-	end
+    def test_array_plain_raw_each
+        array_t = registry.create_array '/int', 10
+        array = array_t.new
+        10.times do |i|
+            array[i] = i
+        end
+        array.enum_for(:raw_each).each_with_index do |val, i|
+            assert_equal i, val
+        end
     end
+
+    def test_array_complex_set_get
+        array_t = registry.create_array compound_t, 10
+        array = array_t.new
+
+        expected_value = { :plain => 10,
+            :compound => { :plain => 10, :vector => [1, 2, 3, 5] }, 
+            :plain_vector => [4, 5, 8, 10],
+            :vector => [
+                { :plain => 1, :vector => [1, 2, 3, 5] }, 
+                { :plain => 5, :vector => [2, 3, 4, 6] }
+            ]
+        }
+        compound = Typelib.from_ruby(expected_value, compound_t)
+
+        (0..(array.size - 1)).each do |i|
+            compound.plain = i
+            array[i] = compound
+        end
+        (0..(array.size - 1)).each do |i|
+            expected_value[:plain] = i
+            assert_typelib_value_equals expected_value, array[i]
+        end
+    end
+
+    def test_array_complex_set_get_caches_return_value
+        array_t = registry.create_array compound_t, 10
+        array = array_t.new
+        assert_same array[3], array[3]
+    end
+
+    def test_array_complex_raw_set_uses_typelib_copy
+        array_t = registry.create_array compound_t, 10
+        array = array_t.new
+
+        compound = compound_t.new
+        flexmock(Typelib).should_receive(:copy).with(array[3], compound).once
+        array[3] = compound
+    end
+
+    def test_array_complex_set_calls_raw_set
+        array_t = registry.create_array compound_t, 10
+        array = array_t.new
+
+        compound = compound_t.new
+        flexmock(array).should_receive(:raw_set).with(3, compound).once
+        array[3] = compound
+    end
+
+    def test_array_complex_set_does_type_convertion
+        array_t = registry.create_array compound_t, 10
+        array = array_t.new
+
+        compound = compound_t.new
+        flexmock(Typelib).should_receive(:from_ruby).with(compound, compound_t).once.
+            and_return { |val, type| val }
+        array[3] = compound
+    end
+
 
     def test_enum
         registry = make_registry
