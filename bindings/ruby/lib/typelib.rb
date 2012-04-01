@@ -2646,7 +2646,7 @@ module Typelib
     # A raw, untyped, memory zone
     class MemoryZone
 	def to_s
-	    "#<MemoryZone:#{object_id} ptr=0x#{address.to_s(16)}>"
+	    "#<MemoryZone:#{object_id} ptr=0x#{zone_address.to_s(16)}>"
 	end
     end
 end
