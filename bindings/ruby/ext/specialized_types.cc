@@ -14,6 +14,9 @@ using namespace typelib_ruby;
 
 static VALUE compound_get_fields(VALUE self)
 {
+    if (self == cCompound)
+        return rb_ary_new();
+
     Type const& type(rb2cxx::object<Type>(self));
     Compound const& compound(dynamic_cast<Compound const&>(type));
     Compound::FieldList const& fields(compound.getFields());

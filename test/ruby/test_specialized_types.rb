@@ -66,6 +66,10 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_same(fields[3][1], t['vector'])
     end
 
+    def test_CompoundType_get_fields
+        Typelib::CompoundType.get_fields
+    end
+
     def test_compound_inititialize_with_hash
         expected_value = { :plain => 10,
             :compound => { :plain => 10, :vector => [1, 2, 3, 5] }, 
