@@ -812,14 +812,13 @@ module Typelib
 	    pointer
         end
 	
-	alias :__to_s__ :to_s
 	def to_s # :nodoc:
 	    if respond_to?(:to_str)
 		to_str
 	    elsif ! (ruby_value = to_ruby).eql?(self)
 		ruby_value.to_s
 	    else
-		__to_s__
+		"#<#{self.class.name}: 0x#{address.to_s(16)} ptr=0x#{@ptr.zone_address.to_s(16)}>"
 	    end
 	end
 
