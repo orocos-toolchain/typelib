@@ -556,6 +556,16 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         type = reg.get "BoolHandling"
     end
 
+    def test_vector_complex_get_returns_same_wrapper
+        vector_t = registry.create_container '/std/vector', compound_t
+        vector = vector_t.new
+        5.times do
+            vector << compound_t.new
+        end
+
+        assert_same vector[3], vector[3]
+    end
+
     def test_vector_freeze
         vector_t = make_registry.get("/std/vector</double>")
         vector = vector_t.new
