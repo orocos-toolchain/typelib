@@ -52,13 +52,13 @@ static VALUE value_string_handler_p(VALUE self)
  * It is a module function used to define #to_str on the relevant types
  * NEVER call it directly
  */
-static VALUE value_from_string(VALUE mod, VALUE self, VALUE from)
+static VALUE value_from_string(VALUE mod, VALUE self, VALUE from, VALUE known_good_type)
 {
     Value const& value(rb2cxx::object<Value>(self));
     Type  const& type(value.getType());
     Registry const& registry = rb2cxx::object<Registry>(value_get_registry(self));
 
-    if (!is_string_handler(registry, type, true))
+    if (!RTEST(known_good_type) && !is_string_handler(registry, type, true))
 	rb_raise(rb_eTypeError, "Ruby strings can only be converted to char arrays");
 
     char * buffer;
@@ -78,13 +78,13 @@ static VALUE value_from_string(VALUE mod, VALUE self, VALUE from)
  * NEVER call that directly. It is used to define #to_str on the relevant
  * instances of Type
  */
-static VALUE value_to_string(VALUE mod, VALUE self)
+static VALUE value_to_string(VALUE mod, VALUE self, VALUE known_good_type)
 {
     Value const& value(rb2cxx::object<Value>(self));
     Type  const& type(value.getType());
     Registry const& registry = rb2cxx::object<Registry>(value_get_registry(self));
 
-    if (!is_string_handler(registry, type))
+    if (!RTEST(known_good_type) && !is_string_handler(registry, type))
 	rb_raise(rb_eRuntimeError, "invalid conversion to string");
 
     char* buffer;
@@ -108,8 +108,8 @@ static VALUE value_to_string(VALUE mod, VALUE self)
 
 void typelib_ruby::Typelib_init_strings()
 {
-    rb_define_singleton_method(cType, "to_string",    RUBY_METHOD_FUNC(&value_to_string), 1);
-    rb_define_singleton_method(cType, "from_string",  RUBY_METHOD_FUNC(&value_from_string), 2);
+    rb_define_singleton_method(cType, "to_string",    RUBY_METHOD_FUNC(&value_to_string), 2);
+    rb_define_singleton_method(cType, "from_string",  RUBY_METHOD_FUNC(&value_from_string), 3);
     rb_define_method(cType, "string_handler?", RUBY_METHOD_FUNC(&value_string_handler_p), 0);
 }
 

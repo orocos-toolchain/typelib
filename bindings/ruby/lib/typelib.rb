@@ -2554,28 +2554,28 @@ module Typelib
     end
     convert_from_ruby String, "#{CHAR_T.name}[]" do |value, typelib_type|
         result = typelib_type.new
-        Type::from_string(result, value)
+        Type::from_string(result, value, true)
         result
     end
     convert_to_ruby "#{CHAR_T.name}[]", String do |value|
-        Type::to_string(value)
+        Type::to_string(value, true)
     end
     specialize "#{CHAR_T.name}[]" do
         def to_str
-            Type::to_string(self)
+            Type::to_string(self, true)
         end
     end
     convert_from_ruby String, "#{CHAR_T.name}*" do |value, typelib_type|
         result = typelib_type.new
-        Type::from_string(result, value)
+        Type::from_string(result, value, true)
         result
     end
     convert_to_ruby "#{CHAR_T.name}*", String do |value|
-        Type::to_string(value)
+        Type::to_string(value, true)
     end
     specialize "#{CHAR_T.name}*" do
         def to_str
-            Type::to_string(self)
+            Type::to_string(self, true)
         end
     end
 end
