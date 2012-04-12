@@ -477,7 +477,7 @@ namespace Typelib
             stream << " defined in " << source_filter;
         stream << endl;
 
-        TypeDisplayVisitor display(cout, "");
+        TypeDisplayVisitor display(stream, "");
         for (TypeMap::const_iterator it = m_global.begin(); it != m_global.end(); ++it)
         {
             RegistryType regtype(it->second);
