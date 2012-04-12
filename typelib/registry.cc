@@ -483,7 +483,7 @@ namespace Typelib
             RegistryType regtype(it->second);
             if (! regtype.persistent)
                 continue;
-            if (filter_source(source_filter, regtype.source_id))
+            if (!filter_source(source_filter, regtype.source_id))
                 continue;
 
             if (mode & WithSourceId)
