@@ -2632,7 +2632,13 @@ module Typelib
             converted = expected_type.from_ruby(arg)
         else
             if !(expected_type < NumericType) && !arg.kind_of?(expected_type)
-                raise ArgumentError, "cannot convert #{arg} to #{expected_type.name}"
+                reason =
+                    if arg.class.name != expected_type.name
+                        "types differ and there are not convertions from one to the other"
+                    else
+                        "the types have the same name but different definitions"
+                    end
+                raise ArgumentError, "cannot convert #{arg} to #{expected_type.name}: #{reason}"
             end
             converted = arg
         end
