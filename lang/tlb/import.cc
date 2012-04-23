@@ -287,32 +287,25 @@ namespace
 	if (!doc) 
 	    throw Parsing::MalformedXML();
 
-	try
-	{
-	    xmlNodePtr root_node = xmlDocGetRootElement(doc);
-	    if (!root_node) 
-		return;
+        xmlNodePtr root_node = xmlDocGetRootElement(doc);
+        if (!root_node) 
+            return;
 
-	    checkNodeName<Parsing::BadRootElement>(root_node, "typelib");
+        checkNodeName<Parsing::BadRootElement>(root_node, "typelib");
 
-	    TypeMap all_types;
-	    for(xmlNodePtr node = root_node -> xmlChildrenNode; node; node=node->next)
-	    {
-		if (!xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>("comment")))
-		    continue;
-		if (!xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>("text")))
-		    continue;
+        TypeMap all_types;
+        for(xmlNodePtr node = root_node -> xmlChildrenNode; node; node=node->next)
+        {
+            if (!xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>("comment")))
+                continue;
+            if (!xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>("text")))
+                continue;
 
-		::load(source_id, all_types, node);
-	    }
+            ::load(source_id, all_types, node);
+        }
 
-	    Factory factory(registry);
-	    factory.build(all_types);
-	}
-	catch(...) { 
-	    xmlFreeDoc(doc); 
-	    throw;
-	}
+        Factory factory(registry);
+        factory.build(all_types);
     }
 }
 
@@ -331,7 +324,20 @@ void TlbImport::load
         stream >> &buffer;
         document += buffer.str();
     }
-    parse("", xmlParseMemory(document.c_str(), document.length()), registry);
+    xmlDocPtr doc = xmlParseMemory(document.c_str(), document.length());
+    if (!doc) 
+        throw Parsing::MalformedXML();
+
+    try
+    {
+        parse("", doc, registry);
+        xmlFreeDoc(doc);
+    }
+    catch(...)
+    { 
+        xmlFreeDoc(doc); 
+        throw;
+    }
 }
 
 
