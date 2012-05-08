@@ -1944,7 +1944,6 @@ module Typelib
             export_namespaces[base_module][typename] = [basename, mod]
         end
 
-        attr_reader :exported_types
         attr_reader :export_typemap
         attr_reader :export_namespaces
 
@@ -2007,11 +2006,9 @@ module Typelib
                 exclude_rx = Regexp.new("^#{Regexp.quote(options[:excludes])}$")
             end
 
-            @exported_types ||= Hash.new
             new_export_typemap = Hash.new
             each(:with_aliases => true) do |name, type|
                 next if name =~ exclude_rx
-                next if (exported_types[name] == type)
 
                 basename, mod = export_solve_namespace(base_module, name)
                 if !mod.respond_to?(:find_exported_template)
@@ -2050,8 +2047,6 @@ module Typelib
                     # export_array_to_ruby(mod, $1, Integer($2), exported_type)
                     next
                 end
-
-                exported_types[name] = type
 
                 template_basename, template_args = GCCXMLLoader.parse_template(basename)
                 if template_args.empty?
