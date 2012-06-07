@@ -51,7 +51,7 @@ static VALUE compound_field_get(VALUE rbvalue, VALUE name)
     catch(FieldNotFound)
     { rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name)); } 
     catch(std::exception const& e)
-    { rb_raise(rb_eRuntimeError, e.what()); }
+    { rb_raise(rb_eRuntimeError, "%s", e.what()); }
 }
 /* Helper function for CompoundType#[]= */
 static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
@@ -66,7 +66,7 @@ static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
     catch(FieldNotFound)
     { rb_raise(rb_eArgError, "no field '%s' in '%s'", StringValuePtr(name), rb_obj_classname(self)); }
     catch(std::exception const& e)
-    { rb_raise(rb_eRuntimeError, e.what()); }
+    { rb_raise(rb_eRuntimeError, "%s", e.what()); }
 }
 
 /* call-seq:

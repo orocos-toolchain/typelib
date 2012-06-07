@@ -163,7 +163,7 @@ VALUE registry_do_build(VALUE self, VALUE name)
             rb_raise(eNotFound, "cannot find %s in registry", StringValuePtr(name));
         return cxx2rb::type_wrap(*type, self);
     }
-    catch(std::exception const& e) { rb_raise(rb_eRuntimeError, e.what()); }
+    catch(std::exception const& e) { rb_raise(rb_eRuntimeError, "%s", e.what()); }
 }
 
 
@@ -274,7 +274,7 @@ VALUE registry_export(VALUE self, VALUE kind, VALUE options)
 	return rb_str_new(exported.c_str(), exported.length());
     }
     catch (std::exception const& e) { error_message = e.what(); }
-    rb_raise(rb_eRuntimeError, error_message.c_str());
+    rb_raise(rb_eRuntimeError, "%s", error_message.c_str());
 }
 
 
