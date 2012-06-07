@@ -293,7 +293,7 @@ static VALUE type_memory_layout(VALUE self, VALUE pointers, VALUE opaques, VALUE
         }
 
     } catch(std::exception const& e) {
-        rb_raise(rb_eArgError, e.what());
+        rb_raise(rb_eArgError, "%s", e.what());
     }
 
     return result;
@@ -351,7 +351,7 @@ VALUE value_initialize(VALUE self, VALUE ptr)
             vector<uint8_t> cxx_buffer(ruby_buffer, ruby_buffer + RSTRING_LEN(ptr));
             try { Typelib::load(Value(memory_cptr(buffer), t), cxx_buffer); }
             catch(std::exception const& e)
-            { rb_raise(rb_eArgError, e.what()); }
+            { rb_raise(rb_eArgError, "%s", e.what()); }
 	}
 
 	ptr = buffer;
@@ -536,7 +536,7 @@ static VALUE typelib_compare(VALUE, VALUE to, VALUE from)
         bool result = Typelib::compare(v_to.getData(), v_from.getData(), v_from.getType());
         return result ? Qtrue : Qfalse;
     } catch(std::exception const& e) {
-        rb_raise(rb_eArgError, e.what());
+        rb_raise(rb_eArgError, "%s", e.what());
     }
 }
 
