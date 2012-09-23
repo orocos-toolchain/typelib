@@ -100,9 +100,6 @@ namespace
         pair<string, string> base = getIDLBase(type, exporter, field_name);
         if (!base.first.empty())
         {
-            if (base.first.empty())
-                return base.second;
-
             std::string ns = getMinimalPathTo(base.first + type.getBasename(), relative_to);
             boost::replace_all(ns, Typelib::NamespaceMarkString, "::");
             return normalizeIDLName(ns) + base.second;
