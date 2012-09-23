@@ -85,14 +85,15 @@ BOOST_AUTO_TEST_CASE( test_typename_path_to )
 {
     BOOST_CHECK_EQUAL("B/",    getMinimalPathTo("/A/B/Type", "/A/C"));
     BOOST_CHECK_EQUAL("B/",    getMinimalPathTo("/A/B/Type", "/A/C/"));
-    BOOST_CHECK_EQUAL("B/B/", getMinimalPathTo("/B/B/Type", "/B/A"));
-    BOOST_CHECK_EQUAL("B/B/", getMinimalPathTo("/B/B/Type", "/B/A/"));
+    BOOST_CHECK_EQUAL("/B/B/", getMinimalPathTo("/B/B/Type", "/B/A"));
+    BOOST_CHECK_EQUAL("/B/B/", getMinimalPathTo("/B/B/Type", "/B/A/"));
     BOOST_CHECK_EQUAL("/A/B/", getMinimalPathTo("/A/B/Type", "/A/B/C"));
     BOOST_CHECK_EQUAL("/A/B/", getMinimalPathTo("/A/B/Type", "/A/B/C/"));
     BOOST_CHECK_EQUAL("C/", getMinimalPathTo("/A/B/C/Type", "/A/B"));
     BOOST_CHECK_EQUAL("C/", getMinimalPathTo("/A/B/C/Type", "/A/B/"));
     BOOST_CHECK_EQUAL("", getMinimalPathTo("/A/B/Type", "/A/B"));
     BOOST_CHECK_EQUAL("", getMinimalPathTo("/A/B/Type", "/A/B/"));
+    BOOST_CHECK_EQUAL("/A/", getMinimalPathTo("/A/B", "/C/A"));
 }
 
 BOOST_AUTO_TEST_CASE( test_registry_namespaces )

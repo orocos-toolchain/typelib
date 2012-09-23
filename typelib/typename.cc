@@ -208,7 +208,8 @@ namespace Typelib
         bool begins_with = string(type, 0, length) == normalized_nspace;
         if (!begins_with) return false;
         if (recursive)    return true; 
-        return type.find(NamespaceMark, length) == string::npos;
+        std::string remainder(type, length, string::npos);
+        return splitTypename(remainder).size() == 1;
     }
 
     std::string getNormalizedNamespace(const std::string& name)
@@ -242,38 +243,42 @@ namespace Typelib
         else if (ns.find(type_ns) != string::npos || ns.find(full_name) != string::npos) // need an absolute path
             return type_ns;
 
-        NameTokenizer tok1(type_ns);
-        NameTokenizer tok2(ns);
-        NameTokenizer::const_iterator it1 = tok1.begin();
-        NameTokenizer::const_iterator it2 = tok2.begin();
-        std::vector<std::string> tokens;
+        list<string> tok1(splitTypename(type_ns));
+        list<string> tok2(splitTypename(ns));
+        list<string>::const_iterator it1 = tok1.begin();
+        list<string>::const_iterator it2 = tok2.begin();
+        std::vector<std::string> common_tokens;
 
         // Filter out the common NS parts
         std::string ns1, ns2;
         for (; it1 != tok1.end() && it2 != tok2.end(); ++it1, ++it2)
         {
             ns1 = *it1;
-            tokens.push_back(ns1);
             ns2 = *it2;
             int value = ns1.compare(ns2);
             if (value) break;
+            common_tokens.push_back(ns1);
         }
-        tokens.pop_back();
+
+        if (common_tokens.empty())
+            return type_ns;
 
         // Build the remainder of both namespaces, and verify that the remainder
         // of the type is unambiguous. If it is, go back in it1 until it is not.
         // We already checked the case where the full path is ambiguous
         std::string result = *it1;
-        NameTokenizer::const_iterator remainder_it = it1;
+        list<string>::const_iterator remainder_it = it1;
         for (++remainder_it; remainder_it != tok1.end(); ++remainder_it)
             result += Typelib::NamespaceMarkString + *remainder_it;
 
-        while (ns.find(result) != string::npos)
+        while (!common_tokens.empty() && ns.find(result) != string::npos)
         {
-            result = tokens.back() + Typelib::NamespaceMarkString + result;
-            tokens.pop_back();
+            result = common_tokens.back() + Typelib::NamespaceMarkString + result;
+            common_tokens.pop_back();
         }
-        if (result.empty())
+        if (common_tokens.empty())
+            return type_ns;
+        else if (result.empty())
             return result;
         else
             return result + Typelib::NamespaceMarkString;

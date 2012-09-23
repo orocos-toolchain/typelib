@@ -32,7 +32,10 @@ namespace Typelib
     std::list<std::string> splitTypename(std::string const& name);
     
     /** Returns +name+ as a namespace name, valid to build an absolute type
-     * name by simple concatenation */
+     * name by simple concatenation
+     *
+     * It is guaranteed to end with the NamespaceMark
+     */
     std::string getNormalizedNamespace(const std::string& name);
     /** Removes the namespace part of \c full_name and returns it */
     std::string getTypename (const std::string& full_name);
