@@ -22,6 +22,7 @@
   <rosdep name="boost" />
   <rosdep name="libxml2" />
   <rosdep name="facets" />
+  <rosdep name="ruby" />
   <!-- <depend_optional name="doxygen" type="doc" /> -->
   <!-- <depend_optional name="rdoc" type="doc" /> -->
 
