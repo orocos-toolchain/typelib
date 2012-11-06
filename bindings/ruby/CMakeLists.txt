@@ -1,7 +1,7 @@
 INCLUDE(RubyExtensions)
 
 if(RDOC_EXECUTABLE)
-    ADD_CUSTOM_TARGET(ruby_doc rdoc -o ${CMAKE_BINARY_DIR}/doc/ruby/ --title "Typelib: a C type/value manipulation library" --main README.txt -U ext lib README.txt
+    ADD_CUSTOM_TARGET(ruby_doc rdoc -o ${CMAKE_BINARY_DIR}/doc/html/ruby/ --title "Typelib: a C type/value manipulation library" --main README.txt -U ext lib README.txt
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif(RDOC_EXECUTABLE)
 
