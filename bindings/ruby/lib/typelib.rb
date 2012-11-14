@@ -2068,6 +2068,7 @@ module Typelib
                 end
             end
 
+        ensure
             @export_typemap = new_export_typemap
         end
 
