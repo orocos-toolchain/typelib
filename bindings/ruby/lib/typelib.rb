@@ -2080,17 +2080,17 @@ module Typelib
 
             found_type_exports = ValueSet.new
             
-            export_target_mod.exported_types.each do |const_name, type|
-                found_type_exports.insert(export_target_mod.const_get(const_name))
-                export_target_mod.send(:remove_const, const_name)
-            end
-            export_target_mod.exported_types.clear
             export_target_mod.constants.each do |c|
                 c = export_target_mod.const_get(c)
                 if c.respond_to?(:exported_types)
                     clear_exports(c)
                 end
             end
+            export_target_mod.exported_types.each do |const_name, type|
+                found_type_exports.insert(export_target_mod.const_get(const_name))
+                export_target_mod.send(:remove_const, const_name)
+            end
+            export_target_mod.exported_types.clear
 
             found_type_exports.each do |exported_type|
                 set = export_typemap[exported_type]
