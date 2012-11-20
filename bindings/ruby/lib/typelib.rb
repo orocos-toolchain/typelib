@@ -424,14 +424,26 @@ module Typelib
                 recursive_dependencies.include?(type) || recursive_dependencies.any? { |t| t <= type }
         end
 
+        # @deprecated
+        #
+        # Replaced by {recursive_dependencies}
         def self.dependencies
             direct_dependencies
         end
 
+        # [ValueSet<Type>] Returns the types that are directly referenced by +self+
+        #
+        # @see recursive_dependencies
         def self.direct_dependencies
             @direct_dependencies ||= do_dependencies
         end
 
+        # Returns the set of all types that are needed to define +self+
+        #
+        # @param [ValueSet<Type>] set if given, the new types will be added to
+        #   this set. Otherwise, a new set is created. In both cases, the set is
+        #   returned
+        # @return [ValueSet<Type>]
         def self.recursive_dependencies(set = nil)
             if !@recursive_dependencies
                 @recursive_dependencies = ValueSet.new
