@@ -1,4 +1,6 @@
-/*! \mainpage Typelib: a C++ type and value introspection library
+/*! \mainpage Typelib: a C++ type and value introspection library (Ruby bindings documentation is <a href="ruby/index.html">here</a>)
+
+<b>These pages document only the C++ part of the library. The Ruby bindings documentation is available <a href="ruby/index.html">here</a></b>
 
 Typelib is a C++ library which allows for introspection on data types and data
 values. Its value model is based on the C type model. The library allows to
@@ -22,9 +24,6 @@ Copyright 2008-2009 DFKI <sylvain.joyeux@dfki.de>
 This software is provided under the CeCILL B License, which gives comparable
 terms of use than the BSD license. See LICENSE.txt or LICENSE.fr.txt provided
 with the source code for the full license texts.
-
-These pages document only the C++ part of the library. The Ruby bindings documentation
-is available <a href="ruby/index.html">here</a>.
 
 \section Installation
 
