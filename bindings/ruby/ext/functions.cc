@@ -175,7 +175,7 @@ class VMCall : public TypeVisitor
 #ifdef  VERBOSE
         fprintf(stderr, "wrapping dcCallPointer with type=%s\n", type.getName().c_str());
 #endif
-	m_return = memory_wrap(new void*(dcCallPointer(m_vm, m_handle)), true);
+	m_return = memory_wrap(new void*(dcCallPointer(m_vm, m_handle)), true, 0);
         return false;
     }
     virtual bool visit_ (Array const& type)
@@ -183,7 +183,7 @@ class VMCall : public TypeVisitor
 #ifdef  VERBOSE
         fprintf(stderr, "wrapping dcCallPointer with type=%s\n", type.getName().c_str());
 #endif
-	m_return = memory_wrap(new void*(dcCallPointer(m_vm, m_handle)), true);
+	m_return = memory_wrap(new void*(dcCallPointer(m_vm, m_handle)), true, 0);
 	return false;
     }
 
@@ -258,7 +258,7 @@ VALUE filter_value_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
 #ifdef      VERBOSE
             fprintf(stderr, "wrapping filtered argument with arg_type=%s\n", arg_type.getName().c_str());
 #endif
-            return memory_wrap(*reinterpret_cast<void**>(arg_value.getData()));
+            return memory_wrap(*reinterpret_cast<void**>(arg_value.getData()), false, 0);
         }
 	else if (arg_type.getCategory() == Type::Array)
 	    return rb_funcall(arg, rb_intern("to_memory_ptr"), 0);
@@ -296,7 +296,7 @@ VALUE filter_value_arg(VALUE self, VALUE arg, VALUE rb_expected_type)
     else
     {
 	if (arg_type.getCategory() == Type::Pointer)
-            return memory_wrap(*reinterpret_cast<void**>(arg_value.getData()));
+            return memory_wrap(*reinterpret_cast<void**>(arg_value.getData()), false, 0);
 	// check sizes
 	Array const& expected_array = static_cast<Array const&>(expected_type);
 	Array const& arg_array = static_cast<Array const&>(arg_type);
