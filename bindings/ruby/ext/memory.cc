@@ -50,6 +50,20 @@ static struct st_hash_type memory_table_type = {
 };
 #endif
 
+struct MemoryTableEntry
+{
+    int refcount;
+    VALUE object;
+    bool owned;
+    void* root_ptr;
+    MemoryTableEntry(VALUE object, bool owned, void* root_ptr = 0)
+        : refcount(1), object(object), owned(owned), root_ptr(root_ptr)
+    {
+        if (root_ptr && owned)
+            rb_raise(rb_eArgError, "given both a root pointer and owned=true for object %llu", NUM2ULL(rb_obj_id(object)));
+    }
+};
+
 struct RbMemoryLayout
 {
     int refcount;
@@ -71,10 +85,10 @@ MemoryTypes memory_types;
 TypeLayouts memory_layouts;
 
 static int
-memory_touch_i(volatile void* ptr, VALUE element, st_data_t)
+memory_touch_i(volatile void* ptr, MemoryTableEntry* entry, st_data_t)
 {
     char value = *((char*)ptr);
-    fprintf(stderr, "touching %p\n", ptr);
+    fprintf(stderr, "touching %p (refcount=%i)\n", ptr, entry->refcount);
     *((char*)ptr) = value;
     return ST_CONTINUE;
 }
@@ -98,7 +112,23 @@ typelib_ruby::memory_unref(void *ptr)
     if (!ptr)
         return;
 
-    st_delete(MemoryTable, (st_data_t*)&ptr, 0);
+    MemoryTableEntry* entry = 0;
+    if (!st_lookup(MemoryTable, (st_data_t)ptr, (st_data_t*)&entry))
+        rb_raise(rb_eArgError, "cannot find %p in memory table", ptr);
+    --(entry->refcount);
+    if (!entry->refcount)
+    {
+        if (entry->owned)
+            memory_delete(ptr);
+        if (entry->root_ptr)
+            memory_unref(entry->root_ptr);
+
+#       ifdef VERBOSE
+        fprintf(stderr, "%p: deregister\n", ptr);
+#       endif
+        delete entry;
+        st_delete(MemoryTable, (st_data_t*)&ptr, 0);
+    }
 
     MemoryTypes::iterator type_it = memory_types.find(ptr);
     if (type_it != memory_types.end())
@@ -131,30 +161,48 @@ typelib_ruby::memory_delete(void *ptr)
     fprintf(stderr, "%p: deallocated\n", ptr);
 #   endif
     free(ptr);
-    memory_unref(ptr);
 }
 
 static VALUE
 memory_aref(void *ptr)
 {
-    VALUE val;
-
-    if (!st_lookup(MemoryTable, (st_data_t)ptr, &val)) {
+    MemoryTableEntry* entry;
+    if (!st_lookup(MemoryTable, (st_data_t)ptr, (st_data_t*)&entry)) {
 	return Qnil;
     }
-    if (val == Qundef)
+    if ((VALUE)entry == Qundef)
 	rb_bug("found undef in memory table");
 
-    return val;
+    return entry->object;
 }
 
 static void
-memory_aset(void *ptr, VALUE obj)
+memory_aset(void *ptr, VALUE obj, bool owned, void* root_ptr)
 {
     if (! NIL_P(memory_aref(ptr)))
 	rb_raise(rb_eArgError, "there is already a wrapper for %p", ptr);
 
-    st_insert(MemoryTable, (st_data_t)ptr, obj);
+    if (ptr == root_ptr)
+	rb_raise(rb_eArgError, "pointer and root pointer are equal");
+
+    MemoryTableEntry* entry = 0;
+    if (st_lookup(MemoryTable, (st_data_t)ptr, (st_data_t*)&entry))
+    {
+        ++(entry->refcount);
+    }
+    else
+    {
+        entry = new MemoryTableEntry(obj, owned, root_ptr);
+        st_insert(MemoryTable, (st_data_t)ptr, (st_data_t)entry);
+
+        if (root_ptr)
+        {
+            MemoryTableEntry* root_entry = 0;
+            if (!st_lookup(MemoryTable, (st_data_t)root_ptr, (st_data_t*)&root_entry))
+                rb_raise(rb_eArgError, "%p given as root pointer for %p but is not registered", root_ptr, ptr);
+            ++(root_entry->refcount);
+        }
+    }
 }
 
 VALUE
@@ -165,11 +213,11 @@ typelib_ruby::memory_allocate(size_t size)
 #   endif
 
     void* ptr = malloc(size);
-    VALUE zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_delete, ptr);
+    VALUE zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_unref, ptr);
 #   ifdef VERBOSE
     fprintf(stderr, "%p: new allocated zone of size %lu\n", ptr, size);
 #   endif
-    memory_aset(ptr, zone);
+    memory_aset(ptr, zone, true, 0);
     return zone;
 }
 
@@ -203,7 +251,7 @@ typelib_ruby::memory_init(VALUE ptr, VALUE type)
 }
 
 VALUE
-typelib_ruby::memory_wrap(void* ptr, bool take_ownership)
+typelib_ruby::memory_wrap(void* ptr, bool take_ownership, void* root_ptr)
 {
     VALUE zone = memory_aref(ptr);
     if (NIL_P(zone))
@@ -212,11 +260,8 @@ typelib_ruby::memory_wrap(void* ptr, bool take_ownership)
 	fprintf(stderr, "%p: wrapping new memory zone\n", ptr);
 #	endif
 
-        if (take_ownership)
-            zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_delete, ptr);
-        else
-            zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_unref, ptr);
-	memory_aset(ptr, zone);
+        zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_unref, ptr);
+	memory_aset(ptr, zone, take_ownership, root_ptr);
     }
     else
     {
@@ -267,25 +312,28 @@ string_to_memory_ptr(VALUE self)
 #   ifdef VERBOSE
     fprintf(stderr, "wrapping string value from Ruby\n");
 #   endif
-    VALUE ptr = memory_wrap(StringValuePtr(self));
+    VALUE ptr = memory_wrap(StringValuePtr(self), false, 0);
     rb_iv_set(ptr, "@buffer_string", self);
     return ptr;
 }
 
-void memory_table_mark(void* ptr)
+static VALUE
+memory_zone_table_size(VALUE self)
 {
+    return INT2NUM(MemoryTable->num_entries);
 }
 
 void typelib_ruby::Typelib_init_memory()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     MemoryTable     = st_init_table(&memory_table_type);
-    VALUE table     = Data_Wrap_Struct(rb_cObject, &memory_table_mark, 0, MemoryTable);
+    VALUE table     = Data_Wrap_Struct(rb_cObject, 0, 0, MemoryTable);
     rb_iv_set(mTypelib, "@__memory_table__", table);
 
     cMemoryZone = rb_define_class_under(mTypelib, "MemoryZone", rb_cObject);
     rb_define_method(cMemoryZone, "zone_address", RUBY_METHOD_FUNC(memory_zone_address), 0);
     rb_define_method(cMemoryZone, "to_ptr", RUBY_METHOD_FUNC(memory_zone_to_ptr), 0);
+    rb_define_singleton_method(cMemoryZone, "table_size", RUBY_METHOD_FUNC(memory_zone_table_size), 0);
 
     rb_define_method(rb_cString, "to_memory_ptr", RUBY_METHOD_FUNC(string_to_memory_ptr), 0);
 }
