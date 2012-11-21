@@ -2449,7 +2449,7 @@ module Typelib
             end
 
             def add(name, value = nil)
-                symbols << [name.to_s, Integer(value)]
+                symbols << [name.to_s, (Integer(value) if value)]
             end
 
             def method_missing(name, *args, &block)
@@ -2554,11 +2554,20 @@ module Typelib
 
     ####
     # C string handling
-    convert_from_ruby String, CHAR_T.name do |value, typelib_type|
-        if value.size != 1
-            raise ArgumentError, "trying to convert a string of length different than one to a character"
+    if String.instance_methods.include? :ord
+        convert_from_ruby String, CHAR_T.name do |value, typelib_type|
+            if value.size != 1
+                raise ArgumentError, "trying to convert a string of length different than one to a character"
+            end
+            Typelib.from_ruby(value[0].ord, typelib_type)
         end
-        Typelib.from_ruby(value[0], typelib_type)
+    else
+        convert_from_ruby String, CHAR_T.name do |value, typelib_type|
+            if value.size != 1
+                raise ArgumentError, "trying to convert a string of length different than one to a character"
+            end
+            Typelib.from_ruby(value[0], typelib_type)
+        end
     end
     convert_from_ruby String, "#{CHAR_T.name}[]" do |value, typelib_type|
         result = typelib_type.new
