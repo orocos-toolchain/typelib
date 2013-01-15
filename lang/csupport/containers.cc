@@ -237,9 +237,10 @@ bool Vector::visit(void* ptr, ValueVisitor& visitor) const
     uint8_t* base = &(*vector_ptr)[0];
     size_t   element_size  = getIndirection().getSize();
     size_t   element_count = getElementCount(vector_ptr);
+    const Type &indirect(getIndirection()); 
 
     for (size_t i = 0; i < element_count; ++i)
-        visitor.dispatch(Value(base + i * element_size, getIndirection()));
+        visitor.apply(Value(base + i * element_size, indirect));
 
     return true;
 }
