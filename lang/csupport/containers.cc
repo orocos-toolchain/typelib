@@ -240,7 +240,7 @@ bool Vector::visit(void* ptr, ValueVisitor& visitor) const
     const Type &indirect(getIndirection()); 
 
     for (size_t i = 0; i < element_count; ++i)
-        visitor.apply(Value(base + i * element_size, indirect));
+        visitor.dispatch(Value(base + i * element_size, indirect));
 
     return true;
 }
