@@ -71,9 +71,8 @@ namespace Typelib
         virtual bool visit_ (Enum::integral_type& v, Enum const& e);
 
     public:
-        ValueVisitor(bool defval = false) 
-            : m_defval(defval), m_dispatcher(0) {}
-        virtual ~ValueVisitor() {}
+        ValueVisitor(bool defval = false);
+        virtual ~ValueVisitor();
 
         /** This is for internal use only. To visit a Value object, use apply */
         virtual void dispatch(Value v);
