@@ -1,9 +1,12 @@
 INCLUDE(RubyExtensions)
 
-if(RDOC_EXECUTABLE)
+if(YARD_EXECUTABLE)
+    ADD_CUSTOM_TARGET(ruby_doc yard -o ${CMAKE_BINARY_DIR}/doc/html/ruby/ --title "Typelib: a C type/value manipulation library" --main README.txt -U ext lib README.txt
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+elseif(RDOC_EXECUTABLE)
     ADD_CUSTOM_TARGET(ruby_doc rdoc -o ${CMAKE_BINARY_DIR}/doc/html/ruby/ --title "Typelib: a C type/value manipulation library" --main README.txt -U ext lib README.txt
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-endif(RDOC_EXECUTABLE)
+endif()
 
 SET(SUPPORTED_DYNCALL_SYSTEMS Linux-i486 Linux-i586 Linux-i686 Linux-x86_64 Linux-ppc)
 LIST(FIND SUPPORTED_DYNCALL_SYSTEMS ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR} SYSTEM_SUPPORTED)

@@ -1,4 +1,4 @@
-require 'test_config'
+require './test_config'
 require 'set'
 
 class TC_Registry < Test::Unit::TestCase

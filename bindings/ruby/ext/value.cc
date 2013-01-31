@@ -18,6 +18,22 @@ using std::numeric_limits;
 using std::vector;
 using namespace typelib_ruby;
 
+void* value_root_ptr(VALUE value)
+{
+    VALUE parent = Qnil;
+    while (RTEST(value))
+    {
+        parent = value;
+        value = rb_iv_get(value, "@parent");
+    }
+    if (RTEST(parent))
+    {
+        Value v = rb2cxx::object<Value>(parent);
+        return v.getData();
+    }
+    else return 0;
+}
+
 /* There are constraints when creating a Ruby wrapper for a Type, mainly
  * for avoiding GC issues. This function does the work.
  *
@@ -36,10 +52,12 @@ VALUE cxx2rb::value_wrap(Value v, VALUE registry, VALUE parent)
 {
     VALUE type = type_wrap(v.getType(), registry);
 #   ifdef VERBOSE
-    fprintf(stderr, "wrapping Typelib::Value %p from C++, type=%s and parent=%lu\n", v.getData(), v.getType().getName().c_str(), parent);
+    Value parent_value = rb2cxx::object<Value>(parent);
+    fprintf(stderr, "wrapping Typelib::Value %p from C++, type=%s, parent=%p and root=%p\n", v.getData(), v.getType().getName().c_str(), parent_value.getData(), value_root_ptr(parent));
 #   endif
-    VALUE ptr  = memory_wrap(v.getData());
+    VALUE ptr  = memory_wrap(v.getData(), false, value_root_ptr(parent));
     VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, ptr);
+
     rb_iv_set(wrapper, "@parent", parent);
     return wrapper;
 }
@@ -361,6 +379,9 @@ VALUE value_initialize(VALUE self, VALUE ptr)
     rb_iv_set(self, "@ptr", ptr);
     Value& value  = rb2cxx::object<Value>(self);
     value = Value(memory_cptr(ptr), t);
+#   ifdef VERBOSE
+    fprintf(stderr, "object %llu uses memory zone %p\n", NUM2ULL(rb_obj_id(self)), value.getData());
+#   endif
     return self;
 }
 
@@ -418,9 +439,10 @@ VALUE value_invalidate(VALUE self)
 
     Value& value = rb2cxx::object<Value>(self);
 #ifdef VERBOSE
-    fprintf(stderr, "invalidating %p\n", value.getData());
+    fprintf(stderr, "invalidating %llu, ptr=%p\n", NUM2ULL(rb_obj_id(self)), value.getData());
 #endif
-    memory_unref(value.getData());
+    // memory and Typelib::destroy are handled at the pointer level, not at the
+    // Type instance level. Do not memory_unref here !
     value = Value(0, value.getType());
     return Qnil;
 }

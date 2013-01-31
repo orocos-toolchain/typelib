@@ -310,7 +310,7 @@ namespace
     { 
         m_stream
             << m_indent
-            << getIDLRelative(field.getType(), field.getName())
+            << getIDLAbsolute(field.getType(), field.getName())
             << ";\n";
 
         return true;
@@ -341,7 +341,7 @@ namespace
 	utilmm::stringlist symbols;
         Enum::ValueMap const& values = type.values();
 	Enum::ValueMap::const_iterator it, end = values.end();
-	for (it = values.begin(); it != values.end(); ++it)
+	for (it = values.begin(); it != end; ++it)
 	    symbols.push_back(it->first);
 	m_stream << utilmm::join(symbols, ", ") << " };\n";
 
@@ -360,7 +360,7 @@ namespace
             target_namespace = getIDLAbsoluteNamespace("/", m_exporter);
         setTargetNamespace(target_namespace);
 
-        std::string element_name = getIDLRelative(type.getIndirection());
+        std::string element_name = getIDLAbsolute(type.getIndirection());
         std::string typedef_name = getIDLBase(type).second;
         boost::replace_all(typedef_name, "::", "_");
         m_stream << m_indent << "typedef sequence<" << element_name << "> " << typedef_name << ";\n";
@@ -538,14 +538,14 @@ bool IDLExport::save
 	    {
 		Array const& array_t = dynamic_cast<Array const&>(*type);
 		stream 
-		    << getIDLRelative(array_t.getIndirection(), type_namespace)
+		    << getIDLAbsolute(array_t.getIndirection())
 		    << " " << type.getBasename() << "[" << array_t.getDimension() << "];";
 	    }
             else if (type->getCategory() == Type::Container)
             {
                 // Generate a sequence, regardless of the actual container type
                 Container const& container_t = dynamic_cast<Container const&>(*type);
-                stream << "sequence<" << getIDLRelative(container_t.getIndirection(), type_namespace) << "> " << type.getBasename() << ";";
+                stream << "sequence<" << getIDLAbsolute(container_t.getIndirection()) << "> " << type.getBasename() << ";";
             }
             else if (type->getCategory() == Type::Opaque)
             {
@@ -553,7 +553,7 @@ bool IDLExport::save
                     stream << "any " << type.getBasename() << ";";
             }
             else if (type.getBasename().find_first_of(" ") == string::npos)
-		stream << getIDLRelative(*type, type_namespace) << " " << type.getBasename() << ";";
+		stream << getIDLAbsolute(*type) << " " << type.getBasename() << ";";
 
             std::string def = stream.str();
             if (!def.empty())

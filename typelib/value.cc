@@ -103,6 +103,7 @@ namespace Typelib
             m_stack.clear();
             m_stack.push_back( reinterpret_cast<uint8_t*>(value.getData()));
             TypeVisitor::apply(value.getType());
+	    m_stack.pop_back();
         }
 
     };
@@ -147,12 +148,18 @@ namespace Typelib
 
 namespace Typelib
 {
+    ValueVisitor::ValueVisitor(bool defval)
+       : m_defval(defval), m_dispatcher(new TypeDispatch(*this))
+    {
+    }
+    ValueVisitor::~ValueVisitor()
+    {
+	delete m_dispatcher;
+    }
     void ValueVisitor::apply(Value v)
     {
-        TypeDispatch dispatcher(*this);
-        m_dispatcher = &dispatcher;
-        dispatcher.apply(v);
-        m_dispatcher = 0;
+        m_dispatcher->apply(v);
     }
+
 }
 
