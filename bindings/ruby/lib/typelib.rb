@@ -424,14 +424,26 @@ module Typelib
                 recursive_dependencies.include?(type) || recursive_dependencies.any? { |t| t <= type }
         end
 
+        # @deprecated
+        #
+        # Replaced by {recursive_dependencies}
         def self.dependencies
             direct_dependencies
         end
 
+        # [ValueSet<Type>] Returns the types that are directly referenced by +self+
+        #
+        # @see recursive_dependencies
         def self.direct_dependencies
             @direct_dependencies ||= do_dependencies
         end
 
+        # Returns the set of all types that are needed to define +self+
+        #
+        # @param [ValueSet<Type>] set if given, the new types will be added to
+        #   this set. Otherwise, a new set is created. In both cases, the set is
+        #   returned
+        # @return [ValueSet<Type>]
         def self.recursive_dependencies(set = nil)
             if !@recursive_dependencies
                 @recursive_dependencies = ValueSet.new
@@ -2068,6 +2080,7 @@ module Typelib
                 end
             end
 
+        ensure
             @export_typemap = new_export_typemap
         end
 
@@ -2080,17 +2093,17 @@ module Typelib
 
             found_type_exports = ValueSet.new
             
-            export_target_mod.exported_types.each do |const_name, type|
-                found_type_exports.insert(export_target_mod.const_get(const_name))
-                export_target_mod.send(:remove_const, const_name)
-            end
-            export_target_mod.exported_types.clear
             export_target_mod.constants.each do |c|
                 c = export_target_mod.const_get(c)
                 if c.respond_to?(:exported_types)
                     clear_exports(c)
                 end
             end
+            export_target_mod.exported_types.each do |const_name, type|
+                found_type_exports.insert(export_target_mod.const_get(const_name))
+                export_target_mod.send(:remove_const, const_name)
+            end
+            export_target_mod.exported_types.clear
 
             found_type_exports.each do |exported_type|
                 set = export_typemap[exported_type]
@@ -2349,9 +2362,14 @@ module Typelib
             export('tlb')
         end
 
+        # Helper class for Registry#create_compound
         class CompoundBuilder
+            # The compound type name
             attr_reader :name
+            # The registry on which we are creating the new compound
             attr_reader :registry
+            # The compound fields, registered at each called of #method_missing
+            # and #add. The new type is registered when #build is called.
             attr_reader :fields
 
             def initialize(name, registry)
@@ -2359,6 +2377,7 @@ module Typelib
                 @fields = []
             end
             
+            # Create the type on the underlying registry
             def build
                 if @fields.empty?
                     raise ArgumentError, "trying to create an empty compound"
@@ -2373,6 +2392,13 @@ module Typelib
                 registry.do_create_compound(name, fields)
             end
 
+            # Adds a new field
+            #
+            # @param [String] name the field name
+            # @param [Type,String] type the field's typelib type
+            # @param [Integer,nil] offset the field offset. If nil, it is
+            #   automatically computed in #build so as to follow the previous
+            #   field.
             def add(name, type, offset = nil)
                 if type.respond_to?(:to_str) || type.respond_to?(:to_sym)
                     type = registry.build(type.to_s)
@@ -2380,6 +2406,7 @@ module Typelib
                 @fields << [name.to_s, type, offset]
             end
 
+            # See {Registry#add} for the alternative to #add
             def method_missing(name, *args, &block)
                 if name.to_s =~ /^(.*)=$/
                     type = args.first
@@ -2391,12 +2418,39 @@ module Typelib
             end
         end
 
+        # Creates a new compound type with the given name on this registry
+        #
+        # @yield [CompoundBuilder] the compound building helper, see below for
+        #   examples. Only the #add method allows to set offsets. When no
+        #   offsets are given, they are computed from the previous field.
+        # @return [Type] the type representation
+        #
+        # @example create a compound using #add
+        #   registry.create_compound "/new/Compound" do |c|
+        #     c.add "field0", "/int", 15
+        #     c.add "field1", "/another/Compound", 20
+        #   end
+        #
+        # @example create a compound using the c.field = type syntax
+        #   registry.create_compound "/new/Compound" do |c|
+        #     c.field0 = "/int"
+        #     c.field1 = "/another/Compound"
+        #   end
+        #
         def create_compound(name)
             recorder = CompoundBuilder.new(name, self)
             yield(recorder)
             recorder.build
         end
 
+        # Creates a new container type on this registry
+        #
+        # @param [String] container_type the name of the container type
+        # @param [String,Type] element_type the type of the container elements,
+        #   either as a type or as a type name
+        #
+        # @example create a new std::vector type
+        #   registry.create_container "/std/vector", "/my/Container"
         def create_container(container_type, element_type)
             if element_type.respond_to?(:to_str)
                 element_type = build(element_type)
@@ -2404,6 +2458,14 @@ module Typelib
             return define_container(container_type.to_str, element_type)
         end
 
+        # Creates a new array type on this registry
+        #
+        # @param [String,Type] base_type the type of the array elements,
+        #   either as a type or as a type name
+        # @param [Integer] size the array size
+        #
+        # @example create a new array of 10 elements
+        #   registry.create_container "/my/Container", 10
         def create_array(base_type, size)
             if base_type.respond_to?(:name)
                 base_type = base_type.name
@@ -2411,9 +2473,14 @@ module Typelib
             return build("#{base_type}[#{size}]")
         end
 
+        # Helper class to build new enumeration types
         class EnumBuilder
+            # [String] The enum type name
             attr_reader :name
+            # [Registry] The registry on which the enum should be defined
             attr_reader :registry
+            # [Array<Array(String,Integer)>] the enumeration name-to-integer
+            #   mapping. Values are added with #add
             attr_reader :symbols
 
             def initialize(name, registry)
@@ -2421,6 +2488,7 @@ module Typelib
                 @symbols = []
             end
             
+            # Creates the new enum type on the registry
             def build
                 if @symbols.empty?
                     raise ArgumentError, "trying to create an empty enum"
@@ -2435,10 +2503,13 @@ module Typelib
                 registry.do_create_enum(name, symbols)
             end
 
+            # Add a new symbol to this enum
             def add(name, value = nil)
-                symbols << [name.to_s, Integer(value)]
+                symbols << [name.to_s, (Integer(value) if value)]
             end
 
+            # Alternative method to add new symbols. See {Registry#create_enum}
+            # for examples.
             def method_missing(name, *args, &block)
                 if name.to_s =~ /^(.*)=$/
                     value = args.first
@@ -2451,6 +2522,28 @@ module Typelib
             end
         end
 
+        # Creates a new enum type with the given name on this registry
+        #
+        # @yield [EnumBuilder] the enum building helper. In both methods, if a
+        #   symbol's value is not provided, it is computed as last_value + 1
+        # @return [Type] the type representation
+        #
+        # @example create an enum using #add
+        #   registry.create_enum "/new/Enum" do |c|
+        #     c.add "sym0", 15
+        #     c.add "sym1", 2
+        #     # sym2 will be 3
+        #     c.add "sym2"
+        #   end
+        #
+        # @example create an enum using the c.sym = value syntax
+        #   registry.create_enum "/new/Enum" do |c|
+        #     c.sym0 = 15
+        #     c.sym1 = 2
+        #     # sym2 will be 3
+        #     c.sym2
+        #   end
+        #
         def create_enum(name)
             recorder = EnumBuilder.new(name, self)
             yield(recorder)
@@ -2541,11 +2634,20 @@ module Typelib
 
     ####
     # C string handling
-    convert_from_ruby String, CHAR_T.name do |value, typelib_type|
-        if value.size != 1
-            raise ArgumentError, "trying to convert a string of length different than one to a character"
+    if String.instance_methods.include? :ord
+        convert_from_ruby String, CHAR_T.name do |value, typelib_type|
+            if value.size != 1
+                raise ArgumentError, "trying to convert a string of length different than one to a character"
+            end
+            Typelib.from_ruby(value[0].ord, typelib_type)
         end
-        Typelib.from_ruby(value[0], typelib_type)
+    else
+        convert_from_ruby String, CHAR_T.name do |value, typelib_type|
+            if value.size != 1
+                raise ArgumentError, "trying to convert a string of length different than one to a character"
+            end
+            Typelib.from_ruby(value[0], typelib_type)
+        end
     end
     convert_from_ruby String, "#{CHAR_T.name}[]" do |value, typelib_type|
         result = typelib_type.new

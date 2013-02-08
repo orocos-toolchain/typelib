@@ -1,5 +1,5 @@
 require 'set'
-require 'test_config'
+require './test_config'
 require 'typelib'
 require 'test/unit'
 require BUILDDIR + '/ruby/libtest_ruby'
@@ -34,8 +34,11 @@ class TC_Value < Test::Unit::TestCase
 	assert_equal(0, int.to_ruby)
 
 	str = CXXRegistry.new.build("/char[20]").new
+        base_val = if ?a.respond_to?(:ord) then ?a.ord
+                   else ?a
+                   end
         20.times do |i|
-            str[i] = ?a + i
+            str[i] = base_val + i
         end
 	assert_kind_of(String, str.to_ruby)
     end

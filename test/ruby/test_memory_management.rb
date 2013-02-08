@@ -1,4 +1,4 @@
-require 'test_config'
+require './test_config'
 require 'typelib'
 require 'test/unit'
 
