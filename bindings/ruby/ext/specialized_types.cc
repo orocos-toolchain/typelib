@@ -132,6 +132,9 @@ Enum::integral_type rb2cxx::enum_value(VALUE rb_value, Enum const& e)
  */
 VALUE enum_keys(VALUE self)
 {
+    if (self == cEnum)
+        return rb_hash_new();
+
     Enum const& type = static_cast<Enum const&>(rb2cxx::object<Type>(self));
 
     VALUE keys = rb_iv_get(self, "@values");
