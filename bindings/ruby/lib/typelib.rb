@@ -550,6 +550,11 @@ module Typelib
             do_cast(target_type)
         end
 
+        # Returns the value that is parent of this one. Root values return nil
+        def __typelib_parent
+            @parent
+        end
+
         # Called internally to apply any change from a converted value to the
         # underlying Typelib value
         def apply_changes_from_converted_types
