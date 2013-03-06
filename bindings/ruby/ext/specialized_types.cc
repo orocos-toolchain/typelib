@@ -49,7 +49,7 @@ static VALUE compound_field_get(VALUE rbvalue, VALUE name)
 
     try { 
         Value field_value = value_get_field(value, StringValuePtr(name));
-	return typelib_to_ruby(field_value, registry, rbvalue);
+	return cxx2rb::value_wrap(field_value, registry, rbvalue);
     } 
     catch(FieldNotFound)
     { rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name)); } 
@@ -93,7 +93,7 @@ static VALUE pointer_deference(VALUE self)
         rb_raise(rb_eArgError, "cannot deference a NULL pointer");
 
     Value new_value(ptr_value, indirect.getIndirection() );
-    return typelib_to_ruby(new_value, registry, Qnil);
+    return cxx2rb::value_wrap(new_value, registry, Qnil);
 }
 
 
@@ -248,7 +248,7 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
     if (argc == 1)
     {
 	Value v = Value(data + array_type.getSize() * index, array_type);
-	return typelib_to_ruby( v, registry, self );
+	return cxx2rb::value_wrap( v, registry, self );
     }
     else if (argc == 2)
     {
@@ -260,7 +260,7 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
 	for (size_t i = index; i < index + size; ++i)
 	{
 	    Value v = Value(data + array_type.getSize() * i, array_type);
-	    VALUE rb_v = typelib_to_ruby( v, registry, self );
+	    VALUE rb_v = cxx2rb::value_wrap( v, registry, self );
 
 	    rb_ary_push(ret, rb_v);
 	}
@@ -302,7 +302,7 @@ static VALUE array_do_each(VALUE rbarray)
     int8_t* data = reinterpret_cast<int8_t*>(value.getData());
 
     for (size_t i = 0; i < array.getDimension(); ++i, data += array_type.getSize())
-	rb_yield(typelib_to_ruby( Value(data, array_type), registry, rbarray ));
+	rb_yield(cxx2rb::value_wrap( Value(data, array_type), registry, rbarray ));
 
     return rbarray;
 }
@@ -506,7 +506,7 @@ static VALUE container_do_get(VALUE self, VALUE index)
     VALUE registry = value_get_registry(self);
 
     Value v = container_t.getElement(container_v.getData(), NUM2INT(index));
-    return typelib_to_ruby(v, registry, self);
+    return cxx2rb::value_wrap(v, registry, self);
 }
 
 struct ContainerIterator : public RubyGetter
@@ -576,7 +576,7 @@ static VALUE container_erase(VALUE self, VALUE obj)
 
 bool container_delete_if_i(Value v, VALUE registry, VALUE container)
 {
-    VALUE rb_v = typelib_to_ruby(v, registry, container);
+    VALUE rb_v = cxx2rb::value_wrap(v, registry, container);
     if (RTEST(rb_yield(rb_v)))
         return true;
     return false;
