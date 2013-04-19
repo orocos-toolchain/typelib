@@ -301,7 +301,10 @@ module Typelib
                 @field_types.has_key?(name)
             end
 	    # Iterates on all fields
-            def each_field # :yield:name, type
+            #
+            # @yield [name,type] the fields of this compound
+            # @return [void]
+            def each_field
 		@fields.each { |field| yield(*field) } 
 	    end
 

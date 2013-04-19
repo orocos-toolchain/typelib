@@ -168,7 +168,11 @@ require 'typelib/registry'
 require 'typelib/cxx_registry'
 require 'typelib/specializations'
 require 'typelib_ruby'
+
 require 'typelib/standard_convertions'
+
+require 'typelib/path'
+require 'typelib/accessor'
 
 module Typelib
     # Generic method that converts a Typelib value into the corresponding Ruby
