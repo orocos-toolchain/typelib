@@ -605,34 +605,35 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_raises(TypeError) { vector[0] = 10 }
     end
 
-    def test_vector_modification_invalidate_existing_values
+    def test_vector_erase_invalidates_last_elements
         std      = make_registry.get("StdCollections")
         value_t = std[:v_of_v]
 
         value   = value_t.new
         element = value_t.deference.new
-        10.times do
-            value.push(element)
-        end
+        10.times { value.push(element) }
 
-        v = value[0]
-        assert(!v.invalidated?)
-        value.push(element)
-        assert(v.invalidated?)
-
-        v = value[0]
-        assert(!v.invalidated?)
+        last = value[9]
         value.erase(element)
-        assert(v.invalidated?)
+        assert last.invalidated?
+    end
+    def test_vector_delete_if_invalidates_last_elements
+        std      = make_registry.get("StdCollections")
+        value_t = std[:v_of_v]
 
-        10.times do
-            value.push(element)
-        end
-        v = value[0]
-        assert(!v.invalidated?)
+        value   = value_t.new
+        element = value_t.deference.new
+        10.times { value.push(element) }
+
+        last = value[9]
         bool = false
-        value.delete_if { bool = !bool }
-        assert(v.invalidated?)
+        value.delete_if do |el|
+            if bool = !bool
+                true
+            else break
+            end
+        end
+        assert last.invalidated?
     end
 end
 

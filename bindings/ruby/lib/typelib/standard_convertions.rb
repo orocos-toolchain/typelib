@@ -32,6 +32,9 @@ module Typelib
             end
         end
     end
+    specialize '/std/vector<>' do
+        include Typelib::ContainerType::StdVector
+    end
 
     ####
     # C string handling

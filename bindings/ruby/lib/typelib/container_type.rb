@@ -34,6 +34,7 @@ module Typelib
             def do_push(*args); raise TypeError, "invalidated object" end
             def do_each(*args); raise TypeError, "invalidated object" end
             def do_get(*args); raise TypeError, "invalidated object" end
+            def contained_memory_id; raise TypeError, "invalidated object" end
         end
 
         # Call to freeze the object, i.e. to make it readonly
@@ -197,50 +198,78 @@ module Typelib
             concat(values)
         end
 
-        def concat(array)
-            # We need to apply changes to the converted types, as the underlying
-            # container might choose to reallocate the memory somewhere else
-            apply_changes_from_converted_types
-            for v in array
-                do_push(Typelib.from_ruby(v, element_t))
+        # This should return an object that allows to identify whether the
+        # Typelib instances pointing to elements should be invalidated after
+        # certain operations
+        #
+        # The default always returns nil, which means that no invalidation is
+        # performed
+        def contained_memory_id
+        end
+
+        def handle_container_invalidation
+            current_size = self.size
+            memory_id    = self.contained_memory_id
+            yield
+        ensure
+            if memory_id != self.contained_memory_id
+                invalidate_children
+            elsif self.size < current_size
+                @elements[self.size..-1].each do |el|
+                    el.invalidate
+                end
             end
-            invalidate_children
+        end
+
+        def concat(array)
+            # NOTE: no need to care about convertions to ruby here, as -- when
+            # the elements require a convertion to ruby -- we convert the whole
+            # container to Array
+            handle_container_invalidation do
+                for v in array
+                    do_push(Typelib.from_ruby(v, element_t))
+                end
+            end
         end
 
         def raw_each
-            if !block_given?
-                return enum_for(:raw_each)
-            end
+            return enum_for(:raw_each) if !block_given?
 
-            do_each do |el|
+            enum_for(:do_each).each_with_index do |el, idx|
+                @elements[idx] = el
                 yield(el)
             end
         end
 
         # Enumerates the elements of this container
         def each
-            if !block_given?
-                return enum_for(:each)
-            end
-
-            do_each do |el|
+            return enum_for(:each) if !block_given?
+            raw_each do |el|
                 yield(Typelib.to_ruby(el, element_t))
             end
         end
 
         # Erases an element from this container
         def erase(el)
-            el = Typelib.from_ruby(el, element_t)
-            do_erase(el)
-            invalidate_children
+            # NOTE: no need to care about convertions to ruby here, as -- when
+            # the elements require a convertion to ruby -- we convert the whole
+            # container to Array
+            handle_container_invalidation do
+                el = Typelib.from_ruby(el, element_t)
+                do_erase(el)
+            end
         end
 
         # Deletes the elements
         def delete_if
-            do_delete_if do |el|
-                yield(Typelib.to_ruby(el, element_t))
+            # NOTE: no need to care about convertions to ruby here, as -- when
+            # the elements require a convertion to ruby -- we convert the whole
+            # container to Array
+            handle_container_invalidation do
+                do_delete_if do |el|
+                    yield(Typelib.to_ruby(el, element_t))
+                end
             end
-            invalidate_children
         end
 
         # True if this container is empty

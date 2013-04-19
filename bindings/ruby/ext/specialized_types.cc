@@ -598,6 +598,21 @@ static VALUE container_delete_if(VALUE self)
     return self;
 }
 
+/*
+ * call-seq:
+ *  vector.contained_memory_id => value or nil
+ *
+ * (see ContainerType#contained_memory_id)
+ */
+static VALUE vector_contained_memory_id(VALUE self)
+{
+    Value container_v = rb2cxx::object<Value>(self);
+    std::vector<uint8_t> const* vector = reinterpret_cast<std::vector<uint8_t>*>(container_v.getData());
+    if (vector->empty())
+        return Qnil;
+    return ULL2NUM(reinterpret_cast<uint64_t>(&vector[0]));
+}
+
 /* 
  * call-seq:
  *   value.to_ruby	=> non-Typelib object or self
@@ -711,5 +726,8 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_method(cContainer, "do_each",      RUBY_METHOD_FUNC(container_each), 0);
     rb_define_method(cContainer, "do_erase",     RUBY_METHOD_FUNC(container_erase), 1);
     rb_define_method(cContainer, "do_delete_if", RUBY_METHOD_FUNC(container_delete_if), 0);
+
+    VALUE mVector = rb_define_module_under(cContainer, "StdVector");
+    rb_define_method(mVector, "contained_memory_id", RUBY_METHOD_FUNC(vector_contained_memory_id), 0);
 }
 
