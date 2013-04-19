@@ -1,4 +1,5 @@
 require 'enumerator'
+require 'utilrb/logger'
 require 'utilrb/object/singleton_class'
 require 'utilrb/kernel/options'
 require 'utilrb/module/attr_predicate'
@@ -60,6 +61,8 @@ end
 # Typelib.specialize_model and Typelib.specialize
 # 
 module Typelib
+    extend Logger::Root('Typelib', Logger::WARN)
+
     class << self
 	# If true (the default), typelib will load its type plugins. Otherwise,
         # it will not
@@ -108,7 +111,7 @@ module Typelib
                     true
                 else
                     msg_name ||= "instances of #{reference_class.name}"
-                    STDERR.puts "WARN: NOT defining #{candidates.join(", ")} on #{msg_name} as it would overload a necessary method"
+                    Typelib.warn "NOT defining #{candidates.join(", ")} on #{msg_name} as it would overload a necessary method"
                     false
                 end
             end
@@ -121,7 +124,7 @@ module Typelib
             true
         else
             msg_name ||= "instances of #{reference_class.name}"
-            STDERR.puts "WARN: NOT defining #{name} on #{msg_name} as it would overload a necessary method"
+            Typelib.warn "NOT defining #{name} on #{msg_name} as it would overload a necessary method"
             false
         end
     end

@@ -188,7 +188,7 @@ module Typelib
 
         # DEPRECATED. Use #push instead
         def insert(value) # :nodoc:
-            STDERR.puts "WARN: Typelib::ContainerType#insert(value) is deprecated, use #push(value) instead"
+            Typelib.warn "Typelib::ContainerType#insert(value) is deprecated, use #push(value) instead"
             push(value)
         end
 
