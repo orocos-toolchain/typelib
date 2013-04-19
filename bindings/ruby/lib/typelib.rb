@@ -203,8 +203,25 @@ module Typelib
         if from.respond_to?(:apply_changes_from_converted_types)
             from.apply_changes_from_converted_types
         end
-        do_copy(to, from)
-        to
+
+        # We now need to recursively find all containers in +from+, and make
+        # sure they get proper invalidation support
+        accessor = Accessor.find_in_type(to.class) { |t| t <= Typelib::ContainerType }
+        values = accessor.each(to).to_a
+        copy_with_invalidation(values, to, from)
+    end
+
+    # Private helper for Typelib.copy
+    def self.copy_with_invalidation(values, to, from)
+        if values.empty?
+            do_copy(to, from)
+            to
+        else
+            v = values.shift
+            v.handle_container_invalidation do
+                copy_with_invalidation(values, to, from)
+            end
+        end
     end
 
     # Initializes +expected_type+ from +arg+, where +arg+ can either be a value

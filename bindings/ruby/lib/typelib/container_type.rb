@@ -62,15 +62,15 @@ module Typelib
 
         def freeze_children
             super
-            @elements.compact.each do |obj|
-                obj.freeze
+            for obj in @elements
+                obj.freeze if obj
             end
         end
 
         def invalidate_children
             super
-            @elements.compact.each do |obj|
-                obj.invalidate
+            for obj in @elements
+                obj.invalidate if obj
             end
             @elements.clear
         end
@@ -208,16 +208,19 @@ module Typelib
         end
 
         def handle_container_invalidation
-            current_size = self.size
             memory_id    = self.contained_memory_id
             yield
         ensure
-            if memory_id != self.contained_memory_id
-                invalidate_children
-            elsif self.size < current_size
+            if @elements.size > self.size
+                Typelib.debug { "invalidating #{self.size - @elements.size} trailing elements in #{self}" }
                 @elements[self.size..-1].each do |el|
-                    el.invalidate
+                    el.invalidate if el
                 end
+                @elements = @elements[0, self.size]
+            end
+            if memory_id != self.contained_memory_id
+                Typelib.debug { "invalidating all elements in #{self}" }
+                invalidate_children
             end
         end
 
