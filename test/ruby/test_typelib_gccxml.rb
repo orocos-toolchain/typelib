@@ -1,8 +1,5 @@
-require 'set'
-require 'typelib'
-require 'typelib-gccxml'
 require 'test/unit'
-require 'pp'
+require 'typelib'
 
 class TC_TypelibGCCXML < Test::Unit::TestCase
     include Typelib
