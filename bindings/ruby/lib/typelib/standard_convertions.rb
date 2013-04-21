@@ -18,7 +18,11 @@ module Typelib
         typelib_type.wrap([value.length, value].pack("QA#{value.length}"))
     end
     convert_to_ruby '/std/string', String do |value|
-        value.to_byte_array[8..-1]
+        value = value.to_byte_array[8..-1]
+        if value.respond_to?(:force_encoding)
+            value.force_encoding(Encoding.default_internal || __ENCODING__)
+        end
+        value
     end
     specialize '/std/string' do
         def to_str
@@ -59,11 +63,19 @@ module Typelib
         result
     end
     convert_to_ruby "#{CHAR_T.name}[]", String do |value|
-        Type::to_string(value, true)
+        value = Type::to_string(value, true)
+        if value.respond_to?(:force_encoding)
+            value.force_encoding('ASCII')
+        end
+        value
     end
     specialize "#{CHAR_T.name}[]" do
         def to_str
-            Type::to_string(self, true)
+            value = Type::to_string(self, true)
+            if value.respond_to?(:force_encoding)
+                value.force_encoding('ASCII')
+            end
+            value
         end
     end
     convert_from_ruby String, "#{CHAR_T.name}*" do |value, typelib_type|
@@ -72,11 +84,19 @@ module Typelib
         result
     end
     convert_to_ruby "#{CHAR_T.name}*", String do |value|
-        Type::to_string(value, true)
+        value = Type::to_string(value, true)
+        if value.respond_to?(:force_encoding)
+            value.force_encoding('ASCII')
+        end
+        value
     end
     specialize "#{CHAR_T.name}*" do
         def to_str
-            Type::to_string(self, true)
+            value = Type::to_string(self, true)
+            if value.respond_to?(:force_encoding)
+                value.force_encoding('ASCII')
+            end
+            value
         end
     end
 end
