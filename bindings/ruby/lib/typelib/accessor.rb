@@ -11,8 +11,9 @@ module Typelib
         # Builds an accessor that gives access to all the fields whose type
         # matches the given block in +type_model+
         def self.find_in_type(type_model, &block)
-            matches = traverse_and_find_in_type(type_model, &block)
-            Accessor.new(matches || [])
+            matches = traverse_and_find_in_type(type_model, &block) || []
+            matches = matches.sort_by { |p| p.size }
+            Accessor.new(matches)
         end
 
         def self.traverse_and_find_in_type(type_model)
