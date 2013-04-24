@@ -211,16 +211,18 @@ module Typelib
             memory_id    = self.contained_memory_id
             yield
         ensure
-            if @elements.size > self.size
-                Typelib.debug { "invalidating #{self.size - @elements.size} trailing elements in #{self}" }
-                @elements[self.size..-1].each do |el|
-                    el.invalidate if el
-                end
-                @elements = @elements[0, self.size]
-            end
-            if memory_id != self.contained_memory_id
+            if invalidated? 
+                # All children have been invalidated already by #invalidate
+            elsif (memory_id != self.contained_memory_id)
                 Typelib.debug { "invalidating all elements in #{self}" }
                 invalidate_children
+            elsif @elements.size > self.size
+                Typelib.debug { "invalidating #{@elements.size - self.size} trailing elements in #{self}" }
+                while @elements.size > self.size
+                    if el = @elements.pop
+                        el.invalidate
+                    end
+                end
             end
         end
 
