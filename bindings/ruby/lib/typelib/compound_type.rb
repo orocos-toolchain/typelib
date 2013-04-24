@@ -371,13 +371,7 @@ module Typelib
         end
 
         def raw_get(name)
-	    if !(value = @fields[name])
-		value = typelib_get_field(name)
-		if value.kind_of?(Type)
-		    @fields[name] = value
-		end
-	    end
-            value
+            @fields[name] ||= typelib_get_field(name)
         end
 
         def raw_set_field(name, value)

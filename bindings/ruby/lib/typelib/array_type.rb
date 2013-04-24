@@ -144,15 +144,7 @@ module Typelib
         end
 
         def raw_get(index)
-            if v = @elements[index]
-                v
-            else
-                v = do_get(index)
-                if v.kind_of?(Type)
-                    @elements[index] = v
-                end
-                v
-            end
+            @elements[index] ||= do_get(index)
         end
 
         def raw_set(index, value)
