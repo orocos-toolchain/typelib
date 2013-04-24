@@ -239,8 +239,7 @@ module Typelib
             return enum_for(:raw_each) if !block_given?
 
             enum_for(:do_each).each_with_index do |el, idx|
-                @elements[idx] = el
-                yield(el)
+                yield(@elements[idx] ||= el)
             end
         end
 
