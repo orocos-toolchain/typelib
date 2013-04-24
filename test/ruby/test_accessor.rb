@@ -29,9 +29,7 @@ class TC_TypeAccessor < Test::Unit::TestCase
             t.name == "/float"
         end
         assert_equal 12, accessor.paths.size
-        path_set = accessor.paths.map do |p|
-            p.elements.dup
-        end
+        path_set = accessor.paths.map { |p| p.elements.dup }
 
         assert path_set.delete([[:call, [:raw_get, 'fl_direct']]])
         assert path_set.delete([[:call, [:raw_get, 'fl_array']],
@@ -69,6 +67,17 @@ class TC_TypeAccessor < Test::Unit::TestCase
                                 [:call, [:raw_get, 'vector']],
                                 [:iterate, [:raw_each]]])
         assert path_set.empty?
+    end
+
+    def test_it_resolves_matching_containers_recursively
+        type = registry.create_container '/std/vector', '/std/vector</float>'
+        accessor = Typelib::Accessor.find_in_type(type) { |t| t <= Typelib::ContainerType }
+
+        path_set = accessor.paths.map { |p| p.elements.dup }
+        assert_equal 2, path_set.size
+
+        assert path_set.include?([])
+        assert path_set.include?([[:iterate, [:raw_each]]])
     end
 end
 

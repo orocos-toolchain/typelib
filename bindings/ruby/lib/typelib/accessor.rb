@@ -16,13 +16,14 @@ module Typelib
         end
 
         def self.traverse_and_find_in_type(type_model)
+            result = []
+
             # First, check if type_model itself is wanted
             if yield(type_model)
-                return [Path.new([])]
+                result << Path.new([])
             end
 
             if type_model <= Typelib::CompoundType
-                result = []
                 type_model.each_field do |field_name, field_type|
                     if matches = traverse_and_find_in_type(field_type, &proc)
                         matches.each do |path|
@@ -31,17 +32,15 @@ module Typelib
                         result.concat(matches)
                     end
                 end
-                return result
             elsif type_model <= Typelib::ArrayType || type_model <= Typelib::ContainerType
-                result = []
                 if matches = traverse_and_find_in_type(type_model.deference, &proc)
                     matches.each do |path|
                         path.unshift_iterate(:raw_each)
                     end
                     result.concat(matches)
                 end
-                return result
             end
+            result
         end
 
         def each(root)
