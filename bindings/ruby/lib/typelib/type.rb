@@ -430,7 +430,7 @@ module Typelib
 		if (ruby_value = Typelib.to_ruby(self)).eql?(self)
 		    return false
 		end
-		other == self.to_ruby
+		other == ruby_value
 	    end
         end
 
