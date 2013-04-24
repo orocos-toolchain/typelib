@@ -210,22 +210,26 @@ module Typelib
             from.apply_changes_from_converted_types
         end
 
-        # We now need to recursively find all containers in +from+, and make
-        # sure they get proper invalidation support
-        accessor = Accessor.find_in_type(to.class) { |t| t <= Typelib::ContainerType }
-        values = accessor.each(to).to_a
-        copy_with_invalidation(values, to, from)
+        handle_invalidation(to) do
+            do_copy(to, from)
+        end
     end
 
-    # Private helper for Typelib.copy
-    def self.copy_with_invalidation(values, to, from)
-        if values.empty?
-            do_copy(to, from)
-            to
+    def self.handle_invalidation(value, &block)
+        # We now need to recursively find all containers in +from+, and make
+        # sure they get proper invalidation support
+        accessor = Accessor.find_in_type(value.class) { |t| t <= Typelib::ContainerType }
+        containers = accessor.each(value).to_a.reverse
+        handle_container_invalidation(containers, &block)
+    end
+
+    def self.handle_container_invalidation(containers, &block)
+        if containers.empty?
+            yield
         else
-            v = values.shift
+            v = containers.shift
             v.handle_container_invalidation do
-                copy_with_invalidation(values, to, from)
+                handle_container_invalidation(containers, &block)
             end
         end
     end
