@@ -197,6 +197,12 @@ module Typelib
     # Proper copy of a value to another. +to+ and +from+ do not have to be from the
     # same registry, as long as the types can be casted into each other
     def self.copy(to, from)
+        if to.invalidated?
+            raise TypeError, "cannot copy, the target has been invalidated"
+        elsif from.invalidated?
+            raise TypeError, "cannot copy, the source has been invalidated"
+        end
+
         if to.respond_to?(:invalidate_changes_from_converted_types)
             to.invalidate_changes_from_converted_types
         end
