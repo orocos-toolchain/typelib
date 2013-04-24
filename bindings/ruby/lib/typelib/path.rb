@@ -17,6 +17,10 @@ module Typelib
             @elements   = elements.dup
         end
 
+        def size
+            elements.size
+        end
+
         def initialize_copy(old)
             super
             @elements = old.elements.dup
