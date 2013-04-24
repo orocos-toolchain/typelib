@@ -219,7 +219,7 @@ module Typelib
         # We now need to recursively find all containers in +from+, and make
         # sure they get proper invalidation support
         accessor = Accessor.find_in_type(value.class) { |t| t <= Typelib::ContainerType }
-        containers = accessor.each(value).to_a.reverse
+        containers = accessor.each(value).to_a
         handle_container_invalidation(containers, &block)
     end
 
@@ -227,7 +227,7 @@ module Typelib
         if containers.empty?
             yield
         else
-            v = containers.shift
+            v = containers.pop
             v.handle_container_invalidation do
                 handle_container_invalidation(containers, &block)
             end
