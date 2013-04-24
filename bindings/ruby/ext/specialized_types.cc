@@ -509,32 +509,21 @@ static VALUE container_do_get(VALUE self, VALUE index)
     return cxx2rb::value_wrap(v, registry, self);
 }
 
-struct ContainerIterator : public RubyGetter
+struct ContainerIterator : public ValueVisitor
 {
-    bool inside;
-
-    bool visit_(Value const& v, Container const& c)
-    { 
-        if (inside)
-            RubyGetter::visit_(v, c);
-        else
-            ValueVisitor::visit_(v, c);
-        return false;
-    }
+    VALUE m_registry;
+    VALUE m_parent;
 
     void apply(Value v, VALUE registry, VALUE parent)
     {
-        inside = false;
-        RubyGetter::apply(v, registry, parent);
+        m_registry = registry;
+        m_parent = parent;
+        ValueVisitor::apply(v);
     }
     virtual void dispatch(Value v)
     {
-        inside = true;
-        RubyGetter::dispatch(v);
-
-        VALUE result = m_value;
-        m_value = Qnil;
-        rb_yield(result);
+        ValueVisitor::dispatch(v);
+        rb_yield(cxx2rb::value_wrap(v, m_registry, m_parent));
     }
 };
 

@@ -100,6 +100,20 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         end
     end
 
+    def test_compound_raw_get
+        registry = CXXRegistry.new
+        registry.create_container '/std/vector', '/double'
+        type = registry.create_compound '/Test' do |c|
+            c.field = '/std/vector</double>'
+        end
+
+        value = type.new
+        value.field.push(0)
+        raw_value = value.field.raw_get(0)
+        assert_kind_of Typelib::NumericType, raw_value
+        assert_equal 0, Typelib.to_ruby(raw_value)
+    end
+
     def test_compound_field_raw_set_does_no_typelib_convertion
         subfield_t = compound_t[:compound]
 
@@ -264,7 +278,8 @@ class TC_SpecializedTypes < Test::Unit::TestCase
             array[i] = i
         end
         array.enum_for(:raw_each).each_with_index do |val, i|
-            assert_equal i, val
+            assert_kind_of Typelib::Type, val
+            assert_equal i, Typelib.to_ruby(val)
         end
     end
 
@@ -476,6 +491,27 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert(!value.dbl_vector.empty?)
         value.dbl_vector.clear
         assert(value.dbl_vector.empty?)
+    end
+
+    def test_container_raw_each
+        type = CXXRegistry.new.create_container '/std/vector', '/double'
+        value = type.new
+        10.times do |i|
+            value.push(i)
+        end
+        value.enum_for(:raw_each).each_with_index do |val, i|
+            assert_kind_of Typelib::Type, val
+            assert_equal i, Typelib.to_ruby(val)
+        end
+    end
+
+    def test_container_raw_get
+        type = CXXRegistry.new.create_container '/std/vector', '/double'
+        value = type.new
+        value.push(0)
+        raw_value = value.raw_get(0)
+        assert_kind_of Typelib::NumericType, raw_value
+        assert_equal 0, Typelib.to_ruby(raw_value)
     end
 
     def test_define_container
