@@ -514,15 +514,13 @@ struct ContainerIterator : public ValueVisitor
     VALUE m_registry;
     VALUE m_parent;
 
-    void apply(Value v, VALUE registry, VALUE parent)
+    ContainerIterator(VALUE registry, VALUE parent)
     {
         m_registry = registry;
         m_parent = parent;
-        ValueVisitor::apply(v);
     }
     virtual void dispatch(Value v)
     {
-        ValueVisitor::dispatch(v);
         rb_yield(cxx2rb::value_wrap(v, m_registry, m_parent));
     }
 };
@@ -537,8 +535,8 @@ static VALUE container_each(VALUE self)
 {
     Value value = rb2cxx::object<Value>(self);
     VALUE registry = value_get_registry(self);
-    ContainerIterator iterator;
-    iterator.apply(value, registry, self);
+    ContainerIterator iterator(registry, self);
+    dynamic_cast<Typelib::Container const&>(value.getType()).visit(value.getData(), iterator);
     return self;
 }
 
