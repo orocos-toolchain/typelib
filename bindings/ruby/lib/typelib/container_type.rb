@@ -213,7 +213,7 @@ module Typelib
         ensure
             if invalidated? 
                 # All children have been invalidated already by #invalidate
-            elsif (memory_id != self.contained_memory_id)
+            elsif memory_id && (memory_id != self.contained_memory_id)
                 Typelib.debug { "invalidating all elements in #{self}" }
                 invalidate_children
             elsif @elements.size > self.size
