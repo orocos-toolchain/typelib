@@ -597,7 +597,7 @@ static VALUE vector_contained_memory_id(VALUE self)
     std::vector<uint8_t> const* vector = reinterpret_cast<std::vector<uint8_t>*>(container_v.getData());
     if (vector->empty())
         return Qnil;
-    return ULL2NUM(reinterpret_cast<uint64_t>(&vector[0]));
+    return ULL2NUM(reinterpret_cast<uint64_t>(&(*vector)[0]));
 }
 
 /* 
