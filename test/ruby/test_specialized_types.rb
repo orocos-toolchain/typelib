@@ -514,6 +514,16 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal 0, Typelib.to_ruby(raw_value)
     end
 
+    def test_container_size
+        reg = make_registry
+        type = CXXRegistry.new.create_container "/std/vector", '/double'
+        value = type.new
+        assert_equal 0, value.size
+
+        value.push(0)
+        assert_equal 1, value.size
+    end
+
     def test_define_container
         reg = make_registry
         assert_raises(ArgumentError) { reg.define_container("/blabla") }
