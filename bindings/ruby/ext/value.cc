@@ -441,9 +441,8 @@ VALUE value_invalidate(VALUE self)
 #ifdef VERBOSE
     fprintf(stderr, "invalidating %llu, ptr=%p\n", NUM2ULL(rb_obj_id(self)), value.getData());
 #endif
-    // memory and Typelib::destroy are handled at the pointer level, not at the
-    // Type instance level. Do not memory_unref here !
     value = Value(0, value.getType());
+    rb_funcall(rb_iv_get(self, "@ptr"), rb_intern("invalidate"), 0);
     return Qnil;
 }
 

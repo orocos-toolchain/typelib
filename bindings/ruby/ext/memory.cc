@@ -12,6 +12,12 @@ using namespace std;
 using namespace typelib_ruby;
 
 static VALUE cMemoryZone;
+struct MemoryZone
+{
+    void* ptr;
+    MemoryZone(void* ptr)
+        : ptr(ptr) {}
+};
 static st_table* MemoryTable;
 
 /* For those who are wondering, st_data_t is always the size of an void*
@@ -100,17 +106,39 @@ memory_touch_all()
 
 }
 
+bool
+typelib_ruby::memory_ref(void *ptr)
+{
+#   ifdef VERBOSE
+    fprintf(stderr, "%p: ref\n", ptr);
+#   endif
+
+    MemoryTableEntry* entry = 0;
+    if (st_lookup(MemoryTable, (st_data_t)ptr, (st_data_t*)&entry))
+    {
+        ++(entry->refcount);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+static void
+memory_zone_unref(MemoryZone* ptr)
+{
+    // ptr->ptr is NULL if the zone has been invalidated
+    if (ptr->ptr)
+        memory_unref(ptr->ptr);
+}
+
 void
 typelib_ruby::memory_unref(void *ptr)
 {
 #   ifdef VERBOSE
     fprintf(stderr, "%p: unref\n", ptr);
 #   endif
-
-    // A NULL ptr can happen if the value has been invalidated. Just
-    // ignore.
-    if (!ptr)
-        return;
 
     MemoryTableEntry* entry = 0;
     if (!st_lookup(MemoryTable, (st_data_t)ptr, (st_data_t*)&entry))
@@ -185,14 +213,9 @@ memory_aset(void *ptr, VALUE obj, bool owned, void* root_ptr)
     if (ptr == root_ptr)
 	rb_raise(rb_eArgError, "pointer and root pointer are equal");
 
-    MemoryTableEntry* entry = 0;
-    if (st_lookup(MemoryTable, (st_data_t)ptr, (st_data_t*)&entry))
+    if (!memory_ref(ptr))
     {
-        ++(entry->refcount);
-    }
-    else
-    {
-        entry = new MemoryTableEntry(obj, owned, root_ptr);
+        MemoryTableEntry* entry = new MemoryTableEntry(obj, owned, root_ptr);
         st_insert(MemoryTable, (st_data_t)ptr, (st_data_t)entry);
 
         if (root_ptr)
@@ -213,12 +236,11 @@ typelib_ruby::memory_allocate(size_t size)
 #   endif
 
     void* ptr = malloc(size);
-    VALUE zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_unref, ptr);
 #   ifdef VERBOSE
     fprintf(stderr, "%p: new allocated zone of size %lu\n", ptr, size);
 #   endif
-    memory_aset(ptr, zone, true, 0);
-    return zone;
+
+    return memory_wrap(ptr, true, 0);
 }
 
 void
@@ -260,7 +282,7 @@ typelib_ruby::memory_wrap(void* ptr, bool take_ownership, void* root_ptr)
 	fprintf(stderr, "%p: wrapping new memory zone\n", ptr);
 #	endif
 
-        zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_unref, ptr);
+        zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_zone_unref, new MemoryZone(ptr));
 	memory_aset(ptr, zone, take_ownership, root_ptr);
     }
     else
@@ -276,10 +298,19 @@ typelib_ruby::memory_wrap(void* ptr, bool take_ownership, void* root_ptr)
 void*
 typelib_ruby::memory_cptr(VALUE ptr)
 {
-    void* cptr;
-    Data_Get_Struct(ptr, void, cptr);
+    MemoryZone* cptr;
+    Data_Get_Struct(ptr, MemoryZone, cptr);
+    return cptr->ptr;
+}
+
+static MemoryZone*
+memory_zone(VALUE ptr)
+{
+    MemoryZone* cptr;
+    Data_Get_Struct(ptr, MemoryZone, cptr);
     return cptr;
 }
+
 
 static VALUE
 memory_zone_address(VALUE self)
@@ -303,6 +334,19 @@ memory_zone_to_ptr(VALUE self)
     *reinterpret_cast<void**>(newptr) = ptr;
     rb_iv_set(result, "@pointed_to_memory", self);
     return result;
+}
+
+static VALUE
+memory_zone_invalidate(VALUE self)
+{
+    MemoryZone* cptr = memory_zone(self);
+#   ifdef VERBOSE
+    fprintf(stderr, "invalidating memory zone %p", cptr->ptr);
+#   endif
+    if (cptr->ptr)
+        memory_unref(cptr->ptr);
+    cptr->ptr = 0;
+    return Qnil;
 }
 
 static VALUE
@@ -333,6 +377,7 @@ void typelib_ruby::Typelib_init_memory()
     cMemoryZone = rb_define_class_under(mTypelib, "MemoryZone", rb_cObject);
     rb_define_method(cMemoryZone, "zone_address", RUBY_METHOD_FUNC(memory_zone_address), 0);
     rb_define_method(cMemoryZone, "to_ptr", RUBY_METHOD_FUNC(memory_zone_to_ptr), 0);
+    rb_define_method(cMemoryZone, "invalidate", RUBY_METHOD_FUNC(memory_zone_invalidate), 0);
     rb_define_singleton_method(cMemoryZone, "table_size", RUBY_METHOD_FUNC(memory_zone_table_size), 0);
 
     rb_define_method(rb_cString, "to_memory_ptr", RUBY_METHOD_FUNC(string_to_memory_ptr), 0);
