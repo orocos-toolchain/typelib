@@ -220,7 +220,54 @@ module Typelib
         def invalidated?
             @__typelib_invalidated
         end
-            
+
+        # Method that is used to track some important things when doing an
+        # operation (from C++) that can possibly change the memory allocated for
+        # this object
+        def allocating_operation
+            current_size = marshalling_size
+            handle_invalidation do
+                yield
+            end
+        ensure
+            if current_size
+                Typelib.add_allocated_memory([marshalling_size - current_size, 0].max)
+            end
+        end
+
+        # Computes the paths that will allow to enumerate all containers
+        # contained in values of this type
+        #
+        # It is mostly useful in Type#handle_invalidation
+        # 
+        # @return [Accessor]
+        def self.containers_accessor
+            @containers ||= Accessor.find_in_type(self.class) do |t|
+                t <= Typelib::ContainerType
+            end
+        end
+
+        # Handles invalidation of containers due to the provided block
+        def handle_invalidation(&block)
+            # We now need to recursively find all containers in +from+, and make
+            # sure they get proper invalidation support
+            accessor = self.class.containers_accessor
+            containers = accessor.each(self).to_a
+            handle_invalidation_protect_containers(containers, &block)
+        end
+
+        # Helper method for #handle_invalidation.
+        def handle_invalidation_protect_containers(containers, &block)
+            if containers.empty?
+                yield
+            else
+                v = containers.pop
+                v.handle_container_invalidation do
+                    handle_container_invalidation(containers, &block)
+                end
+            end
+        end
+
         class << self
 	    # The Typelib::Registry this type belongs to
             attr_reader :registry
@@ -353,7 +400,11 @@ module Typelib
                 elsif !(ptr.kind_of?(String) || ptr.kind_of?(MemoryZone))
                     raise ArgumentError, "can only wrap strings and memory zones"
 		end
-	       	__real_new__(ptr) 
+                new_value = __real_new__(ptr) 
+                if size = new_value.marshalling_size
+                    Typelib.add_allocated_memory(size)
+                end
+                new_value
 	    end
 
             # Creates a new value of the given type.

@@ -467,7 +467,9 @@ static
 VALUE value_marshalling_size(VALUE self)
 {
     Value& value = rb2cxx::object<Value>(self);
-    return INT2NUM(Typelib::getDumpSize(value));
+    try { return INT2NUM(Typelib::getDumpSize(value)); }
+    catch(Typelib::NoLayout)
+    { return Qnil; }
 }
 
 VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)

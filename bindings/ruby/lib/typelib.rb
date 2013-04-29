@@ -191,11 +191,10 @@ module Typelib
         end
     end
 
-    # call-seq:
-    #  Typelib.copy(to, from) => to
-    # 
     # Proper copy of a value to another. +to+ and +from+ do not have to be from the
     # same registry, as long as the types can be casted into each other
+    #
+    # @return [Type] the target value
     def self.copy(to, from)
         if to.invalidated?
             raise TypeError, "cannot copy, the target has been invalidated"
@@ -210,27 +209,8 @@ module Typelib
             from.apply_changes_from_converted_types
         end
 
-        handle_invalidation(to) do
+        to.allocating_operation do
             do_copy(to, from)
-        end
-    end
-
-    def self.handle_invalidation(value, &block)
-        # We now need to recursively find all containers in +from+, and make
-        # sure they get proper invalidation support
-        accessor = Accessor.find_in_type(value.class) { |t| t <= Typelib::ContainerType }
-        containers = accessor.each(value).to_a
-        handle_container_invalidation(containers, &block)
-    end
-
-    def self.handle_container_invalidation(containers, &block)
-        if containers.empty?
-            yield
-        else
-            v = containers.pop
-            v.handle_container_invalidation do
-                handle_container_invalidation(containers, &block)
-            end
         end
     end
 
@@ -269,6 +249,35 @@ module Typelib
 
         converted
     end
+
+    class << self
+        # Count of the memory allocated because of the containers
+        #
+        # @return [Integer] the allocated memory in bytes
+        attr_accessor :allocated_memory
+
+        # Value of {allocated_memory} the last time the garbage collector got
+        # started because of typelib
+        attr_reader :last_allocated_memory
+
+        # Threshold of the memory allocated by Typelib that should trigger a
+        # call to the garbage collector
+        #
+        # @return [Integer] the threshold in bytes
+        attr_accessor :allocated_memory_threshold
+
+        # Registers some memory allocated by typelib
+        def add_allocated_memory(count)
+            self.allocated_memory += count
+            if (allocated_memory - last_allocated_memory) > allocated_memory_threshold
+                GC.start
+                @last_allocated_memory = allocated_memory
+            end
+        end
+    end
+    @allocated_memory = 0
+    @last_allocated_memory = 0
+    @allocated_memory_threshold = 50 * 1024 ** 2
 
     # A raw, untyped, memory zone
     class MemoryZone

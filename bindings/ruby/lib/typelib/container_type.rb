@@ -230,7 +230,7 @@ module Typelib
             # NOTE: no need to care about convertions to ruby here, as -- when
             # the elements require a convertion to ruby -- we convert the whole
             # container to Array
-            handle_container_invalidation do
+            allocating_operation do
                 for v in array
                     do_push(Typelib.from_ruby(v, element_t))
                 end

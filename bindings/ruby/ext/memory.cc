@@ -188,7 +188,7 @@ typelib_ruby::memory_delete(void *ptr)
 #   ifdef VERBOSE
     fprintf(stderr, "%p: deallocated\n", ptr);
 #   endif
-    free(ptr);
+    ruby_xfree(ptr);
 }
 
 static VALUE
@@ -235,7 +235,7 @@ typelib_ruby::memory_allocate(size_t size)
     memory_touch_all();
 #   endif
 
-    void* ptr = malloc(size);
+    void* ptr = ruby_xmalloc(size);
 #   ifdef VERBOSE
     fprintf(stderr, "%p: new allocated zone of size %lu\n", ptr, size);
 #   endif
