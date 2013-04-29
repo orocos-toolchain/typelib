@@ -386,6 +386,26 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert(!(e_modified.casts_to?(e_type)))
     end
 
+    def test_enum_to_ruby
+        registry = make_registry
+        e_type = registry.get("EContainer")
+        e = e_type.new
+        e.value = 0
+        enum = e.raw_get('value')
+        assert_kind_of Typelib::EnumType, enum
+        sym = Typelib.to_ruby(enum)
+        assert_kind_of Symbol, sym
+        assert_equal :E_FIRST, sym
+    end
+
+    def test_enum_from_ruby
+        registry = make_registry
+        e_type = registry.get("EContainer")['value']
+        enum = Typelib.from_ruby(:E_FIRST, e_type)
+        assert_kind_of Typelib::EnumType, enum
+        assert_equal :E_FIRST, Typelib.to_ruby(enum)
+    end
+
     def test_numeric
 	long = make_registry.get("/int")
 	assert(long < NumericType)
@@ -407,6 +427,22 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 	assert_equal(8, double.size)
 	assert(!double.integer?)
 	assert_raises(ArgumentError) { double.unsigned? }
+    end
+
+    def test_numeric_to_ruby
+	long = make_registry.get("/int")
+        v = long.new
+        v.zero!
+        zero = Typelib.to_ruby(v)
+        assert_kind_of Numeric, zero
+        assert_equal 0, zero
+    end
+
+    def test_numeric_from_ruby
+	long = make_registry.get("/int")
+        zero = Typelib.from_ruby(0, long)
+        assert_kind_of Typelib::NumericType, zero
+        assert_equal 0, Typelib.to_ruby(zero)
     end
 
     def test_string_handling
