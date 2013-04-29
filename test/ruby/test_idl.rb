@@ -9,15 +9,15 @@ class TC_IDL < Test::Unit::TestCase
 	test_file = File.join(SRCDIR, "data", "test_idl.h")
 
         registry = Registry.new
-        registry.import( test_file, "c", :define => 'IDL_POINTER_ALIAS' )
+        registry.import( test_file, "c", :define => ['IDL_POINTER_ALIAS'] )
 	assert_raises(RuntimeError) { registry.export("idl") }
 
         registry = Registry.new
-        registry.import( test_file, "c", :define => 'IDL_POINTER_IN_STRUCT' )
+        registry.import( test_file, "c", :define => ['IDL_POINTER_IN_STRUCT'] )
 	assert_raises(RuntimeError) { registry.export("idl") }
 
         registry = Registry.new
-        registry.import( test_file, "c", :define => 'IDL_MULTI_ARRAY' )
+        registry.import( test_file, "c", :define => ['IDL_MULTI_ARRAY'] )
 	assert_raises(RuntimeError) { registry.export("idl") }
     end
 
