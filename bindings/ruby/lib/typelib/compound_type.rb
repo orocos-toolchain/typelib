@@ -237,6 +237,9 @@ module Typelib
             def subclass_initialize
                 @field_types = Hash.new
                 @fields = get_fields.map! do |name, offset, type|
+                    if name.respond_to?(:force_encoding)
+                        name.force_encoding('ASCII')
+                    end
                     field_types[name] = type
                     field_types[name.to_sym] = type
                     [name, type]
