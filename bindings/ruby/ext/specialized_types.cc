@@ -602,12 +602,12 @@ static VALUE vector_contained_memory_id(VALUE self)
 
 /* 
  * call-seq:
- *   value.to_ruby	=> non-Typelib object or self
+ *   to_ruby(value)	=> non-Typelib object or self
  *
  * Converts +self+ to its Ruby equivalent. If no equivalent
  * type is available, returns self
  */
-static VALUE numeric_to_ruby(VALUE self)
+static VALUE numeric_to_ruby(VALUE mod, VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));
     VALUE registry = value_get_registry(self);
@@ -668,7 +668,7 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_singleton_method(cNumeric, "integer?", RUBY_METHOD_FUNC(numeric_type_integer_p), 0);
     rb_define_singleton_method(cNumeric, "unsigned?", RUBY_METHOD_FUNC(numeric_type_unsigned_p), 0);
     rb_define_singleton_method(cNumeric, "size", RUBY_METHOD_FUNC(numeric_type_size), 0);
-    rb_define_method(cNumeric, "typelib_to_ruby",      RUBY_METHOD_FUNC(&numeric_to_ruby), 0);
+    rb_define_singleton_method(cNumeric, "to_ruby", RUBY_METHOD_FUNC(&numeric_to_ruby), 1);
     rb_define_method(cNumeric, "typelib_from_ruby", RUBY_METHOD_FUNC(&numeric_from_ruby), 1);
 
     cOpaque    = rb_define_class_under(mTypelib, "OpaqueType", cType);
@@ -690,7 +690,7 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_singleton_method(cEnum, "keys", RUBY_METHOD_FUNC(enum_keys), 0);
     rb_define_singleton_method(cEnum, "value_of",      RUBY_METHOD_FUNC(enum_value_of), 1);
     rb_define_singleton_method(cEnum, "name_of",      RUBY_METHOD_FUNC(enum_name_of), 1);
-    rb_define_method(cEnum, "typelib_to_ruby",      RUBY_METHOD_FUNC(&numeric_to_ruby), 0);
+    rb_define_singleton_method(cEnum, "to_ruby",      RUBY_METHOD_FUNC(&numeric_to_ruby), 1);
     rb_define_method(cEnum, "typelib_from_ruby",    RUBY_METHOD_FUNC(&numeric_from_ruby), 1);
 
     cArray    = rb_define_class_under(mTypelib, "ArrayType", cIndirect);

@@ -189,7 +189,6 @@ module Typelib
         module Invalidate
             def to_memory_ptr; raise TypeError, "invalidated object" end
             def to_ruby; raise TypeError, "invalidated object" end
-            def typelib_to_ruby; raise TypeError, "invalidated object" end
             def to_byte_array; raise TypeError, "invalidated object" end
         end
 

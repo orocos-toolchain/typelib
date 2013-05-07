@@ -16,9 +16,9 @@ module Typelib
             result
         end
 
-        def typelib_to_ruby
-            if null? then nil
-            else self
+        def self.to_ruby(value)
+            if value.null? then nil
+            else value
             end
         end
     end

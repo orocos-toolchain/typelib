@@ -174,21 +174,17 @@ require 'typelib/standard_convertions'
 require 'typelib/path'
 require 'typelib/accessor'
 
+class Class
+    def to_ruby(value)
+        value
+    end
+end
+
 module Typelib
     # Generic method that converts a Typelib value into the corresponding Ruby
     # value.
     def self.to_ruby(value, original_type = nil)
-        if value.respond_to?(:typelib_to_ruby)
-            value = value.typelib_to_ruby
-        end
-
-        if (t = (original_type || value.class)).respond_to?(:to_ruby)
-            # This allows to override Typelib's internal type convertion (mainly
-            # for numerical types).
-            t.to_ruby(value)
-        else
-            value
-        end
+        (original_type || value.class).to_ruby(value)
     end
 
     # Proper copy of a value to another. +to+ and +from+ do not have to be from the
