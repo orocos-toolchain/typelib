@@ -147,14 +147,14 @@ module Typelib
 
             def raw_each
                 return enum_for(:raw_each) if !block_given?
-                size.times do |idx|
+                for idx in 0...size
                     yield(raw_get_no_boundary_check(idx))
                 end
             end
 
             def each
                 return enum_for(:each) if !block_given?
-                size.times do |idx|
+                for idx in 0...size
                     yield(get_no_boundary_check(idx))
                 end
             end
@@ -254,21 +254,26 @@ module Typelib
         def raw_each
             return enum_for(:raw_each) if !block_given?
 
-            enum_for(:do_each, true).each_with_index do |el, idx|
+            idx = 0
+            do_each(true) do |el|
                 yield(@elements[idx] ||= el)
+                idx += 1
             end
         end
 
         # Enumerates the elements of this container
         def each
             return enum_for(:each) if !block_given?
-            enum_for(:do_each, false).each_with_index do |el, idx|
+
+            idx = 0
+            do_each(false) do |el|
                 if el.kind_of?(Typelib::Type)
                     el = (@elements[idx] ||= el)
                     el = Typelib.to_ruby(el, element_t)
                 end
 
                 yield(el)
+                idx += 1
             end
         end
 
