@@ -40,7 +40,7 @@ static VALUE compound_get_fields(VALUE self)
 }
 
 /* Helper function for CompoundType#[] */
-static VALUE compound_field_get(VALUE rbvalue, VALUE name)
+static VALUE compound_field_get(VALUE rbvalue, VALUE name, VALUE raw)
 { 
     VALUE registry = value_get_registry(rbvalue);
     Value value = rb2cxx::object<Value>(rbvalue);
@@ -49,7 +49,9 @@ static VALUE compound_field_get(VALUE rbvalue, VALUE name)
 
     try { 
         Value field_value = value_get_field(value, StringValuePtr(name));
-	return cxx2rb::value_wrap(field_value, registry, rbvalue);
+        if (RTEST(raw))
+            return cxx2rb::value_wrap(field_value, registry, rbvalue);
+        else return typelib_to_ruby(field_value, registry, rbvalue);
     } 
     catch(FieldNotFound)
     { rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name)); } 
@@ -499,29 +501,36 @@ static VALUE container_do_set(VALUE self, VALUE index, VALUE obj)
     return self;
 }
 
-static VALUE container_do_get(VALUE self, VALUE index)
+static VALUE container_do_get(VALUE self, VALUE index, VALUE raw)
 {
     Value container_v = rb2cxx::object<Value>(self);
     Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
     VALUE registry = value_get_registry(self);
 
     Value v = container_t.getElement(container_v.getData(), NUM2INT(index));
-    return cxx2rb::value_wrap(v, registry, self);
+    if (RTEST(raw))
+        return cxx2rb::value_wrap(v, registry, self);
+    else return typelib_to_ruby(v, registry, self);
 }
 
 struct ContainerIterator : public ValueVisitor
 {
     VALUE m_registry;
     VALUE m_parent;
+    bool m_raw;
 
-    ContainerIterator(VALUE registry, VALUE parent)
+    ContainerIterator(VALUE registry, VALUE parent, bool raw)
     {
         m_registry = registry;
         m_parent = parent;
+        m_raw = raw;
     }
     virtual void dispatch(Value v)
     {
-        rb_yield(cxx2rb::value_wrap(v, m_registry, m_parent));
+        if (m_raw)
+            rb_yield(cxx2rb::value_wrap(v, m_registry, m_parent));
+        else
+            rb_yield(typelib_to_ruby(v, m_registry, m_parent));
     }
 };
 
@@ -531,11 +540,11 @@ struct ContainerIterator : public ValueVisitor
  *
  * Iterates on the elements of the container
  */
-static VALUE container_each(VALUE self)
+static VALUE container_each(VALUE self, VALUE raw)
 {
     Value value = rb2cxx::object<Value>(self);
     VALUE registry = value_get_registry(self);
-    ContainerIterator iterator(registry, self);
+    ContainerIterator iterator(registry, self, RTEST(raw));
     dynamic_cast<Typelib::Container const&>(value.getType()).visit(value.getData(), iterator);
     return self;
 }
@@ -683,7 +692,7 @@ void typelib_ruby::Typelib_init_specialized_types()
     
     cCompound = rb_define_class_under(mTypelib, "CompoundType", cType);
     rb_define_singleton_method(cCompound, "get_fields",   RUBY_METHOD_FUNC(compound_get_fields), 0);
-    rb_define_method(cCompound, "typelib_get_field", RUBY_METHOD_FUNC(compound_field_get), 1);
+    rb_define_method(cCompound, "typelib_get_field", RUBY_METHOD_FUNC(compound_field_get), 2);
     rb_define_method(cCompound, "typelib_set_field", RUBY_METHOD_FUNC(compound_field_set), 2);
 
     cEnum = rb_define_class_under(mTypelib, "EnumType", cType);
@@ -708,9 +717,9 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_method(cContainer, "size",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "do_clear",    RUBY_METHOD_FUNC(container_clear), 0);
     rb_define_method(cContainer, "do_push",    RUBY_METHOD_FUNC(container_do_push), 1);
-    rb_define_method(cContainer, "do_get",    RUBY_METHOD_FUNC(container_do_get), 1);
+    rb_define_method(cContainer, "do_get",    RUBY_METHOD_FUNC(container_do_get), 2);
     rb_define_method(cContainer, "do_set",    RUBY_METHOD_FUNC(container_do_set), 2);
-    rb_define_method(cContainer, "do_each",      RUBY_METHOD_FUNC(container_each), 0);
+    rb_define_method(cContainer, "do_each",      RUBY_METHOD_FUNC(container_each), 1);
     rb_define_method(cContainer, "do_erase",     RUBY_METHOD_FUNC(container_erase), 1);
     rb_define_method(cContainer, "do_delete_if", RUBY_METHOD_FUNC(container_delete_if), 0);
 

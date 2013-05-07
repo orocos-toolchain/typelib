@@ -361,20 +361,29 @@ module Typelib
 
 	# Returns the value of the field +name+
         def get_field(name)
-            if !has_field?(name)
-                raise ArgumentError, "#{self.class.name} has no field called #{name}"
-            end
-
-            value = raw_get_field(name.to_s)
-            Typelib.to_ruby(value, @field_types[name])
+            get(name)
 	end
 
         def raw_get_field(name)
             raw_get(name)
         end
 
+
+        def get(name)
+            if @fields[name]
+                Typelib.to_ruby(@fields[name], @field_types[name])
+            else
+                value = typelib_get_field(name.to_s, false)
+                if value.kind_of?(Typelib::Type)
+                    @fields[name] = value
+                    Typelib.to_ruby(value, @field_types[name])
+                else value
+                end
+            end
+        end
+
         def raw_get(name)
-            @fields[name] ||= typelib_get_field(name)
+            @fields[name] ||= typelib_get_field(name, true)
         end
 
         def raw_set_field(name, value)
