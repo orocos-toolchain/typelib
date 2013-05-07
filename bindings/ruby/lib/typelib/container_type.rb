@@ -173,6 +173,16 @@ module Typelib
                 t
             end
         end
+        
+        class DeepCopyArray < Array
+            def dup
+                result = DeepCopyArray.new
+                for v in self
+                    result << v
+                end
+                result
+            end
+        end
 
         def self.extend_for_custom_convertions
             if deference.contains_converted_types?
@@ -188,11 +198,11 @@ module Typelib
                 # type (i.e. that reference this type by name)
                 convert_to_ruby Array do |value|
                     # Convertion is done by #map
-                    converted = value.map { |v| v }
-                    def converted.dup
-                        map(&:dup)
+                    result = DeepCopyArray.new
+                    for v in value
+                        result << v
                     end
-                    converted
+                    result
                 end
             end
 
