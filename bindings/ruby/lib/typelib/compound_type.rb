@@ -132,13 +132,13 @@ module Typelib
 
         def raw_each_field
             self.class.each_field do |field_name, _|
-                yield(field_name, raw_get_field(field_name))
+                yield(field_name, raw_get(field_name))
             end
         end
 
         def each_field
             self.class.each_field do |field_name, _|
-                yield(field_name, get_field(field_name))
+                yield(field_name, get(field_name))
             end
         end
 
@@ -171,7 +171,7 @@ module Typelib
                                 if !v.nil?
                                     v
                                 else
-                                    v = get_field(field_name)
+                                    v = get(field_name)
                                     instance_variable_set(attr_name, v)
                                 end
                             end
@@ -218,14 +218,14 @@ module Typelib
                 @@access_method_modules[[full_fields_names, converted_field_names]] ||=
                     Module.new do
                         full_fields_names.each do |name|
-                            define_method(name) { get_field(name) }
-                            define_method("#{name}=") { |value| set_field(name, value) }
-                            define_method("raw_#{name}") { raw_get_field(name) }
-                            define_method("raw_#{name}=") { |value| raw_set_field(name, value) }
+                            define_method(name) { get(name) }
+                            define_method("#{name}=") { |value| set(name, value) }
+                            define_method("raw_#{name}") { raw_get(name) }
+                            define_method("raw_#{name}=") { |value| raw_set(name, value) }
                         end
                         converted_field_names.each do |name|
-                            define_method("raw_#{name}") { raw_get_field(name) }
-                            define_method("raw_#{name}=") { |value| raw_set_field(name, value) }
+                            define_method("raw_#{name}") { raw_get(name) }
+                            define_method("raw_#{name}=") { |value| raw_set(name, value) }
                         end
                     end
             end
@@ -356,7 +356,7 @@ module Typelib
         end
 
         def [](name)
-            get_field(name)
+            get(name)
         end
 
 	# Returns the value of the field +name+
@@ -408,14 +408,18 @@ module Typelib
 	    end
         end
 
+        def set_field(name, value)
+            set(name, value)
+        end
+
         def []=(name, value)
-            set_field(name, value)
+            set(name, value)
         end
 
         # Sets the value of the field +name+. If +value+ is a hash, we expect
         # that the field is a compound type and initialize it using the keys of
         # +value+ as field names
-        def set_field(name, value)
+        def set(name, value)
             if !has_field?(name)
                 raise ArgumentError, "#{self.class.name} has no field called #{name}"
             end
