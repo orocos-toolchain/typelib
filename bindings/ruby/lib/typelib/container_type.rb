@@ -159,6 +159,16 @@ module Typelib
                 end
             end
         end
+        
+        class DeepCopyArray < Array
+            def dup
+                result = DeepCopyArray.new
+                for v in self
+                    result << v
+                end
+                result
+            end
+        end
 
         def self.subclass_initialize
             super if defined? super
@@ -172,15 +182,10 @@ module Typelib
                 t.concat(value)
                 t
             end
-        end
-        
-        class DeepCopyArray < Array
-            def dup
-                result = DeepCopyArray.new
-                for v in self
-                    result << v
-                end
-                result
+            convert_from_ruby DeepCopyArray do |value, expected_type|
+                t = expected_type.new
+                t.concat(value)
+                t
             end
         end
 
