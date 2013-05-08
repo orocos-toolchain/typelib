@@ -3,6 +3,7 @@ module Typelib
     reg = Registry.new(false)
     Registry.add_standard_cxx_types(reg)
     CHAR_T = reg.get('/char')
+    INT_BOOL_T = reg.get("/int#{reg.get('/bool').size * 8}_t")
 
     convert_from_ruby TrueClass, '/bool' do |value, typelib_type|
         Typelib.from_ruby(1, typelib_type)
@@ -11,7 +12,7 @@ module Typelib
         Typelib.from_ruby(0, typelib_type)
     end
     convert_to_ruby '/bool' do |value|
-        value != 0
+        Typelib.to_ruby(value, INT_BOOL_T) != 0
     end
 
     convert_from_ruby String, '/std/string' do |value, typelib_type|
