@@ -203,12 +203,6 @@ static VALUE typelib_do_split_name(VALUE mod, VALUE name)
  */
 static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 { 
-    if (TYPE(rbself) != T_DATA)
-    {
-        // This is a toplevel type class
-        return rbself == rbwith ? Qtrue : Qfalse;
-    }
-
     if (! rb_respond_to(rbwith, rb_intern("superclass")))
 	return Qfalse;
     if (rb_funcall(rbself, rb_intern("superclass"), 0) != rb_funcall(rbwith, rb_intern("superclass"), 0))
