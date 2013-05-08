@@ -179,11 +179,11 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     def test_compound_access_methods_call_base_setters_and_getters
         value = compound_t.new
 
-        flexmock(value).should_receive(:set_field).
+        flexmock(value).should_receive(:set).
             with('plain', 10).once.ordered.and_return
         flexmock(value).should_receive(:raw_set).
             with('plain', 10).once.ordered.and_return
-        flexmock(value).should_receive(:get_field).
+        flexmock(value).should_receive(:get).
             with('plain').once.ordered.and_return(20)
         flexmock(value).should_receive(:raw_get).
             with('plain').once.ordered.and_return(20)
