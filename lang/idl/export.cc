@@ -350,6 +350,9 @@ namespace
 
     bool IDLExportVisitor::visit_(Container const& type)
     {
+        if (type.getName() == "/std/string")
+            return true;
+                
         // sequence<> can be used as-is, but in order to be as cross-ORB
         // compatible as possible we generate sequence typedefs and use them in
         // the compounds. Emit the sequence right now.
@@ -541,7 +544,7 @@ bool IDLExport::save
 		    << getIDLAbsolute(array_t.getIndirection())
 		    << " " << type.getBasename() << "[" << array_t.getDimension() << "];";
 	    }
-            else if (type->getCategory() == Type::Container)
+            else if (type->getCategory() == Type::Container && type->getName() != "/std/string")
             {
                 // Generate a sequence, regardless of the actual container type
                 Container const& container_t = dynamic_cast<Container const&>(*type);
