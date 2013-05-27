@@ -48,7 +48,7 @@ PluginManager::PluginManager()
     directory_iterator end_it;
     for (directory_iterator it(plugin_dir); it != end_it; ++it)
     {
-        if (it->path().extension() == ".so")
+        if (it->path().extension() == ".so" || it->path().extension() == ".dylib")
 #if BOOST_VERSION >= 104600
             loadPlugin(it->path().string());
 #else
