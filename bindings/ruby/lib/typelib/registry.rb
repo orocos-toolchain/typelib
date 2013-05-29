@@ -237,7 +237,19 @@ module Typelib
                         if override
                             mod.const_set(basename, exported_type)
                         elsif !(existing_type <= exported_type)
-                            raise InconsistentTypeExport.new("#{mod.name}::#{basename}", existing_type, exported_type), "there is a type registered at #{mod.name}::#{basename} which differs from the one in the registry, and override is false"
+                            if existing_type.class == Module
+                                # The current value is a namespace, the new a
+                                # type. We probably loaded a nested definition
+                                # first and then the parent type. Migrate one to
+                                # the other
+                                mod.const_set(basename, exported_type)
+                                setup_type_export_module(exported_type)
+                                existing_type.exported_types.each do |name, type|
+                                    exported_type.const_set(name, type)
+                                end
+                            else
+                                raise InconsistentTypeExport.new("#{mod.name}::#{basename}", existing_type, exported_type), "there is a type registered at #{mod.name}::#{basename} which differs from the one in the registry, and override is false"
+                            end
                         end
                     else
                         mod.exported_types[basename] = type
