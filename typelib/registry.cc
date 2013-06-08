@@ -178,6 +178,17 @@ namespace Typelib
         copySourceIDs(registry);
     }
 
+    void Registry::mergeMetaData(Registry const& registry)
+    {
+        for (Iterator it = begin(); it != end(); ++it)
+        {
+            RegistryIterator other_it = registry.find(it.getName());
+            if (other_it == registry.end())
+                continue;
+            it->mergeMetaData(*other_it);
+        }
+    }
+
     void Registry::copySourceIDs(Registry const& registry)
     {
         for (Iterator it = begin(); it != end(); ++it)

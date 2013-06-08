@@ -260,6 +260,10 @@ namespace Typelib
 	/** Merges the content of \c registry into this object */
 	void merge(Registry const& registry);
 
+        /** Merge the metadata information contained in a registry into this one
+         */
+	void mergeMetaData(Registry const& registry);
+
         /** Modifies the size of a subset of the types, and propagate this size
          * change to the other types
          */
