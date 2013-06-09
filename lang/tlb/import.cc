@@ -69,8 +69,8 @@ namespace
             string key = getAttribute<string>(xml, "key");
             string value;
             // Look at a child CDATA block
-            xmlNodePtr cdata = xmlFirstElementChild(xml);
-            for(; cdata; cdata=xmlNextElementSibling(cdata))
+            xmlNodePtr cdata = xml->children;
+            for(; cdata; cdata=cdata->next)
             {
                 if (cdata->type == XML_CDATA_SECTION_NODE)
                 {
@@ -225,7 +225,7 @@ namespace
     Type const* load_enum(TypeNode const& node, Factory& factory)
     { 
         Enum* type = new Enum(node.name);
-        for(xmlNodePtr xml = node.xml->xmlChildrenNode; xml; xml=xml->next)
+        for(xmlNodePtr xml = xmlFirstElementChild(node.xml); xml; xml=xmlNextElementSibling(xml))
         {
             if (xmlStrcmp(xml->name, reinterpret_cast<const xmlChar*>("value")))
                 continue;
@@ -252,7 +252,7 @@ namespace
         Compound* compound = new Compound(node.name);
         size_t size = getAttribute<size_t>(node.xml, "size");
 
-        for(xmlNodePtr xml = node.xml->xmlChildrenNode; xml; xml=xml->next)
+        for(xmlNodePtr xml = xmlFirstElementChild(node.xml); xml; xml=xmlNextElementSibling(xml))
         {
             if (xmlStrcmp(xml->name, reinterpret_cast<const xmlChar*>("field")))
                 continue;
