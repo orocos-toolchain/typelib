@@ -653,7 +653,10 @@ namespace Typelib
     {
         TypeMap::iterator it = m_global.find(type.getName());
         if (it != m_global.end())
+        {
             it->second.source_id = source_id;
+            type.getMetaData().set("source_id", source_id);
+        }
     }
 }; // namespace Typelib
 
