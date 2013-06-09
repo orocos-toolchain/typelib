@@ -336,9 +336,9 @@ namespace Typelib
         return true;
     }
 
-    void Compound::addField(const std::string& name, Type const& type, size_t offset) 
-    { addField( Field(name, type), offset ); }
-    void Compound::addField(Field const& field, size_t offset)
+    Field const& Compound::addField(const std::string& name, Type const& type, size_t offset) 
+    { return addField( Field(name, type), offset ); }
+    Field const& Compound::addField(Field const& field, size_t offset)
     {
         m_fields.push_back(field);
         m_fields.back().setOffset(offset);
@@ -346,6 +346,7 @@ namespace Typelib
 	size_t new_size = offset + field.getType().getSize();
 	if (old_size < new_size)
 	    setSize(new_size);
+        return m_fields.back();
     }
     Type* Compound::do_merge(Registry& registry, RecursionStack& stack) const
     {

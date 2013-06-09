@@ -395,9 +395,9 @@ namespace Typelib
 	 * @return 0 if there is no @name field, or the Field object */
         Field const*      getField(const std::string& name) const;
 	/** Add a new field */
-        void              addField(const Field& field, size_t offset);
+        Field const&      addField(const Field& field, size_t offset);
 	/** Add a new field */
-        void              addField(const std::string& name, const Type& type, size_t offset);
+        Field const&      addField(const std::string& name, const Type& type, size_t offset);
 
         /** Returns the number of bytes that are unused at the end of the
          * compound */
