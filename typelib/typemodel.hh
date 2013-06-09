@@ -20,10 +20,15 @@ namespace Typelib
     {
     public:
         typedef std::set<std::string> Values;
-    private:
         typedef std::map<std::string, Values> Map;
+    private:
         Map m_values;
     public:
+
+        /** Returns the key => values map for all values stored in this metadata
+         * object
+         */
+        Map const& get() const;
 
         /** Sets the metadata value for the given key to the given value,
          * removing all previously known value(s) for that key
@@ -84,6 +89,8 @@ namespace Typelib
 	/** Checks that @c identifier is a valid type name */
         static bool isValidIdentifier(const std::string& identifier);
 
+        Type& operator = (Type const& type);
+
     protected:
 
         // Creates a basic type from \c name, \c size and \c category
@@ -91,6 +98,7 @@ namespace Typelib
 
     public:
         virtual ~Type();
+        Type(Type const& type);
 
         /** Changes the type name. Never use once the type has been added to a
          * registry */
@@ -346,11 +354,14 @@ namespace Typelib
         size_t m_offset;
         MetaData* m_metadata;
 
+    private:
+        Field& operator = (Field const& field);
     protected:
         void setOffset(size_t offset);
 
     public:
         Field(const std::string& name, Type const& base_type);
+        Field(Field const& field);
         ~Field();
 
 	/** The field name */

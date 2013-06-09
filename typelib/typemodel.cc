@@ -27,6 +27,14 @@ namespace Typelib
         setName(name);
     }
 
+    Type::Type(Type const& type)
+        : m_name(type.m_name)
+        , m_size(type.m_size)
+        , m_category(type.m_category)
+        , m_metadata(new MetaData(*type.m_metadata))
+    {
+    }
+
     Type::~Type()
     {
         delete m_metadata;
@@ -170,6 +178,11 @@ namespace Typelib
     void Type::mergeMetaData(Type const& other) const
     {
         m_metadata->merge(other.getMetaData());
+    }
+
+    MetaData::Map const& MetaData::get() const
+    {
+        return m_values;
     }
 
     MetaData::Values MetaData::get(std::string const& key) const
@@ -600,6 +613,13 @@ namespace Typelib
     Field::~Field()
     {
         delete m_metadata;
+    }
+    Field::Field(Field const& field)
+        : m_name(field.m_name)
+        , m_type(field.m_type)
+        , m_offset(field.m_offset)
+        , m_metadata(new MetaData(*field.m_metadata))
+    {
     }
 
     std::string Field::getName() const { return m_name; }
