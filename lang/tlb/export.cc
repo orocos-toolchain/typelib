@@ -77,7 +77,7 @@ namespace
             std::string key = it->first;
             MetaData::Values values = it->second;
             for (MetaData::Values::const_iterator it_value = values.begin(); it_value != values.end(); ++it_value)
-                stream << "<metadata key=\"" << key << "\">" << xmlEscape(*it_value) << "</metadata>\n";
+                stream << "<metadata key=\"" << key << "\"><![CDATA[" << *it_value << "]]></metadata>\n";
         }
         return stream.str();
     }
