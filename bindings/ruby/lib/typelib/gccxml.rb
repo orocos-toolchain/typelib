@@ -278,13 +278,15 @@ module Typelib
             type_names[xmlnode['id']] = "#{spec.join(" ")} #{resolve_type_id(xml, xmlnode['type'])}"
         end
 
+        def source_file_for(xmlnode)
+            id_to_file[xmlnode["id"].to_s] ||= id_to_node[xmlnode['file']]['name']
+        end
+
         def set_source_file(type, xmlnode)
-            id   = xmlnode['id']
-            file = id_to_file[id]
-            if !file
-                binding.pry
-                raise ArgumentError, "not type registered with ID #{id}"
-            elsif line = xmlnode["line"]
+            file = source_file_for(xmlnode)
+            return if !file
+
+            if line = xmlnode["line"]
                 type.metadata.add('source_file_line', file + ":" + line)
             else
                 type.metadata.add('source_file_line', file)
@@ -388,17 +390,22 @@ module Typelib
                         if field['access'] != 'public'
                             return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is private")
                         elsif field_type_name = resolve_type_id(xml, field['type'])
-                            [field['name'], field_type_name, Integer(field['offset']) / 8]
+                            [field['name'], field_type_name, Integer(field['offset']) / 8, field['line']]
                         else
                             return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is of the ignored type #{type_names[field['type']]}")
                         end
                     end
                     type = registry.create_compound(name, Integer(xmlnode['size']) / 8) do |c|
-                        field_defs.each do |name, type, offset|
+                        field_defs.each do |name, type, offset, line|
                             c.add(name, type, offset)
                         end
                     end
                     set_source_file(type, xmlnode)
+                    if file = source_file_for(xmlnode)
+                        field_defs.each do |name, _, _, line|
+                            type.field_metadata[name].set('source_file_line', "#{file}:#{line}")
+                        end
+                    end
                 end
             elsif kind == "FundamentalType"
             elsif kind == "Typedef"
