@@ -494,6 +494,43 @@ module Typelib
             end
         end
 
+        def self.parse_cxx_documentation_before(file, line)
+            lines = File.readlines(file)
+
+            block = []
+            # Lines are given 1-based (as all editors work that way), and we
+            # want the line before the definition. Remove two
+            line = line - 2
+            while true
+                case l = lines[line]
+                when /^\s*$/
+                when /^\s*(\*|\/\/|\/\*)/
+                    block << l
+                else break
+                end
+                line = line - 1
+            end
+            block = block.map do |l|
+                l.strip.gsub(/^\s*(\*+\/?|\/+\**)/, '')
+            end
+            # Now remove the same amount of spaces in front of each lines
+            space_count = block.map do |l|
+                l =~ /^(\s*)/
+                if $1.size != l.size
+                    $1.size
+                end
+            end.compact.min
+            block = block.map do |l|
+                l[space_count..-1]
+            end
+            if last_line = block[0]
+                last_line.gsub!(/\*+\//, '')
+            end
+            if !block.empty?
+                block.reverse.join("\n")
+            end
+        end
+
         IGNORED_NODES = %w{Method OperatorMethod Destructor Constructor Function OperatorFunction}.to_set
 
         def load(required_files, xml)
@@ -574,6 +611,29 @@ module Typelib
             # Look at typedefs
             all_typedefs.each do |node|
                 resolve_type_definition(xml, node)
+            end
+
+            # Now, parse documentation for every type and field for which we
+            # have a source file/line
+            registry.each do |type|
+                if location = type.metadata.get('source_file_line').first
+                    file, line = location.split(':')
+                    line = Integer(line)
+                    if doc = GCCXMLLoader.parse_cxx_documentation_before(file, line)
+                        type.metadata.set('doc', doc)
+                    end
+                end
+                if type.respond_to?(:field_metadata)
+                    type.field_metadata.each do |field_name, md|
+                        if location = md.get('source_file_line').first
+                            file, line = location.split(':')
+                            line = Integer(line)
+                            if doc = GCCXMLLoader.parse_cxx_documentation_before(file, line)
+                                md.set('doc', doc)
+                            end
+                        end
+                    end
+                end
             end
 
             registry.to_xml
