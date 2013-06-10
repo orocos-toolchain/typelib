@@ -176,6 +176,7 @@ namespace Typelib
 	    }
 	}
         copySourceIDs(registry);
+        mergeMetaData(registry);
     }
 
     void Registry::mergeMetaData(Registry const& registry)
@@ -224,6 +225,7 @@ namespace Typelib
         }
 
         result->copySourceIDs(*this);
+        result->mergeMetaData(*this);
         return result.release();
     }
 
