@@ -371,7 +371,42 @@ module Typelib
 	    # Returns the pointer-to-self type
             def to_ptr; registry.build(name + "*") end
 
-            def pretty_print(pp) # :nodoc:
+            # Given a markdown-formatted string, return what should be displayed
+            # as text
+            def pp_doc(pp, doc)
+                if !doc.empty?
+                    first_line = true
+                    doc = doc.split("\n").map do |line|
+                        if first_line
+                            first_line = false
+                            "/** " + line
+                        else " * " + line
+                        end
+                    end
+                    if doc.size == 1
+                        doc[0] << " */"
+                    else
+                        doc << " */"
+                    end
+
+                    first_line = true
+                    doc.each do |line|
+                        if !first_line
+                            pp.breakable
+                        end
+                        pp.text line
+                        first_line = false
+                    end
+                    true
+                end
+            end
+
+            def pretty_print(pp, with_doc = true) # :nodoc:
+                if with_doc && (doc = metadata.get('doc').first)
+                    if pp_doc(pp, doc)
+                        pp.breakable
+                    end
+                end
 		pp.text name 
 	    end
 

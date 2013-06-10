@@ -332,7 +332,12 @@ module Typelib
             def pretty_print(pp, verbose = false) # :nodoc:
 		super(pp)
 		pp.text ' '
-		pretty_print_common(pp) do |name, offset, type|
+		pretty_print_common(pp) do |name, offset, type, metadata|
+                    if doc = metadata.get('doc').first
+                        if pp_doc(pp, doc)
+                            pp.breakable
+                        end
+                    end
 		    pp.text name
                     if verbose
                         pp.text "[#{offset}] <"
@@ -340,7 +345,7 @@ module Typelib
                         pp.text " <"
                     end
 		    pp.nest(2) do
-                        type.pretty_print(pp)
+                        type.pretty_print(pp, false)
 		    end
 		    pp.text '>'
 		end
