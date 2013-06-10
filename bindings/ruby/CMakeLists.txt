@@ -46,7 +46,7 @@ ENDIF(ENABLE_DYNCALL)
 ADD_RUBY_EXTENSION(typelib_ruby 
     ext/typelib_ruby.cc ext/value.cc ext/strings.cc
     ext/convert.cc ext/specialized_types.cc 
-    ext/registry.cc ext/memory.cc ${DYNCALL_INTERFACE})
+    ext/registry.cc ext/memory.cc ext/metadata.cc ${DYNCALL_INTERFACE})
 
 IF(ENABLE_DYNCALL)
     TARGET_LINK_LIBRARIES(typelib_ruby ${DYNCALL_LIBRARIES})

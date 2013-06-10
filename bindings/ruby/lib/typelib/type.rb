@@ -13,6 +13,9 @@ module Typelib
         ALLOWED_OVERLOADINGS = allowed_overloadings.to_set
 
         class << self
+            # The metadata object
+            attr_reader :metadata
+
             # Definition of the unique convertion that should be used to convert
             # this type into a Ruby object
             #

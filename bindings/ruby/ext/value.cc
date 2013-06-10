@@ -121,6 +121,7 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
     rb_iv_set(klass, "@name", rb_str_new2(type.getName().c_str()));
     rb_iv_set(klass, "@null", (type.getCategory() == Type::NullType) ? Qtrue : Qfalse);
     rb_iv_set(klass, "@opaque", (type.getCategory() == Type::Opaque) ? Qtrue : Qfalse);
+    rb_iv_set(klass, "@metadata", cxx2rb::metadata_wrap(type.getMetaData()));
 
     if (rb_respond_to(klass, rb_intern("subclass_initialize")))
 	rb_funcall(klass, rb_intern("subclass_initialize"), 0);

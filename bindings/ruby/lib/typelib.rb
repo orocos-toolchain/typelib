@@ -163,6 +163,7 @@ require 'typelib/array_type'
 require 'typelib/compound_type'
 require 'typelib/enum_type'
 require 'typelib/container_type'
+require 'typelib/metadata'
 
 require 'typelib/registry'
 require 'typelib/cxx_registry'

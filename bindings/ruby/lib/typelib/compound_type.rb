@@ -142,7 +142,9 @@ module Typelib
             end
         end
 
-        @fields = []
+        fields = []
+        field_types = Hash.new
+        field_metadata = Hash.new
         class << self
 	    # Check if this type can be used in place of +typename+
 	    # In case of compound types, we check that either self, or
@@ -236,13 +238,16 @@ module Typelib
 	    # which returns the field type
             def subclass_initialize
                 @field_types = Hash.new
-                @fields = get_fields.map! do |name, offset, type|
+                @fields = Array.new
+                @field_metadata = Hash.new
+                get_fields.each do |name, offset, type, metadata|
                     if name.respond_to?(:force_encoding)
                         name.force_encoding('ASCII')
                     end
                     field_types[name] = type
                     field_types[name.to_sym] = type
-                    [name, type]
+                    fields << [name, type]
+                    field_metadata[name] = metadata
                 end
 
                 converted_fields = []
@@ -291,9 +296,11 @@ module Typelib
             attr_reader :fields
             # A name => type map of the types of each fiel
             attr_reader :field_types
+            # A name => object mapping of the field metadata objects
+            attr_reader :field_metadata
 	    # Returns the type of +name+
             def [](name)
-                if result = @field_types[name]
+                if result = field_types[name]
                     result
                 else
                     raise ArgumentError, "#{name} is not a field of #{self.name}"
@@ -301,14 +308,14 @@ module Typelib
             end
             # True if the given field is defined
             def has_field?(name)
-                @field_types.has_key?(name)
+                field_types.has_key?(name)
             end
 	    # Iterates on all fields
             #
             # @yield [name,type] the fields of this compound
             # @return [void]
             def each_field
-		@fields.each { |field| yield(*field) } 
+		fields.each { |field| yield(*field) } 
 	    end
 
 	    def pretty_print_common(pp) # :nodoc:
