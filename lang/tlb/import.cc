@@ -60,6 +60,34 @@ namespace
 // types defined in the tlb file that aren't loaded yet
 namespace
 {
+    void loadMetaData(xmlNodePtr node, MetaData& metadata)
+    {
+        for(xmlNodePtr xml = xmlFirstElementChild(node); xml; xml=xmlNextElementSibling(xml))
+        {
+            if (xmlStrcmp(xml->name, reinterpret_cast<const xmlChar*>("metadata")))
+                continue;
+            string key = getAttribute<string>(xml, "key");
+            string value;
+            // Look at a child CDATA block
+            xmlNodePtr cdata = xml->children;
+            for(; cdata; cdata=cdata->next)
+            {
+                if (cdata->type == XML_CDATA_SECTION_NODE)
+                {
+                    value = reinterpret_cast<char const*>(cdata->content);
+                    break;
+                }
+            }
+
+            metadata.add(key, value);
+        }
+    }
+
+    void loadMetaData(TypeNode const& node, MetaData& metadata)
+    {
+        loadMetaData(node.xml, metadata);
+    }
+
     class Factory
     {
         TypeMap   m_map;
@@ -72,7 +100,10 @@ namespace
         Registry& getRegistry() { return m_registry; }
 
         void insert(TypeNode const& type, Type* object)
-        { m_registry.add(object, type.file); }
+        {
+            loadMetaData(type, object->getMetaData());
+            m_registry.add(object, type.file);
+        }
 
         void alias (TypeNode const& type, string const& new_name)
         { m_registry.alias(new_name, type.name); }
@@ -194,9 +225,9 @@ namespace
     Type const* load_enum(TypeNode const& node, Factory& factory)
     { 
         Enum* type = new Enum(node.name);
-        for(xmlNodePtr xml = node.xml->xmlChildrenNode; xml; xml=xml->next)
+        for(xmlNodePtr xml = xmlFirstElementChild(node.xml); xml; xml=xmlNextElementSibling(xml))
         {
-            if (!xmlStrcmp(xml->name, reinterpret_cast<const xmlChar*>("text")))
+            if (xmlStrcmp(xml->name, reinterpret_cast<const xmlChar*>("value")))
                 continue;
 
             string symbol = getAttribute<string>(xml, "symbol");
@@ -221,9 +252,9 @@ namespace
         Compound* compound = new Compound(node.name);
         size_t size = getAttribute<size_t>(node.xml, "size");
 
-        for(xmlNodePtr xml = node.xml->xmlChildrenNode; xml; xml=xml->next)
+        for(xmlNodePtr xml = xmlFirstElementChild(node.xml); xml; xml=xmlNextElementSibling(xml))
         {
-            if (!xmlStrcmp(xml->name, reinterpret_cast<const xmlChar*>("text")))
+            if (xmlStrcmp(xml->name, reinterpret_cast<const xmlChar*>("field")))
                 continue;
 
             //checkNodeName<UnexpectedElement>    (xml, "field");
@@ -232,7 +263,8 @@ namespace
             size_t offset = getAttribute<size_t>(xml, "offset");
 
             Type const* type = factory.build(tname);
-            compound->addField(name, *type, offset);
+            Field const& field = compound->addField(name, *type, offset);
+            loadMetaData(xml, field.getMetaData());
         }
 
         compound->setSize(size);

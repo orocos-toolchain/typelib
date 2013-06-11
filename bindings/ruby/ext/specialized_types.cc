@@ -29,10 +29,11 @@ static VALUE compound_get_fields(VALUE self)
         VALUE field_name = rb_str_new2(it->getName().c_str());
         VALUE field_type = cxx2rb::type_wrap(it->getType(), registry);
 
-        VALUE field_def = rb_ary_new2(3);
+        VALUE field_def = rb_ary_new2(4);
         rb_ary_store(field_def, 0, field_name);
         rb_ary_store(field_def, 1, INT2FIX(it->getOffset()));
         rb_ary_store(field_def, 2, field_type);
+        rb_ary_store(field_def, 3, cxx2rb::metadata_wrap(it->getMetaData()));
         rb_ary_push(fieldlist, field_def);
     }
 

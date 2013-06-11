@@ -39,6 +39,7 @@ namespace Typelib
     class TypeDefinitionPlugin
     {
     public:
+        virtual ~TypeDefinitionPlugin() {}
         virtual void registerTypes(Typelib::Registry& registry) = 0;
     };
 }

@@ -8,9 +8,6 @@ module Typelib
         # The set of types that should be considered as opaques by the engine
         attr_accessor :opaques
 
-        # The resulting XML
-        attr_reader :result
-
         # A mapping from the type ID to the corresponding typelib type name
         #
         # If the type name is nil, it means that the type should not be
@@ -25,15 +22,14 @@ module Typelib
         attr_reader :demangled_to_node
         attr_reader :ignore_message
 
+        # The registry that is being filled by parsing GCCXML output
+        attr_reader :registry
+
         # A mapping from the type ID to the type names
         #
         # Unlike id_to_name, the stored value is not dependent of the fact that
         # the type has to be exported by typelib.
         attr_reader :type_names
-        # A mapping from type name to type name. Whenever a type name is
-        # emitted, it is checked against that map to be translated into what we
-        # actually want in the final XML
-        attr_reader :type_aliases
 
         def node_from_id(id)
             id_to_node[id]
@@ -44,7 +40,6 @@ module Typelib
             @id_to_name   = Hash.new
             @id_to_node   = Hash.new
             @type_names   = Hash.new
-            @type_aliases = Hash.new
             @ignore_message = Hash.new
         end
 
@@ -54,14 +49,6 @@ module Typelib
                 gsub('>', '&gt;')
         end
     
-        def emit_type_name(name)
-            if al = self.type_aliases[name]
-                emit_type_name(al)
-            else
-                xml_quote(name)
-            end
-        end
-
         def self.template_tokenizer(name)
             suffix = name
             result = []
@@ -173,8 +160,8 @@ module Typelib
                 elsif tk =~ /^\/?std\/basic_string/
                     collect_template_arguments(tokens)
                     result << "/std/string"
-                elsif tk =~ /^[\d<>,]/
-                    result << tk
+                elsif tk =~ /^[-\d<>,]+/
+                    result << tk.gsub(/[-x]/, "0")
                 elsif tk[0, 1] != "/"
                     result << "/#{tk}"
                 else
@@ -291,14 +278,27 @@ module Typelib
             type_names[xmlnode['id']] = "#{spec.join(" ")} #{resolve_type_id(xml, xmlnode['type'])}"
         end
 
+        def source_file_for(xmlnode)
+            id_to_file[xmlnode["id"].to_s] ||= id_to_node[xmlnode['file']]['name']
+        end
+
+        def set_source_file(type, xmlnode)
+            file = source_file_for(xmlnode)
+            return if !file
+
+            if line = xmlnode["line"]
+                type.metadata.add('source_file_line', file + ":" + line)
+            else
+                type.metadata.add('source_file_line', file)
+            end
+        end
+
         def resolve_type_definition(xml, xmlnode)
             kind = xmlnode.name
             id   = xmlnode['id']
             if id_to_name.has_key?(id)
                 return id_to_name[id]
             end
-
-            type_def = []
 
             if kind == "PointerType"
                 if pointed_to_type = resolve_type_id(xml, xmlnode['type'])
@@ -365,7 +365,8 @@ module Typelib
                     end
 
                     if resolve_type_id(xml, contained_node["id"])
-                        type_def << "<container name=\"#{emit_type_name(name)}\" of=\"#{emit_type_name(template_args[0])}\" kind=\"#{emit_type_name(type_name)}\" source_id=\"#{id_to_file[id]}\"/>"
+                        type = registry.create_container type_name, template_args[0]
+                        set_source_file(type, xmlnode)
                     else return ignore("ignoring #{name} as its element type #{contained_type} is ignored as well")
                     end
                 else
@@ -385,17 +386,26 @@ module Typelib
                         return ignore(xmlnode, "ignoring the empty struct/class #{name}")
                     end
 
-                    type_def << "<compound name=\"#{emit_type_name(name)}\" size=\"#{Integer(xmlnode['size']) / 8}\" source_id=\"#{id_to_file[id]}\">"
-                    fields.each do |field|
+                    field_defs = fields.map do |field|
                         if field['access'] != 'public'
                             return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is private")
                         elsif field_type_name = resolve_type_id(xml, field['type'])
-                            type_def << "  <field name=\"#{field['name']}\" type=\"#{emit_type_name(field_type_name)}\" offset=\"#{Integer(field['offset']) / 8}\" />"
+                            [field['name'], field_type_name, Integer(field['offset']) / 8, field['line']]
                         else
                             return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is of the ignored type #{type_names[field['type']]}")
                         end
                     end
-                    type_def << "</compound>"
+                    type = registry.create_compound(name, Integer(xmlnode['size']) / 8) do |c|
+                        field_defs.each do |name, type, offset, line|
+                            c.add(name, type, offset)
+                        end
+                    end
+                    set_source_file(type, xmlnode)
+                    if file = source_file_for(xmlnode)
+                        field_defs.each do |name, _, _, line|
+                            type.field_metadata[name].set('source_file_line', "#{file}:#{line}")
+                        end
+                    end
                 end
             elsif kind == "FundamentalType"
             elsif kind == "Typedef"
@@ -420,10 +430,8 @@ module Typelib
                     return ignore(xmlnode, "cannot create the #{full_name} typedef, as it points to #{type_names[xmlnode['type']]} which is ignored")
                 end
 
-                full_name  = emit_type_name(full_name)
-                pointed_to = emit_type_name(pointed_to_type)
-                if full_name != pointed_to
-                    type_def << "<alias name=\"#{emit_type_name(full_name)}\" source=\"#{emit_type_name(pointed_to_type)}\" source_id=\"#{id_to_file[id]}\"/>"
+                if full_name != registry.get(pointed_to_type).name
+                    registry.alias(full_name, registry.get(pointed_to_type).name)
 
                     # And always resolve the typedef as the type it is pointing to
                     name = id_to_name[id] = pointed_to_type
@@ -446,16 +454,17 @@ module Typelib
 
                 name = id_to_name[id] = full_name
 
-                type_def << "<enum name=\"#{emit_type_name(full_name)}\" source_id=\"#{id_to_file[id]}\">"
-                (xmlnode / "EnumValue").each do |enum_value|
-                    type_def << "  <value symbol=\"#{enum_value["name"]}\" value=\"#{enum_value["init"]}\"/>"
+
+                type = registry.create_enum full_name do |e|
+                    (xmlnode / "EnumValue").each do |enum_value|
+                        e.add(enum_value["name"], enum_value['init'])
+                    end
                 end
-                type_def << "</enum>"
+                set_source_file(type, xmlnode)
             else
                 return ignore(xmlnode, "ignoring #{name} as it is of the unsupported GCCXML type #{kind}, XML node is #{xmlnode}")
             end
 
-            result.concat(type_def)
             type_names[id] = name
             name
         end
@@ -480,15 +489,53 @@ module Typelib
                     full_name = "#{namespace}#{base}"
 
                     opaques << full_name
-                    self.type_aliases[full_name] = opaque_name
+                    registry.alias full_name, opaque_name
                 end
+            end
+        end
+
+        def self.parse_cxx_documentation_before(file, line)
+            lines = File.readlines(file)
+
+            block = []
+            # Lines are given 1-based (as all editors work that way), and we
+            # want the line before the definition. Remove two
+            line = line - 2
+            while true
+                case l = lines[line]
+                when /^\s*$/
+                when /^\s*(\*|\/\/|\/\*)/
+                    block << l
+                else break
+                end
+                line = line - 1
+            end
+            block = block.map do |l|
+                l.strip.gsub(/^\s*(\*+\/?|\/+\**)/, '')
+            end
+            # Now remove the same amount of spaces in front of each lines
+            space_count = block.map do |l|
+                l =~ /^(\s*)/
+                if $1.size != l.size
+                    $1.size
+                end
+            end.compact.min
+            block = block.map do |l|
+                l[space_count..-1]
+            end
+            if last_line = block[0]
+                last_line.gsub!(/\*+\//, '')
+            end
+            if !block.empty?
+                block.reverse.join("\n")
             end
         end
 
         IGNORED_NODES = %w{Method OperatorMethod Destructor Constructor Function OperatorFunction}.to_set
 
         def load(required_files, xml)
-            @result = Array.new
+            @registry = Typelib::Registry.new
+            Typelib::Registry.add_standard_cxx_types(registry)
 
             @id_to_node = Hash.new
             @id_to_file = Hash.new
@@ -551,7 +598,7 @@ module Typelib
                 # resolve_opaques as resolve_opaques will add the resolved
                 # opaque names to +opaques+
                 opaques.each do |type_name|
-                    result << "<opaque name=\"#{xml_quote(type_name)}\" size=\"0\"/>"
+                    registry.create_opaque type_name, 0
                 end
                 resolve_opaques(xml)
             end
@@ -566,7 +613,30 @@ module Typelib
                 resolve_type_definition(xml, node)
             end
 
-            "<?xml version=\"1.0\"?>\n<typelib>\n" + result.join("\n") + "\n</typelib>"
+            # Now, parse documentation for every type and field for which we
+            # have a source file/line
+            registry.each do |type|
+                if location = type.metadata.get('source_file_line').first
+                    file, line = location.split(':')
+                    line = Integer(line)
+                    if doc = GCCXMLLoader.parse_cxx_documentation_before(file, line)
+                        type.metadata.set('doc', doc)
+                    end
+                end
+                if type.respond_to?(:field_metadata)
+                    type.field_metadata.each do |field_name, md|
+                        if location = md.get('source_file_line').first
+                            file, line = location.split(':')
+                            line = Integer(line)
+                            if doc = GCCXMLLoader.parse_cxx_documentation_before(file, line)
+                                md.set('doc', doc)
+                            end
+                        end
+                    end
+                end
+            end
+
+            registry.to_xml
         end
 
         # Runs gccxml on the provided file and with the given options, and

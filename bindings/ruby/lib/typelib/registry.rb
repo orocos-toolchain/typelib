@@ -551,9 +551,12 @@ module Typelib
             # The compound fields, registered at each called of #method_missing
             # and #add. The new type is registered when #build is called.
             attr_reader :fields
+            # The compound size, as specified on object creation. If zero, it is
+            # automatically computed
+            attr_reader :size
 
-            def initialize(name, registry)
-                @name, @registry = name, registry
+            def initialize(name, registry, size = 0)
+                @name, @registry, @size = name, registry, size
                 @fields = []
             end
             
@@ -569,7 +572,7 @@ module Typelib
                     field_def[2] ||= current_offset
                     current_offset = field_def[2] + field_def[1].size
                 end
-                registry.do_create_compound(name, fields)
+                registry.do_create_compound(name, fields, size)
             end
 
             # Adds a new field
@@ -617,8 +620,8 @@ module Typelib
         #     c.field1 = "/another/Compound"
         #   end
         #
-        def create_compound(name)
-            recorder = CompoundBuilder.new(name, self)
+        def create_compound(name, size = 0)
+            recorder = CompoundBuilder.new(name, self, size)
             yield(recorder)
             recorder.build
         end
@@ -631,11 +634,11 @@ module Typelib
         #
         # @example create a new std::vector type
         #   registry.create_container "/std/vector", "/my/Container"
-        def create_container(container_type, element_type)
+        def create_container(container_type, element_type, size = 0)
             if element_type.respond_to?(:to_str)
                 element_type = build(element_type)
             end
-            return define_container(container_type.to_str, element_type)
+            return define_container(container_type.to_str, element_type, size)
         end
 
         # Creates a new array type on this registry
@@ -645,12 +648,12 @@ module Typelib
         # @param [Integer] size the array size
         #
         # @example create a new array of 10 elements
-        #   registry.create_container "/my/Container", 10
-        def create_array(base_type, size)
+        #   registry.create_array "/my/Container", 10
+        def create_array(base_type, element_count, size = 0)
             if base_type.respond_to?(:name)
                 base_type = base_type.name
             end
-            return build("#{base_type}[#{size}]")
+            return build("#{base_type}[#{element_count}]", size)
         end
 
         # Helper class to build new enumeration types
@@ -662,9 +665,11 @@ module Typelib
             # [Array<Array(String,Integer)>] the enumeration name-to-integer
             #   mapping. Values are added with #add
             attr_reader :symbols
+            # Size, in bytes. If zero, it is automatically computed
+            attr_reader :size
 
-            def initialize(name, registry)
-                @name, @registry = name, registry
+            def initialize(name, registry, size)
+                @name, @registry, @size = name, registry, size
                 @symbols = []
             end
             
@@ -680,7 +685,7 @@ module Typelib
                     sym_def[1] ||= current_value
                     current_value = sym_def[1] + 1
                 end
-                registry.do_create_enum(name, symbols)
+                registry.do_create_enum(name, symbols, size)
             end
 
             # Add a new symbol to this enum
@@ -724,8 +729,8 @@ module Typelib
         #     c.sym2
         #   end
         #
-        def create_enum(name)
-            recorder = EnumBuilder.new(name, self)
+        def create_enum(name, size = 0)
+            recorder = EnumBuilder.new(name, self, size)
             yield(recorder)
             recorder.build
         end

@@ -13,14 +13,14 @@ namespace
     void checkNodeName(xmlNodePtr node, const char* expected)
     {
         if (xmlStrcmp(node->name, reinterpret_cast<const xmlChar*>(expected)))
-            throw Exception("", reinterpret_cast<const char*>(node->name), expected);
+            throw Exception(reinterpret_cast<const char*>(node->name), expected, "");
     }
 
     std::string getStringAttribute(xmlNodePtr type, const char* att_name)
     {
         xmlChar* att = xmlGetProp(type, reinterpret_cast<const xmlChar*>(att_name) );
         if (! att)
-            throw Parsing::MissingAttribute("", att_name);
+            throw Parsing::MissingAttribute(att_name, "");
         std::string ret( reinterpret_cast<const char*>(att));
         xmlFree(att);
         return ret;

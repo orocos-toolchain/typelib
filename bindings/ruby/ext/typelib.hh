@@ -22,6 +22,7 @@ namespace typelib_ruby {
     extern VALUE cOpaque;
     extern VALUE cNull;
     extern VALUE cRegistry;
+    extern VALUE cMetaData;
 
     extern VALUE eNotFound;
 
@@ -31,6 +32,7 @@ namespace typelib_ruby {
     extern void Typelib_init_strings();
     extern void Typelib_init_specialized_types();
     extern void Typelib_init_registry();
+    extern void Typelib_init_metadata();
 #ifdef WITH_DYNCALL
     extern void Typelib_init_functions();
 #endif
@@ -66,8 +68,10 @@ namespace typelib_ruby {
         template<> inline VALUE class_of<Value>()    { return cType; }
         template<> inline VALUE class_of<Type>()     { return rb_cClass; }
         template<> inline VALUE class_of<RbRegistry>() { return cRegistry; }
+        template<> inline VALUE class_of<MetaData>() { return cMetaData; }
 
         VALUE type_wrap(Type const& type, VALUE registry);
+        VALUE metadata_wrap(MetaData& metadata);
 
         /* Get the Ruby symbol associated with a C enum, or nil
          * if the value is not valid for this enum

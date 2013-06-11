@@ -257,6 +257,35 @@ class TC_Registry < Test::Unit::TestCase
         assert_same(reg.get('double[29459]'), type['field2'])
         assert_equal(10 + type['field1'].size, type.offset_of('field2'))
     end
+
+    def test_merge_keeps_metadata
+        reg = Typelib::Registry.new
+        Typelib::Registry.add_standard_cxx_types(reg)
+        type = reg.create_compound '/Test' do |c|
+            c.add 'field', 'double'
+        end
+        type.metadata.set('k', 'v')
+        type.field_metadata['field'].set('k', 'v')
+        new_reg = Typelib::Registry.new
+        new_reg.merge(reg)
+        new_type = new_reg.get('/Test')
+        assert_equal [['k', ['v']]], new_type.metadata.each.to_a
+        assert_equal [['k', ['v']]], new_type.field_metadata['field'].each.to_a
+    end
+
+    def test_minimal_keeps_metadata
+        reg = Typelib::Registry.new
+        Typelib::Registry.add_standard_cxx_types(reg)
+        type = reg.create_compound '/Test' do |c|
+            c.add 'field', 'double'
+        end
+        type.metadata.set('k', 'v')
+        type.field_metadata['field'].set('k', 'v')
+        new_reg = reg.minimal('/Test')
+        new_type = new_reg.get('/Test')
+        assert_equal [['k', ['v']]], new_type.metadata.each.to_a
+        assert_equal [['k', ['v']]], new_type.field_metadata['field'].each.to_a
+    end
 end
 
     

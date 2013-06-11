@@ -51,6 +51,7 @@ extern "C" void Init_typelib_ruby()
     Typelib_init_strings();
     Typelib_init_registry();
     Typelib_init_memory();
+    Typelib_init_metadata();
     
     rb_define_singleton_method(mTypelib, "with_dyncall?", RUBY_METHOD_FUNC(typelib_with_dyncall), 0);
     rb_define_singleton_method(rb_mKernel, "immediate?", RUBY_METHOD_FUNC(kernel_is_immediate), 1);

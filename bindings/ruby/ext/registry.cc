@@ -511,7 +511,7 @@ static VALUE registry_available_container(VALUE registry_module)
 
 /*
  * call-seq:
- *  registry.define_container(kind, element_type) => new_type
+ *  registry.define_container(name, kind, element_type, size) => new_type
  *
  * Defines a new container instance with the given container kind and element
  * type. +element_type+ is a type object, i.e. a subclass of Type, that has to
@@ -521,7 +521,7 @@ static VALUE registry_available_container(VALUE registry_module)
  *
  * Moreover, the method raises NotFound if +kind+ is not a known container name.
  */
-static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element)
+static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element, VALUE _size)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
     Type const& element_type(rb2cxx::object<Type>(element));
@@ -531,6 +531,9 @@ static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element
 
     try {
         Container const& new_type = Container::createContainer(reg, StringValuePtr(kind), element_type);
+        size_t size = NUM2INT(_size);
+        if (size != 0)
+            reg.get_(new_type).setSize(size);
         return cxx2rb::type_wrap(new_type, registry);
     } catch(Typelib::UnknownContainer) {
         rb_raise(eNotFound, "%s is not a known container type", StringValuePtr(kind));
@@ -552,18 +555,18 @@ static VALUE registry_add_standard_cxx_types(VALUE klass, VALUE registry)
 
 /*
  * call-seq:
- *   registry.create_compound(name, field_defs)
+ *   registry.do_create_compound(name, field_defs, size)
  *
  * Creates a new compound type in which the fields are provided by +field_defs+
  */
-static VALUE registry_create_compound(VALUE registry, VALUE name, VALUE field_defs)
+static VALUE registry_create_compound(VALUE registry, VALUE name, VALUE field_defs, VALUE _size)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
 
     std::auto_ptr<Typelib::Compound> new_t(new Typelib::Compound(StringValuePtr(name)));
 
-    int size = RARRAY_LEN(field_defs);
-    for (int i = 0; i < size; ++i)
+    int field_count = RARRAY_LEN(field_defs);
+    for (int i = 0; i < field_count; ++i)
     {
         VALUE field = rb_ary_entry(field_defs, i);
 
@@ -575,6 +578,9 @@ static VALUE registry_create_compound(VALUE registry, VALUE name, VALUE field_de
     }
 
     Typelib::Compound* type = new_t.release();
+    size_t size = NUM2INT(_size);
+    if (size != 0)
+        type->setSize(size);
     try { reg.add(type, true, ""); }
     catch(std::runtime_error e)
     { rb_raise(rb_eArgError, "%s", e.what()); }
@@ -583,18 +589,18 @@ static VALUE registry_create_compound(VALUE registry, VALUE name, VALUE field_de
 
 /*
  * call-seq:
- *   registry.create_enum(name, symbol_defs)
+ *   registry.create_enum(name, symbol_defs, size)
  *
  * Creates a new compound type in which the fields are provided by +field_defs+
  */
-static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs)
+static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs, VALUE _size)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
 
     std::auto_ptr<Typelib::Enum> new_t(new Typelib::Enum(StringValuePtr(name)));
 
-    int size = RARRAY_LEN(symbol_defs);
-    for (int i = 0; i < size; ++i)
+    int symbol_count = RARRAY_LEN(symbol_defs);
+    for (int i = 0; i < symbol_count; ++i)
     {
         VALUE sym = rb_ary_entry(symbol_defs, i);
 
@@ -605,6 +611,8 @@ static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs)
     }
 
     Typelib::Enum* type = new_t.release();
+    size_t size = NUM2INT(_size);
+    if (size != 0) type->setSize(size);
     try { reg.add(type, true, ""); }
     catch(std::runtime_error e)
     { rb_raise(rb_eArgError, "%s", e.what()); }
@@ -627,9 +635,9 @@ static VALUE registry_create_opaque(VALUE registry, VALUE _name, VALUE _size)
 
 /*
  * call-seq:
- *   registry.create_null(name, size)
+ *   registry.create_null(name)
  *
- * Creates a new null type with the given name and size
+ * Creates a new null type with the given name
  */
 static VALUE registry_create_null(VALUE registry, VALUE _name)
 {
@@ -664,14 +672,14 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "reverse_depends", RUBY_METHOD_FUNC(registry_reverse_depends), 1);
     rb_define_method(cRegistry, "remove", RUBY_METHOD_FUNC(registry_remove), 1);
     rb_define_method(cRegistry, "source_id_of", RUBY_METHOD_FUNC(registry_source_id_of), 1);
-    rb_define_method(cRegistry, "do_create_compound", RUBY_METHOD_FUNC(registry_create_compound), 2);
-    rb_define_method(cRegistry, "do_create_enum", RUBY_METHOD_FUNC(registry_create_enum), 2);
+    rb_define_method(cRegistry, "do_create_compound", RUBY_METHOD_FUNC(registry_create_compound), 3);
+    rb_define_method(cRegistry, "do_create_enum", RUBY_METHOD_FUNC(registry_create_enum), 3);
     rb_define_method(cRegistry, "create_opaque", RUBY_METHOD_FUNC(registry_create_opaque), 2);
     rb_define_method(cRegistry, "create_null", RUBY_METHOD_FUNC(registry_create_null), 1);
 
     rb_define_singleton_method(cRegistry, "add_standard_cxx_types", RUBY_METHOD_FUNC(registry_add_standard_cxx_types), 1);
 
     rb_define_singleton_method(cRegistry, "available_containers", RUBY_METHOD_FUNC(registry_available_container), 0);
-    rb_define_method(cRegistry, "define_container", RUBY_METHOD_FUNC(registry_define_container), 2);
+    rb_define_method(cRegistry, "define_container", RUBY_METHOD_FUNC(registry_define_container), 3);
 }
 
