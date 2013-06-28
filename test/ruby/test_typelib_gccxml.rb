@@ -1,8 +1,14 @@
 require 'test/unit'
-require 'typelib'
+require './test_config'
 
 class TC_TypelibGCCXML < Test::Unit::TestCase
     include Typelib
+
+    attr_reader :cxx_test_dir
+
+    def setup
+        @cxx_test_dir = File.expand_path('cxx_import_tests', File.dirname(__FILE__))
+    end
 
     def test_tokenize_template
         assert_equal ['int'],
@@ -38,6 +44,37 @@ class TC_TypelibGCCXML < Test::Unit::TestCase
         assert_equal ['std::vector', ['std::vector<int,std::allocator<int>>', 'std::allocator<std::vector<int,std::allocator<int>>>']],
             Typelib::GCCXMLLoader.parse_template('std::vector <std::vector <int ,std::allocator<int>>, std::allocator< std::vector<int , std::allocator <int>>      > >')
 
+    end
+
+    def test_import_non_virtual_inheritance
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'non_virtual_inheritance.h')
+        type = reg.get('/Derived')
+        assert_equal ['/FirstBase', '/SecondBase'], type.metadata.get('base_classes')
+
+        field_type = reg.get('/uint64_t')
+        expected = [
+            ['first', field_type, 0],
+            ['second', field_type, 8],
+            ['third', field_type, 16]
+        ]
+        assert_equal expected, type.fields.map { |name, field_type| [name, field_type, type.offset_of(name)] }
+    end
+
+    def test_import_virtual_methods
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'virtual_methods.h')
+        assert !reg.include?('/Class')
+    end
+
+    def test_import_virtual_inheritance
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'virtual_inheritance.h')
+        assert reg.include?('/Base')
+        assert !reg.include?('/Derived')
+    end
+
+    def test_import_private_base_class
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'private_base_class.h')
+        assert reg.include?('/Base')
+        assert !reg.include?('/Derived')
     end
 end
 

@@ -370,17 +370,26 @@ module Typelib
                     else return ignore("ignoring #{name} as its element type #{contained_type} is ignored as well")
                     end
                 else
-                    # Make sure that we can digest it. Forbidden are: inheritance,
-                    # non-public members
-                    #
-                    # TODO: add inheritance support
-                    if xmlnode['bases'] && !xmlnode['bases'].empty?
-                        return ignore(xmlnode, "ignoring #{name} as it has parent classes")
+                    # Make sure that we can digest it. Forbidden are: non-public members
+                    base_classes = (xmlnode / 'Base').map do |child_node|
+                        if child_node['virtual'] != '0'
+                            return ignore(xmlnode, "ignoring #{name}, it has virtual base classes")
+                        elsif child_node['access'] != 'public'
+                            return ignore(xmlnode, "ignoring #{name}, it has private base classes")
+                        end
+                        base_type = registry.get(resolve_type_id(xml, child_node['type']))
+                        [base_type, Integer(child_node['offset'])]
                     end
 
                     fields = (xmlnode['members'] || "").split(" ").
                         map { |member_id| node_from_id(member_id) }.
-                        compact.find_all { |member_node| member_node.name == "Field" }
+                        compact.
+                        find_all do |member_node|
+                            if member_node['virtual'] == '1'
+                                return ignore(xmlnode, "ignoring #{name}, it has virtual methods")
+                            end
+                            member_node.name == "Field"
+                        end
 
                     if fields.empty?
                         return ignore(xmlnode, "ignoring the empty struct/class #{name}")
@@ -396,11 +405,26 @@ module Typelib
                         end
                     end
                     type = registry.create_compound(name, Integer(xmlnode['size']) / 8) do |c|
+                        base_classes.each do |base_type, base_offset|
+                            base_type.each_field do |name, type|
+                                offset = base_type.offset_of(name)
+                                c.add(name, type, base_offset + offset)
+                            end
+                        end
+
                         field_defs.each do |name, type, offset, line|
                             c.add(name, type, offset)
                         end
                     end
                     set_source_file(type, xmlnode)
+                    base_classes.each do |base_type, _|
+                        type.metadata.add('base_classes', base_type.name)
+                        base_type.each_field do |name, _|
+                            base_type.field_metadata[name].get('source_file_line').each do |file_line|
+                                type.field_metadata[name].add('source_file_line', file_line)
+                            end
+                        end
+                    end
                     if file = source_file_for(xmlnode)
                         field_defs.each do |name, _, _, line|
                             type.field_metadata[name].set('source_file_line', "#{file}:#{line}")
@@ -557,8 +581,6 @@ module Typelib
             typedefs_per_file = Hash.new { |h, k| h[k] = Array.new }
             root_file_ids = Array.new
             root.children.each do |child_node|
-                next if IGNORED_NODES.include?(child_node.name)
-
                 id_to_node[child_node["id"].to_s] = child_node
                 if child_node.name != "File"
                     if (child_node_name = child_node['name'])
