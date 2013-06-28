@@ -142,9 +142,9 @@ module Typelib
             end
         end
 
-        fields = []
-        field_types = Hash.new
-        field_metadata = Hash.new
+        @fields = []
+        @field_types = Hash.new
+        @field_metadata = Hash.new
         class << self
 	    # Check if this type can be used in place of +typename+
 	    # In case of compound types, we check that either self, or
