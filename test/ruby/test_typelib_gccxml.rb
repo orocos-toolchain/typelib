@@ -76,5 +76,11 @@ class TC_TypelibGCCXML < Test::Unit::TestCase
         assert reg.include?('/Base')
         assert !reg.include?('/Derived')
     end
+
+    def test_import_ignored_base_class
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'ignored_base_class.h')
+        assert !reg.include?('/Base')
+        assert !reg.include?('/Derived')
+    end
 end
 

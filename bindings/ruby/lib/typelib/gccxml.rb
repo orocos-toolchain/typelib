@@ -377,8 +377,12 @@ module Typelib
                         elsif child_node['access'] != 'public'
                             return ignore(xmlnode, "ignoring #{name}, it has private base classes")
                         end
-                        base_type = registry.get(resolve_type_id(xml, child_node['type']))
-                        [base_type, Integer(child_node['offset'])]
+                        if base_type_name = resolve_type_id(xml, child_node['type'])
+                            base_type = registry.get(resolve_type_id(xml, child_node['type']))
+                            [base_type, Integer(child_node['offset'])]
+                        else
+                            return ignore(xmlnode, "ignoring #{name}, it has ignored base classes")
+                        end
                     end
 
                     fields = (xmlnode['members'] || "").split(" ").
