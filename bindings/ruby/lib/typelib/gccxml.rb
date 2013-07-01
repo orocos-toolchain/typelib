@@ -182,7 +182,7 @@ module Typelib
         # Given a full Typelib type name, returns a [name, id] pair where +name+
         # is the type's basename and +id+ the context ID (i.e. the GCCXML
         # namespace ID)
-        def resolve_namespace_of(xml, name)
+        def resolve_namespace_of(name)
             context = nil
             while name =~ /\/(\w+)\/(.*)/
                 ns   = "/#{$1}"
@@ -201,7 +201,7 @@ module Typelib
             return name, context
         end
 
-        def resolve_namespace(xml, id)
+        def resolve_namespace(id)
             ns = id_to_node[id]
             if !ns
                 return []
@@ -213,30 +213,30 @@ module Typelib
                 return []
             end
 
-            (resolve_namespace(xml, ns['context']) << ns['name'])
+            (resolve_namespace(ns['context']) << ns['name'])
         end
 
-        def resolve_context(xml, id)
+        def resolve_context(id)
             if id_to_name.has_key?(id)
                 return id_to_name[id]
             end
 
             definition = node_from_id(id)
             if definition.name == "Namespace"
-                result = "/" + resolve_namespace(xml, id).join("/")
+                result = "/" + resolve_namespace(id).join("/")
                 id_to_name[id] = result
                 result
             else
-                resolve_type_id(xml, id)
+                resolve_type_id(id)
             end
         end
         
-        def resolve_type_id(xml, id)
+        def resolve_type_id(id)
             if id_to_name.has_key?(id)
                 id_to_name[id]
             else
                 typedef = node_from_id(id)
-                resolve_type_definition(xml, typedef)
+                resolve_type_definition(typedef)
             end
         end
 
@@ -267,7 +267,7 @@ module Typelib
             opaques.include?(name)
         end
 
-        def resolve_qualified_type(xml, xmlnode)
+        def resolve_qualified_type(xmlnode)
             spec = []
             if xmlnode['const'] == '1'
                 spec << 'const'
@@ -275,7 +275,7 @@ module Typelib
             if xmlnode['volatile'] == "1"
                 spec << 'volatile'
             end
-            type_names[xmlnode['id']] = "#{spec.join(" ")} #{resolve_type_id(xml, xmlnode['type'])}"
+            type_names[xmlnode['id']] = "#{spec.join(" ")} #{resolve_type_id(xmlnode['type'])}"
         end
 
         def source_file_for(xmlnode)
@@ -293,7 +293,7 @@ module Typelib
             end
         end
 
-        def resolve_type_definition(xml, xmlnode)
+        def resolve_type_definition(xmlnode)
             kind = xmlnode.name
             id   = xmlnode['id']
             if id_to_name.has_key?(id)
@@ -301,12 +301,12 @@ module Typelib
             end
 
             if kind == "PointerType"
-                if pointed_to_type = resolve_type_id(xml, xmlnode['type'])
+                if pointed_to_type = resolve_type_id(xmlnode['type'])
                     return (id_to_name[id] = "#{pointed_to_type}*")
                 else return ignore(xmlnode)
                 end
             elsif kind == "ArrayType"
-                if pointed_to_type = resolve_type_id(xml, xmlnode['type'])
+                if pointed_to_type = resolve_type_id(xmlnode['type'])
                     value = xmlnode["max"]
                     if value =~ /^(\d+)u/
                         size = Integer($1) + 1
@@ -317,7 +317,7 @@ module Typelib
                 else return ignore(xmlnode)
                 end
             elsif kind == "CvQualifiedType"
-                name = resolve_qualified_type(xml, xmlnode)
+                name = resolve_qualified_type(xmlnode)
                 return ignore(xmlnode, "#{name}: cannot represent qualified types")
             end
 
@@ -356,7 +356,7 @@ module Typelib
                         contained_node = name_to_nodes[contained_type].first
                     end
                     if !contained_node
-                        contained_basename, contained_context = resolve_namespace_of(xml, template_args[0])
+                        contained_basename, contained_context = resolve_namespace_of(template_args[0])
                         contained_node = name_to_nodes[contained_basename].
                             find { |node| node['context'].to_s == contained_context }
                     end
@@ -364,7 +364,7 @@ module Typelib
                         raise "Internal error: cannot find definition for #{contained_type}"
                     end
 
-                    if resolve_type_id(xml, contained_node["id"])
+                    if resolve_type_id(contained_node["id"])
                         type = registry.create_container type_name, template_args[0]
                         set_source_file(type, xmlnode)
                     else return ignore("ignoring #{name} as its element type #{contained_type} is ignored as well")
@@ -377,8 +377,8 @@ module Typelib
                         elsif child_node['access'] != 'public'
                             return ignore(xmlnode, "ignoring #{name}, it has private base classes")
                         end
-                        if base_type_name = resolve_type_id(xml, child_node['type'])
-                            base_type = registry.get(resolve_type_id(xml, child_node['type']))
+                        if base_type_name = resolve_type_id(child_node['type'])
+                            base_type = registry.get(resolve_type_id(child_node['type']))
                             [base_type, Integer(child_node['offset'])]
                         else
                             return ignore(xmlnode, "ignoring #{name}, it has ignored base classes")
@@ -402,7 +402,7 @@ module Typelib
                     field_defs = fields.map do |field|
                         if field['access'] != 'public'
                             return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is private")
-                        elsif field_type_name = resolve_type_id(xml, field['type'])
+                        elsif field_type_name = resolve_type_id(field['type'])
                             [field['name'], field_type_name, Integer(field['offset']) / 8, field['line']]
                         else
                             return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is of the ignored type #{type_names[field['type']]}")
@@ -437,7 +437,7 @@ module Typelib
                 end
             elsif kind == "FundamentalType"
             elsif kind == "Typedef"
-                if !(namespace = resolve_context(xml, xmlnode['context']))
+                if !(namespace = resolve_context(xmlnode['context']))
                     return ignore(xmlnode, "ignoring typedef #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
                 end
 
@@ -454,7 +454,7 @@ module Typelib
                     return full_name
                 end
 
-                if !(pointed_to_type = resolve_type_id(xml, xmlnode['type']))
+                if !(pointed_to_type = resolve_type_id(xmlnode['type']))
                     return ignore(xmlnode, "cannot create the #{full_name} typedef, as it points to #{type_names[xmlnode['type']]} which is ignored")
                 end
 
@@ -470,7 +470,7 @@ module Typelib
             elsif kind == "Enumeration"
                 if xmlnode['name'] =~ /^\._(\d+)$/ # this represents anonymous enums
                     return ignore(xmlnode, "ignoring anonymous enumeration, as they can't be represented in Typelib")
-                elsif !(namespace = resolve_context(xml, xmlnode['context']))
+                elsif !(namespace = resolve_context(xmlnode['context']))
                     return ignore(xmlnode, "ignoring enumeration #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
                 end
 
@@ -504,15 +504,15 @@ module Typelib
         # their real name 
         #
         # For the typedefs, it it easy
-        def resolve_opaques(xml)
+        def resolve_opaques
             # First do typedefs. Search for the typedefs that are named like our
             # type, if we find one, alias it
             opaques.dup.each do |opaque_name|
-                name, context = resolve_namespace_of(xml, opaque_name)
+                name, context = resolve_namespace_of(opaque_name)
                 name_to_nodes[name].find_all { |n| n.name == "Typedef" }.each do |typedef|
                     next if context && typedef["context"].to_s != context
                     type_node = node_from_id(typedef["type"].to_s)
-                    namespace = resolve_context(xml, type_node['context'])
+                    namespace = resolve_context(type_node['context'])
                     base = cxx_to_typelib(type_node["name"])
                     full_name = "#{namespace}#{base}"
 
@@ -626,17 +626,17 @@ module Typelib
                 opaques.each do |type_name|
                     registry.create_opaque type_name, 0
                 end
-                resolve_opaques(xml)
+                resolve_opaques
             end
 
             # Resolve structs and classes
             all_types.each do |node|
-                resolve_type_definition(xml, node)
+                resolve_type_definition(node)
             end
 
             # Look at typedefs
             all_typedefs.each do |node|
-                resolve_type_definition(xml, node)
+                resolve_type_definition(node)
             end
 
             # Now, parse documentation for every type and field for which we
