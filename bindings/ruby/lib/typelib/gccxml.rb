@@ -416,8 +416,8 @@ module Typelib
                             end
                         end
 
-                        field_defs.each do |name, type, offset, line|
-                            c.add(name, type, offset)
+                        field_defs.each do |field_name, field_type, field_offset, field_line|
+                            c.add(field_name, field_type, field_offset)
                         end
                     end
                     set_source_file(type, xmlnode)
@@ -430,8 +430,8 @@ module Typelib
                         end
                     end
                     if file = source_file_for(xmlnode)
-                        field_defs.each do |name, _, _, line|
-                            type.field_metadata[name].set('source_file_line', "#{file}:#{line}")
+                        field_defs.each do |field_name, _, _, field_line|
+                            type.field_metadata[field_name].set('source_file_line', "#{file}:#{field_line}")
                         end
                     end
                 end
