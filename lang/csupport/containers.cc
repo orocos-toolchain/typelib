@@ -12,7 +12,7 @@
 using namespace Typelib;
 using namespace std;
 
-BOOST_STATIC_ASSERT(( sizeof(vector<void*>) == sizeof(vector<Container>) ));
+BOOST_STATIC_ASSERT(( sizeof(vector<void*>) == sizeof(vector<char>) ));
 
 string Vector::fullName(std::string const& element_name)
 { return "/std/vector<" + element_name + ">"; }
