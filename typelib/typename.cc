@@ -132,7 +132,7 @@ namespace Typelib
                 {
                     if (s[i + 1] == '/')
                         i++;
-                    else if (s[i + 1] != '>' && s[i + 1] != '[')
+                    else if (s[i + 1] != '>' && s[i + 1] != '[' && s[i + 1] != ',')
                         return make_pair(false, i + 1);
                 }
             }
