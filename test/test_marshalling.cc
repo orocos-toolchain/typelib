@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
         A reloaded;
         memset(&reloaded, 2, sizeof(A));
         load(Value(&reloaded, type), buffer, ops);
-        BOOST_REQUIRE_EQUAL(-1, memcmp(&a, &reloaded, sizeof(A)));
+        BOOST_REQUIRE(memcmp(&a, &reloaded, sizeof(A)) < 0);
         BOOST_REQUIRE_EQUAL(a.a, reloaded.a);
         BOOST_REQUIRE_EQUAL(a.b, reloaded.b);
         BOOST_REQUIRE_EQUAL(a.c, reloaded.c);
