@@ -1,10 +1,134 @@
 require 'typelib'
 require 'set'
-require 'nokogiri'
 require 'tempfile'
+
 module Typelib
+    # Intermediate representation of a parsed GCCXML output, containing only
+    # the information we need (and not the full XML representation)
+    class GCCXMLInfo
+        # During parsing, the last node that has been discovered
+        attr_reader :current_node
+        # @return [{String=>String}] the set of files that have been directly
+        #   required, as a mapping from the full file path to the GCCXML ID that
+        #   represents this file. The IDs are only filled after #parse is called
+        attr_reader :required_files
+        # @return [{String=>Node}] a mapping from a type ID to the XML node that
+        #   stores its definition
+        attr_reader :id_to_node
+        # @return [{String=>Array<Node>}] a mapping from a mangled type name to the XML
+        #   nodes that store its definition
+        attr_reader :name_to_nodes
+        # @return [{String=>Node}] a mapping from a demangled type name to the XML
+        #   node that store its definition
+        attr_reader :demangled_to_node
+        # @return [{String=>String}] a mapping from all
+        #   virtual methods/destructors/operators that have been found. It is
+        #   used during resolution to reject the compounds that use them
+        attr_reader :virtual_members
+        # A mapping from a type ID to the XML node information about its base
+        # classes
+        attr_reader :bases
+        # A mapping from an enum type ID to the XML node information about the
+        # values that define it
+        attr_reader :enum_values
+        # @return [{String=>Array<Node>}] mapping from a file ID to the set of
+        #   type-definition nodes that are defined within this file
+        attr_reader :types_per_file
+        # @return [{String=>Array<Node>}] mapping from a file ID to the set of
+        #   typdef-definition nodes that are defined within this file
+        attr_reader :typedefs_per_file
+
+        Node = Struct.new :name, :attributes do
+            def [](name)
+                attributes[name]
+            end
+        end
+
+        STORED_TAGS = %w{Namespace Typedef Enumeration Struct Class ArrayType FundamentalType}
+
+        def initialize(required_files)
+            @required_files = Hash.new
+            required_files.each do |full_path|
+                @required_files[full_path] = nil
+            end
+            @id_to_node = Hash.new
+            @name_to_nodes = Hash.new { |h, k| h[k] = Array.new }
+            @demangled_to_node = Hash.new
+            @virtual_members = Set.new
+
+            @bases = Hash.new { |h, k| h[k] = Array.new }
+            @enum_values = Hash.new { |h, k| h[k] = Array.new }
+
+            @types_per_file = Hash.new { |h, k| h[k] = Array.new }
+            @typedefs_per_file = Hash.new { |h, k| h[k] = Array.new }
+        end
+
+        def file(attributes)
+            file_name = attributes['name']
+            if required_files.has_key?(file_name)
+                required_files[file_name] = attributes['id']
+            end
+        end
+
+        def tag_start(name, attributes)
+            if name == "File"
+                id_to_node[attributes['id']] = Node.new(name, attributes)
+                return file(attributes)
+            elsif name == "Field" || name == "FundamentalType"
+                id_to_node[attributes['id']] = Node.new(name, attributes)
+            elsif name == "Base"
+                bases[current_node['id']] << Node.new(name, attributes)
+            elsif name == "EnumValue"
+                enum_values[current_node['id']] << Node.new(name, attributes)
+            elsif attributes['virtual'] == '1'
+                virtual_members << attributes['id']
+            end
+
+            return if !STORED_TAGS.include?(name)
+
+            child_node = Node.new(name, attributes)
+            id_to_node[child_node['id']] = child_node
+            @current_node = child_node
+            if (child_node_name = child_node['name'])
+                name_to_nodes[GCCXMLLoader.cxx_to_typelib(child_node_name)] << child_node
+            end
+            if (child_node_name = child_node['demangled'])
+                demangled_to_node[GCCXMLLoader.cxx_to_typelib(child_node_name)] = child_node
+            end
+
+            if name == "Typedef"
+                typedefs_per_file[attributes['file']] << child_node
+            elsif name != "FundamentalType" && name != "Namespace"
+                types_per_file[attributes['file']] << child_node
+            end
+        end
+
+        def parse(xml)
+            lines = xml.split("\n")
+            lines.shift
+            if lines.shift !~ /<GCC_XML/
+                raise ParseError, "the provided XML input does not look like a GCCXML output (no GCC_XML tag)"
+            end
+
+            lines.each do |l|
+                if match = /<(\w+)/.match(l)
+                    name = match[1]
+                    raw_attributes = l.gsub(/&lt;/, "<").gsub(/&gt;/, ">").scan(/\w+="[^"]+"/)
+                    attributes = Hash.new
+                    raw_attributes.each do |attr|
+                        attr_name, attr_value = attr.split("=")
+                        attributes[attr_name] = attr_value[1..-2]
+                    end
+                    tag_start(name, attributes)
+                end
+            end
+        end
+    end
+
     # A converted from the output of GCC-XML to the Typelib's own XML format
     class GCCXMLLoader
+        # @return [GCCXMLInfo] The raw information contained in the GCCXML output
+        attr_reader :info
         # The set of types that should be considered as opaques by the engine
         attr_accessor :opaques
 
@@ -13,13 +137,10 @@ module Typelib
         # If the type name is nil, it means that the type should not be
         # represented in typelib
         attr_reader :id_to_name
-        # A mapping from the type ID to the corresponding XML node
-        attr_reader :id_to_node
-        # A mapping from a node ID to the name of the file that defines it
-        attr_reader :id_to_file
 
-        attr_reader :name_to_nodes
-        attr_reader :demangled_to_node
+        # @return [{String=>String}] mapping from a type ID to the message
+        #   explaining why it cannot be represented (it is "ignored")
+        # @see {ignore}
         attr_reader :ignore_message
 
         # The registry that is being filled by parsing GCCXML output
@@ -32,23 +153,16 @@ module Typelib
         attr_reader :type_names
 
         def node_from_id(id)
-            id_to_node[id]
+            info.id_to_node[id]
         end
 
         def initialize
             @opaques      = Set.new
             @id_to_name   = Hash.new
-            @id_to_node   = Hash.new
             @type_names   = Hash.new
             @ignore_message = Hash.new
         end
 
-        def xml_quote(name)
-            name.
-                gsub('<', '&lt;').
-                gsub('>', '&gt;')
-        end
-    
         def self.template_tokenizer(name)
             suffix = name
             result = []
@@ -187,7 +301,7 @@ module Typelib
             while name =~ /\/(\w+)\/(.*)/
                 ns   = "/#{$1}"
                 name = "/#{$2}"
-                candidates = name_to_nodes[ns].find_all { |n| n.name == "Namespace" }
+                candidates = info.name_to_nodes[ns].find_all { |n| n.name == "Namespace" }
                 if !context
                     context = candidates.to_a.first
                 else
@@ -202,7 +316,7 @@ module Typelib
         end
 
         def resolve_namespace(id)
-            ns = id_to_node[id]
+            ns = info.id_to_node[id]
             if !ns
                 return []
             end
@@ -246,7 +360,7 @@ module Typelib
 
         def file_context(xmlnode)
             if (file = xmlnode["file"]) && (line = xmlnode["line"])
-                "#{id_to_node[file]["name"]}:#{line}"
+                "#{info.id_to_node[file]["name"]}:#{line}"
             end
         end
 
@@ -279,7 +393,7 @@ module Typelib
         end
 
         def source_file_for(xmlnode)
-            id_to_file[xmlnode["id"].to_s] ||= id_to_node[xmlnode['file']]['name']
+            info.id_to_node[xmlnode['file']]['name']
         end
 
         def set_source_file(type, xmlnode)
@@ -351,13 +465,13 @@ module Typelib
                 elsif Typelib::Registry.available_containers.include?(type_name)
                     # This is known to Typelib as a container
                     contained_type = template_args[0]
-                    contained_node = demangled_to_node[contained_type]
+                    contained_node = info.demangled_to_node[contained_type]
                     if !contained_node
-                        contained_node = name_to_nodes[contained_type].first
+                        contained_node = info.name_to_nodes[contained_type].first
                     end
                     if !contained_node
                         contained_basename, contained_context = resolve_namespace_of(template_args[0])
-                        contained_node = name_to_nodes[contained_basename].
+                        contained_node = info.name_to_nodes[contained_basename].
                             find { |node| node['context'].to_s == contained_context }
                     end
                     if !contained_node
@@ -371,7 +485,7 @@ module Typelib
                     end
                 else
                     # Make sure that we can digest it. Forbidden are: non-public members
-                    base_classes = (xmlnode / 'Base').map do |child_node|
+                    base_classes = info.bases[xmlnode['id']].map do |child_node|
                         if child_node['virtual'] != '0'
                             return ignore(xmlnode, "ignoring #{name}, it has virtual base classes")
                         elsif child_node['access'] != 'public'
@@ -385,16 +499,20 @@ module Typelib
                         end
                     end
 
-                    fields = (xmlnode['members'] || "").split(" ").
-                        map { |member_id| node_from_id(member_id) }.
-                        compact.
-                        find_all do |member_node|
-                            if member_node['virtual'] == '1'
-                                return ignore(xmlnode, "ignoring #{name}, it has virtual methods")
-                            end
-                            member_node.name == "Field"
+                    member_ids = (xmlnode['members'] || '').split(" ")
+                    member_ids.each do |id|
+                        if info.virtual_members.include?(id)
+                            return ignore(xmlnode, "ignoring #{name}, it has virtual methods")
                         end
+                    end
 
+                    fields = member_ids.map do |member_id|
+                        if field_node = info.id_to_node[member_id]
+                            if field_node.name == "Field"
+                                field_node
+                            end
+                        end
+                    end.compact
                     if fields.empty?
                         return ignore(xmlnode, "ignoring the empty struct/class #{name}")
                     end
@@ -484,8 +602,8 @@ module Typelib
 
 
                 type = registry.create_enum full_name do |e|
-                    (xmlnode / "EnumValue").each do |enum_value|
-                        e.add(enum_value["name"], enum_value['init'])
+                    info.enum_values[id].each do |enum_value|
+                        e.add(enum_value["name"], Integer(enum_value['init']))
                     end
                 end
                 set_source_file(type, xmlnode)
@@ -509,7 +627,7 @@ module Typelib
             # type, if we find one, alias it
             opaques.dup.each do |opaque_name|
                 name, context = resolve_namespace_of(opaque_name)
-                name_to_nodes[name].find_all { |n| n.name == "Typedef" }.each do |typedef|
+                info.name_to_nodes[name].find_all { |n| n.name == "Typedef" }.each do |typedef|
                     next if context && typedef["context"].to_s != context
                     type_node = node_from_id(typedef["type"].to_s)
                     namespace = resolve_context(type_node['context'])
@@ -564,59 +682,14 @@ module Typelib
         def load(required_files, xml)
             @registry = Typelib::Registry.new
             Typelib::Registry.add_standard_cxx_types(registry)
-
-            @id_to_node = Hash.new
-            @id_to_file = Hash.new
-            @name_to_nodes = Hash.new { |h, k| h[k] = Array.new }
-            @demangled_to_node = Hash.new
-
-            # Enumerate all children of the root node in an id-to-node map, to
-            # speed up lookup during the type resolution process
-            root = (xml / "GCC_XML").first
-
-            # Check here whether the GCC_XML node could be found
-            # The actual temporary xml-file might not be empty, e.g. containing the xml version line only
-            # thus need to check on the first node and any available children here
-            if !root || !root.respond_to?("children")
-                raise "gccxml generated incomplete xml, please verify that your /tmp folder has enough space left"
-            end
-
-            types_per_file = Hash.new { |h, k| h[k] = Array.new }
-            typedefs_per_file = Hash.new { |h, k| h[k] = Array.new }
-            root_file_ids = Array.new
-            root.children.each do |child_node|
-                id_to_node[child_node["id"].to_s] = child_node
-                if child_node.name != "File"
-                    if (child_node_name = child_node['name'])
-                        name_to_nodes[cxx_to_typelib(child_node_name)] << child_node
-                    end
-                    if (child_node_name = child_node['demangled'])
-                        demangled_to_node[cxx_to_typelib(child_node_name)] = child_node
-                    end
-                end
-
-                if child_node.name == "File"
-                    if required_files.include?(child_node['name'])
-                        root_file_ids << child_node['id']
-                    end
-                elsif %w{Struct Class Enumeration}.include?(child_node.name) && child_node['incomplete'] != '1'
-                    types_per_file[child_node['file']] << child_node
-                elsif child_node.name == "Typedef"
-                    typedefs_per_file[child_node['file']] << child_node
-                end
-            end
+            @info = GCCXMLInfo.new(required_files)
+            info.parse(xml)
 
             all_types = Array.new
             all_typedefs = Array.new
-            root_file_ids.each do |file_id|
-                all_types.concat(types_per_file[file_id])
-                all_typedefs.concat(typedefs_per_file[file_id])
-            end
-            all_types.each do |type_node|
-                id_to_file[type_node["id"].to_s] = id_to_node[type_node['file']]['name']
-            end
-            all_typedefs.each do |type_node|
-                id_to_file[type_node["id"].to_s] = id_to_node[type_node['file']]['name']
+            info.required_files.each_value do |file_id|
+                all_types.concat(info.types_per_file[file_id])
+                all_typedefs.concat(info.typedefs_per_file[file_id])
             end
 
             if !opaques.empty?
@@ -696,7 +769,7 @@ module Typelib
                     raise ArgumentError, "gccxml returned an error while parsing #{file}"
                 end
 
-                return Nokogiri::XML(io.read)
+                return io.read
             end
         end
     end
