@@ -1,0 +1,43 @@
+<package>
+  <name>typelib</name>
+  <version>1.1.1</version>
+  <description>
+      This library offers an introspection mechanism for C/C++ value-types. I.e.
+      it offers a way to represent types, and to manipulate in-memory values
+      that are instances of those types.
+
+      A Ruby binding is included, which gives a fast and transparent
+      modification of C/C++ in-memory types from Ruby, and an associated
+      interface to call C functions from shared libraries.
+  </description>
+  <author>Sylvain Joyeux/sylvain.joyeux@m4x.org</author>
+  <maintainer email="orocos-dev@lists.mech.kuleuven.be">OCL Development Team</maintainer>
+  <license>CeCILL-B (BSD-like)</license>
+
+  <buildtool_depend>cmake</buildtool_depend>
+  <export>
+    <build_type>
+      cmake
+    </build_type>
+  </export>
+
+  <build_depend>utilmm</build_depend>
+  <build_depend>utilrb</build_depend>
+  <build_depend>gccxml</build_depend>
+  <build_depend>boost</build_depend>
+  <build_depend>libxml2</build_depend>
+  <build_depend>facets</build_depend>
+  <build_depend>nokogiri</build_depend>
+  <build_depend>libxslt</build_depend>
+
+  <run_depend>utilmm</run_depend>
+  <run_depend>utilrb</run_depend>
+  <run_depend>gccxml</run_depend>
+  <run_depend>boost</run_depend>
+  <run_depend>libxml2</run_depend>
+  <run_depend>facets</run_depend>
+  <run_depend>nokogiri</run_depend>
+  <run_depend>libxslt</run_depend>
+  
+</package>
+
