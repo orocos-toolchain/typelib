@@ -426,6 +426,7 @@ VALUE value_from_address(VALUE klass, VALUE address)
     VALUE result = value_create_empty(klass);
     Value& value  = rb2cxx::object<Value>(result);
     value = Value(reinterpret_cast<void*>(NUM2ULL(address)), value.getType());
+    rb_iv_set(result, "@ptr", memory_wrap(value.getData(), false, NULL));
     value_call_typelib_initialize(result);
     return result;
 }
