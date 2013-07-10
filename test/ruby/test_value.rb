@@ -4,10 +4,12 @@ require 'typelib'
 require 'test/unit'
 require BUILDDIR + '/ruby/libtest_ruby'
 require 'pp'
+require 'flexmock/test_unit'
 
 class TC_Value < Test::Unit::TestCase
     include Typelib
     def teardown
+        super
 	GC.start
     end
 
@@ -49,6 +51,54 @@ class TC_Value < Test::Unit::TestCase
 
 	assert(ptr = value.instance_variable_get(:@ptr))
 	assert_equal(value.zone_address, ptr.zone_address)
+    end
+
+    def test_wrapping_a_buffer_should_call_typelib_initialize
+        int_t = CXXRegistry.new.build("/int")
+        v = Typelib.from_ruby(2, int_t)
+        flexmock(int_t).new_instances.should_receive(:typelib_initialize).once
+        int_t.wrap(v.to_byte_array)
+    end
+
+    def test_wrapping_a_memory_zone_should_call_typelib_initialize
+        int_t = CXXRegistry.new.build("/int")
+        v = Typelib.from_ruby(2, int_t)
+        flexmock(int_t).new_instances.should_receive(:typelib_initialize).once
+        int_t.wrap(v.to_memory_ptr)
+    end
+
+    def test_creating_a_new_value_should_call_typelib_initialize
+        int_t = CXXRegistry.new.build("/int")
+        recorder = flexmock
+        recorder.should_receive(:initialized).once
+        int_t.class_eval do
+            define_method(:typelib_initialize) { recorder.initialized }
+        end
+        int_t.new
+    end
+
+    def test_wrapping_a_buffer_should_not_call_initialize
+        int_t = CXXRegistry.new.build("/int")
+        v = Typelib.from_ruby(2, int_t)
+        flexmock(int_t).new_instances.should_receive(:initialize).never
+        int_t.wrap(v.to_byte_array)
+    end
+
+    def test_wrapping_a_memory_zone_should_not_call_initialize
+        int_t = CXXRegistry.new.build("/int")
+        v = Typelib.from_ruby(2, int_t)
+        flexmock(int_t).new_instances.should_receive(:initialize).never
+        int_t.wrap(v.to_memory_ptr)
+    end
+
+    def test_creating_a_new_value_should_call_initialize
+        int_t = CXXRegistry.new.build("/int")
+        recorder = flexmock
+        recorder.should_receive(:initialized).once
+        int_t.class_eval do
+            define_method(:initialize) { recorder.initialized }
+        end
+        int_t.new
     end
 
     def test_wrap_argument_check

@@ -354,38 +354,80 @@ static void value_delete(void* self) { delete reinterpret_cast<Value*>(self); }
 static VALUE value_alloc(VALUE klass)
 { return Data_Wrap_Struct(klass, 0, value_delete, new Value); }
 
+/** Allocates a new Typelib object, which wraps an untyped, unallocated Value
+ * object
+ */
 static
-VALUE value_initialize(VALUE self, VALUE ptr)
+VALUE value_create_empty(VALUE klass)
 {
-    Type const& t(rb2cxx::object<Type>(rb_class_of(self)));
+    Type const& t(rb2cxx::object<Type>(klass));
+    return Data_Wrap_Struct(klass, 0, value_delete, new Value(NULL, t));
+}
 
-    if (NIL_P(ptr) || rb_obj_is_kind_of(ptr, rb_cString))
-    {
-#       ifdef VERBOSE
-        fprintf(stderr, "allocating new value of type %s to copy an existing buffer\n", t.getName().c_str());
-#       endif
-        VALUE buffer = memory_allocate(t.getSize());
-        memory_init(buffer, rb_class_of(self));
-	if (! NIL_P(ptr))
-	{
-            char* ruby_buffer = StringValuePtr(ptr);
-            vector<uint8_t> cxx_buffer(ruby_buffer, ruby_buffer + RSTRING_LEN(ptr));
-            try { Typelib::load(Value(memory_cptr(buffer), t), cxx_buffer); }
-            catch(std::exception const& e)
-            { rb_raise(rb_eArgError, "%s", e.what()); }
-	}
+static
+void value_call_typelib_initialize(VALUE obj)
+{
+    rb_funcall(obj, rb_intern("typelib_initialize"), 0);
+}
 
-	ptr = buffer;
-    }
-
-    // Protect 'ptr' against the GC
-    rb_iv_set(self, "@ptr", ptr);
-    Value& value  = rb2cxx::object<Value>(self);
-    value = Value(memory_cptr(ptr), t);
+/** Allocates a new Typelib object that uses a given MemoryZone object
+ */
+static
+VALUE value_from_memory_zone(VALUE klass, VALUE ptr)
+{
+    VALUE result = value_create_empty(klass);
+    Value& value  = rb2cxx::object<Value>(result);
+    
+    // Protect the memory zone against GC until we don't need it anymore
+    rb_iv_set(result, "@ptr", ptr);
+    value = Value(memory_cptr(ptr), value.getType());
 #   ifdef VERBOSE
-    fprintf(stderr, "object %llu uses memory zone %p\n", NUM2ULL(rb_obj_id(self)), value.getData());
+    fprintf(stderr, "object %llu wraps memory zone %p\n", NUM2ULL(rb_obj_id(result)), value.getData());
 #   endif
-    return self;
+    value_call_typelib_initialize(result);
+    return result;
+}
+
+/** Allocates a new Typelib object that has a freshly initialized buffer inside
+ */
+static
+VALUE value_new(VALUE klass)
+{
+    Type const& type(rb2cxx::object<Type>(klass));
+#   ifdef VERBOSE
+    fprintf(stderr, "allocating new value of type %s\n", type.getName().c_str());
+#   endif
+    VALUE buffer = memory_allocate(type.getSize());
+    memory_init(buffer, klass);
+
+    return value_from_memory_zone(klass, buffer);
+}
+
+/** Allocates a new Typelib object that is initialized from the information
+ * given in the passed string
+ */
+static
+VALUE value_from_buffer(VALUE klass, VALUE string)
+{
+    VALUE result = value_new(klass);
+    Value value  = rb2cxx::object<Value>(result);
+
+    char* ruby_buffer = StringValuePtr(string);
+    vector<uint8_t> cxx_buffer(ruby_buffer, ruby_buffer + RSTRING_LEN(string));
+    try { Typelib::load(value, cxx_buffer); }
+    catch(std::exception const& e)
+    { rb_raise(rb_eArgError, "%s", e.what()); }
+    return result;
+}
+
+static
+VALUE value_from_address(VALUE klass, VALUE address)
+{
+    VALUE result = value_create_empty(klass);
+    Value& value  = rb2cxx::object<Value>(result);
+    value = Value(reinterpret_cast<void*>(NUM2ULL(address)), value.getType());
+    value_call_typelib_initialize(result);
+    return result;
 }
 
 static
@@ -580,7 +622,11 @@ void typelib_ruby::Typelib_init_values()
     rb_define_singleton_method(cType, "do_memory_layout", RUBY_METHOD_FUNC(&type_memory_layout), 4);
     rb_define_singleton_method(cType, "do_dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
     rb_define_singleton_method(cType, "casts_to?",     RUBY_METHOD_FUNC(&type_can_cast_to), 1);
-    rb_define_method(cType, "__initialize__",   RUBY_METHOD_FUNC(&value_initialize), 1);
+    rb_define_singleton_method(cType, "value_new", RUBY_METHOD_FUNC(&value_new), 0);
+    rb_define_singleton_method(cType, "from_buffer", RUBY_METHOD_FUNC(&value_from_buffer), 1);
+    rb_define_singleton_method(cType, "from_memory_zone", RUBY_METHOD_FUNC(&value_from_memory_zone), 1);
+    rb_define_singleton_method(cType, "from_address", RUBY_METHOD_FUNC(&value_from_address), 1);
+
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
     rb_define_method(cType, "memory_eql?",      RUBY_METHOD_FUNC(&value_memory_eql_p), 1);
     rb_define_method(cType, "endian_swap",      RUBY_METHOD_FUNC(&value_endian_swap), 0);

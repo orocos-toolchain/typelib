@@ -122,12 +122,11 @@ module Typelib
 	# * a hash, in which case it is a { field_name => field_value } hash
 	# * an array, in which case the fields are initialized in order
 	# Note that a compound should be either fully initialized or not initialized
-        def initialize(ptr)
+        def typelib_initialize
+            super
 	    # A hash in which we cache Type objects for each of the structure fields
 	    @fields = Hash.new
             @field_types = self.class.field_types
-
-            super(ptr)
         end
 
         def raw_each_field
