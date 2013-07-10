@@ -279,13 +279,13 @@ namespace Typelib
         return base_type;
     }
 
-    const Type* Registry::build(const std::string& name)
+    const Type* Registry::build(const std::string& name, std::size_t size)
     {
         const Type* type = get(name);
         if (type)
             return type;
 
-        return TypeBuilder::build(*this, getFullName(name));
+        return TypeBuilder::build(*this, getFullName(name), size);
     }
 
     Type* Registry::get_(const std::string& name)

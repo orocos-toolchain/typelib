@@ -14,7 +14,7 @@ namespace Typelib
     class TypeBuilder
     {
         std::string m_basename;
-        Type const* m_type;
+        Type* m_type;
 
         struct Modifier
         {
@@ -25,7 +25,7 @@ namespace Typelib
         typedef std::pair<const Type*, ModifierList> TypeSpec;
 
         static TypeSpec parse(const Registry& registry, const std::string& full_name);
-        static const Type& build(Registry& registry, const TypeSpec& spec);
+        static const Type& build(Registry& registry, const TypeSpec& spec, int size);
 
         Registry& m_registry;
 
@@ -54,13 +54,15 @@ namespace Typelib
         /** Add an innermost dimension to the current type (if it is not
 	 * an array, builds an array */
         void addArrayMinor(int size);
+        /** Sets the size of the current type */
+        void setSize(int size);
 
         /** Get the current type */
         const Type& getType() const;
 
 	/** Build a type from its full name 
 	 * @return the new type or 0 if it can't be built */
-        static const Type* build(Registry& registry, const std::string& full_name);
+        static const Type* build(Registry& registry, const std::string& full_name, int size = 0);
 	/** Get base name, that is the type \c full_name is derived from */
         static std::string getBaseTypename(const std::string& full_name);
 	/** Get base type, that is the type \c full_name is derived from

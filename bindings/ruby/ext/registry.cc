@@ -154,11 +154,18 @@ VALUE registry_do_get(VALUE self, VALUE name)
 }
 
 static
-VALUE registry_do_build(VALUE self, VALUE name)
+VALUE registry_do_build(int argc, VALUE* argv, VALUE self)
 {
+    VALUE name = argv[0];
+    int size = 0;
+    if (argc == 0 || argc > 2)
+        rb_raise(rb_eArgError, "expected one or two arguments, got %i", argc);
+    else if (argc == 2)
+        size = NUM2INT(argv[1]);
+
     Registry& registry = rb2cxx::object<Registry>(self);
     try {
-        Type const* type = registry.build( StringValuePtr(name) );
+        Type const* type = registry.build( StringValuePtr(name), size );
         if (! type) 
             rb_raise(eNotFound, "cannot find %s in registry", StringValuePtr(name));
         return cxx2rb::type_wrap(*type, self);
@@ -655,7 +662,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_alloc_func(cRegistry, registry_alloc);
     rb_define_method(cRegistry, "size", RUBY_METHOD_FUNC(registry_size), 0);
     rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_do_get), 1);
-    rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_do_build), 1);
+    rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_do_build), -1);
     rb_define_method(cRegistry, "each_type", RUBY_METHOD_FUNC(registry_each_type), 2);
     // do_import is called by the Ruby-defined import, which formats the 
     // option hash (if there is one), and can detect the import type by extension

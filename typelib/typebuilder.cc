@@ -24,12 +24,12 @@ namespace Typelib
     {
         string basename = accumulate(name.begin(), name.end(), string(), join);
         
-        m_type = m_registry.build(basename);
+        m_type = m_registry.get_(basename);
         if (!m_type) 
             throw Undefined(basename);
     }
     TypeBuilder::TypeBuilder(Registry& registry, const Type* base)
-        : m_type(base), m_registry(registry) { }
+        : m_type(const_cast<Type*>(base)), m_registry(registry) { }
 
 
 
@@ -39,7 +39,7 @@ namespace Typelib
         for (; level; --level)
         {
             // Try to get the type object in the registry
-            const Type* base_type = m_registry.get(Pointer::getPointerName(m_type->getName()));
+            Type* base_type = m_registry.get_(Pointer::getPointerName(m_type->getName()));
             if (base_type)
                 m_type = base_type;
             else
@@ -58,7 +58,7 @@ namespace Typelib
 
 	while(m_type->getCategory() == Type::Array)
 	{
-	    Array const* array = dynamic_cast<Array const*>(m_type);
+	    Array* array = dynamic_cast<Array*>(m_type);
 	    dims.push_back(array->getDimension());
 	    m_type = const_cast<Type*>(&array->getIndirection());
 	}
@@ -71,7 +71,7 @@ namespace Typelib
 
     void TypeBuilder::addArrayMajor(int new_dim)
     {
-        const Type* base_type = m_registry.get(Array::getArrayName(m_type->getName(), new_dim));
+        Type* base_type = m_registry.get_(Array::getArrayName(m_type->getName(), new_dim));
         if (base_type)
             m_type = base_type;
         else
@@ -82,7 +82,12 @@ namespace Typelib
         }
     }
 
-    const Type& TypeBuilder::build(Registry& registry, const TypeSpec& spec)
+    void TypeBuilder::setSize(int size)
+    {
+        m_type->setSize(size);
+    }
+
+    const Type& TypeBuilder::build(Registry& registry, const TypeSpec& spec, int size)
     {
         const Type* base = spec.first;
         const ModifierList& stack(spec.second);
@@ -99,6 +104,8 @@ namespace Typelib
                 builder.addArrayMajor(size);
         }
 
+        if (size != 0)
+            builder.setSize(size);
         return builder.getType();
     }
 
@@ -144,13 +151,13 @@ namespace Typelib
         return spec;
     }
 
-    const Type* TypeBuilder::build(Registry& registry, const std::string& full_name)
+    const Type* TypeBuilder::build(Registry& registry, const std::string& full_name, int size)
     {
         TypeSpec spec;
         try { spec = parse(registry, full_name); }
         catch(Undefined) { return 0; }
 
-        return &build(registry, spec);
+        return &build(registry, spec, size);
     }
 
     const Type* TypeBuilder::getBaseType(const Registry& registry, const std::string& full_name)
