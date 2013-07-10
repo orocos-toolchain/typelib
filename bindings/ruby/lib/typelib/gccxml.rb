@@ -659,6 +659,12 @@ module Typelib
             block = block.map do |l|
                 l.strip.gsub(/^\s*(\*+\/?|\/+\**)/, '')
             end
+            while block.first && block.first.strip == ""
+                block.shift
+            end
+            while block.last && block.last.strip == ""
+                block.pop
+            end
             # Now remove the same amount of spaces in front of each lines
             space_count = block.map do |l|
                 l =~ /^(\s*)/
