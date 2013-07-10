@@ -44,7 +44,7 @@ module Typelib
             end
         end
 
-        STORED_TAGS = %w{Namespace Typedef Enumeration Struct Class ArrayType FundamentalType}
+        STORED_TAGS = %w{Namespace Typedef Enumeration Struct Class ArrayType FundamentalType PointerType}
 
         def initialize(required_files)
             @required_files = Hash.new
@@ -98,7 +98,7 @@ module Typelib
 
             if name == "Typedef"
                 typedefs_per_file[attributes['file']] << child_node
-            elsif name != "FundamentalType" && name != "Namespace"
+            elsif %w{Struct Class Enumeration}.include?(name)
                 types_per_file[attributes['file']] << child_node
             end
         end
@@ -348,8 +348,7 @@ module Typelib
         def resolve_type_id(id)
             if id_to_name.has_key?(id)
                 id_to_name[id]
-            else
-                typedef = node_from_id(id)
+            elsif typedef = node_from_id(id)
                 resolve_type_definition(typedef)
             end
         end
@@ -416,7 +415,9 @@ module Typelib
 
             if kind == "PointerType"
                 if pointed_to_type = resolve_type_id(xmlnode['type'])
-                    return (id_to_name[id] = "#{pointed_to_type}*")
+                    pointed_to_name = (id_to_name[id] = "#{pointed_to_type}*")
+                    registry.build(pointed_to_name)
+                    return pointed_to_name
                 else return ignore(xmlnode)
                 end
             elsif kind == "ArrayType"
@@ -427,7 +428,9 @@ module Typelib
                     else
                         raise "expected NUMBERu for the 'max' attribute of an array definition, but got #{value}"
                     end
-                    return (id_to_name[id] = "#{pointed_to_type}[#{size}]")
+                    array_typename = (id_to_name[id] = "#{pointed_to_type}[#{size}]")
+                    registry.create_array(pointed_to_type, size)
+                    return array_typename
                 else return ignore(xmlnode)
                 end
             elsif kind == "CvQualifiedType"
@@ -554,6 +557,9 @@ module Typelib
                     end
                 end
             elsif kind == "FundamentalType"
+                if !registry.include?(name)
+                    return ignore(xmlnode)
+                end
             elsif kind == "Typedef"
                 if !(namespace = resolve_context(xmlnode['context']))
                     return ignore(xmlnode, "ignoring typedef #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
