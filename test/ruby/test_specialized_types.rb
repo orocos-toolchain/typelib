@@ -560,10 +560,10 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal 1, value.size
     end
 
-    def test_define_container
+    def test_create_container
         reg = make_registry
-        assert_raises(ArgumentError) { reg.define_container("/blabla") }
-        cont = reg.define_container "/std/vector", reg.get("DisplayTest")
+        assert_raises(ArgumentError) { reg.create_container("/blabla") }
+        cont = reg.create_container "/std/vector", reg.get("DisplayTest")
 
         assert(cont < Typelib::ContainerType)
         assert_equal("/std/vector", cont.container_kind)
