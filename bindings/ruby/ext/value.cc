@@ -207,6 +207,8 @@ static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 	return Qfalse;
     if (rb_funcall(rbself, rb_intern("superclass"), 0) != rb_funcall(rbwith, rb_intern("superclass"), 0))
         return Qfalse;
+    if (rbself == rbwith)
+        return Qtrue;
 
     Type const& self(rb2cxx::object<Type>(rbself));
     Type const& with(rb2cxx::object<Type>(rbwith));
