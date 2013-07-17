@@ -282,6 +282,11 @@ module Typelib
                 end
             end
 
+            # Returns true if this compound has no fields
+            def empty?
+                fields.empty?
+            end
+
             # Returns the offset, in bytes, of the given field
             def offset_of(fieldname)
                 fieldname = fieldname.to_str

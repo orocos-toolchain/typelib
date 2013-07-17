@@ -516,7 +516,7 @@ module Typelib
                             end
                         end
                     end.compact
-                    if fields.empty?
+                    if fields.empty? && base_classes.all? { |type, _| type.empty? }
                         return ignore(xmlnode, "ignoring the empty struct/class #{name}")
                     end
 
