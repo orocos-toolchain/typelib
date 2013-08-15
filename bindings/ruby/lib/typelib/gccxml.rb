@@ -747,7 +747,7 @@ module Typelib
                 end
             end
 
-            registry.to_xml
+            registry
         end
 
         # Runs gccxml on the provided file and with the given options, and
@@ -808,14 +808,8 @@ module Typelib
             if opaques = options[:opaques]
                 converter.opaques |= opaques.to_set
             end
-            tlb = converter.load(required_files, xml)
-
-            Tempfile.open('gccxml.tlb') do |io|
-                io.write tlb
-                io.flush
-
-                registry.import(io.path, 'tlb', :merge => false)
-            end
+            gccxml_registry = converter.load(required_files, xml)
+            registry.merge(gccxml_registry)
         end
 
         # Returns true if Registry#import will use GCCXML to load the given
