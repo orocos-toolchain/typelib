@@ -134,9 +134,7 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
  * Typelib::Type
  */
 
-/** 
- * call-seq:
- *   type.to_csv([basename [, separator]])	    => string
+/* @overload type.to_csv([basename [, separator]])
  *
  * Returns a one-line representation of this type, using +separator+ 
  * to separate each fields. If +basename+ is given, use it as a 
@@ -167,11 +165,12 @@ static VALUE type_to_csv(int argc, VALUE* argv, VALUE rbself)
     return rb_str_new(str.c_str(), str.length());
 }
 
-/* call-seq:
- *  t.basename => name
+/* @overload t.basename
  *
  * Returns the type name of the receiver with the namespace part
  * removed
+ *
+ * @return [String]
  */
 static VALUE typelib_do_basename(VALUE mod, VALUE name)
 {
@@ -186,7 +185,12 @@ static VALUE typelib_do_namespace(VALUE mod, VALUE name)
     return rb_str_new(result.c_str(), result.length());
 }
 
-/* Internal helper method for Type#namespace */
+/* @overload split_typename
+ *
+ * Splits the typename of self into its components
+ * 
+ * @return [Array<String>]
+ */
 static VALUE typelib_do_split_name(VALUE mod, VALUE name)
 {
     std::list<std::string> splitted = Typelib::splitTypename(StringValuePtr(name));
@@ -197,10 +201,11 @@ static VALUE typelib_do_split_name(VALUE mod, VALUE name)
 }
 
 
-/* call-seq:
- *  t1 == t2 => true or false
+/* @overload t1 == t2
  *
  * Returns true if +t1+ and +t2+ are the same type definition.
+ *
+ * @return [Boolean]
  */
 static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 { 
@@ -217,8 +222,7 @@ static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
     return result ? Qtrue : Qfalse;
 }
 
-/* call-seq:
- *  type.size	=> size
+/* @overload type.size
  *
  * Returns the size in bytes of instances of +type+
  */
@@ -228,10 +232,7 @@ static VALUE type_size(VALUE self)
     return INT2FIX(type.getSize());
 }
 
-/* call-seq:
- *  type.dependencies => set_of_type
- *
- * Returns the set of Type subclasses that represent the types needed to build
+/* Returns the set of Type subclasses that represent the types needed to build
  * +type+.
  */
 static VALUE type_dependencies(VALUE self)
@@ -248,8 +249,7 @@ static VALUE type_dependencies(VALUE self)
     return result;
 }
 
-/* call-seq:
- *  type.casts_to?(other_type) => true or false
+/* @overload type.casts_to?(other_type) => true or false
  *
  * Returns true if a value that is described by +type+ can be manipulated using
  * +other_type+. This is a weak form of equality
@@ -370,7 +370,12 @@ void value_call_typelib_initialize(VALUE obj)
     rb_funcall(obj, rb_intern("typelib_initialize"), 0);
 }
 
-/** Allocates a new Typelib object that uses a given MemoryZone object
+/* @overload from_memory_zone(ptr)
+ *
+ * @param [Typelib::MemoryZone] ptr
+ * @return [Typelib::Type]
+ *
+ * Allocates a new Typelib object that uses a given MemoryZone object
  */
 static
 VALUE value_from_memory_zone(VALUE klass, VALUE ptr)
@@ -388,7 +393,11 @@ VALUE value_from_memory_zone(VALUE klass, VALUE ptr)
     return result;
 }
 
-/** Allocates a new Typelib object that has a freshly initialized buffer inside
+/* @overload new
+ *
+ * @return [Typelib::Type]
+ *
+ * Allocates a new Typelib object that has a freshly initialized buffer inside
  */
 static
 VALUE value_new(VALUE klass)
@@ -403,8 +412,13 @@ VALUE value_new(VALUE klass)
     return value_from_memory_zone(klass, buffer);
 }
 
-/** Allocates a new Typelib object that is initialized from the information
+/* @overload from_buffer(buffer)
+ *
+ * Allocates a new Typelib object that is initialized from the information
  * given in the passed string
+ *
+ * @param [String] buffer
+ * @return [Typelib::Type]
  */
 static
 VALUE value_from_buffer(VALUE klass, VALUE string)
@@ -420,6 +434,13 @@ VALUE value_from_buffer(VALUE klass, VALUE string)
     return result;
 }
 
+/* @overload from_address(address)
+ *
+ * Creates a value that wraps a given memory address
+ *
+ * @param [Integer] address
+ * @return [Typelib::Type]
+ */
 static
 VALUE value_from_address(VALUE klass, VALUE address)
 {
@@ -431,6 +452,10 @@ VALUE value_from_address(VALUE klass, VALUE address)
     return result;
 }
 
+/* @overload address
+ *
+ * @return [Integer] returns the address of the memory zone this value wraps
+ */
 static
 VALUE value_address(VALUE self)
 {
@@ -438,6 +463,13 @@ VALUE value_address(VALUE self)
     return LONG2NUM((long)value.getData());
 }
 
+/* @overload endian_swap
+ *
+ * Creates a new value with an endianness opposite of the one of self
+ *
+ * @return [Typelib::Type] a new value whose endianness has been swapped
+ * @see endian_swap!
+ */
 static
 VALUE value_endian_swap(VALUE self)
 {
@@ -451,6 +483,13 @@ VALUE value_endian_swap(VALUE self)
     return result;
 }
 
+/* @overload endian_swap!
+ *
+ * Swaps the endianness of self
+ *
+ * @return [Typelib::Type] self
+ * @see endian_swap
+ */
 static
 VALUE value_endian_swap_b(VALUE self, VALUE rb_compile)
 {
