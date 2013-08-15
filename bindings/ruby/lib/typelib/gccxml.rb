@@ -113,13 +113,23 @@ module Typelib
             lines.each do |l|
                 if match = /<(\w+)/.match(l)
                     name = match[1]
-                    raw_attributes = l.gsub(/&lt;/, "<").gsub(/&gt;/, ">").scan(/\w+="[^"]+"/)
-                    attributes = Hash.new
-                    raw_attributes.each do |attr|
-                        attr_name, attr_value = attr.split("=")
-                        attributes[attr_name] = attr_value[1..-2]
+                    parsing_needed = %w{File Field Base EnumValue}.include?(name) ||
+                        STORED_TAGS.include?(name)
+
+                    if !parsing_needed
+                        if l =~ /virtual="1"/
+                            l =~ /id="([^"]+)"/
+                            tag_start(name, Hash['id' => $1, 'virtual' => 1])
+                        end
+                    else
+                        raw_attributes = l.gsub(/&lt;/, "<").gsub(/&gt;/, ">").scan(/\w+="[^"]+"/)
+                        attributes = Hash.new
+                        raw_attributes.each do |attr|
+                            attr_name, attr_value = attr.split("=")
+                            attributes[attr_name] = attr_value[1..-2]
+                        end
+                        tag_start(name, attributes)
                     end
-                    tag_start(name, attributes)
                 end
             end
         end
