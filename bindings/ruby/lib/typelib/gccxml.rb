@@ -458,6 +458,10 @@ module Typelib
             id_to_name[id] = name
             if opaque?(name)
                 # Nothing to do ...
+                type = registry.get(name)
+                if name == type.name
+                    set_source_file(type, xmlnode)
+                end
                 return name
             end
 
@@ -574,7 +578,11 @@ module Typelib
                 type_names[id] = full_name
                 id_to_name[id] = full_name
                 if opaque?(full_name)
-                    # Nothing to do ...
+                    type = registry.get(full_name)
+                    if type.name == full_name
+                        # Nothing to do ...
+                        set_source_file(type, xmlnode)
+                    end
                     return full_name
                 end
 
@@ -641,6 +649,7 @@ module Typelib
                     full_name = "#{namespace}#{base}"
 
                     opaques << full_name
+                    set_source_file(registry.get(opaque_name), typedef)
                     registry.alias full_name, opaque_name
                 end
             end
