@@ -220,6 +220,7 @@ namespace
             // allow a proper call to resize() later if needed.
             factory.getRegistry().get_(*container).setSize(size);
         }
+        loadMetaData(node, container->getMetaData());
         return container;
     }
     Type const* load_enum(TypeNode const& node, Factory& factory)
