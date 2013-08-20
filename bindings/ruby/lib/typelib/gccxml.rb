@@ -340,7 +340,7 @@ module Typelib
             (resolve_namespace(ns['context']) << ns['name'])
         end
 
-        def resolve_context(id)
+        def resolve_context_name(id)
             if id_to_name.has_key?(id)
                 return id_to_name[id]
             end
@@ -351,7 +351,8 @@ module Typelib
                 id_to_name[id] = result
                 result
             else
-                resolve_type_id(id)
+                cxx_typename = (definition['demangled'] || definition['name'])
+                cxx_to_typelib(cxx_typename)
             end
         end
         
@@ -575,7 +576,7 @@ module Typelib
                     return ignore(xmlnode)
                 end
             elsif kind == "Typedef"
-                if !(namespace = resolve_context(xmlnode['context']))
+                if !(namespace = resolve_context_name(xmlnode['context']))
                     return ignore(xmlnode, "ignoring typedef #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
                 end
 
@@ -612,7 +613,7 @@ module Typelib
             elsif kind == "Enumeration"
                 if xmlnode['name'] =~ /^\._(\d+)$/ # this represents anonymous enums
                     return ignore(xmlnode, "ignoring anonymous enumeration, as they can't be represented in Typelib")
-                elsif !(namespace = resolve_context(xmlnode['context']))
+                elsif !(namespace = resolve_context_name(xmlnode['context']))
                     return ignore(xmlnode, "ignoring enumeration #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
                 end
 
@@ -654,7 +655,7 @@ module Typelib
                 info.name_to_nodes[name].find_all { |n| n.name == "Typedef" }.each do |typedef|
                     next if context && typedef["context"].to_s != context
                     type_node = node_from_id(typedef["type"].to_s)
-                    namespace = resolve_context(type_node['context'])
+                    namespace = resolve_context_name(type_node['context'])
                     base = cxx_to_typelib(type_node["name"])
                     full_name = "#{namespace}#{base}"
 
