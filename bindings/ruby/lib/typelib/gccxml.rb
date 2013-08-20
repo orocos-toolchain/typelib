@@ -652,6 +652,7 @@ module Typelib
             # type, if we find one, alias it
             opaques.dup.each do |opaque_name|
                 name, context = resolve_namespace_of(opaque_name)
+                next if !context # this opaque does not appear in the loaded headers
                 info.name_to_nodes[name].find_all { |n| n.name == "Typedef" }.each do |typedef|
                     next if context && typedef["context"].to_s != context
                     type_node = node_from_id(typedef["type"].to_s)
