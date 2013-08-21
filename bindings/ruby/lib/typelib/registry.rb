@@ -72,8 +72,6 @@ module Typelib
             if !mod.respond_to?('find_exported_template')
                 mod.extend(TypeExportNamespace)
                 mod.registry = self
-                mod.instance_variable_set :@exported_types, Hash.new
-                mod.instance_variable_set :@exported_templates, Hash.new
             end
         end
 
@@ -297,9 +295,15 @@ module Typelib
         end
 
         module TypeExportNamespace
-            attr_accessor :registry
-            attr_reader :exported_types
-            attr_reader :exported_templates
+            attr_writer :registry
+            def registry
+                if @registry then @registry
+                elsif superclass.respond_to?(:registry)
+                    superclass.registry
+                end
+            end
+            attribute(:exported_types) { Hash.new }
+            attribute(:exported_templates) { Hash.new }
 
             def find_exported_template(template_basename, args, remaining)
                 if remaining.empty?
@@ -357,7 +361,7 @@ module Typelib
                     arg
                 end
             end
-            exports = mod.instance_variable_get :@exported_templates
+            exports = mod.exported_templates
             exports[[template_basename, template_args]] = exported_type
         end
 
