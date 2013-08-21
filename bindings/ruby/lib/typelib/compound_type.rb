@@ -349,7 +349,7 @@ module Typelib
                         pp.text " <"
                     end
 		    pp.nest(2) do
-                        type.pretty_print(pp, false)
+                        type.pretty_print(pp)
 		    end
 		    pp.text '>'
 		end
