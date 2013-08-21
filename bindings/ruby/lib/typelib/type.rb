@@ -343,6 +343,13 @@ module Typelib
                 Typelib.basename(name, separator)
             end
 
+            # Returns the elements of this type name
+            #
+            # @return [Array<String>]
+            def split_typename
+                Typelib.split_typename(name)
+            end
+
             # Returns the complete name for the type (both namespace and
             # basename). If +separator+ is set to a value different than
             # Typelib::NAMESPACE_SEPARATOR, Typelib's namespace separator will
