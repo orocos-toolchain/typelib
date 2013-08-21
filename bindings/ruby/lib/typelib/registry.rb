@@ -251,7 +251,7 @@ module Typelib
                                 raise InconsistentTypeExport.new("#{mod.name}::#{basename}", existing_type, exported_type), "there is a type registered at #{mod.name}::#{basename} which differs from the one in the registry, and override is false"
                             end
                         end
-                    else
+                    elsif mod.exported_types
                         mod.exported_types[basename] = type
                         mod.const_set(basename, exported_type)
                     end
