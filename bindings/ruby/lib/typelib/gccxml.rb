@@ -661,7 +661,9 @@ module Typelib
                     full_name = "#{namespace}#{base}"
 
                     opaques << full_name
-                    set_source_file(registry.get(opaque_name), typedef)
+                    opaque_t = registry.get(opaque_name)
+                    set_source_file(opaque_t, typedef)
+                    opaque_t.metadata.set('opaque_is_typedef', '1')
                     registry.alias full_name, opaque_name
                 end
             end
