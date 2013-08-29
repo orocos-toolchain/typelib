@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( test_vector_assumptions )
         ptr_value_t vector_min = ptr_value(&values);
         ptr_value_t vector_max = ptr_value(&values) + sizeof(values);
 
-        while ((it_p + sizeof(void*)) - values_p < sizeof(values))
+        while ((it_p + sizeof(void*)) - values_p < static_cast<int>(sizeof(values)))
         {
             ptr_value_t p = *reinterpret_cast<ptr_value_t*>(it_p);
             BOOST_REQUIRE(!(p >= vector_min && p < vector_max));
