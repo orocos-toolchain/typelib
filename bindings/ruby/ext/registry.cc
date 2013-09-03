@@ -546,7 +546,9 @@ static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element
 static VALUE registry_add_standard_cxx_types(VALUE klass, VALUE registry)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
-    Typelib::CXX::addStandardTypes(reg);
+    try { Typelib::CXX::addStandardTypes(reg); }
+    catch(Typelib::AlreadyDefined e)
+    { rb_raise(rb_eArgError, "%s", e.what()); }
     return registry;
 }
 
