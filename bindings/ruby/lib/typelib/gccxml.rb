@@ -119,7 +119,7 @@ module Typelib
                     if !parsing_needed
                         if l =~ /virtual="1"/
                             l =~ /id="([^"]+)"/
-                            tag_start(name, Hash['id' => $1, 'virtual' => 1])
+                            tag_start(name, Hash['id' => $1, 'virtual' => '1'])
                         end
                     else
                         raw_attributes = l.gsub(/&lt;/, "<").gsub(/&gt;/, ">").scan(/\w+="[^"]+"/)
