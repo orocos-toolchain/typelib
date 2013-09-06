@@ -211,6 +211,34 @@ module Typelib
         end
     end
 
+    # Exception raised when Typelib.from_ruby is called but the value cannot be
+    # converted to the requested type
+    class UnknownConversionRequested < ArgumentError
+        attr_reader :value, :type
+        def initialize(value, type)
+            @value, @type = value, type
+        end
+
+        def pretty_print(pp)
+            pp.text "conversion from #{value} of type #{value.class} to #{type} requested, but there are no known conversion that apply"
+        end
+    end
+
+    # Exception raised when Typelib.from_ruby encounters a value that has the
+    # same type name than the requested type, but the types differ
+    class ConversionToMismatchedType < UnknownConversionRequested
+        def pretty_print(pp)
+            pp.text "type mismatch when trying to convert #{value} to #{type}"
+            pp.breakable
+            pp.text "the value's definition is "
+            value.class.pretty_print(pp)
+            pp.breakable
+            pp.text "the target type's definition is "
+            type.pretty_print(pp)
+        end
+    end
+
+
     # Initializes +expected_type+ from +arg+, where +arg+ can either be a value
     # of expected_type, a value that can be casted into a value of
     # expected_type, or a Ruby value that can be converted into a value of
@@ -230,13 +258,11 @@ module Typelib
             converted = expected_type.from_ruby(arg)
         else
             if !(expected_type < NumericType) && !arg.kind_of?(expected_type)
-                reason =
-                    if arg.class.name != expected_type.name
-                        "types differ and there are not convertions from one to the other"
-                    else
-                        "the types have the same name but different definitions"
-                    end
-                raise ArgumentError, "cannot convert #{arg} to #{expected_type.name}: #{reason}"
+                if arg.class.name != expected_type.name
+                    raise UnknownConversionRequested.new(arg, expected_type), "types differ and there are not convertions from one to the other"
+                else
+                    raise ConversionToMismatchedType.new(arg, expected_type), "the types have the same name but different definitions"
+                end
             end
             converted = arg
         end
