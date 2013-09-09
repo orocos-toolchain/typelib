@@ -580,7 +580,8 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal 0, value.length
 
         value.push(?a)
-        assert_equal "a", Typelib.to_ruby(value)
+        value.push(?b)
+        assert_equal "ab", Typelib.to_ruby(value)
         assert_equal "a_string", Typelib.to_ruby(Typelib.from_ruby("a_string", reg.get("/std/string")))
     end
 
