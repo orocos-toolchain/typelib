@@ -8,7 +8,7 @@ module Typelib
 
         attr_reader :element_t
 
-        def initialize(*args)
+        def typelib_initialize
             super
             @element_t = self.class.deference
             @elements = []

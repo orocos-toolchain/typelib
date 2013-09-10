@@ -20,12 +20,7 @@
   <depend package="utilrb" />
   <rosdep name="gccxml" />
   <rosdep name="boost" />
-  <rosdep name="libxml2" />
   <rosdep name="facets" />
-  <rosdep name="nokogiri" />
-  <rosdep name="libxslt" />
-  <!-- <depend_optional name="doxygen" type="doc" /> -->
-  <!-- <depend_optional name="rdoc" type="doc" /> -->
 
   <tags>stable</tags>
 

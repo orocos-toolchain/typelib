@@ -13,6 +13,9 @@ module Typelib
         ALLOWED_OVERLOADINGS = allowed_overloadings.to_set
 
         class << self
+            # The metadata object
+            attr_reader :metadata
+
             # Definition of the unique convertion that should be used to convert
             # this type into a Ruby object
             #
@@ -340,6 +343,13 @@ module Typelib
                 Typelib.basename(name, separator)
             end
 
+            # Returns the elements of this type name
+            #
+            # @return [Array<String>]
+            def split_typename
+                Typelib.split_typename(name)
+            end
+
             # Returns the complete name for the type (both namespace and
             # basename). If +separator+ is set to a value different than
             # Typelib::NAMESPACE_SEPARATOR, Typelib's namespace separator will
@@ -368,11 +378,44 @@ module Typelib
 	    # Returns the pointer-to-self type
             def to_ptr; registry.build(name + "*") end
 
-            def pretty_print(pp) # :nodoc:
+            # Given a markdown-formatted string, return what should be displayed
+            # as text
+            def pp_doc(pp, doc)
+                if !doc.empty?
+                    first_line = true
+                    doc = doc.split("\n").map do |line|
+                        if first_line
+                            first_line = false
+                            "/** " + line
+                        else " * " + line
+                        end
+                    end
+                    if doc.size == 1
+                        doc[0] << " */"
+                    else
+                        doc << " */"
+                    end
+
+                    first_line = true
+                    doc.each do |line|
+                        if !first_line
+                            pp.breakable
+                        end
+                        pp.text line
+                        first_line = false
+                    end
+                    true
+                end
+            end
+
+            def pretty_print(pp, with_doc = true) # :nodoc:
+                if with_doc && (doc = metadata.get('doc').first)
+                    if pp_doc(pp, doc)
+                        pp.breakable
+                    end
+                end
 		pp.text name 
 	    end
-
-            alias :__real_new__ :new
 
             # Creates a new value from either a MemoryZone instance (i.e. a
             # pointer), or from a marshalled version of a value.
@@ -397,15 +440,33 @@ module Typelib
             def wrap(ptr)
 		if null?
 		    raise TypeError, "this is a null type"
-                elsif !(ptr.kind_of?(String) || ptr.kind_of?(MemoryZone))
+                elsif ptr.kind_of?(String)
+                    new_value = from_buffer(ptr)
+                elsif ptr.kind_of?(MemoryZone)
+                    new_value = from_memory_zone(ptr)
+                else
                     raise ArgumentError, "can only wrap strings and memory zones"
 		end
-                new_value = __real_new__(ptr) 
+
                 if size = new_value.marshalling_size
                     Typelib.add_allocated_memory(size)
                 end
                 new_value
 	    end
+
+            # Creates a Typelib wrapper that gives access to the memory
+            # pointed-to by the given FFI pointer
+            #
+            # The returned Typelib object will not care about deallocating the
+            # memory
+            #
+            # @param [FFI::Pointer] ffi_ptr the memory address at which the
+            #   value is
+            # @return [Type] the typelib object that gives access to the data
+            #   pointed-to by ffi_ptr
+            def from_ffi(ffi_ptr)
+                from_address(ffi_ptr.address)
+            end
 
             # Creates a new value of the given type.
             #
@@ -415,7 +476,12 @@ module Typelib
                 if init
                     Typelib.from_ruby(init, self)
                 else
-                    __real_new__(nil)
+                    new_value = value_new
+                    if size = new_value.marshalling_size
+                        Typelib.add_allocated_memory(size)
+                    end
+                    new_value.send(:initialize)
+                    new_value
                 end
             end
 
@@ -453,10 +519,8 @@ module Typelib
                 options[:remove_trailing_skips])
         end
 
-
-	def initialize(*args)
-	    __initialize__(*args)
-	end
+        def typelib_initialize
+        end
 
         def freeze_children
         end
@@ -508,6 +572,8 @@ module Typelib
 	end
 
         # Get the memory pointer for self
+        #
+        # @return [MemoryZone]
         def to_memory_ptr; @ptr end
 
 	def is_a?(typename); self.class.is_a?(typename) end

@@ -13,6 +13,8 @@ namespace
         string    m_indent;
         string    m_source_id;
         string emitSourceID() const;
+        string emitMetaData(Type const& type) const;
+        string emitMetaData(MetaData const& metadata) const;
 
     protected:
         bool visit_(Compound const& type);
@@ -62,6 +64,24 @@ namespace
         return result;
     }
 
+    std::string TlbExportVisitor::emitMetaData(Type const& type) const
+    {
+        return emitMetaData(type.getMetaData());
+    }
+    std::string TlbExportVisitor::emitMetaData(MetaData const& metadata) const
+    {
+        std::ostringstream stream;
+        MetaData::Map const& map = metadata.get();
+        for (MetaData::Map::const_iterator it = map.begin(); it != map.end(); ++it)
+        {
+            std::string key = it->first;
+            MetaData::Values values = it->second;
+            for (MetaData::Values::const_iterator it_value = values.begin(); it_value != values.end(); ++it_value)
+                stream << "<metadata key=\"" << key << "\"><![CDATA[" << *it_value << "]]></metadata>\n";
+        }
+        return stream.str();
+    }
+
     std::string TlbExportVisitor::emitSourceID() const
     {
         if (!m_source_id.empty())
@@ -71,7 +91,9 @@ namespace
 
     bool TlbExportVisitor::visit_(OpaqueType const& type)
     {
-        m_stream << "<opaque name=\"" << xmlEscape(type.getName()) << "\" size=\"" << type.getSize() << "\" " << emitSourceID() << " />\n";
+        m_stream << "<opaque name=\"" << xmlEscape(type.getName()) << "\" size=\"" << type.getSize() << "\" " << emitSourceID() << ">\n";
+        m_stream << m_indent << emitMetaData(type) << "\n";
+        m_stream << m_indent << "</opaque>";
         return true;
     }
 
@@ -83,8 +105,8 @@ namespace
             TypeVisitor::visit_(type);
         }
 
-        m_stream << m_indent
-            << "</compound>";
+        m_stream << m_indent << emitMetaData(type) << "\n";
+        m_stream << m_indent << "</compound>";
 
         return true;
     }
@@ -94,7 +116,9 @@ namespace
             << m_indent
             << "<field name=\"" << field.getName() << "\""
             << " type=\""   << xmlEscape(field.getType().getName())  << "\""
-            << " offset=\"" << field.getOffset() << "\"/>\n";
+            << " offset=\"" << field.getOffset() << "\">\n";
+        m_stream << m_indent << emitMetaData(field.getMetaData()) << "\n";
+        m_stream << m_indent << "</field>\n";
         return true;
     }
 
@@ -121,12 +145,17 @@ namespace
         m_stream 
             << "<numeric name=\"" << type.getName() << "\" " 
             << "category=\"" << getStringCategory(type.getNumericCategory()) << "\" "
-            << "size=\"" << type.getSize() << "\" " << emitSourceID() << "/>";
+            << "size=\"" << type.getSize() << "\" " << emitSourceID() << ">";
+        m_stream << m_indent << emitMetaData(type) << "\n";
+        m_stream << m_indent << "</numeric>";
+
         return true;
     }
     bool TlbExportVisitor::visit_ (NullType const& type)
     {
-        m_stream << "<null " << " name=\"" << type.getName() << "\" " << emitSourceID() << "/>";
+        m_stream << "<null " << " name=\"" << type.getName() << "\" " << emitSourceID() << ">";
+        m_stream << m_indent << emitMetaData(type) << "\n";
+        m_stream << m_indent << "</null>";
 	return true;
     }
 
@@ -141,14 +170,18 @@ namespace
     {
         m_stream << "<pointer ";
         indirect(m_stream, type);
-        m_stream << " " << emitSourceID() << "/>";
+        m_stream << " " << emitSourceID() << ">\n";
+        m_stream << m_indent << emitMetaData(type) << "\n";
+        m_stream << m_indent << "</pointer>";
         return true;
     }
     bool TlbExportVisitor::visit_ (Array const& type)
     {
         m_stream << "<array ";
         indirect(m_stream, type);
-        m_stream << " dimension=\"" << type.getDimension() << "\" " << emitSourceID() << "/>";
+        m_stream << " dimension=\"" << type.getDimension() << "\" " << emitSourceID() << ">\n";
+        m_stream << m_indent << emitMetaData(type) << "\n";
+        m_stream << m_indent << "</array>";
         return true;
     }
     bool TlbExportVisitor::visit_(Container const& type)
@@ -158,25 +191,23 @@ namespace
         m_stream
             << " size=\"" << type.getSize() << "\""
             << " kind=\"" << xmlEscape(type.kind()) << "\""
-            << " " << emitSourceID() << "/>";
+            << " " << emitSourceID() << ">\n";
+        m_stream << m_indent << emitMetaData(type) << "\n";
+        m_stream << m_indent << "</container>";
         return true;
     }
 
     bool TlbExportVisitor::visit_ (Enum const& type)
     {
         Enum::ValueMap const& values = type.values();
-        if (values.empty())
-            m_stream << "<enum name=\"" << type.getName() << "\" " << emitSourceID() << "/>";
-        else
-        {
-            m_stream << "<enum name=\"" << type.getName() << "\" " << emitSourceID() << ">\n";
-            { Indent indenter(m_indent);
-                Enum::ValueMap::const_iterator it, end = values.end();
-                for (it = values.begin(); it != values.end(); ++it)
-                    m_stream << m_indent << "<value symbol=\"" << it->first << "\" value=\"" << it->second << "\"/>\n";
-            }
-            m_stream << m_indent << "</enum>";
+        m_stream << "<enum name=\"" << type.getName() << "\" " << emitSourceID() << ">\n";
+        { Indent indenter(m_indent);
+            Enum::ValueMap::const_iterator it, end = values.end();
+            for (it = values.begin(); it != values.end(); ++it)
+                m_stream << m_indent << "<value symbol=\"" << it->first << "\" value=\"" << it->second << "\"/>\n";
         }
+        m_stream << m_indent << emitMetaData(type) << "\n";
+        m_stream << m_indent << "</enum>";
 
         return true;
     }

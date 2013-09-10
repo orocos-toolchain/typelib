@@ -38,7 +38,7 @@ module Typelib
             self
         end
 
-        def initialize(*args)
+        def typelib_initialize
             super
             @element_t = self.class.deference
             @elements = Array.new

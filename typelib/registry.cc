@@ -176,6 +176,18 @@ namespace Typelib
 	    }
 	}
         copySourceIDs(registry);
+        mergeMetaData(registry);
+    }
+
+    void Registry::mergeMetaData(Registry const& registry)
+    {
+        for (Iterator it = begin(); it != end(); ++it)
+        {
+            RegistryIterator other_it = registry.find(it.getName());
+            if (other_it == registry.end())
+                continue;
+            it->mergeMetaData(*other_it);
+        }
     }
 
     void Registry::copySourceIDs(Registry const& registry)
@@ -213,6 +225,7 @@ namespace Typelib
         }
 
         result->copySourceIDs(*this);
+        result->mergeMetaData(*this);
         return result.release();
     }
 
@@ -266,13 +279,13 @@ namespace Typelib
         return base_type;
     }
 
-    const Type* Registry::build(const std::string& name)
+    const Type* Registry::build(const std::string& name, std::size_t size)
     {
         const Type* type = get(name);
         if (type)
             return type;
 
-        return TypeBuilder::build(*this, getFullName(name));
+        return TypeBuilder::build(*this, getFullName(name), size);
     }
 
     Type* Registry::get_(const std::string& name)
@@ -642,7 +655,10 @@ namespace Typelib
     {
         TypeMap::iterator it = m_global.find(type.getName());
         if (it != m_global.end())
+        {
             it->second.source_id = source_id;
+            type.getMetaData().set("source_id", source_id);
+        }
     }
 }; // namespace Typelib
 

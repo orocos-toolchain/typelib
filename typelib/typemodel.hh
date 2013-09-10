@@ -16,6 +16,48 @@ namespace Typelib
 
     class Registry;
 
+    class MetaData
+    {
+    public:
+        typedef std::set<std::string> Values;
+        typedef std::map<std::string, Values> Map;
+    private:
+        Map m_values;
+    public:
+
+        /** Returns the key => values map for all values stored in this metadata
+         * object
+         */
+        Map const& get() const;
+
+        /** Sets the metadata value for the given key to the given value,
+         * removing all previously known value(s) for that key
+         */
+        void set(std::string const& key, std::string const& value);
+
+        /** Adds a metadata value for the given key, Existing values are
+         * retained.
+         */
+        void add(std::string const& key, std::string const& value);
+
+        /** Clear all metadata entries that have this key
+         */
+        void clear(std::string const& key);
+
+        /** Clear all metadata entries
+         */
+        void clear();
+
+        /** Returns all metadata information with the given key associated with this type
+         */
+        Values get(std::string const& key) const;
+
+        /** Add all metadata entries that are in the given metadata set to the
+         * metadata of this type
+         */
+        void merge(MetaData const& metadata);
+    };
+
     /** Base class for all type definitions */
     class Type 
     {
@@ -40,8 +82,14 @@ namespace Typelib
         size_t      m_size;
         Category    m_category;
 
+        //! This is kept as pointer so that it can be modified even if the Type
+        // object is const
+        MetaData*   m_metadata;
+
 	/** Checks that @c identifier is a valid type name */
         static bool isValidIdentifier(const std::string& identifier);
+
+        Type& operator = (Type const& type);
 
     protected:
 
@@ -50,6 +98,7 @@ namespace Typelib
 
     public:
         virtual ~Type();
+        Type(Type const& type);
 
         /** Changes the type name. Never use once the type has been added to a
          * registry */
@@ -131,6 +180,18 @@ namespace Typelib
         /** Returns the number of bytes that are unused at the end of the
          * compound */
         virtual unsigned int getTrailingPadding() const;
+
+        /** Returns the metadata for this type
+         */
+        MetaData& getMetaData() const;
+
+        /** Returns the metadata values declared for this particular key
+         */
+        MetaData::Values getMetaData(std::string const& key) const;
+
+        /** Merge metadata information from the given type into this
+         */
+        virtual void mergeMetaData(Type const& other) const;
 
     protected:
         /** Method that is implemented by type definitions to compare *this with
@@ -291,12 +352,17 @@ namespace Typelib
         std::string m_name;
         const Type& m_type;
         size_t m_offset;
+        MetaData* m_metadata;
 
+    private:
+        Field& operator = (Field const& field);
     protected:
         void setOffset(size_t offset);
 
     public:
         Field(const std::string& name, Type const& base_type);
+        Field(Field const& field);
+        ~Field();
 
 	/** The field name */
         std::string getName() const;
@@ -307,6 +373,10 @@ namespace Typelib
         size_t getOffset() const;
 
 	bool operator == (Field const& field) const;
+
+        MetaData& getMetaData() const;
+        MetaData::Values getMetaData(std::string const& key) const;
+        void mergeMetaData(Field const& field) const;
     };
 
     /** Base class for types that are composed of other 
@@ -325,15 +395,20 @@ namespace Typelib
 	 * @return 0 if there is no @name field, or the Field object */
         Field const*      getField(const std::string& name) const;
 	/** Add a new field */
-        void              addField(const Field& field, size_t offset);
+        Field const&      addField(const Field& field, size_t offset);
 	/** Add a new field */
-        void              addField(const std::string& name, const Type& type, size_t offset);
+        Field const&      addField(const std::string& name, const Type& type, size_t offset);
 
         /** Returns the number of bytes that are unused at the end of the
          * compound */
         unsigned int getTrailingPadding() const;
 
 	virtual std::set<Type const*> dependsOn() const;
+
+        /** Merge metadata from this other type, as well as the field metadata
+         * if applicable
+         */
+        void mergeMetaData(Type const& other) const;
 
     private:
 	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;

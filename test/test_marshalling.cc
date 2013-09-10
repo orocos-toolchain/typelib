@@ -59,10 +59,10 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
     /* Now, insert SKIPS into it */
     {
         A a;
-        int align1 = offsetof(A, b) - sizeof(a.a);
-        int align2 = offsetof(A, c) - sizeof(a.b) - offsetof(A, b);
-        int align3 = offsetof(A, d) - sizeof(a.c) - offsetof(A, c);
-        int align4 = sizeof(A)      - sizeof(a.d) - offsetof(A, d);
+        size_t align1 = offsetof(A, b) - sizeof(a.a);
+        size_t align2 = offsetof(A, c) - sizeof(a.b) - offsetof(A, b);
+        size_t align3 = offsetof(A, d) - sizeof(a.c) - offsetof(A, c);
+        size_t align4 = sizeof(A)      - sizeof(a.d) - offsetof(A, d);
         size_t raw_ops[] = {
             MemLayout::FLAG_MEMCPY, sizeof(long long),
             MemLayout::FLAG_SKIP, align1,
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
         A reloaded;
         memset(&reloaded, 2, sizeof(A));
         load(Value(&reloaded, type), buffer, ops);
-        BOOST_REQUIRE_EQUAL(-1, memcmp(&a, &reloaded, sizeof(A)));
+        BOOST_REQUIRE(memcmp(&a, &reloaded, sizeof(A)) < 0);
         BOOST_REQUIRE_EQUAL(a.a, reloaded.a);
         BOOST_REQUIRE_EQUAL(a.b, reloaded.b);
         BOOST_REQUIRE_EQUAL(a.c, reloaded.c);

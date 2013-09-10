@@ -90,6 +90,7 @@ typedef std::map< void const*, RbMemoryLayout > TypeLayouts;
 MemoryTypes memory_types;
 TypeLayouts memory_layouts;
 
+#ifdef VERBOSE
 static int
 memory_touch_i(volatile void* ptr, MemoryTableEntry* entry, st_data_t)
 {
@@ -105,6 +106,7 @@ memory_touch_all()
     st_foreach(MemoryTable, (int(*)(ANYARGS))memory_touch_i, (st_data_t)0);
 
 }
+#endif
 
 bool
 typelib_ruby::memory_ref(void *ptr)

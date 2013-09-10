@@ -122,12 +122,11 @@ module Typelib
 	# * a hash, in which case it is a { field_name => field_value } hash
 	# * an array, in which case the fields are initialized in order
 	# Note that a compound should be either fully initialized or not initialized
-        def initialize(ptr)
+        def typelib_initialize
+            super
 	    # A hash in which we cache Type objects for each of the structure fields
 	    @fields = Hash.new
             @field_types = self.class.field_types
-
-            super(ptr)
         end
 
         def raw_each_field
@@ -143,6 +142,8 @@ module Typelib
         end
 
         @fields = []
+        @field_types = Hash.new
+        @field_metadata = Hash.new
         class << self
 	    # Check if this type can be used in place of +typename+
 	    # In case of compound types, we check that either self, or
@@ -236,13 +237,16 @@ module Typelib
 	    # which returns the field type
             def subclass_initialize
                 @field_types = Hash.new
-                @fields = get_fields.map! do |name, offset, type|
+                @fields = Array.new
+                @field_metadata = Hash.new
+                get_fields.each do |name, offset, type, metadata|
                     if name.respond_to?(:force_encoding)
                         name.force_encoding('ASCII')
                     end
                     field_types[name] = type
                     field_types[name.to_sym] = type
-                    [name, type]
+                    fields << [name, type]
+                    field_metadata[name] = metadata
                 end
 
                 converted_fields = []
@@ -278,6 +282,11 @@ module Typelib
                 end
             end
 
+            # Returns true if this compound has no fields
+            def empty?
+                fields.empty?
+            end
+
             # Returns the offset, in bytes, of the given field
             def offset_of(fieldname)
                 fieldname = fieldname.to_str
@@ -291,9 +300,11 @@ module Typelib
             attr_reader :fields
             # A name => type map of the types of each fiel
             attr_reader :field_types
+            # A name => object mapping of the field metadata objects
+            attr_reader :field_metadata
 	    # Returns the type of +name+
             def [](name)
-                if result = @field_types[name]
+                if result = field_types[name]
                     result
                 else
                     raise ArgumentError, "#{name} is not a field of #{self.name}"
@@ -301,14 +312,14 @@ module Typelib
             end
             # True if the given field is defined
             def has_field?(name)
-                @field_types.has_key?(name)
+                field_types.has_key?(name)
             end
 	    # Iterates on all fields
             #
             # @yield [name,type] the fields of this compound
             # @return [void]
             def each_field
-		@fields.each { |field| yield(*field) } 
+		fields.each { |field| yield(*field) } 
 	    end
 
 	    def pretty_print_common(pp) # :nodoc:
@@ -325,7 +336,12 @@ module Typelib
             def pretty_print(pp, verbose = false) # :nodoc:
 		super(pp)
 		pp.text ' '
-		pretty_print_common(pp) do |name, offset, type|
+		pretty_print_common(pp) do |name, offset, type, metadata|
+                    if doc = metadata.get('doc').first
+                        if pp_doc(pp, doc)
+                            pp.breakable
+                        end
+                    end
 		    pp.text name
                     if verbose
                         pp.text "[#{offset}] <"
@@ -333,7 +349,7 @@ module Typelib
                         pp.text " <"
                     end
 		    pp.nest(2) do
-                        type.pretty_print(pp)
+                        type.pretty_print(pp, false)
 		    end
 		    pp.text '>'
 		end
