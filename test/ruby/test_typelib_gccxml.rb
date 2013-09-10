@@ -30,9 +30,15 @@ class TC_TypelibGCCXML < Test::Unit::TestCase
 
     end
 
-    def test_cxx_to_typelib
+    def test_cxx_to_typelib_subtype_of_container
         cxx_name = 'std::vector <std::vector <int ,std::allocator<int>>, std::allocator< std::vector<int , std::allocator <int>>      > >::size_t'
         assert_equal '/std/vector</std/vector</int>>/size_t',
+            Typelib::GCCXMLLoader.cxx_to_typelib(cxx_name)
+    end
+
+    def test_cxx_to_typelib_template_of_container
+        cxx_name = 'BaseTemplate<std::vector<double, std::allocator<double> > >'
+        assert_equal '/BaseTemplate</std/vector</double>>',
             Typelib::GCCXMLLoader.cxx_to_typelib(cxx_name)
     end
 
@@ -81,6 +87,11 @@ class TC_TypelibGCCXML < Test::Unit::TestCase
         reg = Typelib::Registry.import File.join(cxx_test_dir, 'ignored_base_class.h')
         assert !reg.include?('/Base')
         assert !reg.include?('/Derived')
+    end
+
+    def test_import_template_of_container
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'template_of_container.h')
+        assert reg.include?('/BaseTemplate</std/vector</double>>')
     end
 end
 

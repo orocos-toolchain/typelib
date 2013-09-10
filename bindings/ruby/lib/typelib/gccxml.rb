@@ -280,6 +280,9 @@ module Typelib
                 if tk =~ /^\/?std\/vector/
                     template_arguments = collect_template_arguments(tokens)
                     arg = tokenized_cxx_to_typelib(template_arguments.first, absolute)
+                    if tk[0, 1] != "/"
+                        tk = "/#{tk}"
+                    end
                     result << "#{tk}<#{arg}>"
                 elsif tk =~ /^\/?std\/basic_string/
                     collect_template_arguments(tokens)
