@@ -261,9 +261,9 @@ module Typelib
         else
             if !(expected_type < NumericType) && !arg.kind_of?(expected_type)
                 if arg.class.name != expected_type.name
-                    raise UnknownConversionRequested.new(arg, expected_type), "types differ and there are not convertions from one to the other"
+                    raise UnknownConversionRequested.new(arg, expected_type), "types differ and there are not convertions from one to the other: #{arg.class.name} <-> #{expected_type.name}"
                 else
-                    raise ConversionToMismatchedType.new(arg, expected_type), "the types have the same name but different definitions"
+                    raise ConversionToMismatchedType.new(arg, expected_type), "the types have the same name but different definitions: #{arg.class.name} <-> #{expected_type.name}"
                 end
             end
             converted = arg
