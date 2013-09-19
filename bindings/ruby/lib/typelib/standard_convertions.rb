@@ -30,6 +30,10 @@ module Typelib
             Typelib.to_ruby(self)
         end
 
+        def pretty_print(pp)
+            to_str
+        end
+
         def concat(other_string)
             if other_string.respond_to?(:to_str)
                 super(Typelib.from_ruby(other_string, self.class))
