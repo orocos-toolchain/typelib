@@ -63,6 +63,8 @@ end
 module Typelib
     extend Logger::Root('Typelib', Logger::WARN)
 
+    TYPELIB_LIB_DIR = File.expand_path('typelib', File.dirname(__FILE__))
+
     class << self
 	# If true (the default), typelib will load its type plugins. Otherwise,
         # it will not
