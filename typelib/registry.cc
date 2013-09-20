@@ -24,36 +24,23 @@ using namespace Typelib;
  */
 bool Typelib::nameSort( const std::string& name1, const std::string& name2 )
 {
-    if (name1 == name2)
-        return false;
-
-    NameTokenizer tok1(name1);
-    NameTokenizer tok2(name2);
-    NameTokenizer::const_iterator it1 = tok1.begin();
-    NameTokenizer::const_iterator it2 = tok2.begin();
-
-    std::string ns1, ns2;
-    // we sort /A/B/C/ before /A/B/C/class
-    // and /A/B/C/class2 after /A/B/class1
-    for (; it1 != tok1.end() && it2 != tok2.end(); ++it1, ++it2)
+    for (size_t i = 0; i < name1.length(); ++i)
     {
-        ns1 = *it1;
-        ns2 = *it2;
+        if (name2.length() <= i)
+            return false;
 
-        int value = ns1.compare(ns2);
-        if (value) return value < 0;
-        //cout << ns1 << " " << ns2 << endl;
+        std::string::const_reference c1 = name1[i];
+        std::string::const_reference c2 = name2[i];
+        if (c1 != c2)
+        {
+            if (c1 == '/')
+                return true;
+            if (c2 == '/')
+                return false;
+            return c1 < c2;
+        }
     }
-
-    if (it1 == tok1.end()) 
-        return true;  // there is namespace names left in name1, and not in name2
-    if (it2 == tok2.end()) 
-        return false; // there is namespace names left in name2, and not in name1
-    int value = ns1.compare(ns2);
-    if (value) 
-        return value < 0;
-
-    return false;
+    return (name1.length() < name2.length());
 }
 
 namespace Typelib
