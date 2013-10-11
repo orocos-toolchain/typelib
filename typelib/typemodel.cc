@@ -116,8 +116,11 @@ namespace Typelib
 	Type const* old_type = registry.get(getName());
 	if (old_type)
 	{
-            if (old_type->isSame(*this))
+            if (old_type->do_compare(*this, true, stack))
+            {
+                stack.insert(make_pair(this, old_type));
 		return old_type;
+            }
 	    else
 		throw DefinitionMismatch(getName());
 	}
