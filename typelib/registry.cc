@@ -168,10 +168,10 @@ namespace Typelib
 
     void Registry::mergeMetaData(Registry const& registry)
     {
-        for (Iterator it = begin(); it != end(); ++it)
+        for (Iterator other_it = registry.begin(); other_it != registry.end(); ++other_it)
         {
-            RegistryIterator other_it = registry.find(it.getName());
-            if (other_it == registry.end())
+            RegistryIterator it = find(other_it.getName());
+            if (it == end())
                 continue;
             it->mergeMetaData(*other_it);
         }
@@ -179,10 +179,10 @@ namespace Typelib
 
     void Registry::copySourceIDs(Registry const& registry)
     {
-        for (Iterator it = begin(); it != end(); ++it)
+        for (Iterator other_it = registry.begin(); other_it != registry.end(); ++other_it)
         {
-            RegistryIterator other_it = registry.find(it.getName());
-            if (other_it == registry.end())
+            RegistryIterator it = find(other_it.getName());
+            if (it == end())
                 continue;
 
             string source_id = other_it.getSource();
