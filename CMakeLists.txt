@@ -26,14 +26,14 @@ add_definitions(-Wall)
 CMAKE_USE_FULL_RPATH("${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib/typelib")
 
 pkg_search_module (Utilmm Utilmm UtilMM utilmm)
-
 IF(NOT Utilmm_FOUND)
     MESSAGE(FATAL_ERROR "please install util-- before building typelib")
 ELSE(NOT Utilmm_FOUND)
     #adapt from the old pkgconfig cmake util to the new)
+    find_library(Utilmm_LIBRARIES utilmm HINTS ${Utilmm_LIBRARY_DIRS})
     set(Utilmm_INCLUDE_DIR ${Utilmm_INCLUDE_DIRS})
     set(Utilmm_LINK_DIR ${Utilmm_LIBRARY_DIRS})
-    set(Utilmm_LIBRARIES ${Utilmm_LIBRARIES})
+    #set(Utilmm_LIBRARIES ${Utilmm_LIBRARIES})
     
     INCLUDE_DIRECTORIES(${Utilmm_INCLUDE_DIR})
     LINK_DIRECTORIES(${Utilmm_LINK_DIR})
