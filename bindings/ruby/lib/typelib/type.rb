@@ -511,6 +511,7 @@ module Typelib
         #   # Later on ...
         #   value = my_registry.get('/base/Type').wrap(marshalled_data)
         def to_byte_array(options = Hash.new)
+            apply_changes_from_converted_types
             options = Type.validate_layout_options(options)
             do_byte_array(
                 options[:accept_pointers],
