@@ -1,11 +1,6 @@
 #include "typelib.hh"
 #include <typelib/value_ops.hh>
 #include <ruby.h>
-#if !defined(RUBY_19) && !defined(RUBY_191)
-extern "C" {
-#include <st.h>
-}
-#endif
 
 using namespace Typelib;
 using namespace std;
@@ -28,10 +23,6 @@ static int memory_table_compare(void* a, void* b)
     return (a != b);
 }
 
-#if !defined(RUBY_19) && !defined(RUBY_191)
-typedef long st_index_t;
-#endif
-
 static st_index_t memory_table_hash(void* a)
 {
     /* Use the low-order bits as hash value, as they are the most likely to
@@ -39,22 +30,10 @@ static st_index_t memory_table_hash(void* a)
     return (st_index_t)a;
 }
 
-#if defined(RUBY_19)
 static struct st_hash_type memory_table_type = {
     (int (*)(...))memory_table_compare,
     (st_index_t (*)(...))memory_table_hash
 };
-#elif defined(RUBY_191)
-static struct st_hash_type memory_table_type = {
-    (int (*)(...))memory_table_compare,
-    (int (*)(...))memory_table_hash
-};
-#else
-static struct st_hash_type memory_table_type = {
-    (int (*)())memory_table_compare,
-    (int (*)())memory_table_hash
-};
-#endif
 
 struct MemoryTableEntry
 {

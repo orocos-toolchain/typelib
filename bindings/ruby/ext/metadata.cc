@@ -1,9 +1,5 @@
 #include "typelib.hh"
-#include <version.h>
-
-#if RUBY_VERSION_MINOR == 8
-#define rb_str_new_cstr rb_str_new2
-#endif
+#include <ruby/version.h>
 
 #include <typelib/typemodel.hh>
 
