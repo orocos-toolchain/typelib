@@ -1,5 +1,9 @@
 INCLUDE(RubyExtensions)
 
+if (RUBY_VERSION_MAJOR EQUAL 1 AND RUBY_VERSION_MINOR LESS 9)
+    message(FATAL_ERROR "typelib required Ruby version 1.9.3 or later")
+endif()
+
 if(YARD_EXECUTABLE)
     ADD_CUSTOM_TARGET(ruby_doc yard -o ${CMAKE_BINARY_DIR}/doc/html/ruby/
         --title "Typelib: a C type/value manipulation library" --main README.txt lib/**/*.rb ext/**/*.cc README.txt
