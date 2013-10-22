@@ -105,6 +105,27 @@ class TC_Type < Test::Unit::TestCase
 
         assert_equal(expected, layout)
     end
+
+    def test_marshalling_unmarshalling_without_padding
+        reg = Typelib::CXXRegistry.new
+        type0 = reg.create_compound '/Source' do |c|
+            c.add 'a', '/int32_t', 0
+            c.add 'b', '/double', 10
+        end
+        type1 = reg.create_compound '/Target' do |c|
+            c.add 'a', '/int32_t', 0
+            c.add 'b', '/double', 20
+        end
+
+        v = type0.new
+        v.zero!
+        v.a = 10
+        v.b = 20
+        marshalled = v.to_byte_array(:merge_skip_copy => false)
+        unmarshalled = type1.from_buffer(marshalled, :merge_skip_copy => false)
+        assert_equal 10, v.a
+        assert_in_delta 20, v.b, 0.001
+    end
 end
 
 
