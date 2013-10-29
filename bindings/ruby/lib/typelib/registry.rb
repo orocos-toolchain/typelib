@@ -307,7 +307,7 @@ module Typelib
 
             def find_exported_template(template_basename, args, remaining)
                 if remaining.empty?
-                    return @exported_templates[[template_basename, args]]
+                    return exported_templates[[template_basename, args]]
                 end
 
                 head, *tail = remaining
