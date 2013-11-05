@@ -530,7 +530,7 @@ module Typelib
 
             # @return [String] a XML representation of this type
             def to_xml
-                reg.minimal(name, true).to_xml
+                registry.minimal(name, true).to_xml
             end
         end
 
