@@ -338,12 +338,6 @@ VALUE registry_resize(VALUE self, VALUE new_sizes)
     }
 }
 
-/* call-seq:
- *  minimal(auto_types) => registry
- *
- * Returns the minimal registry needed to define all types that are in +self+
- * but not in +auto_types+
- */
 static
 VALUE registry_minimal(VALUE self, VALUE rb_auto, VALUE with_aliases)
 {
@@ -393,13 +387,21 @@ static void yield_types(VALUE self, bool with_aliases, RegistryIterator it, Regi
     }
 }
 
-/*
- * each_type(filter, false) { |type| ... }
- * each_type(filter, true)  { |name, type| ... }
+/* @overload each_type(prefix, false)
+ *   Enumerates the types and not the aliases
  *
- * Iterates on the types found in this registry. If include_alias is true, also
- * yield the aliased types. If +filter+ is not nil, only the types whose names
- * start with +filter+ will be yield
+ *   @param [nil,String] prefix if non-nil, only types whose name is this prefix
+ *     will be enumerated
+ *   @yieldparam [Model<Typelib::Type>] type a type
+ *
+ * @overload each_type(prefix, true)
+ *   Enumerates the types and the aliases
+ *
+ *   @param [nil,String] prefix if non-nil, only types whose name is this prefix
+ *     will be enumerated
+ *   @yieldparam [String] name the type name, it is different from type.name for
+ *     aliases
+ *   @yieldparam [Model<Typelib::Type>] type a type
  */
 static
 VALUE registry_each_type(VALUE self, VALUE filter_, VALUE with_aliases_)
