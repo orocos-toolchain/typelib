@@ -527,6 +527,11 @@ module Typelib
 		    self <= typename
 		end
 	    end
+
+            # @return [String] a XML representation of this type
+            def to_xml
+                reg.minimal(name, true).to_xml
+            end
         end
 
         # Returns a string whose content is a marshalled representation of the memory
