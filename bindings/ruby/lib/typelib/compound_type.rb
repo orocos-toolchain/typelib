@@ -269,16 +269,20 @@ module Typelib
 
                 super if defined? super
 
-                convert_from_ruby Hash do |value, expected_type|
-                    result = expected_type.new
-                    result.set_hash(value)
-                    result
+                if !convertions_from_ruby.has_key?(Hash)
+                    convert_from_ruby Hash do |value, expected_type|
+                        result = expected_type.new
+                        result.set_hash(value)
+                        result
+                    end
                 end
 
-                convert_from_ruby Array do |value, expected_type|
-                    result = expected_type.new
-                    result.set_array(value)
-                    result
+                if !convertions_from_ruby.has_key?(Array)
+                    convert_from_ruby Array do |value, expected_type|
+                        result = expected_type.new
+                        result.set_array(value)
+                        result
+                    end
                 end
             end
 
