@@ -251,8 +251,10 @@ module Typelib
         end
 
         if arg.kind_of?(expected_type)
+            arg.apply_changes_from_converted_types
             return arg
         elsif arg.class < Type && arg.class.casts_to?(expected_type)
+            arg.apply_changes_from_converted_types
             return arg.cast(expected_type)
         elsif convertion = expected_type.convertions_from_ruby[arg.class]
             converted = convertion.call(arg, expected_type)
@@ -271,7 +273,7 @@ module Typelib
         if !(expected_type < NumericType) && !converted.kind_of?(expected_type)
             raise InternalError, "invalid conversion of #{arg} to #{expected_type.name}"
         end
-
+        converted.apply_changes_from_converted_types
         converted
     end
 
