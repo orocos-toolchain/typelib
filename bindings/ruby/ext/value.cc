@@ -209,10 +209,10 @@ static VALUE typelib_do_split_name(VALUE mod, VALUE name)
  */
 static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 { 
-    if (! rb_respond_to(rbwith, rb_intern("superclass")))
-	return Qfalse;
-    if (rb_funcall(rbself, rb_intern("superclass"), 0) != rb_funcall(rbwith, rb_intern("superclass"), 0))
+    if (!rb_obj_is_kind_of(rbwith, rb_cClass))
         return Qfalse;
+    if ((rbwith != cType) && !RTEST(rb_funcall(rbwith, rb_intern("<"), 1, cType)))
+	return Qfalse;
     if (rbself == rbwith)
         return Qtrue;
 

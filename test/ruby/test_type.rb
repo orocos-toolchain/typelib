@@ -38,6 +38,10 @@ class TC_Type < Test::Unit::TestCase
         assert !(type == Object.new)
     end
 
+    def test_base_type_class_can_be_compared_to_another_class
+        assert(Typelib::Type == Typelib::Type)
+        assert(Typelib::Type != Class.new)
+    end
     def test_base_type_classes_can_be_compared
         assert(Typelib::CompoundType == Typelib::CompoundType)
         assert(Typelib::CompoundType != Object.new)
