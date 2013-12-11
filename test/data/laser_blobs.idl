@@ -1,5 +1,4 @@
 module Laser {
     typedef sequence<octet> Data;
-    typedef long array_typedef[256];
 
 };

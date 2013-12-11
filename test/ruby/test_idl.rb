@@ -32,6 +32,9 @@ class TC_IDL < Test::Unit::TestCase
     def check_export(input_name, output_name = input_name, options = {})
 	registry = Registry.new
 	registry.import( File.join(SRCDIR, "data", "#{input_name}.h"), "c" )
+        # Remove base C++ types.
+        registry = registry.minimal(CXXRegistry.new)
+
 	output = if block_given?
 		    yield
 		else

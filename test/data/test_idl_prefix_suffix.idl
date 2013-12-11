@@ -3,6 +3,15 @@ module CorbaPrefix {
         module CorbaSuffix {
             module TestSuffix {
                 enum TestEnum { A, B, C };
+                struct Compound {
+                    long a;
+                    short b;
+                    octet c;
+                    long array[10];
+                };
+                struct CompoundInCompound {
+                    ::CorbaPrefix::TestPrefix::CorbaSuffix::TestSuffix::Compound test[10];
+                };
 
             };
 
@@ -24,7 +33,7 @@ module CorbaPrefix {
             module CorbaSuffix {
                 module TestSuffix {
                     struct Test {
-                        CorbaPrefix::TestPrefix::NS1::NS1_1::CorbaSuffix::TestSuffix::Test test2;
+                        ::CorbaPrefix::TestPrefix::NS1::NS1_1::CorbaSuffix::TestSuffix::Test test2;
                     };
 
                 };
@@ -34,17 +43,8 @@ module CorbaPrefix {
         };
         module CorbaSuffix {
             module TestSuffix {
-                struct Compound {
-                    long a;
-                    short b;
-                    octet c;
-                    long array[10];
-                };
-                struct CompoundInCompound {
-                    CorbaPrefix::TestPrefix::CorbaSuffix::TestSuffix::Compound test[10];
-                };
-                typedef CorbaPrefix::TestPrefix::CorbaSuffix::TestSuffix::TestEnum EnumAlias;
-                typedef CorbaPrefix::TestPrefix::CorbaSuffix::TestSuffix::TestEnum OtherEnum;
+                typedef ::CorbaPrefix::TestPrefix::CorbaSuffix::TestSuffix::TestEnum EnumAlias;
+                typedef ::CorbaPrefix::TestPrefix::CorbaSuffix::TestSuffix::TestEnum OtherEnum;
 
             };
 
@@ -53,7 +53,7 @@ module CorbaPrefix {
             module NS1_2 {
                 module CorbaSuffix {
                     module TestSuffix {
-                        typedef CorbaPrefix::TestPrefix::NS1::NS1_1::CorbaSuffix::TestSuffix::Test Test;
+                        typedef ::CorbaPrefix::TestPrefix::NS1::NS1_1::CorbaSuffix::TestSuffix::Test Test;
 
                     };
 
