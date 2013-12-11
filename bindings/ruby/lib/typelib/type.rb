@@ -409,7 +409,8 @@ module Typelib
             end
 
             def pretty_print(pp, with_doc = true) # :nodoc:
-                if with_doc && (doc = metadata.get('doc').first)
+                # Metadata is nil on the "root" models, e.g. CompoundType
+                if with_doc && metadata && (doc = metadata.get('doc').first)
                     if pp_doc(pp, doc)
                         pp.breakable
                     end
