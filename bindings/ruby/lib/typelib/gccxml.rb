@@ -162,6 +162,9 @@ module Typelib
         # the type has to be exported by typelib.
         attr_reader :type_names
 
+        # Cached file contents (used to parse documentation)
+        attr_reader :source_file_contents
+
         def node_from_id(id)
             info.id_to_node[id]
         end
@@ -171,6 +174,7 @@ module Typelib
             @id_to_name   = Hash.new
             @type_names   = Hash.new
             @ignore_message = Hash.new
+            @source_file_contents = Hash.new
         end
 
         def self.template_tokenizer(name)
@@ -409,12 +413,37 @@ module Typelib
             info.id_to_node[xmlnode['file']]['name']
         end
 
+        def source_file_content(file)
+            if source_file_contents.has_key?(file)
+                source_file_contents[file]
+            else
+                if File.file?(file)
+                    source_file_contents[file] = File.readlines(file, :encoding => 'utf-8')
+                else
+                    source_file_contents[file] = nil
+                end
+            end
+        end
+
         def set_source_file(type, xmlnode)
             file = source_file_for(xmlnode)
             return if !file
 
-            if line = xmlnode["line"]
-                type.metadata.add('source_file_line', file + ":" + line)
+            if (line = xmlnode["line"]) && (content = source_file_content(file))
+                line = Integer(line)
+                # GCCXML reports the file/line of the opening bracket for
+                # struct/class/enum. We prefer the line of the
+                # struct/class/enum definition.
+                #
+                # Moreover, gccxml's line numbering is 1-based (as it is the
+                # common one for editors)
+                while line >= 0 && content[line - 1] =~ /^\s*{?\s*$/
+                    line = line - 1
+                end
+            end
+
+            if line
+                type.metadata.add('source_file_line', "#{file}:#{line}")
             else
                 type.metadata.add('source_file_line', file)
             end
@@ -672,8 +701,8 @@ module Typelib
             end
         end
 
-        def self.parse_cxx_documentation_before(file, line)
-            lines = File.readlines(file)
+        def self.parse_cxx_documentation_before(lines, line)
+            lines ||= Array.new
 
             block = []
             # Lines are given 1-based (as all editors work that way), and we
@@ -756,7 +785,7 @@ module Typelib
                 if location = type.metadata.get('source_file_line').first
                     file, line = location.split(':')
                     line = Integer(line)
-                    if doc = GCCXMLLoader.parse_cxx_documentation_before(file, line)
+                    if doc = GCCXMLLoader.parse_cxx_documentation_before(source_file_content(file), line)
                         type.metadata.set('doc', doc)
                     end
                 end
@@ -765,7 +794,7 @@ module Typelib
                         if location = md.get('source_file_line').first
                             file, line = location.split(':')
                             line = Integer(line)
-                            if doc = GCCXMLLoader.parse_cxx_documentation_before(file, line)
+                            if doc = GCCXMLLoader.parse_cxx_documentation_before(source_file_content(file), line)
                                 md.set('doc', doc)
                             end
                         end

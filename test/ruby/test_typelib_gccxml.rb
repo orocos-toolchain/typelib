@@ -93,5 +93,20 @@ class TC_TypelibGCCXML < Test::Unit::TestCase
         reg = Typelib::Registry.import File.join(cxx_test_dir, 'template_of_container.h')
         assert reg.include?('/BaseTemplate</std/vector</double>>')
     end
+
+    def test_import_documentation_parsing_handles_opening_bracket_and_struct_definition_on_different_lines
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_with_struct_and_opening_bracket_on_different_lines.h')
+        assert_equal ["this is a multiline\ndocumentation block"], reg.get('/DocumentedType').metadata.get('doc')
+    end
+
+    def test_import_documentation_parsing_handles_spaces_between_opening_bracket_and_struct_definition
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_with_space_between_struct_and_opening_bracket.h')
+        assert_equal ["this is a multiline\ndocumentation block"], reg.get('/DocumentedType').metadata.get('doc')
+    end
+
+    def test_import_documentation_parsing_handles_opening_bracket_and_struct_definition_on_the_same_line
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_with_struct_and_opening_bracket_on_the_same_line.h')
+        assert_equal ["this is a multiline\ndocumentation block"], reg.get('/DocumentedType').metadata.get('doc')
+    end
 end
 
