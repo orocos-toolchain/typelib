@@ -778,5 +778,14 @@ module Typelib
             yield(recorder)
             recorder.build
         end
+
+        # Add a type from a different registry to this one
+        #
+        # @param [Class<Typelib::Type>] the type to be added
+        # @return [void]
+        def add(type)
+            merge(type.registry.minimal(type.name))
+            nil
+        end
     end
 end
