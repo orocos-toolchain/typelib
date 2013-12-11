@@ -1,5 +1,6 @@
 #include "typelib.hh"
 #include <ruby/version.h>
+#include <ruby/encoding.h>
 
 #include <typelib/typemodel.hh>
 
@@ -7,6 +8,7 @@ using namespace Typelib;
 using namespace typelib_ruby;
 
 VALUE typelib_ruby::cMetaData;
+rb_encoding* enc_utf8;
 
 VALUE cxx2rb::metadata_wrap(MetaData& metadata)
 {
@@ -20,7 +22,7 @@ static VALUE metadata_get(VALUE self, VALUE key)
 
     VALUE result = rb_ary_new();
     for (MetaData::Values::const_iterator it = v.begin(); it != v.end(); ++it)
-        rb_ary_push(result, rb_str_new_cstr(it->c_str()));
+        rb_ary_push(result, rb_enc_str_new(it->c_str(), it->length(), enc_utf8));
     return result;
 }
 
@@ -31,7 +33,7 @@ static VALUE metadata_keys(VALUE self)
 
     VALUE result = rb_ary_new();
     for (MetaData::Map::const_iterator it = map.begin(); it != map.end(); ++it)
-        rb_ary_push(result, rb_str_new_cstr(it->first.c_str()));
+        rb_ary_push(result, rb_enc_str_new(it->first.c_str(), it->first.length(), enc_utf8));
     return result;
 }
 
@@ -81,5 +83,6 @@ void typelib_ruby::Typelib_init_metadata()
     rb_define_method(cMetaData, "add", RUBY_METHOD_FUNC(metadata_add), 2);
     rb_define_method(cMetaData, "clear", RUBY_METHOD_FUNC(metadata_clear), -1);
     rb_define_method(cMetaData, "keys", RUBY_METHOD_FUNC(metadata_keys), 0);
+    enc_utf8 = rb_enc_find("utf-8");
 }
 
