@@ -678,6 +678,7 @@ namespace Typelib
     struct NullTypeFound : public TypeException
     {
         NullTypeFound();
+        NullTypeFound(Type const& type);
     };
 };
 

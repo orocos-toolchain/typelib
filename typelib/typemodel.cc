@@ -645,5 +645,7 @@ namespace Typelib
         , found(found), expected(expected) {}
     NullTypeFound::NullTypeFound()
         : TypeException("null type found") { }
+    NullTypeFound::NullTypeFound(Type const& type)
+        : TypeException("null type " + type.getName() + " found") { }
 };
 
