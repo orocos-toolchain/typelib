@@ -108,5 +108,10 @@ class TC_TypelibGCCXML < Test::Unit::TestCase
         reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_with_struct_and_opening_bracket_on_the_same_line.h')
         assert_equal ["this is a multiline\ndocumentation block"], reg.get('/DocumentedType').metadata.get('doc')
     end
+
+    def test_import_supports_utf8
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_utf8.h')
+        assert_equal ["this is a \u9999 multiline with \u1290 unicode characters"], reg.get('/DocumentedType').metadata.get('doc')
+    end
 end
 
