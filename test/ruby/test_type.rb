@@ -42,6 +42,10 @@ class TC_Type < Test::Unit::TestCase
         assert(Typelib::Type == Typelib::Type)
         assert(Typelib::Type != Class.new)
     end
+    def test_base_type_class_can_be_compared_to_another_type
+        assert(CXXRegistry.new.get("/int32_t") != Typelib::Type)
+        assert(Typelib::Type != CXXRegistry.new.get("/int32_t"))
+    end
     def test_base_type_classes_can_be_compared
         assert(Typelib::CompoundType == Typelib::CompoundType)
         assert(Typelib::CompoundType != Object.new)

@@ -322,3 +322,30 @@ if ENV['TYPELIB_USE_GCCXML'] != '0'
     require 'typelib/gccxml'
 end
 
+# Finally, set guard types on the root classes
+module Typelib
+    class Type
+        initialize_base_class
+    end
+    class EnumType
+        initialize_base_class
+    end
+    class CompoundType
+        initialize_base_class
+    end
+    class ContainerType
+        initialize_base_class
+    end
+    class ArrayType
+        initialize_base_class
+    end
+    class IndirectType
+        initialize_base_class
+    end
+    class OpaqueType
+        initialize_base_class
+    end
+    class PointerType
+        initialize_base_class
+    end
+end

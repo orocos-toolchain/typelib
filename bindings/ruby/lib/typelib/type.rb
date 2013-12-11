@@ -533,6 +533,12 @@ module Typelib
             def to_xml
                 registry.minimal(name, true).to_xml
             end
+
+            def initialize_base_class
+                @__guard_type = Typelib::Registry.new.create_null('/Typelib/Type')
+                @type = @__guard_type.
+                    instance_variable_get(:@type)
+            end
         end
 
         # Returns a string whose content is a marshalled representation of the memory

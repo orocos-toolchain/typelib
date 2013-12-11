@@ -209,12 +209,12 @@ static VALUE typelib_do_split_name(VALUE mod, VALUE name)
  */
 static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 { 
-    if (!rb_obj_is_kind_of(rbwith, rb_cClass))
-        return Qfalse;
-    if ((rbwith != cType) && !RTEST(rb_funcall(rbwith, rb_intern("<"), 1, cType)))
-	return Qfalse;
     if (rbself == rbwith)
         return Qtrue;
+    if (!rb_obj_is_kind_of(rbwith, rb_cClass))
+        return Qfalse;
+    if ((rbwith == cType) || !RTEST(rb_funcall(rbwith, rb_intern("<"), 1, cType)))
+	return Qfalse;
 
     Type const& self(rb2cxx::object<Type>(rbself));
     Type const& with(rb2cxx::object<Type>(rbwith));
