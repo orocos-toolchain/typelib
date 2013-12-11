@@ -237,7 +237,7 @@ namespace Typelib
 	    if (!it.isAlias()) continue;
             if (auto_types.has(it.getName())) continue;
             // Do not continue if it is a typedef on a type that we don't need
-            if (!result->has(it->getName())) continue;
+            if (!result->has(it->getName(), false)) continue;
 
 	    Type const* old_type = result->get(it.getName());
 	    if (old_type)
