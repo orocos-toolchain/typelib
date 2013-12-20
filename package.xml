@@ -15,13 +15,8 @@
   <license>CeCILL-B (BSD-like)</license>
 
   <buildtool_depend>cmake</buildtool_depend>
+  <buildtool_depend>catkin</buildtool_depend>
   <run_depend>catkin</run_depend>
-
-  <export>
-    <build_type>
-      cmake
-    </build_type>
-  </export>
 
   <build_depend>utilmm</build_depend>
   <build_depend>utilrb</build_depend>
@@ -42,5 +37,10 @@
   <run_depend>nokogiri</run_depend>
   <run_depend>libxslt</run_depend>
   
-</package>
+  <export>
+    <build_type>
+      cmake
+    </build_type>
+  </export>
 
+</package>

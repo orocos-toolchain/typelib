@@ -90,6 +90,8 @@ ADD_SUBDIRECTORY(lang/tlb)
 ADD_SUBDIRECTORY(lang/idl)
 ADD_SUBDIRECTORY(typelib)
 
-# Install env-hook to setup environment for typelib
-CONFIGURE_FILE(env-hooks/00.typelib.sh.in ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.typelib.sh @ONLY)
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.typelib.sh DESTINATION etc/catkin/profile.d)
+# Install an env-hook if catkin is found
+find_package(catkin)
+if(catkin_FOUND)
+  catkin_add_env_hooks(00.typelib SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+endif()
