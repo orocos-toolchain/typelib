@@ -286,6 +286,18 @@ class TC_Registry < Test::Unit::TestCase
         assert_equal [['k', ['v']]], new_type.metadata.each.to_a
         assert_equal [['k', ['v']]], new_type.field_metadata['field'].each.to_a
     end
+
+    def test_create_opaque_raises_ArgumentError_if_the_name_is_already_used
+        reg = Typelib::Registry.new
+        reg.create_opaque '/Test', 10
+        assert_raises(ArgumentError) { reg.create_opaque '/Test', 10 }
+    end
+
+    def test_create_null_raises_ArgumentError_if_the_name_is_already_used
+        reg = Typelib::Registry.new
+        reg.create_null '/Test'
+        assert_raises(ArgumentError) { reg.create_null '/Test' }
+    end
 end
 
     

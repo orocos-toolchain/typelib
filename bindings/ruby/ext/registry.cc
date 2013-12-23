@@ -593,8 +593,7 @@ static VALUE registry_create_compound(VALUE registry, VALUE name, VALUE field_de
     if (size != 0)
         type->setSize(size);
     try { reg.add(type, true, ""); }
-    catch(std::runtime_error e)
-    { rb_raise(rb_eArgError, "%s", e.what()); }
+    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
@@ -625,8 +624,7 @@ static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs,
     size_t size = NUM2INT(_size);
     if (size != 0) type->setSize(size);
     try { reg.add(type, true, ""); }
-    catch(std::runtime_error e)
-    { rb_raise(rb_eArgError, "%s", e.what()); }
+    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
@@ -640,7 +638,8 @@ static VALUE registry_create_opaque(VALUE registry, VALUE _name, VALUE _size)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
     Typelib::Type* type = new Typelib::OpaqueType(StringValuePtr(_name), NUM2INT(_size));
-    reg.add(type, true, "");
+    try { reg.add(type, true, ""); }
+    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
@@ -654,7 +653,8 @@ static VALUE registry_create_null(VALUE registry, VALUE _name)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
     Typelib::Type* type = new Typelib::NullType(StringValuePtr(_name));
-    reg.add(type, true, "");
+    try { reg.add(type, true, ""); }
+    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
