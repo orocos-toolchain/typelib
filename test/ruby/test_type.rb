@@ -22,14 +22,25 @@ class TC_Type < Test::Unit::TestCase
         registry
     end
 
-    def test_type_inequality
-        # Check that == returns false when the two objects aren't of the same class
-        # (for instance type == nil shall return false)
-	type = nil
+    def test_type_should_be_equal_when_they_are_the_same_object
         type = CXXRegistry.new.get("/int32_t")
-        assert_equal("/int32_t", type.name)
-        assert_nothing_raised { type == nil }
-        assert(type != nil)
+        assert_equal type, type
+    end
+
+    def test_type_should_be_equal_when_they_are_the_same_definition
+        type0 = CXXRegistry.new.get("/int32_t")
+        type1 = CXXRegistry.new.get("/int32_t")
+        assert_equal type0, type1
+    end
+
+    def test_type_can_compare_itself_to_an_arbitrary_object
+        type = CXXRegistry.new.get("/int32_t")
+        assert !(type == Object.new)
+    end
+
+    def test_base_type_classes_can_be_compared
+        assert(Typelib::CompoundType == Typelib::CompoundType)
+        assert(Typelib::CompoundType != Object.new)
     end
 
     def test_casts_to

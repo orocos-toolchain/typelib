@@ -254,7 +254,7 @@ module Typelib
         end
 
         def warn(msg)
-            STDERR.puts "WARN: #{msg}"
+            Typelib.warn msg
         end
 
         def file_context(xmlnode)

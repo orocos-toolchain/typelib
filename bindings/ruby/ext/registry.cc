@@ -546,7 +546,9 @@ static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element
 static VALUE registry_add_standard_cxx_types(VALUE klass, VALUE registry)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
-    Typelib::CXX::addStandardTypes(reg);
+    try { Typelib::CXX::addStandardTypes(reg); }
+    catch(Typelib::AlreadyDefined e)
+    { rb_raise(rb_eArgError, "%s", e.what()); }
     return registry;
 }
 
@@ -611,6 +613,34 @@ static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs)
     return cxx2rb::type_wrap(*type, registry);
 }
 
+/*
+ * call-seq:
+ *   registry.create_opaque(name, size)
+ *
+ * Creates a new opaque type with the given name and size
+ */
+static VALUE registry_create_opaque(VALUE registry, VALUE _name, VALUE _size)
+{
+    Registry& reg = rb2cxx::object<Registry>(registry);
+    Typelib::Type* type = new Typelib::OpaqueType(StringValuePtr(_name), NUM2INT(_size));
+    reg.add(type, true, "");
+    return cxx2rb::type_wrap(*type, registry);
+}
+
+/*
+ * call-seq:
+ *   registry.create_null(name, size)
+ *
+ * Creates a new null type with the given name and size
+ */
+static VALUE registry_create_null(VALUE registry, VALUE _name)
+{
+    Registry& reg = rb2cxx::object<Registry>(registry);
+    Typelib::Type* type = new Typelib::NullType(StringValuePtr(_name));
+    reg.add(type, true, "");
+    return cxx2rb::type_wrap(*type, registry);
+}
+
 void typelib_ruby::Typelib_init_registry()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
@@ -638,6 +668,8 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "source_id_of", RUBY_METHOD_FUNC(registry_source_id_of), 1);
     rb_define_method(cRegistry, "do_create_compound", RUBY_METHOD_FUNC(registry_create_compound), 2);
     rb_define_method(cRegistry, "do_create_enum", RUBY_METHOD_FUNC(registry_create_enum), 2);
+    rb_define_method(cRegistry, "create_opaque", RUBY_METHOD_FUNC(registry_create_opaque), 2);
+    rb_define_method(cRegistry, "create_null", RUBY_METHOD_FUNC(registry_create_null), 1);
 
     rb_define_singleton_method(cRegistry, "add_standard_cxx_types", RUBY_METHOD_FUNC(registry_add_standard_cxx_types), 1);
 

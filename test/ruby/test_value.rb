@@ -153,7 +153,7 @@ class TC_Value < Test::Unit::TestCase
     def test_pretty_printing
         b = make_registry.get("/B").new
         b.zero!
-        assert_nothing_raised { pp b }
+        assert_nothing_raised { PP.new(b, StringIO.new) }
     end
 
     def test_to_csv

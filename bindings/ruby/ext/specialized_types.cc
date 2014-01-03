@@ -40,7 +40,7 @@ static VALUE compound_get_fields(VALUE self)
 }
 
 /* Helper function for CompoundType#[] */
-static VALUE compound_field_get(VALUE rbvalue, VALUE name)
+static VALUE compound_field_get(VALUE rbvalue, VALUE name, VALUE raw)
 { 
     VALUE registry = value_get_registry(rbvalue);
     Value value = rb2cxx::object<Value>(rbvalue);
@@ -49,7 +49,9 @@ static VALUE compound_field_get(VALUE rbvalue, VALUE name)
 
     try { 
         Value field_value = value_get_field(value, StringValuePtr(name));
-	return typelib_to_ruby(field_value, registry, rbvalue);
+        if (RTEST(raw))
+            return cxx2rb::value_wrap(field_value, registry, rbvalue);
+        else return typelib_to_ruby(field_value, registry, rbvalue);
     } 
     catch(FieldNotFound)
     { rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name)); } 
@@ -93,7 +95,7 @@ static VALUE pointer_deference(VALUE self)
         rb_raise(rb_eArgError, "cannot deference a NULL pointer");
 
     Value new_value(ptr_value, indirect.getIndirection() );
-    return typelib_to_ruby(new_value, registry, Qnil);
+    return cxx2rb::value_wrap(new_value, registry, Qnil);
 }
 
 
@@ -132,6 +134,9 @@ Enum::integral_type rb2cxx::enum_value(VALUE rb_value, Enum const& e)
  */
 VALUE enum_keys(VALUE self)
 {
+    if (self == cEnum)
+        return rb_hash_new();
+
     Enum const& type = static_cast<Enum const&>(rb2cxx::object<Type>(self));
 
     VALUE keys = rb_iv_get(self, "@values");
@@ -245,7 +250,7 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
     if (argc == 1)
     {
 	Value v = Value(data + array_type.getSize() * index, array_type);
-	return typelib_to_ruby( v, registry, self );
+	return cxx2rb::value_wrap( v, registry, self );
     }
     else if (argc == 2)
     {
@@ -257,7 +262,7 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
 	for (size_t i = index; i < index + size; ++i)
 	{
 	    Value v = Value(data + array_type.getSize() * i, array_type);
-	    VALUE rb_v = typelib_to_ruby( v, registry, self );
+	    VALUE rb_v = cxx2rb::value_wrap( v, registry, self );
 
 	    rb_ary_push(ret, rb_v);
 	}
@@ -299,7 +304,7 @@ static VALUE array_do_each(VALUE rbarray)
     int8_t* data = reinterpret_cast<int8_t*>(value.getData());
 
     for (size_t i = 0; i < array.getDimension(); ++i, data += array_type.getSize())
-	rb_yield(typelib_to_ruby( Value(data, array_type), registry, rbarray ));
+	rb_yield(cxx2rb::value_wrap( Value(data, array_type), registry, rbarray ));
 
     return rbarray;
 }
@@ -496,42 +501,36 @@ static VALUE container_do_set(VALUE self, VALUE index, VALUE obj)
     return self;
 }
 
-static VALUE container_do_get(VALUE self, VALUE index)
+static VALUE container_do_get(VALUE self, VALUE index, VALUE raw)
 {
     Value container_v = rb2cxx::object<Value>(self);
     Container const& container_t(dynamic_cast<Container const&>(container_v.getType()));
     VALUE registry = value_get_registry(self);
 
     Value v = container_t.getElement(container_v.getData(), NUM2INT(index));
-    return typelib_to_ruby(v, registry, self);
+    if (RTEST(raw))
+        return cxx2rb::value_wrap(v, registry, self);
+    else return typelib_to_ruby(v, registry, self);
 }
 
-struct ContainerIterator : public RubyGetter
+struct ContainerIterator : public ValueVisitor
 {
-    bool inside;
+    VALUE m_registry;
+    VALUE m_parent;
+    bool m_raw;
 
-    bool visit_(Value const& v, Container const& c)
-    { 
-        if (inside)
-            RubyGetter::visit_(v, c);
-        else
-            ValueVisitor::visit_(v, c);
-        return false;
-    }
-
-    void apply(Value v, VALUE registry, VALUE parent)
+    ContainerIterator(VALUE registry, VALUE parent, bool raw)
     {
-        inside = false;
-        RubyGetter::apply(v, registry, parent);
+        m_registry = registry;
+        m_parent = parent;
+        m_raw = raw;
     }
     virtual void dispatch(Value v)
     {
-        inside = true;
-        RubyGetter::dispatch(v);
-
-        VALUE result = m_value;
-        m_value = Qnil;
-        rb_yield(result);
+        if (m_raw)
+            rb_yield(cxx2rb::value_wrap(v, m_registry, m_parent));
+        else
+            rb_yield(typelib_to_ruby(v, m_registry, m_parent));
     }
 };
 
@@ -541,12 +540,12 @@ struct ContainerIterator : public RubyGetter
  *
  * Iterates on the elements of the container
  */
-static VALUE container_each(VALUE self)
+static VALUE container_each(VALUE self, VALUE raw)
 {
     Value value = rb2cxx::object<Value>(self);
     VALUE registry = value_get_registry(self);
-    ContainerIterator iterator;
-    iterator.apply(value, registry, self);
+    ContainerIterator iterator(registry, self, RTEST(raw));
+    dynamic_cast<Typelib::Container const&>(value.getType()).visit(value.getData(), iterator);
     return self;
 }
 
@@ -573,7 +572,7 @@ static VALUE container_erase(VALUE self, VALUE obj)
 
 bool container_delete_if_i(Value v, VALUE registry, VALUE container)
 {
-    VALUE rb_v = typelib_to_ruby(v, registry, container);
+    VALUE rb_v = cxx2rb::value_wrap(v, registry, container);
     if (RTEST(rb_yield(rb_v)))
         return true;
     return false;
@@ -595,14 +594,29 @@ static VALUE container_delete_if(VALUE self)
     return self;
 }
 
+/*
+ * call-seq:
+ *  vector.contained_memory_id => value or nil
+ *
+ * (see ContainerType#contained_memory_id)
+ */
+static VALUE vector_contained_memory_id(VALUE self)
+{
+    Value container_v = rb2cxx::object<Value>(self);
+    std::vector<uint8_t> const* vector = reinterpret_cast<std::vector<uint8_t>*>(container_v.getData());
+    if (vector->empty())
+        return Qnil;
+    return ULL2NUM(reinterpret_cast<uint64_t>(&(*vector)[0]));
+}
+
 /* 
  * call-seq:
- *   value.to_ruby	=> non-Typelib object or self
+ *   to_ruby(value)	=> non-Typelib object or self
  *
  * Converts +self+ to its Ruby equivalent. If no equivalent
  * type is available, returns self
  */
-static VALUE numeric_to_ruby(VALUE self)
+static VALUE numeric_to_ruby(VALUE mod, VALUE self)
 {
     Value const& value(rb2cxx::object<Value>(self));
     VALUE registry = value_get_registry(self);
@@ -663,7 +677,7 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_singleton_method(cNumeric, "integer?", RUBY_METHOD_FUNC(numeric_type_integer_p), 0);
     rb_define_singleton_method(cNumeric, "unsigned?", RUBY_METHOD_FUNC(numeric_type_unsigned_p), 0);
     rb_define_singleton_method(cNumeric, "size", RUBY_METHOD_FUNC(numeric_type_size), 0);
-    rb_define_method(cNumeric, "typelib_to_ruby",      RUBY_METHOD_FUNC(&numeric_to_ruby), 0);
+    rb_define_singleton_method(cNumeric, "to_ruby", RUBY_METHOD_FUNC(&numeric_to_ruby), 1);
     rb_define_method(cNumeric, "typelib_from_ruby", RUBY_METHOD_FUNC(&numeric_from_ruby), 1);
 
     cOpaque    = rb_define_class_under(mTypelib, "OpaqueType", cType);
@@ -678,14 +692,14 @@ void typelib_ruby::Typelib_init_specialized_types()
     
     cCompound = rb_define_class_under(mTypelib, "CompoundType", cType);
     rb_define_singleton_method(cCompound, "get_fields",   RUBY_METHOD_FUNC(compound_get_fields), 0);
-    rb_define_method(cCompound, "typelib_get_field", RUBY_METHOD_FUNC(compound_field_get), 1);
+    rb_define_method(cCompound, "typelib_get_field", RUBY_METHOD_FUNC(compound_field_get), 2);
     rb_define_method(cCompound, "typelib_set_field", RUBY_METHOD_FUNC(compound_field_set), 2);
 
     cEnum = rb_define_class_under(mTypelib, "EnumType", cType);
     rb_define_singleton_method(cEnum, "keys", RUBY_METHOD_FUNC(enum_keys), 0);
     rb_define_singleton_method(cEnum, "value_of",      RUBY_METHOD_FUNC(enum_value_of), 1);
     rb_define_singleton_method(cEnum, "name_of",      RUBY_METHOD_FUNC(enum_name_of), 1);
-    rb_define_method(cEnum, "typelib_to_ruby",      RUBY_METHOD_FUNC(&numeric_to_ruby), 0);
+    rb_define_singleton_method(cEnum, "to_ruby",      RUBY_METHOD_FUNC(&numeric_to_ruby), 1);
     rb_define_method(cEnum, "typelib_from_ruby",    RUBY_METHOD_FUNC(&numeric_from_ruby), 1);
 
     cArray    = rb_define_class_under(mTypelib, "ArrayType", cIndirect);
@@ -703,10 +717,13 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_method(cContainer, "size",    RUBY_METHOD_FUNC(container_length), 0);
     rb_define_method(cContainer, "do_clear",    RUBY_METHOD_FUNC(container_clear), 0);
     rb_define_method(cContainer, "do_push",    RUBY_METHOD_FUNC(container_do_push), 1);
-    rb_define_method(cContainer, "do_get",    RUBY_METHOD_FUNC(container_do_get), 1);
+    rb_define_method(cContainer, "do_get",    RUBY_METHOD_FUNC(container_do_get), 2);
     rb_define_method(cContainer, "do_set",    RUBY_METHOD_FUNC(container_do_set), 2);
-    rb_define_method(cContainer, "do_each",      RUBY_METHOD_FUNC(container_each), 0);
+    rb_define_method(cContainer, "do_each",      RUBY_METHOD_FUNC(container_each), 1);
     rb_define_method(cContainer, "do_erase",     RUBY_METHOD_FUNC(container_erase), 1);
     rb_define_method(cContainer, "do_delete_if", RUBY_METHOD_FUNC(container_delete_if), 0);
+
+    VALUE mVector = rb_define_module_under(cContainer, "StdVector");
+    rb_define_method(mVector, "contained_memory_id", RUBY_METHOD_FUNC(vector_contained_memory_id), 0);
 }
 

@@ -207,6 +207,8 @@ static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 	return Qfalse;
     if (rb_funcall(rbself, rb_intern("superclass"), 0) != rb_funcall(rbwith, rb_intern("superclass"), 0))
         return Qfalse;
+    if (rbself == rbwith)
+        return Qtrue;
 
     Type const& self(rb2cxx::object<Type>(rbself));
     Type const& with(rb2cxx::object<Type>(rbwith));
@@ -441,9 +443,8 @@ VALUE value_invalidate(VALUE self)
 #ifdef VERBOSE
     fprintf(stderr, "invalidating %llu, ptr=%p\n", NUM2ULL(rb_obj_id(self)), value.getData());
 #endif
-    // memory and Typelib::destroy are handled at the pointer level, not at the
-    // Type instance level. Do not memory_unref here !
     value = Value(0, value.getType());
+    rb_funcall(rb_iv_get(self, "@ptr"), rb_intern("invalidate"), 0);
     return Qnil;
 }
 
@@ -468,7 +469,9 @@ static
 VALUE value_marshalling_size(VALUE self)
 {
     Value& value = rb2cxx::object<Value>(self);
-    return INT2NUM(Typelib::getDumpSize(value));
+    try { return INT2NUM(Typelib::getDumpSize(value)); }
+    catch(Typelib::NoLayout)
+    { return Qnil; }
 }
 
 VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)

@@ -33,6 +33,8 @@ BOOST_AUTO_TEST_CASE( test_typename_validation )
 
     BOOST_CHECK(isValidTypename("s", false));
     BOOST_CHECK(!isValidTypename(":blabla", false));
+
+    BOOST_CHECK(isValidTypename("/std/map</std/string,/trigger/behaviour/Description,/std/less</std/string>,/std/allocator</std/pair</const std/basic_string</char,/std/char_traits</char>,/std/allocator</char>>,/trigger/behaviour/Description>>>", true));
 }
 
 BOOST_AUTO_TEST_CASE( test_typename_is_in_namespace )

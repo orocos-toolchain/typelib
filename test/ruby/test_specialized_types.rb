@@ -100,6 +100,20 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         end
     end
 
+    def test_compound_raw_get
+        registry = CXXRegistry.new
+        registry.create_container '/std/vector', '/double'
+        type = registry.create_compound '/Test' do |c|
+            c.field = '/std/vector</double>'
+        end
+
+        value = type.new
+        value.field.push(0)
+        raw_value = value.field.raw_get(0)
+        assert_kind_of Typelib::NumericType, raw_value
+        assert_equal 0, Typelib.to_ruby(raw_value)
+    end
+
     def test_compound_field_raw_set_does_no_typelib_convertion
         subfield_t = compound_t[:compound]
 
@@ -165,11 +179,11 @@ class TC_SpecializedTypes < Test::Unit::TestCase
     def test_compound_access_methods_call_base_setters_and_getters
         value = compound_t.new
 
-        flexmock(value).should_receive(:set_field).
+        flexmock(value).should_receive(:set).
             with('plain', 10).once.ordered.and_return
         flexmock(value).should_receive(:raw_set).
             with('plain', 10).once.ordered.and_return
-        flexmock(value).should_receive(:get_field).
+        flexmock(value).should_receive(:get).
             with('plain').once.ordered.and_return(20)
         flexmock(value).should_receive(:raw_get).
             with('plain').once.ordered.and_return(20)
@@ -264,7 +278,8 @@ class TC_SpecializedTypes < Test::Unit::TestCase
             array[i] = i
         end
         array.enum_for(:raw_each).each_with_index do |val, i|
-            assert_equal i, val
+            assert_kind_of Typelib::Type, val
+            assert_equal i, Typelib.to_ruby(val)
         end
     end
 
@@ -371,6 +386,26 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert(!(e_modified.casts_to?(e_type)))
     end
 
+    def test_enum_to_ruby
+        registry = make_registry
+        e_type = registry.get("EContainer")
+        e = e_type.new
+        e.value = 0
+        enum = e.raw_get('value')
+        assert_kind_of Typelib::EnumType, enum
+        sym = Typelib.to_ruby(enum)
+        assert_kind_of Symbol, sym
+        assert_equal :E_FIRST, sym
+    end
+
+    def test_enum_from_ruby
+        registry = make_registry
+        e_type = registry.get("EContainer")['value']
+        enum = Typelib.from_ruby(:E_FIRST, e_type)
+        assert_kind_of Typelib::EnumType, enum
+        assert_equal :E_FIRST, Typelib.to_ruby(enum)
+    end
+
     def test_numeric
 	long = make_registry.get("/int")
 	assert(long < NumericType)
@@ -392,6 +427,22 @@ class TC_SpecializedTypes < Test::Unit::TestCase
 	assert_equal(8, double.size)
 	assert(!double.integer?)
 	assert_raises(ArgumentError) { double.unsigned? }
+    end
+
+    def test_numeric_to_ruby
+	long = make_registry.get("/int")
+        v = long.new
+        v.zero!
+        zero = Typelib.to_ruby(v)
+        assert_kind_of Numeric, zero
+        assert_equal 0, zero
+    end
+
+    def test_numeric_from_ruby
+	long = make_registry.get("/int")
+        zero = Typelib.from_ruby(0, long)
+        assert_kind_of Typelib::NumericType, zero
+        assert_equal 0, Typelib.to_ruby(zero)
     end
 
     def test_string_handling
@@ -478,6 +529,37 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert(value.dbl_vector.empty?)
     end
 
+    def test_container_raw_each
+        type = CXXRegistry.new.create_container '/std/vector', '/double'
+        value = type.new
+        10.times do |i|
+            value.push(i)
+        end
+        value.enum_for(:raw_each).each_with_index do |val, i|
+            assert_kind_of Typelib::Type, val
+            assert_equal i, Typelib.to_ruby(val)
+        end
+    end
+
+    def test_container_raw_get
+        type = CXXRegistry.new.create_container '/std/vector', '/double'
+        value = type.new
+        value.push(0)
+        raw_value = value.raw_get(0)
+        assert_kind_of Typelib::NumericType, raw_value
+        assert_equal 0, Typelib.to_ruby(raw_value)
+    end
+
+    def test_container_size
+        reg = make_registry
+        type = CXXRegistry.new.create_container "/std/vector", '/double'
+        value = type.new
+        assert_equal 0, value.size
+
+        value.push(0)
+        assert_equal 1, value.size
+    end
+
     def test_define_container
         reg = make_registry
         assert_raises(ArgumentError) { reg.define_container("/blabla") }
@@ -498,7 +580,8 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_equal 0, value.length
 
         value.push(?a)
-        assert_equal "a", Typelib.to_ruby(value)
+        value.push(?b)
+        assert_equal "ab", Typelib.to_ruby(value)
         assert_equal "a_string", Typelib.to_ruby(Typelib.from_ruby("a_string", reg.get("/std/string")))
     end
 
@@ -605,34 +688,35 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         assert_raises(TypeError) { vector[0] = 10 }
     end
 
-    def test_vector_modification_invalidate_existing_values
+    def test_vector_erase_invalidates_last_elements
         std      = make_registry.get("StdCollections")
         value_t = std[:v_of_v]
 
         value   = value_t.new
         element = value_t.deference.new
-        10.times do
-            value.push(element)
-        end
+        10.times { value.push(element) }
 
-        v = value[0]
-        assert(!v.invalidated?)
-        value.push(element)
-        assert(v.invalidated?)
-
-        v = value[0]
-        assert(!v.invalidated?)
+        last = value[9]
         value.erase(element)
-        assert(v.invalidated?)
+        assert last.invalidated?
+    end
+    def test_vector_delete_if_invalidates_last_elements
+        std      = make_registry.get("StdCollections")
+        value_t = std[:v_of_v]
 
-        10.times do
-            value.push(element)
-        end
-        v = value[0]
-        assert(!v.invalidated?)
+        value   = value_t.new
+        element = value_t.deference.new
+        10.times { value.push(element) }
+
+        last = value[9]
         bool = false
-        value.delete_if { bool = !bool }
-        assert(v.invalidated?)
+        value.delete_if do |el|
+            if bool = !bool
+                true
+            else break
+            end
+        end
+        assert last.invalidated?
     end
 end
 

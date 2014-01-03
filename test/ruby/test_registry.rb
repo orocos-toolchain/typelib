@@ -79,7 +79,7 @@ class TC_Registry < Test::Unit::TestCase
     def test_registry_iteration
 	reg = make_registry
 
-	values = reg.each.to_a
+	values = Typelib.log_silent { reg.each.to_a }
 	assert_not_equal(0, values.size)
 	assert(values.include?(reg.get("/int")))
 	assert(values.include?(reg.get("/EContainer")))
@@ -109,7 +109,9 @@ class TC_Registry < Test::Unit::TestCase
     def test_export
 	reg = make_registry
         mod = Module.new
-        reg.export_to_ruby(mod)
+        Typelib.log_silent do
+            reg.export_to_ruby(mod)
+        end
 
         assert_equal reg.get('/E_comparison_1/E_with_added_values'),
             mod::EComparison_1::EWithAddedValues
@@ -121,7 +123,9 @@ class TC_Registry < Test::Unit::TestCase
     def test_clear_export
 	reg = make_registry
         mod = Module.new
-        reg.export_to_ruby(mod)
+        Typelib.log_silent do
+            reg.export_to_ruby(mod)
+        end
 
         ns = mod.const_get(:NS1).const_get(:NS2)
         assert(!ns.constants.empty?)
@@ -139,7 +143,9 @@ class TC_Registry < Test::Unit::TestCase
     def test_clear_export_keeps_custom_objects
 	reg = make_registry
         mod = Module.new
-        reg.export_to_ruby(mod)
+        Typelib.log_silent do
+            reg.export_to_ruby(mod)
+        end
 
         obj = Object.new
         mod.const_set('CustomConstant', obj)
@@ -155,7 +161,9 @@ class TC_Registry < Test::Unit::TestCase
 
         converted_t = reg.get('/B')
         converted_t.convert_to_ruby(Time) { |bla| }
-        reg.export_to_ruby(mod)
+        Typelib.log_silent do
+            reg.export_to_ruby(mod)
+        end
 
         assert_equal(Time, mod::B)
     end
@@ -171,7 +179,9 @@ class TC_Registry < Test::Unit::TestCase
 
         converted_t = reg.get('/E_comparison_1/E_with_added_values')
         converted_t.convert_to_ruby(target_t) { |bla| }
-        reg.export_to_ruby(mod)
+        Typelib.log_silent do
+            reg.export_to_ruby(mod)
+        end
 
         assert_equal(target_t, mod::EComparison_1::EWithAddedValues)
     end
