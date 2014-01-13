@@ -167,7 +167,6 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::load(
             {
                 Container const* type = reinterpret_cast<Container const*>(*(++it));
                 void* container_ptr  = data + out_offset;
-                type->init(container_ptr);
                 out_offset += type->getSize();
 
                 uint64_t element_count;
