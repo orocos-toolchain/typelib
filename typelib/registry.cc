@@ -573,18 +573,32 @@ namespace Typelib
 
     std::set<Type const*> Registry::reverseDepends(Type const& type) const
     {
-        std::set<Type const*> result;
-        result.insert(&type);
+        typedef std::set<Type const*> TypeSet;
+        TypeSet result, queue, new_queue;
+        queue.insert(&type);
 
-        RegistryIterator const end = this->end();
-        for (RegistryIterator it = this->begin(); it != end; ++it)
+        while (!queue.empty())
         {
-            Type const& t = *it;
-            if (it.isAlias()) continue;
+            RegistryIterator const end = this->end();
+            for (RegistryIterator it = this->begin(); it != end; ++it)
+            {
+                Type const& t = *it;
+                if (it.isAlias()) continue;
+                if (result.count(&t) || queue.count(&t)) continue;
 
-            std::set<Type const*> dependencies = t.dependsOn();
-            if (dependencies.count(&type))
-                result.insert(&t);
+                std::set<Type const*> dependencies = t.dependsOn();
+                for (TypeSet::const_iterator it = queue.begin(); it != queue.end(); ++it)
+                {
+                    if (dependencies.count(*it))
+                    {
+                        new_queue.insert(&t);
+                        break;
+                    }
+                }
+            }
+            result.insert(queue.begin(), queue.end());
+            queue.swap(new_queue);
+            new_queue.clear();
         }
 
         return result;

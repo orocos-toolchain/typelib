@@ -122,10 +122,12 @@ VALUE registry_source_id_of(VALUE self, VALUE rbtype)
     return rb_str_new(it.getSource().c_str(), it.getSource().length());
 }
 
-/* call-seq:
- *   registry.reverse_depends(type) => types
+/* @overload registry.reverse_depends(type)
+ *   Returns an array of the types that depend on another type, including the type itself
  *
- * Returns the array of types that depend on +type+, including +type+ itself
+ *   @param [Class<Typelib::Type>] type the type whose reverse dependencies we want
+ *   @return [Array<Class<Typelib::Type>>] the types that depend on the given
+ *     type, recursively and including the type itself.
  */
 static
 VALUE registry_reverse_depends(VALUE self, VALUE rbtype)
