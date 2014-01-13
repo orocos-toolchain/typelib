@@ -36,7 +36,7 @@ ELSE(NOT Utilmm_FOUND)
     set(Utilmm_LIBRARIES ${Utilmm_LIBRARIES})
     
     INCLUDE_DIRECTORIES(${Utilmm_INCLUDE_DIR})
-    LINK_DIRECTORIES(${Utilmm_LINK_DIR})
+    LINK_DIRECTORIES(${Utilmm_LIBDIR})
 ENDIF(NOT Utilmm_FOUND)
 
 pkg_search_module (LibXML  libxml-2.0 libxml2 libxml>=2)
@@ -49,7 +49,7 @@ ELSE(NOT LibXML_FOUND)
     set(LibXML_LIBRARIES ${LibXML_LIBRARIES})
     
     INCLUDE_DIRECTORIES(${LibXML_INCLUDE_DIR})
-    LINK_DIRECTORIES(${LibXML_LINK_DIR})
+    LINK_DIRECTORIES(${LibXML_LIBDIR})
 ENDIF(NOT LibXML_FOUND)
 
 CONFIGURE_FILE(typelib.pc.in typelib.pc @ONLY)
