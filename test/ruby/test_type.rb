@@ -51,6 +51,11 @@ class TC_Type < Test::Unit::TestCase
         assert(Typelib::CompoundType != Object.new)
     end
 
+    def test_can_compare_a_type_with_a_base_type_class
+        double_t = CXXRegistry.new.get('/double')
+        assert(double_t != Typelib::NumericType)
+    end
+
     def test_casts_to
         r0 = make_registry
         r1 = make_registry

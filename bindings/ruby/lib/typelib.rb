@@ -327,6 +327,9 @@ module Typelib
     class Type
         initialize_base_class
     end
+    class NumericType
+        initialize_base_class
+    end
     class EnumType
         initialize_base_class
     end
