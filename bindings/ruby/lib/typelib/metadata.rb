@@ -9,6 +9,12 @@ module Typelib
                 yield(k, get(k))
             end
         end
+        def [](index)
+            get(index)
+        end
+        def []=(index,value)
+            set(index,value)
+        end
     end
 end
 

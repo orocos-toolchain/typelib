@@ -23,8 +23,6 @@ ELSEIF(NOT RUBY_EXTENSIONS_AVAILABLE)
     EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "puts RUBY_VERSION"
        OUTPUT_VARIABLE RUBY_VERSION)
     STRING(REPLACE "\n" "" RUBY_VERSION ${RUBY_VERSION})
-    STRING(REGEX MATCH "^1\\.9" RUBY_19 ${RUBY_VERSION})
-    STRING(REGEX MATCH "^1\\.9\\.1" RUBY_191 ${RUBY_VERSION})
     message(STATUS "using Ruby version ${RUBY_VERSION}")
 
     EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "puts RbConfig::CONFIG['CFLAGS']"
@@ -35,14 +33,6 @@ ELSEIF(NOT RUBY_EXTENSIONS_AVAILABLE)
         list(GET RUBY_INCLUDE_PATH 0 ruby_path)
 	GET_FILENAME_COMPONENT(rubylib_path ${ruby_path} PATH)
 	LINK_DIRECTORIES(${rubylib_path})
-
-        if (RUBY_191)
-            list(APPEND RUBY_INCLUDE_PATH "${ruby_path}/ruby")
-            add_definitions(-DRUBY_191)
-        elseif (RUBY_19)
-            list(APPEND RUBY_INCLUDE_PATH "${ruby_path}/ruby")
-            add_definitions(-DRUBY_19)
-        endif()
 
 	INCLUDE_DIRECTORIES(${RUBY_INCLUDE_PATH})
 	SET_SOURCE_FILES_PROPERTIES(${ARGN} PROPERTIES COMPILE_FLAGS "${RUBY_CFLAGS}")

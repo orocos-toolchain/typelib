@@ -718,5 +718,16 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         end
         assert last.invalidated?
     end
+
+    def test_compound_type_with_enum_fields_can_be_pretty_printed
+        reg = Typelib::CXXRegistry.new
+        reg.create_enum '/E' do |e|
+            e.add "VAL", 1
+        end
+        compound_t = reg.create_compound '/C' do |c|
+            c.add 'e', '/E'
+        end
+        PP.pp(compound_t, "")
+    end
 end
 

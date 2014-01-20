@@ -286,6 +286,43 @@ class TC_Registry < Test::Unit::TestCase
         assert_equal [['k', ['v']]], new_type.metadata.each.to_a
         assert_equal [['k', ['v']]], new_type.field_metadata['field'].each.to_a
     end
+
+    def test_create_opaque_raises_ArgumentError_if_the_name_is_already_used
+        reg = Typelib::Registry.new
+        reg.create_opaque '/Test', 10
+        assert_raises(ArgumentError) { reg.create_opaque '/Test', 10 }
+    end
+
+    def test_create_null_raises_ArgumentError_if_the_name_is_already_used
+        reg = Typelib::Registry.new
+        reg.create_null '/Test'
+        assert_raises(ArgumentError) { reg.create_null '/Test' }
+    end
+
+    def test_reverse_depends_resolves_recursively
+        reg = Typelib::Registry.new
+        Typelib::Registry.add_standard_cxx_types(reg)
+        compound_t = reg.create_compound '/C' do |c|
+            c.add 'field', 'double'
+        end
+        vector_t = reg.create_container '/std/vector', compound_t
+        array_t  = reg.create_array vector_t, 10
+        assert_equal [compound_t, array_t, vector_t].to_set,
+            reg.reverse_depends(compound_t).to_set
+    end
+
+    def test_remove_removes_the_types_and_its_dependencies
+        reg = Typelib::Registry.new
+        Typelib::Registry.add_standard_cxx_types(reg)
+        compound_t = reg.create_compound '/C' do |c|
+            c.add 'field', 'double'
+        end
+        vector_t = reg.create_container '/std/vector', compound_t
+        reg.create_array vector_t, 10
+        reg.remove(compound_t)
+        assert !reg.include?("/std/vector</C>")
+        assert !reg.include?("/std/vector</C>[10]")
+    end
 end
 
     

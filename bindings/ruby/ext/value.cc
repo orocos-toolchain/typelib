@@ -209,12 +209,12 @@ static VALUE typelib_do_split_name(VALUE mod, VALUE name)
  */
 static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
 { 
-    if (! rb_respond_to(rbwith, rb_intern("superclass")))
-	return Qfalse;
-    if (rb_funcall(rbself, rb_intern("superclass"), 0) != rb_funcall(rbwith, rb_intern("superclass"), 0))
-        return Qfalse;
     if (rbself == rbwith)
         return Qtrue;
+    if (!rb_obj_is_kind_of(rbwith, rb_cClass))
+        return Qfalse;
+    if ((rbwith == cType) || !RTEST(rb_funcall(rbwith, rb_intern("<"), 1, cType)))
+	return Qfalse;
 
     Type const& self(rb2cxx::object<Type>(rbself));
     Type const& with(rb2cxx::object<Type>(rbwith));
@@ -412,23 +412,18 @@ VALUE value_new(VALUE klass)
     return value_from_memory_zone(klass, buffer);
 }
 
-/* @overload from_buffer(buffer)
- *
- * Allocates a new Typelib object that is initialized from the information
- * given in the passed string
- *
- * @param [String] buffer
- * @return [Typelib::Type]
- */
 static
-VALUE value_from_buffer(VALUE klass, VALUE string)
+VALUE value_do_from_buffer(VALUE klass, VALUE string, VALUE pointers, VALUE opaques, VALUE merge, VALUE remove_trailing_skips)
 {
     VALUE result = value_new(klass);
     Value value  = rb2cxx::object<Value>(result);
 
+    MemoryLayout layout = Typelib::layout_of(value.getType(),
+            RTEST(pointers), RTEST(opaques), RTEST(merge), RTEST(remove_trailing_skips));
+
     char* ruby_buffer = StringValuePtr(string);
     vector<uint8_t> cxx_buffer(ruby_buffer, ruby_buffer + RSTRING_LEN(string));
-    try { Typelib::load(value, cxx_buffer); }
+    try { Typelib::load(value, cxx_buffer, layout); }
     catch(std::exception const& e)
     { rb_raise(rb_eArgError, "%s", e.what()); }
     return result;
@@ -663,7 +658,7 @@ void typelib_ruby::Typelib_init_values()
     rb_define_singleton_method(cType, "do_dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
     rb_define_singleton_method(cType, "casts_to?",     RUBY_METHOD_FUNC(&type_can_cast_to), 1);
     rb_define_singleton_method(cType, "value_new", RUBY_METHOD_FUNC(&value_new), 0);
-    rb_define_singleton_method(cType, "from_buffer", RUBY_METHOD_FUNC(&value_from_buffer), 1);
+    rb_define_singleton_method(cType, "do_from_buffer", RUBY_METHOD_FUNC(&value_do_from_buffer), 5);
     rb_define_singleton_method(cType, "from_memory_zone", RUBY_METHOD_FUNC(&value_from_memory_zone), 1);
     rb_define_singleton_method(cType, "from_address", RUBY_METHOD_FUNC(&value_from_address), 1);
 

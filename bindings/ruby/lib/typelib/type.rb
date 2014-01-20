@@ -409,7 +409,8 @@ module Typelib
             end
 
             def pretty_print(pp, with_doc = true) # :nodoc:
-                if with_doc && (doc = metadata.get('doc').first)
+                # Metadata is nil on the "root" models, e.g. CompoundType
+                if with_doc && metadata && (doc = metadata.get('doc').first)
                     if pp_doc(pp, doc)
                         pp.breakable
                     end
@@ -454,6 +455,36 @@ module Typelib
                 new_value
 	    end
 
+            # Allocates a new Typelib object that is initialized from the information
+            # given in the passed string
+            #
+            # The options given here have to be exactly the same than the ones
+            # given to #to_byte_array
+            # 
+            # @param [String] buffer
+            # @option options [Boolean] accept_pointers (false) whether pointers, when
+            #   present, should cause an exception to be raised or simply
+            #   ignored
+            # @option options [Boolean] accept_opaques (false) whether opaques, when
+            #   present, should cause an exception to be raised or simply
+            #   ignored
+            # @option options [Boolean] merge_skip_copy (true) whether padding
+            #   bytes should be marshalled as well when adjacent to non-padding
+            #   bytes, to reduce CPU load at the expense of I/O. When set to
+            #   false, padding bytes are removed completely.
+            # @option options [Boolean] remove_trailing_skips (true) whether
+            #   padding bytes at the end of the value should be marshalled or
+            #   not.
+            # @return [Typelib::Type]
+            def from_buffer(string, options = Hash.new)
+                options = Type.validate_layout_options(options)
+                do_from_buffer(string,
+                               options[:accept_pointers],
+                               options[:accept_opaques],
+                               options[:merge_skip_copy],
+                               options[:remove_trailing_skips])
+            end
+
             # Creates a Typelib wrapper that gives access to the memory
             # pointed-to by the given FFI pointer
             #
@@ -497,19 +528,43 @@ module Typelib
 		    self <= typename
 		end
 	    end
+
+            # @return [String] a XML representation of this type
+            def to_xml
+                registry.minimal(name, true).to_xml
+            end
+
+            def initialize_base_class
+                @__guard_type = Typelib::Registry.new.create_null('/Typelib/Type')
+                @type = @__guard_type.
+                    instance_variable_get(:@type)
+            end
         end
 
         # Returns a string whose content is a marshalled representation of the memory
         # hold by +obj+
         #
-        # This can be used to create a new object later by using value_type.wrap, where
-        # +value_type+ is the object returned by Registry#get. Example:
+        # @example marshalling and unmarshalling a value. {Type.from_buffer} can
+        #   create the value back from the marshalled data. If non-default
+        #   options are given to {#to_byte_array}, the same options must be used
+        #   in from_buffer.
         #
-        #   # Do complex computation
         #   marshalled_data = result.to_byte_array
-        #
-        #   # Later on ...
-        #   value = my_registry.get('/base/Type').wrap(marshalled_data)
+        #   value = my_registry.get('/base/Type').from_buffer(marshalled_data)
+        # 
+        # @option options [Boolean] accept_pointers (false) whether pointers, when
+        #   present, should cause an exception to be raised or simply
+        #   ignored
+        # @option options [Boolean] accept_opaques (false) whether opaques, when
+        #   present, should cause an exception to be raised or simply
+        #   ignored
+        # @option options [Boolean] merge_skip_copy (true) whether padding
+        #   bytes should be marshalled as well when adjacent to non-padding
+        #   bytes, to reduce CPU load at the expense of I/O. When set to
+        #   false, padding bytes are removed completely.
+        # @option options [Boolean] remove_trailing_skips (true) whether
+        #   padding bytes at the end of the value should be marshalled or
+        #   not.
         def to_byte_array(options = Hash.new)
             apply_changes_from_converted_types
             options = Type.validate_layout_options(options)

@@ -21,6 +21,7 @@
   <rosdep name="gccxml" />
   <rosdep name="boost" />
   <rosdep name="facets" />
+  <rosdep name="libxml2" />
 
   <tags>stable</tags>
 

@@ -148,7 +148,7 @@ namespace
         return true;
     }
     bool IDLTypeIdentifierVisitor::visit_(NullType const& type)
-    { throw UnsupportedType(type, "null types are not supported for export in IDL"); }
+    { throw UnsupportedType(type, "null types are not supported for export in IDL, found " + type.getName()); }
     bool IDLTypeIdentifierVisitor::visit_(Container const& type)
     {
         if (type.getName() == "/std/string")

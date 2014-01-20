@@ -122,10 +122,12 @@ VALUE registry_source_id_of(VALUE self, VALUE rbtype)
     return rb_str_new(it.getSource().c_str(), it.getSource().length());
 }
 
-/* call-seq:
- *   registry.reverse_depends(type) => types
+/* @overload registry.reverse_depends(type)
+ *   Returns an array of the types that depend on another type, including the type itself
  *
- * Returns the array of types that depend on +type+, including +type+ itself
+ *   @param [Class<Typelib::Type>] type the type whose reverse dependencies we want
+ *   @return [Array<Class<Typelib::Type>>] the types that depend on the given
+ *     type, recursively and including the type itself.
  */
 static
 VALUE registry_reverse_depends(VALUE self, VALUE rbtype)
@@ -338,12 +340,6 @@ VALUE registry_resize(VALUE self, VALUE new_sizes)
     }
 }
 
-/* call-seq:
- *  minimal(auto_types) => registry
- *
- * Returns the minimal registry needed to define all types that are in +self+
- * but not in +auto_types+
- */
 static
 VALUE registry_minimal(VALUE self, VALUE rb_auto, VALUE with_aliases)
 {
@@ -393,13 +389,21 @@ static void yield_types(VALUE self, bool with_aliases, RegistryIterator it, Regi
     }
 }
 
-/*
- * each_type(filter, false) { |type| ... }
- * each_type(filter, true)  { |name, type| ... }
+/* @overload each_type(prefix, false)
+ *   Enumerates the types and not the aliases
  *
- * Iterates on the types found in this registry. If include_alias is true, also
- * yield the aliased types. If +filter+ is not nil, only the types whose names
- * start with +filter+ will be yield
+ *   @param [nil,String] prefix if non-nil, only types whose name is this prefix
+ *     will be enumerated
+ *   @yieldparam [Model<Typelib::Type>] type a type
+ *
+ * @overload each_type(prefix, true)
+ *   Enumerates the types and the aliases
+ *
+ *   @param [nil,String] prefix if non-nil, only types whose name is this prefix
+ *     will be enumerated
+ *   @yieldparam [String] name the type name, it is different from type.name for
+ *     aliases
+ *   @yieldparam [Model<Typelib::Type>] type a type
  */
 static
 VALUE registry_each_type(VALUE self, VALUE filter_, VALUE with_aliases_)
@@ -591,8 +595,7 @@ static VALUE registry_create_compound(VALUE registry, VALUE name, VALUE field_de
     if (size != 0)
         type->setSize(size);
     try { reg.add(type, true, ""); }
-    catch(std::runtime_error e)
-    { rb_raise(rb_eArgError, "%s", e.what()); }
+    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
@@ -623,8 +626,7 @@ static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs,
     size_t size = NUM2INT(_size);
     if (size != 0) type->setSize(size);
     try { reg.add(type, true, ""); }
-    catch(std::runtime_error e)
-    { rb_raise(rb_eArgError, "%s", e.what()); }
+    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
@@ -638,7 +640,8 @@ static VALUE registry_create_opaque(VALUE registry, VALUE _name, VALUE _size)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
     Typelib::Type* type = new Typelib::OpaqueType(StringValuePtr(_name), NUM2INT(_size));
-    reg.add(type, true, "");
+    try { reg.add(type, true, ""); }
+    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
@@ -652,7 +655,8 @@ static VALUE registry_create_null(VALUE registry, VALUE _name)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
     Typelib::Type* type = new Typelib::NullType(StringValuePtr(_name));
-    reg.add(type, true, "");
+    try { reg.add(type, true, ""); }
+    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 

@@ -32,19 +32,54 @@ module Typelib
             copy
         end
 
+        # Generates the smallest new registry that allows to define a set of types
+        #
+        # @overload minimal(type_name, with_aliases = true)
+        #   @param [String] type_name the name of a type
+        #   @param [Boolean] with_aliases if true, aliases defined in self that
+        #     point to types ending up in the minimal registry will be copied
+        #   @return [Typelib::Registry] the registry that allows to define the
+        #     named type
+        #
+        # @overload minimal(auto_types, with_aliases = true)
+        #   @param [Typelib::Registry] auto_types a registry containing the
+        #     types that are not necessary in the result
+        #   @param [Boolean] with_aliases if true, aliases defined in self that
+        #     point to types ending up in the minimal registry will be copied
+        #   @return [Typelib::Registry] the registry that allows to define all
+        #     types of self that are not in auto_types. Note that it may contain
+        #     types that are in the auto_types registry, if they are needed to
+        #     define some other type
 	def minimal(type, with_aliases = true)
 	    do_minimal(type, with_aliases)
 	end
 
         # Creates a new registry by loading a typelib XML file
         #
-        # See also Registry#merge_xml
+        # @see Registry#merge_xml
         def self.from_xml(xml)
             reg = Typelib::Registry.new
             reg.merge_xml(xml)
             reg
         end
 
+        # Enumerate the types contained in this registry
+        #
+        # @overload each(prefix, :with_aliases => false)
+        #   Enumerates the types and not the aliases
+        #
+        #   @param [nil,String] prefix if non-nil, only types whose name is this prefix
+        #     will be enumerated
+        #   @yieldparam [Model<Typelib::Type>] type a type
+        #
+        # @overload each(prefix, :with_aliases => true)
+        #   Enumerates the types and the aliases
+        #
+        #   @param [nil,String] prefix if non-nil, only types whose name is this prefix
+        #     will be enumerated
+        #   @yieldparam [String] name the type name, it is different from type.name for
+        #     aliases
+        #   @yieldparam [Model<Typelib::Type>] type a type
         def each(filter = nil, options = Hash.new, &block)
             if filter.kind_of?(Hash)
                 filter, options = nil, filter
@@ -61,6 +96,11 @@ module Typelib
         end
         include Enumerable
 
+        # Tests for the presence of a type by its name
+        #
+        # @param [String] name the type name
+        # @return [Boolean] true if this registry contains a type named like
+        #   this
         def include?(name)
             includes?(name)
         end
@@ -737,6 +777,15 @@ module Typelib
             recorder = EnumBuilder.new(name, self, size)
             yield(recorder)
             recorder.build
+        end
+
+        # Add a type from a different registry to this one
+        #
+        # @param [Class<Typelib::Type>] the type to be added
+        # @return [void]
+        def add(type)
+            merge(type.registry.minimal(type.name))
+            nil
         end
     end
 end

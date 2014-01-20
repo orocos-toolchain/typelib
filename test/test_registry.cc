@@ -62,6 +62,23 @@ BOOST_AUTO_TEST_CASE( test_typename_is_in_namespace )
     BOOST_CHECK( isInNamespace("/A/B/Type"   , "/A/B/" , true));
 }
 
+BOOST_AUTO_TEST_CASE( test_nameSort )
+{
+    BOOST_CHECK(!nameSort("/A/B/Type" , "/A/B/Type"));
+
+    BOOST_CHECK(nameSort("/A/B" , "/A/B/Type"));
+    BOOST_CHECK(!nameSort("/A/B/Type" , "/A/B"));
+
+    BOOST_CHECK(nameSort("/A/A" , "/A/B/Type"));
+    BOOST_CHECK(!nameSort("/A/B/Type" , "/A/A"));
+
+    BOOST_CHECK(nameSort("/A/B/Type" , "/AA"));
+    BOOST_CHECK(!nameSort("/AA" , "/A/B/Type"));
+
+    BOOST_CHECK(nameSort("/A/B/Ty" , "/A/B/Type"));
+    BOOST_CHECK(!nameSort("/A/B/Type" , "/A/B/Ty"));
+}
+
 BOOST_AUTO_TEST_CASE( test_typename_manipulation )
 {
     BOOST_CHECK_EQUAL("/NS2/", getNormalizedNamespace("/NS2"));

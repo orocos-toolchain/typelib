@@ -63,6 +63,8 @@ end
 module Typelib
     extend Logger::Root('Typelib', Logger::WARN)
 
+    TYPELIB_LIB_DIR = File.expand_path('typelib', File.dirname(__FILE__))
+
     class << self
 	# If true (the default), typelib will load its type plugins. Otherwise,
         # it will not
@@ -261,9 +263,9 @@ module Typelib
         else
             if !(expected_type < NumericType) && !arg.kind_of?(expected_type)
                 if arg.class.name != expected_type.name
-                    raise UnknownConversionRequested.new(arg, expected_type), "types differ and there are not convertions from one to the other"
+                    raise UnknownConversionRequested.new(arg, expected_type), "types differ and there are not convertions from one to the other: #{arg.class.name} <-> #{expected_type.name}"
                 else
-                    raise ConversionToMismatchedType.new(arg, expected_type), "the types have the same name but different definitions"
+                    raise ConversionToMismatchedType.new(arg, expected_type), "the types have the same name but different definitions: #{arg.class.name} <-> #{expected_type.name}"
                 end
             end
             converted = arg
@@ -320,3 +322,33 @@ if ENV['TYPELIB_USE_GCCXML'] != '0'
     require 'typelib/gccxml'
 end
 
+# Finally, set guard types on the root classes
+module Typelib
+    class Type
+        initialize_base_class
+    end
+    class NumericType
+        initialize_base_class
+    end
+    class EnumType
+        initialize_base_class
+    end
+    class CompoundType
+        initialize_base_class
+    end
+    class ContainerType
+        initialize_base_class
+    end
+    class ArrayType
+        initialize_base_class
+    end
+    class IndirectType
+        initialize_base_class
+    end
+    class OpaqueType
+        initialize_base_class
+    end
+    class PointerType
+        initialize_base_class
+    end
+end

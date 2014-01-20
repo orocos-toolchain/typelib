@@ -109,7 +109,7 @@ namespace Typelib
         static bool isPersistent(std::string const& name, Type const& type, std::string const& source_id);
         void add(std::string const& name, Type* new_type, bool persistent, std::string const& source_id);
 
-        /** Returns the set of types that depend on \c type
+        /** Returns the set of types that depend on \c type recursively
          */
         std::set<Type*> reverseDepends(Type const& type);
 
@@ -176,7 +176,7 @@ namespace Typelib
          * You should not be using it. This is for internal Typelib use only */
         Type* get_(const std::string& name);
 
-        /** Returns the set of types that depend on \c type
+        /** Returns the set of types that depend on \c type recursively
          */
         std::set<Type const*> reverseDepends(Type const& type) const;
 

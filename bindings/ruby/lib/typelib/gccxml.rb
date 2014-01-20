@@ -542,7 +542,7 @@ module Typelib
                             return ignore(xmlnode, "ignoring #{name}, it has private base classes")
                         end
                         if base_type_name = resolve_type_id(child_node['type'])
-                            base_type = registry.get(resolve_type_id(child_node['type']))
+                            base_type = registry.get(base_type_name)
                             [base_type, Integer(child_node['offset'])]
                         else
                             return ignore(xmlnode, "ignoring #{name}, it has ignored base classes")

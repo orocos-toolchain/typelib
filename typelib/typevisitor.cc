@@ -4,7 +4,7 @@
 namespace Typelib
 {
     bool TypeVisitor::visit_ ( NullType const& type )
-    { throw NullTypeFound(); }
+    { throw NullTypeFound(type); }
     bool TypeVisitor::visit_ (OpaqueType const& type)
     { return true; }
     bool TypeVisitor::visit_  (Numeric const& type)

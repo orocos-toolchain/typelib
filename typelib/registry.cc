@@ -24,36 +24,23 @@ using namespace Typelib;
  */
 bool Typelib::nameSort( const std::string& name1, const std::string& name2 )
 {
-    if (name1 == name2)
-        return false;
-
-    NameTokenizer tok1(name1);
-    NameTokenizer tok2(name2);
-    NameTokenizer::const_iterator it1 = tok1.begin();
-    NameTokenizer::const_iterator it2 = tok2.begin();
-
-    std::string ns1, ns2;
-    // we sort /A/B/C/ before /A/B/C/class
-    // and /A/B/C/class2 after /A/B/class1
-    for (; it1 != tok1.end() && it2 != tok2.end(); ++it1, ++it2)
+    for (size_t i = 0; i < name1.length(); ++i)
     {
-        ns1 = *it1;
-        ns2 = *it2;
+        if (name2.length() <= i)
+            return false;
 
-        int value = ns1.compare(ns2);
-        if (value) return value < 0;
-        //cout << ns1 << " " << ns2 << endl;
+        std::string::const_reference c1 = name1[i];
+        std::string::const_reference c2 = name2[i];
+        if (c1 != c2)
+        {
+            if (c1 == '/')
+                return true;
+            if (c2 == '/')
+                return false;
+            return c1 < c2;
+        }
     }
-
-    if (it1 == tok1.end()) 
-        return true;  // there is namespace names left in name1, and not in name2
-    if (it2 == tok2.end()) 
-        return false; // there is namespace names left in name2, and not in name1
-    int value = ns1.compare(ns2);
-    if (value) 
-        return value < 0;
-
-    return false;
+    return (name1.length() < name2.length());
 }
 
 namespace Typelib
@@ -181,10 +168,10 @@ namespace Typelib
 
     void Registry::mergeMetaData(Registry const& registry)
     {
-        for (Iterator it = begin(); it != end(); ++it)
+        for (Iterator other_it = registry.begin(); other_it != registry.end(); ++other_it)
         {
-            RegistryIterator other_it = registry.find(it.getName());
-            if (other_it == registry.end())
+            RegistryIterator it = find(other_it.getName());
+            if (it == end())
                 continue;
             it->mergeMetaData(*other_it);
         }
@@ -192,10 +179,10 @@ namespace Typelib
 
     void Registry::copySourceIDs(Registry const& registry)
     {
-        for (Iterator it = begin(); it != end(); ++it)
+        for (Iterator other_it = registry.begin(); other_it != registry.end(); ++other_it)
         {
-            RegistryIterator other_it = registry.find(it.getName());
-            if (other_it == registry.end())
+            RegistryIterator it = find(other_it.getName());
+            if (it == end())
                 continue;
 
             string source_id = other_it.getSource();
@@ -250,7 +237,7 @@ namespace Typelib
 	    if (!it.isAlias()) continue;
             if (auto_types.has(it.getName())) continue;
             // Do not continue if it is a typedef on a type that we don't need
-            if (!result->has(it->getName())) continue;
+            if (!result->has(it->getName(), false)) continue;
 
 	    Type const* old_type = result->get(it.getName());
 	    if (old_type)
@@ -586,18 +573,32 @@ namespace Typelib
 
     std::set<Type const*> Registry::reverseDepends(Type const& type) const
     {
-        std::set<Type const*> result;
-        result.insert(&type);
+        typedef std::set<Type const*> TypeSet;
+        TypeSet result, queue, new_queue;
+        queue.insert(&type);
 
-        RegistryIterator const end = this->end();
-        for (RegistryIterator it = this->begin(); it != end; ++it)
+        while (!queue.empty())
         {
-            Type const& t = *it;
-            if (it.isAlias()) continue;
+            RegistryIterator const end = this->end();
+            for (RegistryIterator it = this->begin(); it != end; ++it)
+            {
+                Type const& t = *it;
+                if (it.isAlias()) continue;
+                if (result.count(&t) || queue.count(&t)) continue;
 
-            std::set<Type const*> dependencies = t.dependsOn();
-            if (dependencies.count(&type))
-                result.insert(&t);
+                std::set<Type const*> dependencies = t.dependsOn();
+                for (TypeSet::const_iterator it = queue.begin(); it != queue.end(); ++it)
+                {
+                    if (dependencies.count(*it))
+                    {
+                        new_queue.insert(&t);
+                        break;
+                    }
+                }
+            }
+            result.insert(queue.begin(), queue.end());
+            queue.swap(new_queue);
+            new_queue.clear();
         }
 
         return result;

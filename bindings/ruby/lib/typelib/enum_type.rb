@@ -15,14 +15,18 @@ module Typelib
 	    # A value => key hash for each enumeration values
             attr_reader :values
 
-            def pretty_print(pp) # :nodoc:
+            def pretty_print(pp, verbose = false) # :nodoc:
                 super
 		pp.text '{'
                 pp.nest(2) do
                     keys = self.keys.sort_by(&:last)
 		    pp.breakable
                     pp.seplist(keys) do |keydef|
-                        pp.text keydef.join(" = ")
+                        if verbose
+                            pp.text keydef.join(" = ")
+                        else
+                            pp.text keydef[0]
+                        end
                     end
                 end
 		pp.breakable

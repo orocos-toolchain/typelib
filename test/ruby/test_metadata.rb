@@ -16,6 +16,13 @@ class TC_MetaData < Test::Unit::TestCase
             c.add 'field', '/double'
         end
     end
+    def test_it_supports_utf8_as_encoding
+        metadata = Typelib::MetaData.new
+        key = "\u2314"
+        value = "\u3421"
+        metadata.set(key, value)
+        assert_equal [[key, [value]]], metadata.each.to_a
+    end
     def test_it_can_set_values_for_a_key
         metadata = Typelib::MetaData.new
         metadata.add('k', 'v0')
