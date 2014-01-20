@@ -1,8 +1,8 @@
 #include "csvoutput.hh"
 #include "value.hh"
 #include "typevisitor.hh"
-#include <utilmm/stringtools.hh>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/join.hpp>
 
 using namespace Typelib;
 using namespace std;
@@ -11,16 +11,16 @@ namespace
 {
     using namespace Typelib;
     using namespace std;
-    using namespace utilmm;
     class HeaderVisitor : public TypeVisitor
     {
+        typedef std::list<std::string> stringlist;
         stringlist m_name;
         stringlist m_headers;
 
     protected:
         void output()
         {
-            string name = join(m_name, ""); 
+            string name = boost::algorithm::join(m_name, ""); 
             m_headers.push_back(name);
         }
 
@@ -84,6 +84,7 @@ namespace
 
     class LineVisitor : public ValueVisitor
     {
+        typedef std::list<std::string> stringlist;
         stringlist  m_output;
         bool m_char_as_numeric;
         
@@ -149,12 +150,12 @@ CSVOutput::CSVOutput(Type const& type, std::string const& sep, bool char_as_nume
 void CSVOutput::header(std::ostream& out, std::string const& basename)
 {
     HeaderVisitor visitor;
-    out << join(visitor.apply(m_type, basename), m_separator);
+    out << boost::algorithm::join(visitor.apply(m_type, basename), m_separator);
 }
 
 void CSVOutput::display(std::ostream& out, void* value)
 {
     LineVisitor visitor;
-    out << join(visitor.apply( Value(value, m_type), m_char_as_numeric ), m_separator );
+    out << boost::algorithm::join(visitor.apply( Value(value, m_type), m_char_as_numeric ), m_separator );
 }
 

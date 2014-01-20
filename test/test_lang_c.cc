@@ -2,7 +2,6 @@
 
 #include <test/testsuite.hh>
 #include <utilmm/configfile/configset.hh>
-#include <utilmm/stringtools.hh>
 #include <typelib/pluginmanager.hh>
 #include <typelib/importer.hh>
 #include <typelib/typemodel.hh>

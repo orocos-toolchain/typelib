@@ -1,12 +1,10 @@
 #include "typename.hh"
 #include <boost/static_assert.hpp>
-#include <utilmm/stringtools.hh>
 #include <iostream>
 
 using namespace std;
 using namespace boost;
 using namespace Typelib;
-using namespace utilmm;
 
 namespace
 {
