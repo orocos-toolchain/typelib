@@ -20,7 +20,7 @@ ENDIF(${SYSTEM_SUPPORTED} EQUAL -1)
 
 IF(ENABLE_DYNCALL)
     IF(APPLE)
-        SET(DYNCALL_ARGS --target-macosx)
+        SET(DYNCALL_ARGS --target-macosx --tool-llvm-gcc)
     ENDIF(APPLE)
     MESSAGE(STATUS "Ruby: enabled dyncall support")
     SET(DYNCALL_SOURCE_DIR  "${CMAKE_CURRENT_BINARY_DIR}/dyncall-0.6")
@@ -36,7 +36,7 @@ IF(ENABLE_DYNCALL)
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dyncall-0.6.tar.gz)
 
     ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_LIBRARIES}
-        COMMAND $(MAKE) -j1 "CFLAGS=-O3 -fPIC" "CC=gcc"
+        COMMAND $(MAKE) -j1 "CFLAGS=-O3 -fPIC"
         COMMAND $(MAKE) -j1 install
         DEPENDS ${DYNCALL_SOURCE_DIR}/ConfigVars
         WORKING_DIRECTORY ${DYNCALL_SOURCE_DIR})
