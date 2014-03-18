@@ -19,27 +19,40 @@ IF(${SYSTEM_SUPPORTED} EQUAL -1)
 ENDIF(${SYSTEM_SUPPORTED} EQUAL -1)
 
 IF(ENABLE_DYNCALL)
-    IF(APPLE)
-        SET(DYNCALL_ARGS --target-macosx --tool-llvm-gcc)
-    ENDIF(APPLE)
     MESSAGE(STATUS "Ruby: enabled dyncall support")
-    SET(DYNCALL_SOURCE_DIR  "${CMAKE_CURRENT_BINARY_DIR}/dyncall-0.6")
-    SET(DYNCALL_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/dyncall")
-    SET(DYNCALL_INCLUDE_DIR ${DYNCALL_INSTALL_DIR}/include)
-    SET(DYNCALL_LIBRARIES ${DYNCALL_INSTALL_DIR}/lib/libdyncall_s.a ${DYNCALL_INSTALL_DIR}/lib/libdynload_s.a)
-    INCLUDE_DIRECTORIES("${DYNCALL_INSTALL_DIR}/include")
-    LINK_DIRECTORIES("${DYNCALL_INSTALL_DIR}/lib")
+    IF(APPLE)
+        # Let's depend on the port version of dyncall, a bit easier isn't it :)
+        find_library(DYNCALL_LIBRARY dyncall_s)
+        find_library(DYNLOAD_LIBRARY dynload_s)
+        find_path(DYNCALL_INCLUDE_DIR dyncall.h)
+        if(NOT DYNCALL_LIBRARY OR NOT DYNLOAD_LIBRARY OR NOT DYNCALL_INCLUDE_DIR)
+            message("${DYNCALL_LIBRARY}")
+            message("${DYNLOAD_LIBRARY}")
+            message("${DYNCALL_INCLUDE_DIR}")
+            message(FATAL_ERROR "Could not find dyncall libraries. Did you 'port install dyncall'?")
+        endif()
+        SET(DYNCALL_LIBRARIES ${DYNCALL_LIBRARY} ${DYNLOAD_LIBRARY})
+    ELSE(APPLE)
+        SET(DYNCALL_SOURCE_DIR  "${CMAKE_CURRENT_BINARY_DIR}/dyncall-0.6")
+        SET(DYNCALL_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/dyncall")
+        SET(DYNCALL_INCLUDE_DIR ${DYNCALL_INSTALL_DIR}/include)
+        SET(DYNCALL_LIBRARIES ${DYNCALL_INSTALL_DIR}/lib/libdyncall_s.a ${DYNCALL_INSTALL_DIR}/lib/libdynload_s.a)
+        INCLUDE_DIRECTORIES("${DYNCALL_INSTALL_DIR}/include")
+        LINK_DIRECTORIES("${DYNCALL_INSTALL_DIR}/lib")
 
-    ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_SOURCE_DIR}/ConfigVars
-        COMMAND tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/dyncall-0.6.tar.gz
-        COMMAND cd ${DYNCALL_SOURCE_DIR} && ./configure --prefix=${DYNCALL_INSTALL_DIR} ${DYNCALL_ARGS}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dyncall-0.6.tar.gz)
+        ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_SOURCE_DIR}/ConfigVars
+            COMMAND tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/dyncall-0.6.tar.gz
+            COMMAND cd ${DYNCALL_SOURCE_DIR} && ./configure --prefix=${DYNCALL_INSTALL_DIR} ${DYNCALL_ARGS}
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dyncall-0.6.tar.gz)
 
-    ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_LIBRARIES}
-        COMMAND $(MAKE) -j1 "CFLAGS=-O3 -fPIC"
-        COMMAND $(MAKE) -j1 install
-        DEPENDS ${DYNCALL_SOURCE_DIR}/ConfigVars
-        WORKING_DIRECTORY ${DYNCALL_SOURCE_DIR})
+        ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_LIBRARIES}
+            COMMAND $(MAKE) -j1 "CFLAGS=-O3 -fPIC"
+            COMMAND $(MAKE) -j1 install
+            DEPENDS ${DYNCALL_SOURCE_DIR}/ConfigVars
+            WORKING_DIRECTORY ${DYNCALL_SOURCE_DIR})
+    ENDIF(APPLE)
+
+    INCLUDE_DIRECTORIES(${DYNCAL_INCLUDE_DIR})
 
     ADD_CUSTOM_TARGET(dyncall DEPENDS ${DYNCALL_LIBRARIES})
     ADD_DEFINITIONS(-DWITH_DYNCALL)
