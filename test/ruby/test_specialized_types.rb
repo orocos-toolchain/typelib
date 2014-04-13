@@ -730,6 +730,16 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         PP.pp(compound_t, "")
     end
 
+    def test_compound_type_invalidated_raises_TypeError_on_field_access
+        reg = Typelib::CXXRegistry.new
+        reg.create_compound('/C') { |c| c.add 'field', '/double' }
+        container = reg.create_container('/std/vector', '/C').new
+        container << Hash[:field => 0]
+        v = container[0]
+        v.invalidate
+        assert_raises(TypeError) { v.field }
+    end
+
     def test_container_type_invalidation_invalidates_children_if_modified
         reg = Typelib::CXXRegistry.new
         container = reg.create_container('/std/vector', '/double').new

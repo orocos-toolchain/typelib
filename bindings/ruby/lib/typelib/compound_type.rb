@@ -6,6 +6,9 @@ module Typelib
     class CompoundType < Type
         # Module used to extend frozen values
         module Freezer
+            def set(*args)
+                raise TypeError, "frozen object"
+            end
             def raw_set(*args)
                 raise TypeError, "frozen object"
             end
@@ -16,6 +19,12 @@ module Typelib
 
         # Module used to extend invalidated values
         module Invalidate
+            def set(*args)
+                raise TypeError, "invalidated object"
+            end
+            def get(*args)
+                raise TypeError, "invalidated object"
+            end
             def raw_get(*args)
                 raise TypeError, "invalidated object"
             end
