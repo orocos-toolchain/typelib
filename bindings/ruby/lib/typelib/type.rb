@@ -264,9 +264,17 @@ module Typelib
             if containers.empty?
                 yield
             else
+                # Calling #pop is right there. We call
+                # #handle_container_invalidation recursively, which means that
+                # the first invalidation routine to be called is the one of the
+                # last call, i.e. the first element in 'containers'
+                #
+                # In other words, we do invalidate the toplevel containers
+                # first, thus making sure that we don't access the innermost
+                # invalidated containers while they already have been deleted
                 v = containers.pop
                 v.handle_container_invalidation do
-                    handle_container_invalidation(containers, &block)
+                    handle_invalidation_protect_containers(containers, &block)
                 end
             end
         end

@@ -740,6 +740,21 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         end
         assert !container.invalidated?
         assert element.invalidated?
+    end
+
+    def test_container_type_does_not_access_already_invalidated_accessors
+        reg = Typelib::CXXRegistry.new
+        reg.create_container('/std/vector', '/double')
+        c_of_c = reg.create_container('/std/vector', '/std/vector</double>').new
+        c_of_c << [0]
+        c  = c_of_c.raw_get(0)
+        element = c.raw_get(0)
+        c_of_c.handle_invalidation do
+            flexmock(c_of_c).should_receive(:contained_memory_id).and_return(0)
+            flexmock(c).should_receive(:contained_memory_id).never
+        end
+        assert !c_of_c.invalidated?
+        assert c.invalidated?
         assert element.invalidated?
     end
 end
