@@ -729,5 +729,18 @@ class TC_SpecializedTypes < Test::Unit::TestCase
         end
         PP.pp(compound_t, "")
     end
+
+    def test_container_type_invalidation_invalidates_children_if_modified
+        reg = Typelib::CXXRegistry.new
+        container = reg.create_container('/std/vector', '/double').new
+        container << 0
+        element = container.raw_get(0)
+        container.handle_invalidation do
+            flexmock(container).should_receive(:contained_memory_id).and_return(0)
+        end
+        assert !container.invalidated?
+        assert element.invalidated?
+        assert element.invalidated?
+    end
 end
 

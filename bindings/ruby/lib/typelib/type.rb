@@ -245,7 +245,7 @@ module Typelib
         # 
         # @return [Accessor]
         def self.containers_accessor
-            @containers ||= Accessor.find_in_type(self.class) do |t|
+            @containers ||= Accessor.find_in_type(self) do |t|
                 t <= Typelib::ContainerType
             end
         end
