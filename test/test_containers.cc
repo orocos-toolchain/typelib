@@ -3,7 +3,6 @@
 
 #include <test/testsuite.hh>
 #include <utilmm/configfile/configset.hh>
-#include <utilmm/stringtools.hh>
 #include <typelib/pluginmanager.hh>
 #include <typelib/importer.hh>
 #include <typelib/typemodel.hh>
@@ -14,8 +13,6 @@
 #include <string.h>
 using namespace Typelib;
 using namespace std;
-using utilmm::split;
-using utilmm::join;
 
 template<int ptrsize> struct ptr_value_getter { };
 template<> struct ptr_value_getter<4> { typedef uint32_t result; };

@@ -150,14 +150,14 @@ namespace Typelib {
 	    case FLAG_SWAP_4:
 		{
 		    reinterpret_cast<uint32_t&>(output_buffer[output_offset]) = 
-			utilmm::endian::swap(reinterpret_cast<uint32_t const&>(input_buffer[output_offset]));
+			Typelib::Endian::swap(reinterpret_cast<uint32_t const&>(input_buffer[output_offset]));
 		    output_offset += 4;
 		}
 		break;
 	    case FLAG_SWAP_8:
 		{
 		    reinterpret_cast<uint64_t&>(output_buffer[output_offset]) = 
-			utilmm::endian::swap(reinterpret_cast<uint64_t const&>(input_buffer[output_offset]));
+			Typelib::Endian::swap(reinterpret_cast<uint64_t const&>(input_buffer[output_offset]));
 		    output_offset += 8;
 		}
 		break;

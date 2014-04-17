@@ -1,16 +1,28 @@
 #include "export.hh"
 #include <iostream>
-#include <utilmm/stringtools.hh>
 
 #include <typelib/typevisitor.hh>
 #include <typelib/plugins.hh>
 
-#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 namespace
 {
     using namespace std;
     using namespace Typelib;
+    using boost::split;
+    using boost::join;
+    using boost::is_any_of;
+
+    static size_t namespaceIndentLevel(std::string const& ns)
+    {
+        vector<string> separators;
+        split(separators, ns, is_any_of("/"));
+        return separators.size();
+    }
 
     static string normalizeIDLName(std::string const& name)
     {
@@ -248,7 +260,7 @@ namespace
         std::string getTargetNamespace() const { return m_namespace; }
         void setTargetNamespace(std::string const& target_namespace)
         {
-            size_t ns_size = utilmm::split(target_namespace, "/").size();
+            size_t ns_size = namespaceIndentLevel(target_namespace);
             m_indent = string(ns_size * 4, ' ');
             m_namespace = target_namespace;
         }
@@ -338,12 +350,12 @@ namespace
     {
 	m_stream << m_indent << "enum " << type.getBasename() << " { ";
 
-	utilmm::stringlist symbols;
+        list<string> symbols;
         Enum::ValueMap const& values = type.values();
 	Enum::ValueMap::const_iterator it, end = values.end();
 	for (it = values.begin(); it != end; ++it)
 	    symbols.push_back(it->first);
-	m_stream << utilmm::join(symbols, ", ") << " };\n";
+	m_stream << join(symbols, ", ") << " };\n";
 
         return true;
     }
@@ -393,8 +405,8 @@ void IDLExport::end
     generateTypedefs(stream);
 
     // Close the remaining namespaces
-    utilmm::stringlist
-	ns_levels = utilmm::split(m_namespace, "/");
+    list<string> ns_levels;
+    split(ns_levels, m_namespace, is_any_of("/"));
     closeNamespaces(stream, ns_levels.size());
 }
 
@@ -424,9 +436,9 @@ void IDLExport::adaptNamespace(ostream& stream, string const& ns)
 {
     if (m_namespace != ns)
     {
-	utilmm::stringlist
-	    old_namespace = utilmm::split(m_namespace, "/"),
-	    new_namespace = utilmm::split(ns, "/");
+        list<string> old_namespace, new_namespace;
+        split(old_namespace, m_namespace, is_any_of("/"));
+        split(new_namespace, ns, is_any_of("/"));
 
 	while(!old_namespace.empty() && !new_namespace.empty() && old_namespace.front() == new_namespace.front())
 	{
@@ -578,7 +590,7 @@ bool IDLExport::save
 	if (m_blob_threshold && static_cast<int>(type->getSize()) > m_blob_threshold)
 	{
             string target_namespace = getIDLAbsoluteNamespace(type.getNamespace(), *this);
-            size_t ns_size = utilmm::split(target_namespace, "/").size();
+            size_t ns_size = namespaceIndentLevel(target_namespace);
             string indent_string = string(ns_size * 4, ' ');
 
 	    adaptNamespace(stream, target_namespace);

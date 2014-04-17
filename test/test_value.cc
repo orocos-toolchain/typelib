@@ -113,15 +113,15 @@ BOOST_AUTO_TEST_CASE( test_value_endian_swap )
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     A a = { 
-	utilmm::endian::swap((long long)10), 
-	utilmm::endian::swap((int)20), 
-	utilmm::endian::swap('b'), 
-	utilmm::endian::swap((short)52) 
+	Endian::swap((long long)10), 
+	Endian::swap((int)20), 
+	Endian::swap('b'), 
+	Endian::swap((short)52) 
     };
     B b;
     b.a = a;
     for (int i = 0; i < 10; ++i)
-	b.c[i] = utilmm::endian::swap(static_cast<float>(i) / 10.0f);
+	b.c[i] = Endian::swap(static_cast<float>(i) / 10.0f);
 
     Value v_b(&b, *registry.get("/B"));
     Typelib::endian_swap(v_b);
@@ -244,21 +244,21 @@ BOOST_AUTO_TEST_CASE( test_apply_endian_swap )
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
     A a = { 
-	utilmm::endian::swap((long long)10), 
-	utilmm::endian::swap((int)20), 
-	utilmm::endian::swap('b'), 
-	utilmm::endian::swap((short)52) 
+	Endian::swap((long long)10), 
+	Endian::swap((int)20), 
+	Endian::swap('b'), 
+	Endian::swap((short)52) 
     };
     B b;
     b.a = a;
     for (int i = 0; i < 10; ++i)
-	b.c[i] = utilmm::endian::swap(static_cast<float>(i) / 10.0f);
+	b.c[i] = Endian::swap(static_cast<float>(i) / 10.0f);
 
-    b.d[0] = utilmm::endian::swap<float>(42);
+    b.d[0] = Endian::swap<float>(42);
 
     for (int i = 0; i < 10; ++i)
 	for (int j = 0; j < 10; ++j)
-	    b.i[i][j] = utilmm::endian::swap<float>(i * 100 + j);
+	    b.i[i][j] = Endian::swap<float>(i * 100 + j);
 
     Value v_b(&b, *registry.get("/B"));
     B swapped_b;

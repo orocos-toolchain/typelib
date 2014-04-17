@@ -2,7 +2,6 @@
 
 #include <test/testsuite.hh>
 #include <utilmm/configfile/configset.hh>
-#include <utilmm/stringtools.hh>
 #include <typelib/pluginmanager.hh>
 #include <typelib/importer.hh>
 #include <typelib/typemodel.hh>
@@ -15,8 +14,6 @@
 #include <antlr/ANTLRException.hpp>
 using namespace Typelib;
 using namespace std;
-using utilmm::split;
-using utilmm::join;
 
 static void import_test_types(Registry& registry)
 {

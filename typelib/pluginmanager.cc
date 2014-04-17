@@ -9,7 +9,6 @@
 
 using namespace std;
 using namespace Typelib;
-using namespace utilmm;
 using namespace boost::filesystem;
 
 namespace

@@ -2,14 +2,13 @@
 #include "registry.hh"
 #include "registryiterator.hh"
 #include <utilmm/configfile/configset.hh>
-#include <utilmm/stringtools.hh>
 #include <typelib/typevisitor.hh>
 #include <set>
 #include <fstream>
+#include <boost/algorithm/string/join.hpp>
 
 using namespace Typelib;
 using namespace std;
-using utilmm::join;
 
 void Exporter::save(std::string const& file_name, utilmm::config_set const& config, Registry const& registry)
 {
@@ -68,7 +67,7 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
             list<string> remaining;
             for (TypeMap::iterator it = types.begin(); it != types.end(); ++it)
                 remaining.push_back(it->first);
-            throw ExportError(join(remaining) + " seem to be recursive type(s). Exporting them is not supported yet");
+            throw ExportError(boost::join(remaining, " ") + " seem to be recursive type(s). Exporting them is not supported yet");
         }
 
         // Remove all non-persistent types from the free_type set. If we found

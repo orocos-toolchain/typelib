@@ -2,7 +2,7 @@
 #define TYPELIB_ENDIANSWAP_HH
 
 #include <typelib/value.hh>
-#include <utilmm/system/endian.hh>
+#include <typelib/endian_swap.hh>
 #include <limits>
 
 namespace Typelib
@@ -16,18 +16,18 @@ namespace Typelib
     class EndianSwapVisitor : public ValueVisitor
     {
     protected:
-        bool visit_ (int8_t  & value) { value = utilmm::endian::swap(value); return true; }
-        bool visit_ (uint8_t & value) { value = utilmm::endian::swap(value); return true; }
-        bool visit_ (int16_t & value) { value = utilmm::endian::swap(value); return true; }
-        bool visit_ (uint16_t& value) { value = utilmm::endian::swap(value); return true; }
-        bool visit_ (int32_t & value) { value = utilmm::endian::swap(value); return true; }
-        bool visit_ (uint32_t& value) { value = utilmm::endian::swap(value); return true; }
-        bool visit_ (int64_t & value) { value = utilmm::endian::swap(value); return true; }
-        bool visit_ (uint64_t& value) { value = utilmm::endian::swap(value); return true; }
-        bool visit_ (float   & value) { value = utilmm::endian::swap(value); return true; }
-        bool visit_ (double  & value) { value = utilmm::endian::swap(value); return true; }
+        bool visit_ (int8_t  & value) { value = Endian::swap(value); return true; }
+        bool visit_ (uint8_t & value) { value = Endian::swap(value); return true; }
+        bool visit_ (int16_t & value) { value = Endian::swap(value); return true; }
+        bool visit_ (uint16_t& value) { value = Endian::swap(value); return true; }
+        bool visit_ (int32_t & value) { value = Endian::swap(value); return true; }
+        bool visit_ (uint32_t& value) { value = Endian::swap(value); return true; }
+        bool visit_ (int64_t & value) { value = Endian::swap(value); return true; }
+        bool visit_ (uint64_t& value) { value = Endian::swap(value); return true; }
+        bool visit_ (float   & value) { value = Endian::swap(value); return true; }
+        bool visit_ (double  & value) { value = Endian::swap(value); return true; }
         bool visit_ (Value const& v, Pointer const& t) { throw UnsupportedEndianSwap("pointers"); }
-        bool visit_ (Enum::integral_type& v, Enum const& e) { v = utilmm::endian::swap(v); return true; }
+        bool visit_ (Enum::integral_type& v, Enum const& e) { v = Endian::swap(v); return true; }
     };
 
     /** Swaps the endianness of +v+ by using a EndianSwapVisitor */

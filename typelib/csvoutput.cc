@@ -1,8 +1,8 @@
 #include "csvoutput.hh"
 #include "value.hh"
 #include "typevisitor.hh"
-#include <utilmm/stringtools.hh>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string/join.hpp>
 
 using namespace Typelib;
 using namespace std;
@@ -11,11 +11,11 @@ namespace
 {
     using namespace Typelib;
     using namespace std;
-    using namespace utilmm;
+    using boost::join;
     class HeaderVisitor : public TypeVisitor
     {
-        stringlist m_name;
-        stringlist m_headers;
+        list<string> m_name;
+        list<string> m_headers;
 
     protected:
         void output()
@@ -42,7 +42,7 @@ namespace
             m_name.push_back("[");
             m_name.push_back("");
             m_name.push_back("]");
-            stringlist::iterator count = m_name.end();
+            list<string>::iterator count = m_name.end();
             --(--count);
             for (size_t i = 0; i < type.getDimension(); ++i)
             {
@@ -72,7 +72,7 @@ namespace
  
         using TypeVisitor::visit_;
     public:
-        stringlist apply(Type const& type, std::string const& basename)
+        list<string> apply(Type const& type, std::string const& basename)
         {
             m_headers.clear();
             m_name.clear();
@@ -84,7 +84,7 @@ namespace
 
     class LineVisitor : public ValueVisitor
     {
-        stringlist  m_output;
+        list<string>  m_output;
         bool m_char_as_numeric;
         
     protected:
@@ -131,7 +131,7 @@ namespace
         }
 
     public:
-        stringlist apply(Value const& value, bool char_as_numeric)
+        list<string> apply(Value const& value, bool char_as_numeric)
         {
             m_output.clear();
             m_char_as_numeric = char_as_numeric;
