@@ -4,11 +4,6 @@ set_source_files_properties(test_containers.cc PROPERTIES
     COMPILE_FLAGS -fno-strict-aliasing)
 
 CONFIGURE_FILE(testsuite.hh.in ${CMAKE_BINARY_DIR}/test/testsuite.hh @ONLY)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../lang/cimport ${CMAKE_CURRENT_BINARY_DIR}/../lang/cimport)
-if (ENABLE_INTERNAL_CPARSER)
-    set(TEST_LANG_C test_lang_c.cc)
-    add_definitions(-DHAS_INTERNAL_CPARSER)
-endif()
 ADD_EXECUTABLE(typelib_testsuite testsuite.cc
     test_registry.cc
     test_display.cc test_lang_tlb.cc test_model.cc
