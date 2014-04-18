@@ -5,7 +5,7 @@
 # error "Cannot include template files directly"
 #else
 
-#include "utilmm/singleton/bits/wrapper.hh"
+#include "typelib/utilmm/bits/wrapper.hh"
 
 namespace utilmm {
   namespace singleton {

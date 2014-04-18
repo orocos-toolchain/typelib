@@ -7,7 +7,7 @@
 # include <string>
 #include <boost/utility.hpp>
 
-#include "utilmm/singleton/bits/server_fwd.hh"
+#include "typelib/utilmm/bits/server_fwd.hh"
 
 namespace utilmm {
   namespace singleton {

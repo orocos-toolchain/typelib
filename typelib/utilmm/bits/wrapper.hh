@@ -4,7 +4,7 @@
 #ifndef UTILMM_SINGLETON_WRAPPER_HEADER
 # define UTILMM_SINGLETON_WRAPPER_HEADER
 
-#include "utilmm/singleton/bits/dummy.hh"
+#include "typelib/utilmm/bits/dummy.hh"
 
 namespace utilmm {
   namespace singleton {
@@ -72,7 +72,7 @@ namespace utilmm {
 } // namespace utilmm
 
 # define IN_UTILMM_SINGLETON_WRAPPER_HEADER
-#include "utilmm/singleton/bits/wrapper.tcc"
+#include "typelib/utilmm/bits/wrapper.tcc"
 # undef IN_UTILMM_SINGLETON_WRAPPER_HEADER
 #endif // UTILMM_SINGLETON_WRAPPER_HEADER
 

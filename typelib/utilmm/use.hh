@@ -3,7 +3,6 @@
  */
 #ifndef UTILMM_SINGLETON_USE_HEADER
 #  define UTILMM_SINGLETON_USE_HEADER
-#include "utilmm/config/config.h"
 
 namespace utilmm {
   /** @brief Singleton manipulation
@@ -76,7 +75,7 @@ namespace utilmm {
 } // namespace utilmm
 
 # define IN_UTILMM_SINGLETON_USE_HEADER
-#include "utilmm/singleton/bits/use.tcc"
+#include "typelib/utilmm/bits/use.tcc"
 # undef IN_UTILMM_SINGLETON_USE_HEADER
 #endif // UTILMM_SINGLETON_USE_HEADER
 /** @file singleton/use.hh
