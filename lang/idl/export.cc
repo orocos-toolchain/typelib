@@ -17,11 +17,20 @@ namespace
     using boost::join;
     using boost::is_any_of;
 
+    static list<string> nameSplit(std::string const& name)
+    {
+        list<string> separators;
+        split(separators, name, is_any_of("/"), boost::token_compress_on);
+        while(!separators.empty() && separators.front().empty())
+            separators.pop_front();
+        while(!separators.empty() && separators.back().empty())
+            separators.pop_back();
+        return separators;
+    }
+
     static size_t namespaceIndentLevel(std::string const& ns)
     {
-        vector<string> separators;
-        split(separators, ns, is_any_of("/"));
-        return separators.size();
+        return nameSplit(ns).size();
     }
 
     static string normalizeIDLName(std::string const& name)
@@ -405,9 +414,7 @@ void IDLExport::end
     generateTypedefs(stream);
 
     // Close the remaining namespaces
-    list<string> ns_levels;
-    split(ns_levels, m_namespace, is_any_of("/"));
-    closeNamespaces(stream, ns_levels.size());
+    closeNamespaces(stream, namespaceIndentLevel(m_namespace));
 }
 
 void IDLExport::closeNamespaces(ostream& stream, int levels)
@@ -436,9 +443,9 @@ void IDLExport::adaptNamespace(ostream& stream, string const& ns)
 {
     if (m_namespace != ns)
     {
-        list<string> old_namespace, new_namespace;
-        split(old_namespace, m_namespace, is_any_of("/"));
-        split(new_namespace, ns, is_any_of("/"));
+        list<string>
+            old_namespace = nameSplit(m_namespace),
+            new_namespace = nameSplit(ns);
 
 	while(!old_namespace.empty() && !new_namespace.empty() && old_namespace.front() == new_namespace.front())
 	{
