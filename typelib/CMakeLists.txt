@@ -30,3 +30,4 @@ INSTALL(FILES exporter.hh importer.hh plugins.hh manip.hh pluginmanager.hh
     typename.hh typevisitor.hh value.hh csvoutput.hh endianness.hh
     normalized_numerics.hh memory_layout.hh value_ops.hh DESTINATION include/typelib)
 
+install(DIRECTORY utilmm DESTINATION include/typelib)

@@ -16,7 +16,6 @@
   </copyright>
   <license>CeCILL-B (BSD-like)</license>
 
-  <depend package="utilmm" />
   <depend package="utilrb" />
   <rosdep name="gccxml" />
   <rosdep name="boost" />

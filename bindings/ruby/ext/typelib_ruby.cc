@@ -3,7 +3,7 @@
 #include <typelib/typevisitor.hh>
 #include <typelib/pluginmanager.hh>
 #include <typelib/importer.hh>
-#include <utilmm/configfile/configset.hh>
+#include <typelib/utilmm/configset.hh>
 
 using namespace Typelib;
 using utilmm::config_set;

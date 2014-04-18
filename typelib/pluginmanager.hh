@@ -4,8 +4,8 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <utilmm/singleton/use.hh>
-#include <utilmm/configfile/configset.hh>
+#include <typelib/utilmm/use.hh>
+#include <typelib/utilmm/configset.hh>
 #include <stdexcept>
 
 namespace Typelib

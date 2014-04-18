@@ -1,7 +1,7 @@
 #include "exporter.hh"
 #include "registry.hh"
 #include "registryiterator.hh"
-#include <utilmm/configfile/configset.hh>
+#include <typelib/utilmm/configset.hh>
 #include <typelib/typevisitor.hh>
 #include <set>
 #include <fstream>

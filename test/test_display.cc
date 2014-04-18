@@ -4,7 +4,7 @@
 #include <lang/csupport/standard_types.hh>
 
 #include <test/testsuite.hh>
-#include <utilmm/configfile/configset.hh>
+#include <typelib/utilmm/configset.hh>
 #include <typelib/pluginmanager.hh>
 #include <typelib/typemodel.hh>
 #include <typelib/registry.hh>

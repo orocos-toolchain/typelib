@@ -5,7 +5,7 @@
 #include <typelib/exporter.hh>
 #include <typelib/registryiterator.hh>
 #include <lang/csupport/standard_types.hh>
-#include <utilmm/configfile/configset.hh>
+#include <typelib/utilmm/configset.hh>
 #include <set>
 
 using namespace Typelib;

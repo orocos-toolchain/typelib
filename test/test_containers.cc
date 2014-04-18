@@ -2,7 +2,7 @@
 #include <vector>
 
 #include <test/testsuite.hh>
-#include <utilmm/configfile/configset.hh>
+#include <typelib/utilmm/configset.hh>
 #include <typelib/pluginmanager.hh>
 #include <typelib/importer.hh>
 #include <typelib/typemodel.hh>
