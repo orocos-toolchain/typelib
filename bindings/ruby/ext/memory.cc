@@ -125,19 +125,19 @@ typelib_ruby::memory_unref(void *ptr)
     if (!st_lookup(MemoryTable, (st_data_t)ptr, (st_data_t*)&entry))
         rb_raise(rb_eArgError, "cannot find %p in memory table", ptr);
     --(entry->refcount);
-    if (!entry->refcount)
-    {
-        if (entry->owned)
-            memory_delete(ptr);
-        if (entry->root_ptr)
-            memory_unref(entry->root_ptr);
+    if (entry->refcount)
+        return;
 
-#       ifdef VERBOSE
-        fprintf(stderr, "%p: deregister\n", ptr);
-#       endif
-        delete entry;
-        st_delete(MemoryTable, (st_data_t*)&ptr, 0);
-    }
+    if (entry->owned)
+        memory_delete(ptr);
+    if (entry->root_ptr)
+        memory_unref(entry->root_ptr);
+
+#   ifdef VERBOSE
+    fprintf(stderr, "%p: deregister\n", ptr);
+#   endif
+    delete entry;
+    st_delete(MemoryTable, (st_data_t*)&ptr, 0);
 
     MemoryTypes::iterator type_it = memory_types.find(ptr);
     if (type_it != memory_types.end())
