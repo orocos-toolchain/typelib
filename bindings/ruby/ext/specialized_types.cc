@@ -619,7 +619,7 @@ static VALUE vector_raw_memcpy(VALUE self,VALUE _source,VALUE _size)
     Value container_v = rb2cxx::object<Value>(self);
     std::vector<uint8_t> *vector = reinterpret_cast<std::vector<uint8_t>*>(container_v.getData());
     size_t size = NUM2UINT(_size);
-    const void *source = reinterpret_cast<const void*>(NUM2ULONG(_source));
+    const void *source = reinterpret_cast<const void*>(NUM2ULL(_source));
     vector->resize(size);
     memcpy(&(*vector)[0],source,size);
     return Qnil;
