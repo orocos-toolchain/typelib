@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <typelib/utilmm/use.hh>
+#include <typelib/utilmm/singleton/use.hh>
 #include <typelib/utilmm/configset.hh>
 #include <stdexcept>
 

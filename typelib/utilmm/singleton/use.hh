@@ -75,7 +75,7 @@ namespace utilmm {
 } // namespace utilmm
 
 # define IN_UTILMM_SINGLETON_USE_HEADER
-#include "typelib/utilmm/bits/use.tcc"
+#include "typelib/utilmm/singleton/bits/use.tcc"
 # undef IN_UTILMM_SINGLETON_USE_HEADER
 #endif // UTILMM_SINGLETON_USE_HEADER
 /** @file singleton/use.hh

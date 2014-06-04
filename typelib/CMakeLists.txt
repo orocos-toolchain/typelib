@@ -1,7 +1,8 @@
 ADD_LIBRARY(typeLib SHARED
     registry.cc typebuilder.cc typemodel.cc typename.cc typevisitor.cc
     typedisplay.cc exporter.cc pluginmanager.cc value.cc
-    importer.cc csvoutput.cc endianness.cc memory_layout.cc value_ops.cc)
+    importer.cc csvoutput.cc endianness.cc memory_layout.cc value_ops.cc
+    utilmm/configset.cc utilmm/singleton/server.cc utilmm/singleton/dummy.cc)
 
 if (NOT TYPELIB_PLUGIN_PATH)
 set_source_files_properties(pluginmanager.cc PROPERTIES
