@@ -14,7 +14,7 @@ endif (NOT TYPELIB_PLUGIN_PATH)
 set_source_files_properties(endianness.cc PROPERTIES
     COMPILE_FLAGS -fno-strict-aliasing)
 
-target_link_libraries(typeLib ${Utilmm_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
+target_link_libraries(typeLib ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
 #TARGET_LINK_LIBRARIES(typeLib typeLang_c typeLang_tlb typeLang_idl)
 
 install(TARGETS typeLib
@@ -22,8 +22,6 @@ install(TARGETS typeLib
 set_target_properties(typeLib PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION ${API_VERSION})
-set_target_properties(typeLib
-    PROPERTIES LINK_INTERFACE_LIBRARIES ${Utilmm_LIBRARIES})
 
 INSTALL(FILES exporter.hh importer.hh plugins.hh manip.hh pluginmanager.hh
     registry.hh registryiterator.hh typebuilder.hh typedisplay.hh typemodel.hh
