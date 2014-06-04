@@ -2,6 +2,7 @@
 #define __TYPELIB_SYSTEM_ENDIAN_HH
 
 #include <boost/integer.hpp>
+#include <boost/detail/endian.hpp>
 
 namespace Typelib
 {
@@ -56,7 +57,7 @@ namespace Typelib
 	    return ret;
 	}
 
-#ifdef WORDS_BIGENDIAN
+#if defined(BOOST_BIG_ENDIAN)
 	/** Converts \c source, which is in native byte order, into big endian and 
 	 * saves the result into \c dest */
 	template<typename S>
@@ -73,7 +74,7 @@ namespace Typelib
 	 * returns the result */
 	template<typename S>
 	inline S to_little(const S source) { return swap<S>(source); }
-#else
+#elif defined(BOOST_LITTLE_ENDIAN)
 	template<typename S>
 	inline void to_big(const S source, S& dest) { swap<S>(source, dest); }
 	template<typename S>
@@ -82,6 +83,8 @@ namespace Typelib
 	inline void to_little(const S source, S& dest) { dest = source; }
 	template<typename S>
 	inline S to_little(const S source) { return source; }
+#else
+#       error "unknown endianness, neither BOOST_LITTLE_ENDIAN nor BOOST_BIG_ENDIAN are defined"
 #endif
 
 	/** Converts \c source, which is in network byte order, into native byte order and 
