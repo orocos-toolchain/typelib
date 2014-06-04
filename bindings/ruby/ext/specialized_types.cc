@@ -610,6 +610,31 @@ static VALUE vector_contained_memory_id(VALUE self)
     return ULL2NUM(reinterpret_cast<uint64_t>(&(*vector)[0]));
 }
 
+/*
+ * call-seq:
+ *  vector.raw_memcopy(source,size) => nil
+ */
+static VALUE vector_raw_memcpy(VALUE self,VALUE _source,VALUE _size)
+{
+    Value container_v = rb2cxx::object<Value>(self);
+    bool is_memcpy = false;
+    try
+    {
+        MemoryLayout ops = Typelib::layout_of(container_v.getType());
+        is_memcpy = (ops.size() == 2 && ops[0] == MemLayout::FLAG_MEMCPY);
+    }
+    catch(std::runtime_error) {/* No layout for this type.*/}
+    if(!is_memcpy)
+        rb_raise(rb_eTypeError, "memcpy is not supported for this type");
+
+    std::vector<uint8_t> *vector = reinterpret_cast<std::vector<uint8_t>*>(container_v.getData());
+    size_t size = NUM2UINT(_size);
+    const void *source = reinterpret_cast<const void*>(NUM2ULL(_source));
+    vector->resize(size);
+    memcpy(&(*vector)[0],source,size);
+    return Qnil;
+}
+
 /* 
  * call-seq:
  *   to_ruby(value)	=> non-Typelib object or self
@@ -726,5 +751,6 @@ void typelib_ruby::Typelib_init_specialized_types()
 
     VALUE mVector = rb_define_module_under(cContainer, "StdVector");
     rb_define_method(mVector, "contained_memory_id", RUBY_METHOD_FUNC(vector_contained_memory_id), 0);
+    rb_define_method(mVector, "raw_memcpy", RUBY_METHOD_FUNC(vector_raw_memcpy), 2);
 }
 
