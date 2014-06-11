@@ -544,14 +544,30 @@ module Typelib
             end
         end
 
+        # Reinitializes this value to match marshalled data
+        #
+        # @param [String] string the buffer with marshalled data
         def from_buffer(string, options = Hash.new)
             options = Type.validate_layout_options(options)
-            allocating_operation do
-                do_from_buffer(string,
+            from_buffer_direct(string,
                                options[:accept_pointers],
                                options[:accept_opaques],
                                options[:merge_skip_copy],
                                options[:remove_trailing_skips])
+        end
+
+        # "Raw" version of {#from_buffer}
+        #
+        # This is a version of #from_buffer without named parameters. It is
+        # provided mainly for libraries that are unmarshalling a lot of typelib
+        # samples, to remove the overhead of option validation
+        def from_buffer_direct(string, accept_pointers = false, accept_opaques = false, merge_skip_copy = true, remove_trailing_skips = true)
+            allocating_operation do
+                do_from_buffer(string, 
+                               accept_pointers,
+                               accept_opaques,
+                               merge_skip_copy,
+                               remove_trailing_skips)
             end
             self
         end
