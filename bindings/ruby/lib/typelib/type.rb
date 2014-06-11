@@ -485,12 +485,7 @@ module Typelib
             #   not.
             # @return [Typelib::Type]
             def from_buffer(string, options = Hash.new)
-                options = Type.validate_layout_options(options)
-                do_from_buffer(string,
-                               options[:accept_pointers],
-                               options[:accept_opaques],
-                               options[:merge_skip_copy],
-                               options[:remove_trailing_skips])
+                new.from_buffer(string, options)
             end
 
             # Creates a Typelib wrapper that gives access to the memory
@@ -547,6 +542,18 @@ module Typelib
                 @type = @__guard_type.
                     instance_variable_get(:@type)
             end
+        end
+
+        def from_buffer(string, options = Hash.new)
+            options = Type.validate_layout_options(options)
+            allocating_operation do
+                do_from_buffer(string,
+                               options[:accept_pointers],
+                               options[:accept_opaques],
+                               options[:merge_skip_copy],
+                               options[:remove_trailing_skips])
+            end
+            self
         end
 
         # Returns a string whose content is a marshalled representation of the memory

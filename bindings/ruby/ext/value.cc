@@ -413,10 +413,9 @@ VALUE value_new(VALUE klass)
 }
 
 static
-VALUE value_do_from_buffer(VALUE klass, VALUE string, VALUE pointers, VALUE opaques, VALUE merge, VALUE remove_trailing_skips)
+VALUE value_do_from_buffer(VALUE rbself, VALUE string, VALUE pointers, VALUE opaques, VALUE merge, VALUE remove_trailing_skips)
 {
-    VALUE result = value_new(klass);
-    Value value  = rb2cxx::object<Value>(result);
+    Value value  = rb2cxx::object<Value>(rbself);
 
     MemoryLayout layout = Typelib::layout_of(value.getType(),
             RTEST(pointers), RTEST(opaques), RTEST(merge), RTEST(remove_trailing_skips));
@@ -426,7 +425,7 @@ VALUE value_do_from_buffer(VALUE klass, VALUE string, VALUE pointers, VALUE opaq
     try { Typelib::load(value, cxx_buffer, layout); }
     catch(std::exception const& e)
     { rb_raise(rb_eArgError, "%s", e.what()); }
-    return result;
+    return rbself;
 }
 
 /* @overload from_address(address)
@@ -658,10 +657,10 @@ void typelib_ruby::Typelib_init_values()
     rb_define_singleton_method(cType, "do_dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
     rb_define_singleton_method(cType, "casts_to?",     RUBY_METHOD_FUNC(&type_can_cast_to), 1);
     rb_define_singleton_method(cType, "value_new", RUBY_METHOD_FUNC(&value_new), 0);
-    rb_define_singleton_method(cType, "do_from_buffer", RUBY_METHOD_FUNC(&value_do_from_buffer), 5);
     rb_define_singleton_method(cType, "from_memory_zone", RUBY_METHOD_FUNC(&value_from_memory_zone), 1);
     rb_define_singleton_method(cType, "from_address", RUBY_METHOD_FUNC(&value_from_address), 1);
 
+    rb_define_method(cType, "do_from_buffer", RUBY_METHOD_FUNC(&value_do_from_buffer), 5);
     rb_define_method(cType, "zero!",      RUBY_METHOD_FUNC(&value_zero), 0);
     rb_define_method(cType, "memory_eql?",      RUBY_METHOD_FUNC(&value_memory_eql_p), 1);
     rb_define_method(cType, "endian_swap",      RUBY_METHOD_FUNC(&value_endian_swap), 0);
