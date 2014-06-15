@@ -40,19 +40,15 @@ class TC_Value < Minitest::Test
 	assert_kind_of(String, str.to_ruby)
     end
 
-    def test_value_init
-        type = CXXRegistry.new.build("/int")
-	value = type.new
-
-	assert(ptr = value.instance_variable_get(:@ptr))
-	assert_equal(value.zone_address, ptr.zone_address)
-    end
-
     def test_wrapping_a_buffer_should_call_typelib_initialize
         int_t = CXXRegistry.new.build("/int")
         v = Typelib.from_ruby(2, int_t)
-        flexmock(int_t).new_instances.should_receive(:typelib_initialize).once
-        int_t.wrap(v.to_byte_array)
+        recorder = flexmock
+        recorder.should_receive(:initialized).once
+        int_t.class_eval do
+            define_method(:typelib_initialize) { recorder.initialized }
+        end
+        int_t.from_buffer(v.to_byte_array)
     end
 
     def test_wrapping_a_memory_zone_should_call_typelib_initialize
