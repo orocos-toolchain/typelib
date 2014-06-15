@@ -1,9 +1,7 @@
-require './test_config'
-require 'typelib'
-require 'test/unit'
+require 'typelib/test'
 
 if Typelib.with_dyncall?
-class TC_Functions < Test::Unit::TestCase
+class TC_Functions < Minitest::Test
     include Typelib
     
     attr_reader :lib, :registry
@@ -13,7 +11,7 @@ class TC_Functions < Test::Unit::TestCase
         assert_raises(RuntimeError) { registry.import( testfile  ) }
         registry.import( testfile, "c" )
 
-        @lib = Library.open('libtest_ruby.so', registry)
+        @lib = Library.open(File.join(BUILDDIR, 'ruby', 'libtest_ruby.so'), registry)
     end
 
     def test_opening
@@ -72,9 +70,9 @@ class TC_Functions < Test::Unit::TestCase
 	a.d = 40
 
 	# Untyped call a.to_memory_ptr is a pointer on A
-	assert_nothing_raised { wrapper[a.to_memory_ptr] }
+	wrapper[a.to_memory_ptr]
 	# Now, test struct A => struct A* conversion
-	assert_nothing_raised { wrapper[a] }
+	wrapper[a]
 
         # Check that pointers are properly typechecked
         b = registry.get("B").new
@@ -140,8 +138,7 @@ class TC_Functions < Test::Unit::TestCase
 	assert_equal(0, int_value.to_ruby)
 
 	assert_raises(ArgumentError) { wrapper.filter }
-	filtered_args = nil
-	assert_nothing_raised { filtered_args = wrapper.filter(int_value) }
+	filtered_args = wrapper.filter(int_value)
 	assert_equal(1, filtered_args.size)
 
 
@@ -194,10 +191,8 @@ class TC_Functions < Test::Unit::TestCase
 	    lib.find('test_simple_function_findping').
 		returns(nil).modifies(nil)
 	end
-        assert_nothing_raised do 
-	    lib.find('test_ptr_argument_changes').
-		returns(nil).with_arguments('B*')
-	end
+        lib.find('test_ptr_argument_changes').
+            returns(nil).with_arguments('B*')
         GC.start
 
         # NOTE if there is a segfault after the garbage collection, most likely it
@@ -253,7 +248,7 @@ class TC_Functions < Test::Unit::TestCase
 
     def test_string_handling
         wrapper = lib.find('test_string_argument').with_arguments('char*')
-        assert_nothing_raised { wrapper["test"] }
+        wrapper["test"]
 
         wrapper = lib.find('test_string_return').returns('char*')
         assert_equal("string_return", wrapper[].to_str)
@@ -287,8 +282,8 @@ class TC_Functions < Test::Unit::TestCase
         one  = wrapper.compile("test")
         zero = wrapper.compile("bla")
 
-	assert_nothing_raised { wrapper["test"] }
-        assert_nothing_raised { one.call }
+	wrapper["test"]
+        one.call
         assert_raises(ArgumentError) { zero.call }
     end
 end

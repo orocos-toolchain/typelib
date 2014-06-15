@@ -6,3 +6,4 @@ SRCDIR   = "@CMAKE_SOURCE_DIR@/test"
 BUILDDIR = "@CMAKE_BINARY_DIR@/test"
 
 require 'typelib'
+require 'minitest/autorun'

@@ -1,7 +1,6 @@
-require './test_config'
-require 'set'
+require 'typelib/test'
 
-class TC_Registry < Test::Unit::TestCase
+class TC_Registry < Minitest::Test
     Registry = Typelib::Registry
     CXXRegistry = Typelib::CXXRegistry
     def test_aliasing
@@ -67,7 +66,7 @@ class TC_Registry < Test::Unit::TestCase
         old_size   = test_type.size
         old_layout = test_type.enum_for(:get_fields).to_a.dup
 
-        assert_not_equal(old_size, 64)
+        refute_equal(old_size, 64)
         reg.resize(container => 64)
         new_layout = test_type.enum_for(:get_fields).to_a.dup
 
@@ -80,12 +79,12 @@ class TC_Registry < Test::Unit::TestCase
 	reg = make_registry
 
 	values = Typelib.log_silent { reg.each.to_a }
-	assert_not_equal(0, values.size)
+	refute_equal(0, values.size)
 	assert(values.include?(reg.get("/int")))
 	assert(values.include?(reg.get("/EContainer")))
 
 	values = reg.each(:with_aliases => true).to_a
-	assert_not_equal(0, values.size)
+	refute_equal(0, values.size)
 	assert(values.include?(["/EContainer", reg.get("/EContainer")]))
 
 	values = reg.each('/NS1').to_a

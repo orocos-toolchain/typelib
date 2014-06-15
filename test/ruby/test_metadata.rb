@@ -1,13 +1,7 @@
-require 'set'
-require './test_config'
-require 'typelib'
-require 'test/unit'
+require 'typelib/test'
 require BUILDDIR + '/ruby/libtest_ruby'
-require 'pp'
-require 'flexmock/test_unit'
-require 'utilrb/hash/map_value'
 
-class TC_MetaData < Test::Unit::TestCase
+class TC_MetaData < Minitest::Test
     attr_reader :type, :registry
     
     def setup

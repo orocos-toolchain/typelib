@@ -1,8 +1,6 @@
-require './test_config'
-require 'test/unit'
-require 'typelib'
+require 'typelib/test'
 
-class TC_TypeAccessor < Test::Unit::TestCase
+class TC_TypeAccessor < Minitest::Test
     attr_reader :type, :registry
     def setup
         @registry = Typelib::CXXRegistry.new

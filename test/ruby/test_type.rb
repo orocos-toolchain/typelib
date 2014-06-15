@@ -1,11 +1,7 @@
-require 'set'
-require './test_config'
-require 'typelib'
-require 'test/unit'
+require 'typelib/test'
 require BUILDDIR + '/ruby/libtest_ruby'
-require 'pp'
 
-class TC_Type < Test::Unit::TestCase
+class TC_Type < Minitest::Test
     include Typelib
     def teardown
 	GC.start
@@ -89,9 +85,9 @@ class TC_Type < Test::Unit::TestCase
 
     def test_pointer
         type = CXXRegistry.new.build("/int*")
-        assert_not_equal(type, type.deference)
-        assert_not_equal(type, type.to_ptr)
-        assert_not_equal(type.to_ptr, type.deference)
+        refute_equal(type, type.deference)
+        refute_equal(type, type.to_ptr)
+        refute_equal(type.to_ptr, type.deference)
         assert_equal(type, type.deference.to_ptr)
         assert_equal(type, type.to_ptr.deference)
     end

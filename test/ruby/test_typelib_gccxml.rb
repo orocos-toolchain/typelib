@@ -1,7 +1,6 @@
-require 'test/unit'
-require './test_config'
+require 'typelib/test'
 
-class TC_TypelibGCCXML < Test::Unit::TestCase
+class TC_TypelibGCCXML < Minitest::Test
     include Typelib
 
     attr_reader :cxx_test_dir

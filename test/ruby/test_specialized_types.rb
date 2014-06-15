@@ -1,12 +1,7 @@
-require 'set'
-require './test_config'
-require 'typelib'
-require 'test/unit'
+require 'typelib/test'
 require BUILDDIR + '/ruby/libtest_ruby'
-require 'pp'
-require 'flexmock/test_unit'
 
-class TC_SpecializedTypes < Test::Unit::TestCase
+class TC_SpecializedTypes < Minitest::Test
     include Typelib
     def setup
         super

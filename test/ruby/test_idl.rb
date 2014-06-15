@@ -1,8 +1,6 @@
-require './test_config'
-require 'typelib'
-require 'test/unit'
+require 'typelib/test'
 
-class TC_IDL < Test::Unit::TestCase
+class TC_IDL < Minitest::Test
     include Typelib
 
     def test_export_validation

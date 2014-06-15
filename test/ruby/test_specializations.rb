@@ -1,13 +1,8 @@
-require 'set'
-require './test_config'
-require 'typelib'
-require 'test/unit'
+require 'typelib/test'
 require BUILDDIR + '/ruby/libtest_ruby'
-require 'pp'
-require 'flexmock/test_unit'
 require 'utilrb/hash/map_value'
 
-class TC_RubyMappingCustomization < Test::Unit::TestCase
+class TC_RubyMappingCustomization < Minitest::Test
     def test_it_should_register_basic_typenames_in_the_from_typename_set
         mapping = Typelib::RubyMappingCustomization.new
         mapping.set("/basic", obj = Object.new)
@@ -69,6 +64,6 @@ class TC_RubyMappingCustomization < Test::Unit::TestCase
     end
 end
 
-class TC_Specializations < Test::Unit::TestCase
+class TC_Specializations < Minitest::Test
 end
 

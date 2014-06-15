@@ -1,12 +1,7 @@
-require 'set'
-require './test_config'
-require 'typelib'
-require 'test/unit'
+require 'typelib/test'
 require BUILDDIR + '/ruby/libtest_ruby'
-require 'pp'
-require 'flexmock/test_unit'
 
-class TC_Value < Test::Unit::TestCase
+class TC_Value < Minitest::Test
     include Typelib
     def teardown
         super
@@ -133,7 +128,7 @@ class TC_Value < Test::Unit::TestCase
 	assert(! a1.eql?(a2))
 
 	a2.d = 50
-	assert_not_equal(a1, a2)
+	refute_equal(a1, a2)
 
 	assert_raises(ArgumentError) { a1 == v1 }
     end
@@ -148,7 +143,7 @@ class TC_Value < Test::Unit::TestCase
         assert_same v0, v0.cast(t0)
         v1 = v0.cast(t1)
 
-        assert_not_same v0, v1
+        refute_same v0, v1
         assert(t0 == t1)
 
         wrong_type = r1.get 'A'
@@ -203,7 +198,8 @@ class TC_Value < Test::Unit::TestCase
     def test_pretty_printing
         b = make_registry.get("/B").new
         b.zero!
-        assert_nothing_raised { PP.new(b, StringIO.new) }
+        # Should not raise
+        PP.new(b, StringIO.new)
     end
 
     def test_to_csv
@@ -311,7 +307,7 @@ class TC_Value < Test::Unit::TestCase
 
     def test_nan_handling
         registry = make_registry
-        lib = Library.open('libtest_ruby.so', registry)
+        lib = Library.open(File.join(BUILDDIR, 'ruby', 'libtest_ruby.so'), registry)
         wrapper = lib.find('generate_nand').
             returns(nil).returns('double*')
 	assert_equal(1.0/0.0, wrapper.call);
