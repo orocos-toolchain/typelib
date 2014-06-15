@@ -88,11 +88,7 @@ class TC_Value < Minitest::Test
 
     def test_creating_a_new_value_should_call_initialize
         int_t = CXXRegistry.new.build("/int")
-        recorder = flexmock
-        recorder.should_receive(:initialized).once
-        int_t.class_eval do
-            define_method(:initialize) { recorder.initialized }
-        end
+        flexmock(int_t).new_instances(:value_new).should_receive(:initialize).once
         int_t.new
     end
 
