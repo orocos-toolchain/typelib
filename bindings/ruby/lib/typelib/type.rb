@@ -538,7 +538,7 @@ module Typelib
             end
 
             def initialize_base_class
-                @__guard_type = Typelib::Registry.new.create_null('/Typelib/Type')
+                @__guard_type = Typelib::Registry.new(false).create_null('/Typelib/Type')
                 @type = @__guard_type.
                     instance_variable_get(:@type)
             end
