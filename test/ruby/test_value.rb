@@ -97,7 +97,6 @@ class TC_Value < Minitest::Test
     end
 
     def test_wrap_argument_check
-        registry = make_registry
         type = CXXRegistry.new.build("/int")
 
         assert_raises(ArgumentError) { type.wrap(nil) }

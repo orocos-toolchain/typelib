@@ -1,4 +1,3 @@
-require 'typelib'
 require 'set'
 require 'tempfile'
 

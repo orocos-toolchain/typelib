@@ -59,6 +59,7 @@ VALUE cxx2rb::value_wrap(Value v, VALUE registry, VALUE parent)
     VALUE wrapper = rb_funcall(type, rb_intern("wrap"), 1, ptr);
 
     rb_iv_set(wrapper, "@parent", parent);
+    rb_iv_set(wrapper, "@__typelib_invalidated", Qfalse);
     return wrapper;
 }
 
@@ -361,12 +362,16 @@ static
 VALUE value_create_empty(VALUE klass)
 {
     Type const& t(rb2cxx::object<Type>(klass));
-    return Data_Wrap_Struct(klass, 0, value_delete, new Value(NULL, t));
+    VALUE value = Data_Wrap_Struct(klass, 0, value_delete, new Value(NULL, t));
+    rb_iv_set(value, "@parent", Qnil);
+    return value;
 }
 
 static
 void value_call_typelib_initialize(VALUE obj)
 {
+    rb_iv_set(obj, "@__typelib_invalidated", Qfalse);
+    rb_iv_set(obj, "@parent", Qnil);
     rb_funcall(obj, rb_intern("typelib_initialize"), 0);
 }
 
