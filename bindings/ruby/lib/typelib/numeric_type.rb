@@ -17,6 +17,8 @@ module Typelib
             v = self.new
             v.typelib_from_ruby(value)
             v
+        rescue TypeError => e
+            raise Typelib::UnknownConversionRequested.new(value, self), "cannot convert #{value} (#{value.class}) to #{self}", e.backtrace
         end
     end
 end

@@ -440,6 +440,11 @@ class TC_SpecializedTypes < Minitest::Test
         assert_equal 0, Typelib.to_ruby(zero)
     end
 
+    def test_numeric_from_ruby_raises_UnknownConversionRequested_when_converting_a_non_numeric
+	long = make_registry.get("/int")
+        assert_raises(UnknownConversionRequested) { long.from_ruby('10') }
+    end
+
     def test_string_handling
 	char_pointer  = make_registry.build("char*").new
 	assert(char_pointer.string_handler?)
