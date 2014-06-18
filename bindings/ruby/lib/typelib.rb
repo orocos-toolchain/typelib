@@ -11,13 +11,13 @@ require 'set'
 require 'utilrb/value_set'
 
 if !defined?(Infinity)
-    Infinity = 1e200 ** 200
+    Infinity = Float::INFINITY
 end
 if !defined?(Inf)
-    Inf = Infinity
+    Inf = Float::INFINITY
 end
 if !defined?(NaN)
-    NaN = Infinity / Infinity
+    NaN = Float::NAN
 end
 
 # Typelib is the main module for Ruby-side Typelib functionality.
