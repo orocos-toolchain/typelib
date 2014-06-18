@@ -102,6 +102,11 @@ module Typelib
         ns
     end
 
+    class << self
+        attr_predicate :warn_about_helper_method_clashes?, true
+    end
+    @warn_about_helper_method_clashes = true
+
     def self.filter_methods_that_should_not_be_defined(on, reference_class, names, allowed_overloadings, msg_name, with_raw, &block)
         names.find_all do |n|
             candidates = [n, "#{n}="]
@@ -111,7 +116,7 @@ module Typelib
             candidates.all? do |method_name|
                 if !reference_class.method_defined?(method_name) || allowed_overloadings.include?(method_name)
                     true
-                else
+                elsif warn_about_helper_method_clashes?
                     msg_name ||= "instances of #{reference_class.name}"
                     Typelib.warn "NOT defining #{candidates.join(", ")} on #{msg_name} as it would overload a necessary method"
                     false
@@ -124,7 +129,7 @@ module Typelib
         if !reference_class.method_defined?(name) || allowed_overloadings.include?(name)
             on.send(:define_method, name, &block)
             true
-        else
+        elsif warn_about_helper_method_clashes?
             msg_name ||= "instances of #{reference_class.name}"
             Typelib.warn "NOT defining #{name} on #{msg_name} as it would overload a necessary method"
             false

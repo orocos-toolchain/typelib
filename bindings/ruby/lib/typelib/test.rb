@@ -39,16 +39,6 @@ if ENV['TEST_ENABLE_PRY'] != '0'
 end
 
 module Typelib
-    # This module is the common setup for all tests
-    #
-    # It should be included in the toplevel describe blocks
-    #
-    # @example
-    #   require 'dummyproject/test'
-    #   describe Typelib do
-    #     include Typelib::SelfTest
-    #   end
-    #
     module SelfTest
         if defined? FlexMock
             include FlexMock::ArgumentTypes
@@ -56,7 +46,9 @@ module Typelib
         end
 
         def setup
-            # Setup code for all the tests
+            @__warn_about_helper_method_clashes = Typelib.warn_about_helper_method_clashes?
+            Typelib.warn_about_helper_method_clashes = false
+            super
         end
 
         def teardown
@@ -64,7 +56,7 @@ module Typelib
                 flexmock_teardown
             end
             super
-            # Teardown code for all the tests
+            Typelib.warn_about_helper_method_clashes = @__warn_about_helper_method_clashes
         end
     end
 end
