@@ -336,5 +336,28 @@ module Typelib
 	    pp.breakable
 	    pp.text ']'
         end
+
+        # Returns the description of a type using only simple ruby objects
+        # (Hash, Array, Numeric and String).
+        # 
+        #    { 'name' => TypeName,
+        #      'class' => NameOfTypeClass, # CompoundType, ...
+        #       # The content of 'element' is controlled by the :recursive option
+        #      'element' => DescriptionOfArrayElement,
+        #      'size' => SizeOfTypeInBytes # Only if :layout_info is true
+        #    }
+        #
+        # @option (see Type#to_h)
+        # @return (see Type#to_h)
+        def self.to_h(options = Hash.new)
+            info = super
+            info['element'] =
+                if options[:recursive]
+                    deference.to_h(options)
+                else
+                    deference.to_h_minimal(options)
+                end
+            info
+        end
     end
 end

@@ -177,6 +177,32 @@ module Typelib
 	# Returns the pointed-to type (defined for consistency reasons)
 	def self.[](index); deference end
 
+        # Returns the description of a type using only simple ruby objects
+        # (Hash, Array, Numeric and String).
+        # 
+        #    { 'name' => TypeName,
+        #      'class' => NameOfTypeClass, # CompoundType, ...
+        #      'length' => LengthOfArrayInElements,
+        #      # The content of 'element' is controlled by the :recursive option
+        #      'element' => DescriptionOfArrayElement,
+        #      # Only if :layout_info is true
+        #      'size' => SizeOfTypeInBytes 
+        #    }
+        #
+        # @option (see Type#to_h)
+        # @return (see Type#to_h)
+        def self.to_h(options = Hash.new)
+            info = super
+            info['length'] = length
+            info['element'] =
+                if options[:recursive]
+                    deference.to_h(options)
+                else
+                    deference.to_h_minimal(options)
+                end
+            info
+        end
+
         include Enumerable
     end
 end

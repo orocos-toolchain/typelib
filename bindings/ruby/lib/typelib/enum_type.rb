@@ -12,8 +12,27 @@ module Typelib
         end
 
         class << self
-	    # A value => key hash for each enumeration values
-            attr_reader :values
+            # Returns the description of a type using only simple ruby objects
+            # (Hash, Array, Numeric and String).
+            # 
+            #    { 'name' => TypeName,
+            #      'class' => 'EnumType',
+            #      # The content of 'element' is controlled by the :recursive option
+            #      'values' => [{ 'name' => NameOfValue,
+            #                     'value' => ValueOfValue }],
+            #      # Only if :layout_info is true
+            #      'size' => SizeOfTypeInBytes 
+            #    }
+            #
+            # @option (see Type#to_h)
+            # @return (see Type#to_h)
+            def to_h(options = Hash.new)
+                info = super
+                info['values'] = keys.map do |n, v|
+                    Hash['name' => n, 'value' => v]
+                end
+                info
+            end
 
             def pretty_print(pp, verbose = false) # :nodoc:
                 super

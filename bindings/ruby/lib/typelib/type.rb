@@ -51,6 +51,51 @@ module Typelib
             def define_method_if_possible(name, &block)
                 Typelib.define_method_if_possible(self, self, name, Type::ALLOWED_OVERLOADINGS, &block)
             end
+
+            # Returns the description of a type using only simple ruby objects
+            # (Hash, Array, Numeric and String).
+            #
+            # The exact set of returned values is dependent on the exact type.
+            # See the documentation of {to_h} on the subclasses of Type for more
+            # details
+            #
+            # Some fields are always present, see {to_h_minimal}
+            #
+            # @option options [Boolean] :recursive (false) if true, the value
+            #   returned by types that refer to other types (e.g. an array) will
+            #   contain the reference's full definition. Otherwise, only the
+            #   value returned by {to_h_minimal} will be stored in the
+            #   type's description
+            # @option options [Boolean] :layout_info (false) if true, add binary
+            #   layout information from the type
+            #
+            # @return [Hash]
+            def to_h(options = Hash.new)
+                to_h_minimal(options)
+            end
+
+            # Returns the minimal description of a type using only simple ruby
+            # objects (Hash, Array, Numeric and String).
+            #
+            #    { 'name' => TypeName,
+            #      'class' => NameOfTypeClass, # CompoundType, ...
+            #      'size' => SizeOfTypeInBytes # Only if :layout_info is true
+            #    }
+            #
+            # It is mainly used as a helper by sub-types {to_h} method when
+            # :recursive is false
+            #
+            # @option options [Boolean] :layout_info (false) if true, add binary
+            #   layout information from the type
+            #
+            # @return [Hash]
+            def to_h_minimal(options = Hash.new)
+                result = Hash['name' => name, 'class' => superclass.name]
+                if options[:layout_info]
+                    result['size'] = size
+                end
+                result
+            end
         end
         @convertions_from_ruby = Hash.new
 

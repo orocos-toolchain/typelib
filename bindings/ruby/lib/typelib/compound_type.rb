@@ -332,8 +332,48 @@ module Typelib
             # @yield [name,type] the fields of this compound
             # @return [void]
             def each_field
+                return enum_for(__method__) if !block_given?
 		fields.each { |field| yield(*field) } 
 	    end
+
+            # Returns the description of a type using only simple ruby objects
+            # (Hash, Array, Numeric and String).
+            # 
+            #    { 'name' => TypeName,
+            #      'class' => NameOfTypeClass, # CompoundType, ...
+            #       # The content of 'element' is controlled by the :recursive option
+            #      'fields' => [{ 'name' => FieldName,
+            #                     # the 'type' field is controlled by the
+            #                     # 'recursive' option
+            #                     'type' => FieldType,
+            #                     # 'offset' is present only if :layout_info is
+            #                     # true
+            #                     'offset' => FieldOffsetInBytes
+            #                   }],
+            #      'size' => SizeOfTypeInBytes # Only if :layout_info is true
+            #    }
+            #
+            # @option (see Type#to_h)
+            # @return (see Type#to_h)
+            def to_h(options = Hash.new)
+                fields = Array.new
+                if options[:recursive]
+                    each_field.map do |name, type|
+                        fields << Hash['name' => name, 'type' => type.to_h(options)]
+                    end
+                else
+                    each_field.map do |name, type|
+                        fields << Hash['name' => name, 'type' => type.to_h_minimal(options)]
+                    end
+                end
+
+                if options[:layout_info]
+                    fields.each do |field|
+                        field['offset'] = offset_of(field['name'])
+                    end
+                end
+                super.merge('fields' => fields)
+            end
 
 	    def pretty_print_common(pp) # :nodoc:
                 pp.group(2, '{', '}') do
