@@ -203,6 +203,19 @@ module Typelib
             info
         end
 
+        # (see Type#to_simple_value)
+        #
+        # Array types are returned as either an array of their converted
+        # elements, or the hash described for the :pack_simple_arrays option.
+        def to_simple_value(options = Hash.new)
+            if options[:pack_simple_arrays] && element_t.respond_to?(:pack_code)
+                Hash['pack_code' => element_t.pack_code,
+                     'data' => to_byte_array]
+            else
+                raw_each.map { |v| v.to_simple_value(options) }
+            end
+        end
+
         include Enumerable
     end
 end

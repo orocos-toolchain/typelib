@@ -45,7 +45,34 @@ describe Typelib::NumericType do
                 assert_equal expected, float_t.to_h
             end
         end
+
+        describe "#pack_code" do
+            it "can return the pack code of a float" do
+                float_t = registry.get '/double'
+                if Typelib.big_endian?
+                    assert_equal "G", float_t.pack_code
+                else
+                    assert_equal "E", float_t.pack_code
+                end
+            end
+            it "can return the pack code of an integer" do
+                int_t = registry.get '/int32_t'
+                if Typelib.big_endian?
+                    assert_equal "l>", int_t.pack_code
+                else
+                    assert_equal "l<", int_t.pack_code
+                end
+            end
+        end
     end
 
+    describe "#to_simple_value" do
+        it "returns the numerical value" do
+            int_t = registry.get '/int32_t'
+            int = int_t.new
+            int.zero!
+            assert_equal 0, int.to_simple_value
+        end
+    end
 end
 

@@ -28,6 +28,20 @@ describe Typelib::EnumType do
             end
         end
     end
+
+    describe "#to_simple_value" do
+        attr_reader :value
+        before do
+            value_t = registry.create_enum '/E' do |builder|
+                builder.add 'S0', 0
+            end
+            @value = Typelib.from_ruby(0, value_t)
+        end
+
+        it "should return the string representing the value" do
+            assert_equal 'S0', value.to_simple_value
+        end
+    end
 end
 
 

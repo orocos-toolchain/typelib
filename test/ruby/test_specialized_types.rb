@@ -767,5 +767,13 @@ class TC_SpecializedTypes < Minitest::Test
         assert c.invalidated?
         assert element.invalidated?
     end
+
+    def test_std_string_to_simple_value_returns_the_string
+        reg = Typelib::CXXRegistry.new
+        value = Typelib.from_ruby("test string", reg.get('/std/string'))
+        # We have to check for the type explicitely
+        assert_kind_of String, value.to_simple_value
+        assert_equal 'test string', value.to_simple_value
+    end
 end
 

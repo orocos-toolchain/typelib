@@ -51,6 +51,17 @@ describe Typelib::CompoundType do
             end
         end
     end
+
+    describe "#to_simple_value" do
+        it "returns a hash of field-to-value mappings" do
+            compound_t = registry.create_compound '/C' do |builder|
+                builder.add 'f0', '/int32_t', 0
+            end
+            compound = compound_t.new
+            compound.f0 = 10
+            assert_equal Hash['f0' => 10], compound.to_simple_value
+        end
+    end
 end
 
 

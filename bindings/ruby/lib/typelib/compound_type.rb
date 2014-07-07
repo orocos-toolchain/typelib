@@ -499,5 +499,15 @@ module Typelib
 	rescue TypeError => e
 	    raise e, "#{e.message} for #{self.class.name}.#{name}", e.backtrace
 	end
+
+        # (see Type#to_simple_value)
+        #
+        # Compound types are returned as a hash from the field name to the
+        # converted field value.
+        def to_simple_value(options = Hash.new)
+            result = Hash.new
+            raw_each_field { |name, v| result[name.to_s] = v.to_simple_value(options) }
+            result
+        end
     end
 end

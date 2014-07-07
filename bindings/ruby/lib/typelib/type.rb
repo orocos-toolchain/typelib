@@ -713,5 +713,20 @@ module Typelib
         def inspect
             sprintf("#<%s:%s @%s>", self.class.superclass.name, self.class.name, to_memory_ptr.inspect)
         end
+
+        # Returns a representation of this type only into simple Ruby values,
+        # that is strings, numbers and arrays / hashes.
+        #
+        # @option options [Boolean] :pack_simple_arrays (true) if true, arrays
+        #   and containers of numeric types will be packed into a hash of the form
+        #   {size: size_in_elements, pack_code: code, data: packed_data}. The
+        #   pack_code field describes the type of element in the array (from
+        #   String#unpack or Array#pack), which tells both the type of the data
+        #   and its endianness.
+        #
+        # @return [Object]
+        def to_simple_value(options = Hash.new)
+            raise NotImplementedError, "there is no way to convert a value of type #{self.class} into a simple ruby value"
+        end
     end
 end
