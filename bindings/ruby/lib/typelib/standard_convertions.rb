@@ -34,7 +34,7 @@ module Typelib
             to_str
         end
 
-        def to_simple_value
+        def to_simple_value(options = Hash.new)
             to_ruby
         end
 
