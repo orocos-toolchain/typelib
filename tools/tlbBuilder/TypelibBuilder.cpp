@@ -103,6 +103,21 @@ void TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const
     
 }
 
+std::string TypelibBuilder::collonCollonToSlash(const std::string name)
+{
+    std::string ret(name);
+    
+    std::string from("::");
+    std::string to("/");
+    
+    for (size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos))
+    {
+        ret.replace(start_pos, from.length(), to);
+    }
+    
+    return ret;
+}
+
 
 bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context)
 {
