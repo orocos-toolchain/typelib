@@ -377,7 +377,7 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
 
 void TypelibBuilder::registerTypeDef(const clang::TypedefType* type)
 {
-    std::cout << "Found Typedef" << type->getDecl()->getQualifiedNameAsString() << " for Canonical Type " 
+    std::cout << "Found Typedef " << type->getDecl()->getQualifiedNameAsString() << " for Canonical Type "
     << clang::QualType::getAsString(type->getDecl()->getUnderlyingType().getCanonicalType().split()) << std::endl << std::endl;
     
     std::string typeDefName = type->getDecl()->getQualifiedNameAsString();
