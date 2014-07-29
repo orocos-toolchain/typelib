@@ -322,8 +322,7 @@ namespace Typelib
 
         FieldList::const_iterator left_it = m_fields.begin(),
             left_end = m_fields.end(),
-            right_it = right_type.getFields().begin(),
-            right_end = right_type.getFields().end();
+            right_it = right_type.getFields().begin();
 
         while (left_it != left_end)
         {
@@ -404,7 +403,6 @@ namespace Typelib
         Compound const* other_compound = dynamic_cast<Compound const*>(&other);
         if (other_compound)
         {
-            FieldList::const_iterator other_end = other_compound->m_fields.end();
             for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
             {
                 Field const* other_field = other_compound->getField(it->getName());

@@ -3,10 +3,7 @@
 //  tool-template <header-to-look-at> -- <compile-flags-as-usual>
 //
 //  Example:
-//  ./bin/extractor $ROCK_ROOT/base/types/base/Pose.hpp -- \
-//      -I$ROCK_ROOT/base/types \
-//      -I/usr/include/eigen3 \
-//      -x c++
+//  ./bin/extractor $ROCK_ROOT/base/types/base/Pose.hpp -- -I$ROCK_ROOT/base/types -I/usr/include/eigen3 -x c++
 //
 //  keep in mind that this particular (not very complicated) example still takes 15seconds to
 //  complete...
@@ -48,35 +45,33 @@ namespace {
 class TypeDefCallback : public MatchFinder::MatchCallback {
     public:
 
-        
-//  This routine will get called for each thing that the matchers find.
-virtual void run(const MatchFinder::MatchResult &Result) {
+    virtual void run(const MatchFinder::MatchResult &Result) {
 
-    const TypedefType *typeType = Result.Nodes.getNodeAs<TypedefType>("typeDef");
-    if(typeType)
-    {
-        builder.registerTypeDef(typeType);
+        const TypedefType *T = Result.Nodes.getNodeAs<TypedefType>("typeDef");
+
+        if(T) {
+            builder.registerTypeDef(T);
+        }
     }
-}
 };
     
-class ToolTemplateCallback : public MatchFinder::MatchCallback {
- public:
-  //  This routine will get called for each thing that the matchers find.
-  virtual void run(const MatchFinder::MatchResult &Result) {
+class TypeDeclCallback : public MatchFinder::MatchCallback {
+    public:
 
-      const TypeDecl *decl = Result.Nodes.getNodeAs<TypeDecl>("match");
+    virtual void run(const MatchFinder::MatchResult &Result) {
 
-      if(decl)
-      {
-          builder.registerNamedDecl(decl);
+        const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl");
+
+        if(D) {
+
+            builder.registerNamedDecl(D);
+        }
+
+        const CXXRecordDecl *DD = Result.Nodes.getNodeAs<CXXRecordDecl>("typeDecl");
+        if (DD) {
+            builder.registerNamedDecl(DD);
+        }
       }
-      
-    const CXXRecordDecl *D = Result.Nodes.getNodeAs<CXXRecordDecl>("match");
-    if (D) {
-        builder.registerNamedDecl(D);
-    }
-  }
 
 };
 } // end anonymous namespace
@@ -91,28 +86,18 @@ int main(int argc, const char **argv) {
   // }}}
 
   ast_matchers::MatchFinder Finder;
-  ToolTemplateCallback Callback;
-  TypeDefCallback tdCallback;
 
-  // AST matching ftw...
-  //
-  // the big table: http://clang.llvm.org/docs/LibASTMatchersReference.html
-
-  // the "bind" will make the match referencable by the given string in the "run()" mathod of the
-  // callback
-
-  // the "isDefinition()" is needed to reject "Class Name Injection" and forward
-  // declarations. see https://stackoverflow.com/questions/24761684 and
-  // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/1994/N0444.pdf
+  TypeDeclCallback typeDeclCallback;
   internal::VariadicDynCastAllOfMatcher<Decl, TypeDecl> typeDecl;
-  
-  DeclarationMatcher matcher = typeDecl().bind("match");
+  Finder.addMatcher(typeDecl().bind("typeDecl"), &typeDeclCallback);
 
-  Finder.addMatcher(matcher, &Callback);
-
-  Finder.addMatcher(typedefType().bind("typeDef"), &tdCallback);
+  TypeDefCallback typeDefCallback;
+  Finder.addMatcher(typedefType().bind("typeDef"), &typeDefCallback);
   
-  Tool.run(newFrontendActionFactory(&Finder));
+  if (int retval = Tool.run(newFrontendActionFactory(&Finder)) != 0) {
+    std::cerr << "whoops\n";
+    return retval;
+  }
   
   builder.buildRegistry();
   
