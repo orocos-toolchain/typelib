@@ -125,6 +125,13 @@ std::string TypelibBuilder::collonCollonToSlash(const std::string name)
 
 bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context)
 {
+    
+    if(canonicalTypeName.find("anonymous") != std::string::npos)
+    {
+        std::cout << "Ignoring anonymous type " << canonicalTypeName << std::endl;
+        return false;
+    }
+    
     switch(type->getTypeClass())
     {
         case clang::Type::Builtin:
