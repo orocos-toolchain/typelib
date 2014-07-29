@@ -32,6 +32,10 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     std::cout << "TypeClassName " << typeForDecl->getTypeClassName() << std::endl;;
     std::cout << "DeclName " << decl->getNameAsString() << std::endl;;
     
+    typeName = collonCollonToSlash(typeName);
+    
+    std::cout << "Typelib name " << typeName << std::endl;
+    
     registerType(typeName, typeForDecl, decl->getASTContext());
 /*    
     switch(typeForDecl->getTypeClass())
@@ -163,15 +167,16 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
             addRecord(canonicalTypeName, recordDecl);
         }
         break;
-//         case clang::Type::Enum:
-//         {
-//             const clang::EnumDecl *enumDecl = dynamic_cast<const clang::EnumDecl *>(decl);
-//             assert(enumDecl);
-//             addEnum(typeName, enumDecl);
-//         }
-//             break;
-//         default:
-//             std::cout << "Found unknown type " << typeName << std::endl;
+        case clang::Type::Enum:
+        {
+            const clang::EnumType *enumType = static_cast<const clang::EnumType *>(type);
+            const clang::EnumDecl *enumDecl = enumType->getDecl();
+            assert(enumDecl);
+            addEnum(canonicalTypeName, enumDecl);
+        }
+            break;
+        default:
+            std::cout << "Found unknown type " << canonicalTypeName << std::endl;
             break;
     }
     return true;
@@ -252,6 +257,7 @@ void TypelibBuilder::addRecord(const std::string &canonicalTypeName, const clang
         
         std::cout << "Parent of " << canonicalFieldTypeName << " is " << fit->getParent()->getQualifiedNameAsString() << std::endl;
 
+        canonicalFieldTypeName = collonCollonToSlash(canonicalFieldTypeName);
 
         if(!registry.has(canonicalFieldTypeName))
         {
