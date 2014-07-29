@@ -147,6 +147,12 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
             if(!recordDecl)
                 return false;
 
+            if(!recordDecl->hasDefinition())
+            {
+                std::cout << "Ignoring type " << canonicalTypeName << " as it has no definition " << std::endl;
+                return false;
+            }
+            
             std::string typeName = "/" + recordDecl->getCanonicalDecl()->getQualifiedNameAsString();
             
             //we need to add one check here, as the type that was given for registration
