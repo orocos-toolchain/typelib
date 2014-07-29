@@ -71,3 +71,5 @@ ADD_SUBDIRECTORY(lang/tlb)
 ADD_SUBDIRECTORY(lang/idl)
 ADD_SUBDIRECTORY(typelib)
 
+
+add_subdirectory(tools)

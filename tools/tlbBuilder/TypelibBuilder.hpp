@@ -35,11 +35,11 @@ class TypelibBuilder
         
     };
 public:
-    void registerType(const clang::Type* type, clang::ASTContext& context);
+    bool registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
     void registerTypeDef(const clang::TypedefType *type);
     void registerNamedDecl(const clang::TypeDecl *decl);
     
-    void registerBuildIn(const clang::BuiltinType* builtin, clang::ASTContext& context);
+    void registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
     
     
     void buildRegistry();

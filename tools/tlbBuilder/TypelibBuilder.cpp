@@ -13,15 +13,13 @@
 void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
 {
     //check if we allready know the type
-    std::string typeName = decl->getQualifiedNameAsString();
+    std::string typeName = "/" + decl->getQualifiedNameAsString();
     
     std::cout << "New Type with qualified name " << typeName << std::endl;
-    
-    if(typeMap.find(typeName) != typeMap.end())
-    {
-        //type allready known return;
+
+    if(registry.has(typeName))
         return;
-    }
+
 
     
     const clang::Type *typeForDecl = decl->getTypeForDecl();
@@ -34,6 +32,8 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     std::cout << "TypeClassName " << typeForDecl->getTypeClassName() << std::endl;;
     std::cout << "DeclName " << decl->getNameAsString() << std::endl;;
     
+    registerType(typeName, typeForDecl, decl->getASTContext());
+/*    
     switch(typeForDecl->getTypeClass())
     {
         case clang::Type::Record:
@@ -43,6 +43,11 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
                 return;
             if(recordDecl->isDependentType() || recordDecl->isInvalidDecl())
                 return;
+            
+            if(recordDecl->isAnonymousStructOrUnion())
+            {
+                return;
+            }
             
             const clang::CXXRecordDecl* cxxdecl = dynamic_cast<const clang::CXXRecordDecl *>(decl);
             if(cxxdecl)
@@ -61,10 +66,10 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
         default:
             std::cout << "Found unknown type " << typeName << std::endl;
             break;
-    }    
+    }*/
 }
 
-void TypelibBuilder::registerBuildIn(const clang::BuiltinType* builtin, clang::ASTContext& context)
+void TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context)
 {
     
     std::string typeName = std::string("/") + builtin->getNameAsCString(clang::PrintingPolicy(clang::LangOptions()));
@@ -99,21 +104,68 @@ void TypelibBuilder::registerBuildIn(const clang::BuiltinType* builtin, clang::A
 }
 
 
-void TypelibBuilder::registerType(const clang::Type* type, clang::ASTContext& context)
+bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context)
 {
-    if(type->getTypeClass() == clang::Type::Builtin)
+    switch(type->getTypeClass())
     {
-        
-        const clang::BuiltinType *builtin = static_cast<const clang::BuiltinType *>(type);
-        
-        registerBuildIn(builtin, context);
-    }
+        case clang::Type::Builtin:
+        {
+            const clang::BuiltinType *builtin = static_cast<const clang::BuiltinType *>(type);
+            
+            registerBuildIn(canonicalTypeName, builtin, context);
+        }
+        break;
+        case clang::Type::Record:
+        {
+            const clang::CXXRecordDecl *recordDecl = type->getAsCXXRecordDecl();
+            if(!recordDecl)
+                return false;
 
+            std::string typeName = "/" + recordDecl->getCanonicalDecl()->getQualifiedNameAsString();
+            
+            //we need to add one check here, as the type that was given for registration
+            //could have been an injected type. In this case the canonicalFieldTypeName name 
+            //could be e.g. Pose::Pose, while the typename is Pose
+            if(registry.has(typeName))
+            {
+                return true;
+            }
+            
+            if(recordDecl->isInjectedClassName())
+            {
+                std::cout << "Is injected class name " << std::endl;
+                return false;
+            }
+            
+            if(recordDecl->isDependentType() || recordDecl->isInvalidDecl())
+                return false;
+            
+            if(recordDecl->isAnonymousStructOrUnion())
+            {
+                return false;
+            }
+            
+            addRecord(canonicalTypeName, recordDecl);
+        }
+        break;
+//         case clang::Type::Enum:
+//         {
+//             const clang::EnumDecl *enumDecl = dynamic_cast<const clang::EnumDecl *>(decl);
+//             assert(enumDecl);
+//             addEnum(typeName, enumDecl);
+//         }
+//             break;
+//         default:
+//             std::cout << "Found unknown type " << typeName << std::endl;
+            break;
+    }
+    return true;
+    
 }
 
 void TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::EnumDecl *decl)
 {
-    Typelib::Enum *enumVal =new Typelib::Enum("/" + decl->getQualifiedNameAsString());
+    Typelib::Enum *enumVal =new Typelib::Enum(canonicalTypeName);
     
     for(clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin(); it != decl->enumerator_end(); it++)
     {
@@ -134,7 +186,7 @@ void TypelibBuilder::addRecord(const std::string &canonicalTypeName, const clang
 
     if(decl->isPolymorphic() || decl->isAbstract())
     {
-        std::cout << "Ignoring Type " << decl->getQualifiedNameAsString() << " as it is polymorphic" << std::endl;
+        std::cout << "Ignoring Type " << canonicalTypeName << " as it is polymorphic" << std::endl;
         return;
     }
     
@@ -163,23 +215,46 @@ void TypelibBuilder::addRecord(const std::string &canonicalTypeName, const clang
     for(clang::RecordDecl::field_iterator fit = decl->field_begin(); fit != decl->field_end(); fit++)
     {
 //         TemporaryFieldType fieldType;
-        const clang::QualType qualType = fit->getType().getCanonicalType();
+        const clang::QualType qualType = fit->getType().getLocalUnqualifiedType().getCanonicalType();
         clang::SplitQualType T_split = qualType.split();
         
-        std::string canonicalFieldTypeName = clang::QualType::getAsString(T_split);
-
-        if(!registry.has(canonicalTypeName))
+        
+        
+        if(fit->isAnonymousStructOrUnion())
         {
-            fit->getDeclContext()->getDeclKind();
+            std::cout << "Warning, ignoring Record with Anonymous Struct or Union " << canonicalTypeName << std::endl;
+            delete compound;
+            return;
+        }
+        
+        
+        clang::LangOptions o;
+        clang::PrintingPolicy p(o);
+        p.SuppressTagKeyword = true;
+        
+        std::string canonicalFieldTypeName = "/" + qualType.getAsString(p);
+        
+        
+        std::cout << "Parent of " << canonicalFieldTypeName << " is " << fit->getParent()->getQualifiedNameAsString() << std::endl;
+
+
+        if(!registry.has(canonicalFieldTypeName))
+        {
+//             fit->getDeclContext()->getDeclKind();
+            std::cout << "Found field with non registered Type " << canonicalFieldTypeName << " registering it" << std::endl;
             
             const clang::Type *type = qualType.getTypePtr();
-            
-            //TODO make it work
-            registerType(type, decl->getASTContext());
+            registerType(canonicalFieldTypeName, type, decl->getASTContext());
         }
         
         const Typelib::Type *typelibFieldType = registry.get(canonicalFieldTypeName);
-        compound->addField(fit->getNameAsString(), *typelibFieldType, typeLayout.getFieldOffset(fit->getFieldIndex()));
+        if(!typelibFieldType)
+        {
+            std::cout << "Error, type of field is not known " << canonicalFieldTypeName << std::endl;
+            return;
+        }
+            
+        compound->addField(fit->getNameAsString(), *typelibFieldType, typeLayout.getFieldOffset(fit->getFieldIndex()) / 8);
         
 //         fieldType.fieldName = fit->getNameAsString();
 //         fieldType.offsetInBits = ;
