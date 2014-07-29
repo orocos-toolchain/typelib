@@ -3,10 +3,7 @@
 //  tool-template <header-to-look-at> -- <compile-flags-as-usual>
 //
 //  Example:
-//  ./bin/extractor $ROCK_ROOT/base/types/base/Pose.hpp -- \
-//      -I$ROCK_ROOT/base/types \
-//      -I/usr/include/eigen3 \
-//      -x c++
+//  ./bin/extractor $ROCK_ROOT/base/types/base/Pose.hpp -- -I$ROCK_ROOT/base/types -I/usr/include/eigen3 -x c++
 //
 //  keep in mind that this particular (not very complicated) example still takes 15seconds to
 //  complete...
