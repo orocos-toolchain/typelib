@@ -21,6 +21,9 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     
     std::cout << "Typelib name " << typeName << std::endl;
     
+    if(typeName.size() <= 1)
+        return;
+    
     if(registry.has(typeName))
         return;
 
