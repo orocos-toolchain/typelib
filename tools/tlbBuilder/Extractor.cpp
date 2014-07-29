@@ -112,7 +112,10 @@ int main(int argc, const char **argv) {
 
   Finder.addMatcher(typedefType().bind("typeDef"), &tdCallback);
   
-  Tool.run(newFrontendActionFactory(&Finder));
+  if (int retval = Tool.run(newFrontendActionFactory(&Finder)) != 0) {
+    std::cerr << "whoops\n";
+    return retval;
+  }
   
   builder.buildRegistry();
   
