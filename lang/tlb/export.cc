@@ -202,7 +202,7 @@ namespace
         Enum::ValueMap const& values = type.values();
         m_stream << "<enum name=\"" << type.getName() << "\" " << emitSourceID() << ">\n";
         { Indent indenter(m_indent);
-            Enum::ValueMap::const_iterator it, end = values.end();
+            Enum::ValueMap::const_iterator it;
             for (it = values.begin(); it != values.end(); ++it)
                 m_stream << m_indent << "<value symbol=\"" << it->first << "\" value=\"" << it->second << "\"/>\n";
         }
