@@ -60,18 +60,19 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
 
     virtual void run(const MatchFinder::MatchResult &Result) {
 
-        const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl");
-
-        if(D) {
+        // check the different possibilities of a match: "recordDecl" or
+        // "typeDecl", and handle them accordingly. recordDecls are also
+        // typeDecls, so prevent adding them both!
+        if (const CXXRecordDecl *D = Result.Nodes.getNodeAs<CXXRecordDecl>("typeDecl")) {
 
             builder.registerNamedDecl(D);
-        }
 
-        const CXXRecordDecl *DD = Result.Nodes.getNodeAs<CXXRecordDecl>("typeDecl");
-        if (DD) {
-            builder.registerNamedDecl(DD);
+        } else if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
+
+            builder.registerNamedDecl(D);
+
         }
-      }
+    }
 
 };
 } // end anonymous namespace
