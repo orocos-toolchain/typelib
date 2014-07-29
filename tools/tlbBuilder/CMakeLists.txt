@@ -4,6 +4,10 @@ cmake_minimum_required(VERSION 2.8)
 # AST-headers... this only clutters up the compiler output with nonsense
 add_definitions("-Wno-unused-local-typedefs")
 
+# when compiling inside the rock-framework "Wall" is used. This adds alotta
+# more bogus warnings from system-headers...
+add_definitions("-Wno-strict-aliasing")
+
 include_directories("/usr/lib/llvm-3.4/include/")
 
 macro(llvm_find_config LLVM_REQUIRED_VERSION)
