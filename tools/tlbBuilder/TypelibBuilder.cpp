@@ -17,6 +17,10 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     
     std::cout << "New Type with qualified name " << typeName << std::endl;
 
+    typeName = cxxToTyplibName(typeName);
+    
+    std::cout << "Typelib name " << typeName << std::endl;
+    
     if(registry.has(typeName))
         return;
 
@@ -107,7 +111,7 @@ void TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const
     
 }
 
-std::string TypelibBuilder::collonCollonToSlash(const std::string name)
+std::string TypelibBuilder::cxxToTyplibName(const std::string name)
 {
     std::string ret(name);
     
@@ -119,6 +123,46 @@ std::string TypelibBuilder::collonCollonToSlash(const std::string name)
         ret.replace(start_pos, from.length(), to);
     }
     
+    from = std::string("<");
+    to = std::string("</");
+    
+    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
+    {
+        ret.replace(start_pos, from.length(), to);
+    }
+    
+    from = std::string(", ");
+    to = std::string(",/");
+    
+    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
+    {
+        ret.replace(start_pos, from.length(), to);
+    }
+    
+    from = std::string(" >");
+    to = std::string(">");
+    
+    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
+    {
+        ret.replace(start_pos, from.length(), to);
+    }
+
+    from = std::string(" &");
+    to = std::string("&");
+    
+    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
+    {
+        ret.replace(start_pos, from.length(), to);
+    }
+
+    from = std::string(" &");
+    to = std::string("&");
+    
+    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
+    {
+        ret.replace(start_pos, from.length(), to);
+    }
+
     return ret;
 }
 
@@ -154,6 +198,7 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
             }
             
             std::string typeName = "/" + recordDecl->getCanonicalDecl()->getQualifiedNameAsString();
+            typeName = cxxToTyplibName(typeName);
             
             //we need to add one check here, as the type that was given for registration
             //could have been an injected type. In this case the canonicalFieldTypeName name 
@@ -177,7 +222,7 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
                 return false;
             }
             
-            addRecord(canonicalTypeName, recordDecl);
+            addRecord(typeName, recordDecl);
         }
         break;
         case clang::Type::Enum:
@@ -268,9 +313,9 @@ void TypelibBuilder::addRecord(const std::string &canonicalTypeName, const clang
         std::string canonicalFieldTypeName = "/" + qualType.getAsString(p);
         
         
-        std::cout << "Parent of " << canonicalFieldTypeName << " is " << fit->getParent()->getQualifiedNameAsString() << std::endl;
+//         std::cout << "Parent of " << canonicalFieldTypeName << " is " << fit->getParent()->getQualifiedNameAsString() << std::endl;
 
-        canonicalFieldTypeName = collonCollonToSlash(canonicalFieldTypeName);
+        canonicalFieldTypeName = cxxToTyplibName(canonicalFieldTypeName);
 
         if(!registry.has(canonicalFieldTypeName))
         {

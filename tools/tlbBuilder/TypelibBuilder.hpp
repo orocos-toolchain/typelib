@@ -38,7 +38,7 @@ public:
     bool registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
     void registerTypeDef(const clang::TypedefType *type);
     void registerNamedDecl(const clang::TypeDecl *decl);
-    std::string collonCollonToSlash(const std::string name);
+    std::string cxxToTyplibName(const std::string name);
     void registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
     
     
