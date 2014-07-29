@@ -35,49 +35,33 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
         std::cout << "TypeDecl " << decl->getNameAsString() << " has no type " << std::endl;
         return;
     }
+
     
-    std::cout << "TypeClassName " << typeForDecl->getTypeClassName() << std::endl;;
-    std::cout << "DeclName " << decl->getNameAsString() << std::endl;;
     
-    typeName = collonCollonToSlash(typeName);
+    if(typeForDecl->isInstantiationDependentType())
+    {
+        return;
+    }
     
-    std::cout << "Typelib name " << typeName << std::endl;
+    
+//     if(typeForDecl->isCanonicalUnqualified())
+//     {
+//         std::cout << "Ignoring " << typeName << " as it is not canonical identifiable" << std::endl;
+//         return;
+//     }
+    
+    if(decl->isInAnonymousNamespace())
+    {
+        std::cout << "Ignoring " << typeName << " as it is in an anonymous namespace" << std::endl;
+        return;
+    }
+    
+//     std::cout << "TypeClassName " << typeForDecl->getTypeClassName() << std::endl;;
+//     std::cout << "DeclName " << decl->getNameAsString() << std::endl;;
+    
+
     
     registerType(typeName, typeForDecl, decl->getASTContext());
-/*    
-    switch(typeForDecl->getTypeClass())
-    {
-        case clang::Type::Record:
-        {
-            const clang::RecordDecl *recordDecl = dynamic_cast<const clang::RecordDecl *>(decl);
-            if(recordDecl->isInjectedClassName())
-                return;
-            if(recordDecl->isDependentType() || recordDecl->isInvalidDecl())
-                return;
-            
-            if(recordDecl->isAnonymousStructOrUnion())
-            {
-                return;
-            }
-            
-            const clang::CXXRecordDecl* cxxdecl = dynamic_cast<const clang::CXXRecordDecl *>(decl);
-            if(cxxdecl)
-            {
-                addRecord(typeName, cxxdecl);
-            }
-        }
-            break;
-        case clang::Type::Enum:
-        {
-            const clang::EnumDecl *enumDecl = dynamic_cast<const clang::EnumDecl *>(decl);
-            assert(enumDecl);
-            addEnum(typeName, enumDecl);
-        }
-            break;
-        default:
-            std::cout << "Found unknown type " << typeName << std::endl;
-            break;
-    }*/
 }
 
 void TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context)
