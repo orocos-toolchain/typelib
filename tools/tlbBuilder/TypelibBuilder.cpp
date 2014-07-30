@@ -136,8 +136,6 @@ std::string TypelibBuilder::cxxToTyplibName(const std::string name)
     
     for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos))
     {
-        std::cout << "Start pos " << start_pos << " char at + 1 " << ret.at(start_pos + 1) << std::endl;
-        
         if(!isConstant(ret, start_pos + 1))
         {
             ret.replace(start_pos, from.length(), to);
@@ -155,8 +153,6 @@ std::string TypelibBuilder::cxxToTyplibName(const std::string name)
     
     for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos))
     {
-        std::cout << "Start pos " << start_pos << " char at + 2 " << ret.at(start_pos + 2) << std::endl;
-        
         if(!isConstant(ret, start_pos + 2))
         {
             ret.replace(start_pos, from.length(), to);
