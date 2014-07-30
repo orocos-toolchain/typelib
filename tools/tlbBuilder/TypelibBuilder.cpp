@@ -189,6 +189,23 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
         return false;
     }
     
+    if(canonicalTypeName.find("&") != std::string::npos)
+    {
+        std::cout << "Ignoring type with reference " << canonicalTypeName << std::endl;
+        return false;
+    }
+    
+    if(canonicalTypeName.find("sizeof") != std::string::npos)
+    {
+        std::cout << "Ignoring type with weired sizeof " << canonicalTypeName << std::endl;
+        return false;
+    }
+
+    if(canonicalTypeName.find("(") != std::string::npos)
+    {
+        std::cout << "Ignoring type with function pointer " << canonicalTypeName << std::endl;
+        return false;
+    }
     switch(type->getTypeClass())
     {
         case clang::Type::Builtin:
