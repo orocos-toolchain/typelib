@@ -369,7 +369,7 @@ void TypelibBuilder::addRecord(const std::string &canonicalTypeName, const clang
             return;
         }
             
-        compound->addField(fit->getNameAsString(), *typelibFieldType, typeLayout.getFieldOffset(fit->getFieldIndex()) / 8);
+        compound->addField(fit->getNameAsString(), *typelibFieldType, typeLayout.getFieldOffset(fit->getFieldIndex()));
         
 //         fieldType.fieldName = fit->getNameAsString();
 //         fieldType.offsetInBits = ;
