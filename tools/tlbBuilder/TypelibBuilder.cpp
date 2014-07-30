@@ -251,7 +251,10 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
 //             std::cerr << "Found unknown type " << canonicalTypeName << std::endl;
 //             break;
     }
-    return true;
+    return false;
+    
+}
+
 const Typelib::Type* TypelibBuilder::checkRegisterType(const std::string& canonicalTypeName, const clang::Type *type, clang::ASTContext& context)
 {
     if(!registry.has(canonicalTypeName))
