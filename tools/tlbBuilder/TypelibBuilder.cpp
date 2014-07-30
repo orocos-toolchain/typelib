@@ -36,6 +36,12 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
         return;
     }
 
+    //check for structs that are only defined inside of functions
+    if(decl->getParentFunctionOrMethod())
+    {
+        std::cout << "Ignoring type " << typeName << " as it is defined inside a function" << std::endl;
+        return;
+    }
     
     
     if(typeForDecl->isInstantiationDependentType())
