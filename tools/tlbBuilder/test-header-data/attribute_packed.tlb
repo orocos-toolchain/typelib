@@ -1,0 +1,23 @@
+Types in registry
+compound /attribute_packed/C1 [69] {
+  (+0) uint(8)
+  (+1) sint(32)
+  (+5) sint(64)
+  (+13) sint(8)
+  (+14) float(32)
+  (+18) uint(16)
+};
+compound /attribute_packed/S1 [69] {
+  (+0) uint(8)
+  (+1) sint(32)
+  (+5) sint(64)
+  (+13) sint(8)
+  (+14) float(32)
+  (+18) uint(16)
+};
+float(32)
+sint(32)
+sint(64)
+sint(8)
+uint(8)
+uint(16)

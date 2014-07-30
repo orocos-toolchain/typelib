@@ -1,0 +1,25 @@
+Types in registry
+sint(32)
+sint(64)
+compound /nested_records/S1 [36] {
+  (+0) sint(32)
+  (+4) uint(32)
+};
+compound /nested_records/S2 [40] {
+  (+0) sint(32)
+  (+4) compound /nested_records/S1 [36] {
+    (+0) sint(32)
+    (+4) uint(32)
+  };
+};
+compound /nested_records/S3 [72] {
+  (+0) compound /timespec [72] {
+    (+0) sint(64)
+    (+8) sint(64)
+  };
+};
+compound /timespec [72] {
+  (+0) sint(64)
+  (+8) sint(64)
+};
+uint(32)

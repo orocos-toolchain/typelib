@@ -1,0 +1,14 @@
+Types in registry
+sint(32)
+compound /ns/aClass [32] {
+  (+0) sint(32)
+};
+compound /ns/test [44] {
+  (+0) uint(8)
+  (+4) compound /ns/aClass [32] {
+    (+0) sint(32)
+  };
+  (+8) sint(32)
+  (+12) sint(32)
+};
+uint(8)
