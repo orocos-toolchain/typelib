@@ -292,64 +292,32 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     const clang::ASTRecordLayout &typeLayout(decl->getASTContext().getASTRecordLayout(decl));
 
     
-    if(decl->field_empty())
+    Typelib::Compound *compound = new Typelib::Compound(canonicalTypeName);
+    compound->setSize(typeLayout.getSize().getQuantity());
+
+    for(clang::CXXRecordDecl::base_class_const_iterator it = decl->bases_begin(); it != decl->bases_end(); it++)
+    {
+        const clang::CXXRecordDecl* curDecl = it->getType()->getAsCXXRecordDecl();
+        if(!addFieldsToCompound(*compound, canonicalTypeName, curDecl))
+        {
+            delete compound;
+            return false;
+        }
+        
+    }
+
+    if(!addFieldsToCompound(*compound, canonicalTypeName, decl))
+    {
+        delete compound;
+        return false;
+    }
+
+    if(compound->getFields().empty())
     {
         std::cout << "Ignoring Type " << canonicalTypeName << " as it has no fields " << std::endl;
         return false;
     }
     
-    Typelib::Compound *compound = new Typelib::Compound(canonicalTypeName);
-    compound->setSize(typeLayout.getSize().getQuantity());
-    
-    for(clang::RecordDecl::field_iterator fit = decl->field_begin(); fit != decl->field_end(); fit++)
-    {
-        const clang::QualType qualType = fit->getType().getLocalUnqualifiedType().getCanonicalType();
-        clang::SplitQualType T_split = qualType.split();
-        
-        if(fit->isAnonymousStructOrUnion())
-        {
-            std::cout << "Warning, ignoring Record with Anonymous Struct or Union " << canonicalTypeName << std::endl;
-            delete compound;
-            return false;
-        }
-        
-        
-        clang::LangOptions o;
-        clang::PrintingPolicy p(o);
-        p.SuppressTagKeyword = true;
-        
-        std::string canonicalFieldTypeName = "/" + qualType.getAsString(p);
-        
-        
-//         std::cout << "Parent of " << canonicalFieldTypeName << " is " << fit->getParent()->getQualifiedNameAsString() << std::endl;
-
-        canonicalFieldTypeName = cxxToTyplibName(canonicalFieldTypeName);
-
-        if(!registry.has(canonicalFieldTypeName))
-        {
-//             fit->getDeclContext()->getDeclKind();
-            std::cout << "Found field with non registered Type " << canonicalFieldTypeName << " registering it" << std::endl;
-            
-            const clang::Type *type = qualType.getTypePtr();
-            if(!registerType(canonicalFieldTypeName, type, decl->getASTContext()))
-            {
-                std::cout << "Not regstering type " << canonicalTypeName << " as as field type " << canonicalFieldTypeName << " could not be registerd " << std::endl;
-                delete compound;
-                return false;
-            }
-        }
-        
-        const Typelib::Type *typelibFieldType = registry.get(canonicalFieldTypeName);
-        if(!typelibFieldType)
-        {
-            std::cout << "Error, type of field is not known " << canonicalFieldTypeName << std::endl;
-            delete compound;
-            return false;
-        }
-            
-        compound->addField(fit->getNameAsString(), *typelibFieldType, typeLayout.getFieldOffset(fit->getFieldIndex()));
-    }
-
     std::cout << "Registered Compound " << canonicalTypeName << std::endl;
 
     registry.add(compound);
