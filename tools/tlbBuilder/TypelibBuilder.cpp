@@ -43,9 +43,9 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
         return;
     }
     
-    
-    if(typeForDecl->isInstantiationDependentType())
+    if(decl->isHidden())
     {
+        std::cout << "Ignoring hidden type " << typeName << std::endl;
         return;
     }
     
