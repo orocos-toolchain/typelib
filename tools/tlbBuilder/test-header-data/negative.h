@@ -35,6 +35,24 @@ namespace negative {
         virtual void F();
         int B;
     };
+
+    // anonymous structs and classes don't have a canonical name, so we cannot reference them later by name.
+    struct {
+        int A;
+        int B;
+    } anon_S1;
+    typedef struct {
+        int A;
+        int B;
+    } anon_S2;
+    class {
+        int A;
+        int B;
+    } anon_C1;
+    typedef class {
+        int A;
+        int B;
+    } anon_C2;
 }
 
 
