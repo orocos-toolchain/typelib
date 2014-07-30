@@ -40,14 +40,14 @@ public:
     void registerNamedDecl(const clang::TypeDecl *decl);
     std::string cxxToTyplibName(const std::string name);
     bool isConstant(const std::string name, size_t pos);
-    void registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
+    bool registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
     
     
     void buildRegistry();
     
 private:
-    void addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
-    void addEnum(const std::string& canonicalTypeName, const clang::EnumDecl* decl);
+    bool addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
+    bool addEnum(const std::string& canonicalTypeName, const clang::EnumDecl* decl);
     
     typedef std::map<std::string, TemporaryType> TypeMap;
     std::map<std::string, TemporaryType> typeMap;
