@@ -4,7 +4,3 @@ compound /ns/ForwardDeclaration [64] {
   (+0) sint(32)
   (+32) sint(32)
 };
-compound /ns/ForwardDeclaration/ForwardDeclaration [64] {
-  (+0) sint(32)
-  (+32) sint(32)
-};

@@ -7,23 +7,7 @@ compound /attribute_packed/C1 [160] {
   (+112) float(32)
   (+144) uint(16)
 };
-compound /attribute_packed/C1/C1 [160] {
-  (+0) uint(8)
-  (+8) sint(32)
-  (+40) sint(64)
-  (+104) sint(8)
-  (+112) float(32)
-  (+144) uint(16)
-};
 compound /attribute_packed/S1 [160] {
-  (+0) uint(8)
-  (+8) sint(32)
-  (+40) sint(64)
-  (+104) sint(8)
-  (+112) float(32)
-  (+144) uint(16)
-};
-compound /attribute_packed/S1/S1 [160] {
   (+0) uint(8)
   (+8) sint(32)
   (+40) sint(64)

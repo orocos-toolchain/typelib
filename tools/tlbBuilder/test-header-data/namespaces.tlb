@@ -4,11 +4,6 @@ compound /N1/N2/S1 [136] {
   (+64) float(64)
   (+128) sint(8)
 };
-compound /N1/N2/S1/S1 [136] {
-  (+0) sint(32)
-  (+64) float(64)
-  (+128) sint(8)
-};
 sint(8)
 float(64)
 sint(32)
