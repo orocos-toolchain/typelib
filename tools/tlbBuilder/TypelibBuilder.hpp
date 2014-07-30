@@ -20,22 +20,6 @@ class QualType;
 }
 class TypelibBuilder
 {
-    class TemporaryFieldType {
-    public:
-        std::string typeName;
-        std::string fieldName;
-        uint32_t offsetInBits;
-    };
-    
-    class TemporaryType {
-    public:
-        std::string typeName;
-        
-        uint32_t sizeInBytes;
-        
-        std::vector<TemporaryFieldType> fields;
-        
-    };
 public:
     bool registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
     void registerTypeDef(const clang::TypedefType *type);
@@ -57,8 +41,6 @@ private:
     
     std::string getTypelibNameForQualType(const clang::QualType &type);
     
-    typedef std::map<std::string, TemporaryType> TypeMap;
-    std::map<std::string, TemporaryType> typeMap;
     Typelib::Registry registry;
 };
 

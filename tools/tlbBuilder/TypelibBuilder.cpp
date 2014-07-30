@@ -459,21 +459,7 @@ void TypelibBuilder::registerTypeDef(const clang::TypedefType* type)
 void TypelibBuilder::buildRegistry()
 {
     registry.dump(std::cout);
-    
-    for(TypeMap::const_iterator it = typeMap.begin(); it != typeMap.end(); it++)
-    {
-        const std::string &curTypeName(it->first);
-        
-        if(!registry.has(curTypeName))
-        {
-            //add the type
-            
-            
-            
-        }
-        
-        
-    }
+
     
 }
 
