@@ -247,6 +247,11 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
             return addEnum(canonicalTypeName, enumDecl);
         }
             break;
+        case clang::Type::ConstantArray:
+        {
+            
+            return addArray(canonicalTypeName, type, context);
+        }
 //         default:
 //             std::cerr << "Found unknown type " << canonicalTypeName << std::endl;
 //             break;
@@ -277,8 +282,28 @@ const Typelib::Type* TypelibBuilder::checkRegisterType(const std::string& canoni
 
     return typelibType;
 }
+
+
+bool TypelibBuilder::addArray(const std::string& canonicalTypeName, const clang::Type *gtype, clang::ASTContext& context)
+{
+    const clang::ConstantArrayType *type = static_cast<const clang::ConstantArrayType *>(gtype);
+    const clang::Type *arrayBaseType = type->getElementType().getTypePtr();
+    std::string arrayBaseTypeName = getTypelibNameForQualType(type->getElementType());
     
+    const Typelib::Type *typelibArrayBaseType = checkRegisterType(arrayBaseTypeName, arrayBaseType, context);
+    if(!typelibArrayBaseType)
+    {
+        std::cerr << "Not registering Array " << canonicalTypeName << " as its elementary type " << arrayBaseTypeName << " could not be registered " << std::endl;
+        return false;
+    }
+    
+    Typelib::Array *array = new Typelib::Array(*typelibArrayBaseType, type->getSize().getZExtValue());
+
+    registry.add(array);
+    
+    return true;
 }
+
 
 bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::EnumDecl *decl)
 {
