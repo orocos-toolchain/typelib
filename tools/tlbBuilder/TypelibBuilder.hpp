@@ -15,6 +15,7 @@ class TypeDecl;
 class EnumDecl;
 class Type;
 class ASTContext;
+class QualType;
 }
 class TypelibBuilder
 {
@@ -51,6 +52,7 @@ private:
     bool addEnum(const std::string& canonicalTypeName, const clang::EnumDecl* decl);
     const Typelib::Type *checkRegisterType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
     
+    std::string getTypelibNameForQualType(const clang::QualType &type);
     typedef std::map<std::string, TemporaryType> TypeMap;
     std::map<std::string, TemporaryType> typeMap;
     Typelib::Registry registry;

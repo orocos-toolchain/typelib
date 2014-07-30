@@ -343,6 +343,18 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     return true;
 }
 
+std::string TypelibBuilder::getTypelibNameForQualType(const clang::QualType& type)
+{
+    const clang::QualType qualType = type.getLocalUnqualifiedType().getCanonicalType();
+        
+    clang::LangOptions o;
+    clang::PrintingPolicy p(o);
+    p.SuppressTagKeyword = true;
+
+    return cxxToTyplibName(qualType.getAsString(p));
+}
+
+
 bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
 {
     const clang::ASTRecordLayout &typeLayout(decl->getASTContext().getASTRecordLayout(decl));
