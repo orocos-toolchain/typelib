@@ -1,0 +1,33 @@
+Types in registry
+compound /bitfield/S1 [32] {
+  (+0) uint(32)
+};
+compound /bitfield/S1/S1 [32] {
+  (+0) uint(32)
+};
+compound /bitfield/S2 [22] {
+  (+0) uint(8)
+  (+3) uint(8)
+  (+8) uint(8)
+  (+14) uint(8)
+};
+compound /bitfield/S2/S2 [22] {
+  (+0) uint(8)
+  (+3) uint(8)
+  (+8) uint(8)
+  (+14) uint(8)
+};
+compound /bitfield/S3 [22] {
+  (+0) uint(8)
+  (+8) uint(8)
+  (+8) uint(8)
+  (+14) uint(8)
+};
+compound /bitfield/S3/S3 [22] {
+  (+0) uint(8)
+  (+8) uint(8)
+  (+8) uint(8)
+  (+14) uint(8)
+};
+uint(8)
+uint(32)

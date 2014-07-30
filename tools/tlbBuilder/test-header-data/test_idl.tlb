@@ -1,0 +1,25 @@
+Types in registry
+compound /NS1/NS1_1/Test [48] {
+  (+0) sint(32)
+  (+32) sint(16)
+};
+compound /NS1/NS1_1/Test/Test [48] {
+  (+0) sint(32)
+  (+32) sint(16)
+};
+compound /NS1/Test [48] {
+  (+0) compound /NS1/NS1_1/Test [48] {
+    (+0) sint(32)
+    (+32) sint(16)
+  };
+};
+compound /NS1/Test/Test [48] {
+  (+0) compound /NS1/NS1_1/Test [48] {
+    (+0) sint(32)
+    (+32) sint(16)
+  };
+};
+enum /TestEnum
+sint(8)
+sint(32)
+sint(16)

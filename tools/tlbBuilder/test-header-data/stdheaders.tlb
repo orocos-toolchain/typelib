@@ -1,0 +1,141 @@
+Types in registry
+enum /__itimer_which
+sint(32)
+compound /itimerspec [256] {
+  (+0) compound /timespec [128] {
+    (+0) sint(64)
+    (+64) sint(64)
+  };
+  (+128) compound /timespec [128] {
+    (+0) sint(64)
+    (+64) sint(64)
+  };
+};
+compound /itimerspec/itimerspec [256] {
+  (+0) compound /timespec [128] {
+    (+0) sint(64)
+    (+64) sint(64)
+  };
+  (+128) compound /timespec [128] {
+    (+0) sint(64)
+    (+64) sint(64)
+  };
+};
+compound /itimerval [256] {
+  (+0) compound /timeval [128] {
+    (+0) sint(64)
+    (+64) sint(64)
+  };
+  (+128) compound /timeval [128] {
+    (+0) sint(64)
+    (+64) sint(64)
+  };
+};
+compound /itimerval/itimerval [256] {
+  (+0) compound /timeval [128] {
+    (+0) sint(64)
+    (+64) sint(64)
+  };
+  (+128) compound /timeval [128] {
+    (+0) sint(64)
+    (+64) sint(64)
+  };
+};
+sint(64)
+compound /timespec [128] {
+  (+0) sint(64)
+  (+64) sint(64)
+};
+compound /timespec/timespec [128] {
+  (+0) sint(64)
+  (+64) sint(64)
+};
+compound /timeval [128] {
+  (+0) sint(64)
+  (+64) sint(64)
+};
+compound /timeval/timeval [128] {
+  (+0) sint(64)
+  (+64) sint(64)
+};
+compound /timex [1664] {
+  (+0) uint(32)
+  (+64) sint(64)
+  (+128) sint(64)
+  (+192) sint(64)
+  (+256) sint(64)
+  (+320) sint(32)
+  (+384) sint(64)
+  (+448) sint(64)
+  (+512) sint(64)
+  (+576) compound /timeval [128] {
+    (+0) sint(64)
+    (+64) sint(64)
+  };
+  (+704) sint(64)
+  (+768) sint(64)
+  (+832) sint(64)
+  (+896) sint(32)
+  (+960) sint(64)
+  (+1024) sint(64)
+  (+1088) sint(64)
+  (+1152) sint(64)
+  (+1216) sint(64)
+  (+1280) sint(32)
+  (+1312) sint(32)
+  (+1344) sint(32)
+  (+1376) sint(32)
+  (+1408) sint(32)
+  (+1440) sint(32)
+  (+1472) sint(32)
+  (+1504) sint(32)
+  (+1536) sint(32)
+  (+1568) sint(32)
+  (+1600) sint(32)
+  (+1632) sint(32)
+};
+compound /timex/timex [1664] {
+  (+0) uint(32)
+  (+64) sint(64)
+  (+128) sint(64)
+  (+192) sint(64)
+  (+256) sint(64)
+  (+320) sint(32)
+  (+384) sint(64)
+  (+448) sint(64)
+  (+512) sint(64)
+  (+576) compound /timeval [128] {
+    (+0) sint(64)
+    (+64) sint(64)
+  };
+  (+704) sint(64)
+  (+768) sint(64)
+  (+832) sint(64)
+  (+896) sint(32)
+  (+960) sint(64)
+  (+1024) sint(64)
+  (+1088) sint(64)
+  (+1152) sint(64)
+  (+1216) sint(64)
+  (+1280) sint(32)
+  (+1312) sint(32)
+  (+1344) sint(32)
+  (+1376) sint(32)
+  (+1408) sint(32)
+  (+1440) sint(32)
+  (+1472) sint(32)
+  (+1504) sint(32)
+  (+1536) sint(32)
+  (+1568) sint(32)
+  (+1600) sint(32)
+  (+1632) sint(32)
+};
+compound /timezone [64] {
+  (+0) sint(32)
+  (+32) sint(32)
+};
+compound /timezone/timezone [64] {
+  (+0) sint(32)
+  (+32) sint(32)
+};
+uint(32)

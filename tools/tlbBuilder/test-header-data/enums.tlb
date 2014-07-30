@@ -1,0 +1,24 @@
+Types in registry
+enum /enums/E1
+enum /enums/E2
+compound /enums/S1 [36] {
+  (+0) sint(32)
+  (+32) enum /enums/E1
+};
+compound /enums/S1/S1 [36] {
+  (+0) sint(32)
+  (+32) enum /enums/E1
+};
+compound /enums/S2 [4] {
+  (+0) enum /enums/E2
+};
+compound /enums/S2/S2 [4] {
+  (+0) enum /enums/E2
+};
+compound /enums/S3 [4] {
+  (+0) enum /enums/E2
+};
+compound /enums/S3/S3 [4] {
+  (+0) enum /enums/E2
+};
+sint(32)
