@@ -123,6 +123,11 @@ std::string TypelibBuilder::cxxToTyplibName(const std::string name)
 {
     std::string ret(name);
     
+    if(!ret.empty() && ret.at(0) != '/')
+    {
+        ret.insert(0, "/");
+    }
+    
     std::string from("::");
     std::string to("/");
     
@@ -181,6 +186,13 @@ std::string TypelibBuilder::cxxToTyplibName(const std::string name)
         ret.replace(start_pos, from.length(), to);
     }
 
+    from = std::string(" [");
+    to = std::string("[");
+    
+    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
+    {
+        ret.replace(start_pos, from.length(), to);
+    }
     return ret;
 }
 
