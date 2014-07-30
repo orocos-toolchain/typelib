@@ -1,0 +1,11 @@
+Types in registry
+compound /classes/BaseClass [32] {
+  (+0) sint(32)
+};
+compound /classes/FirstLevel [32] {
+  (+0) sint(32)
+};
+compound /classes/NextLevel [64] {
+  (+32) sint(32)
+};
+sint(32)
