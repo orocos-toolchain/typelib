@@ -357,20 +357,57 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     return true;
 }
 
-    if(!tempType.fields.empty())
-    {
-        std::cout << "  Members :" << std::endl;
-    
-        for(std::vector<TemporaryFieldType>::const_iterator it = tempType.fields.begin(); it != tempType.fields.end(); it++)
-        {
-            std::cout << "    FieldName " << it->fieldName << std::endl;
-            std::cout << "    TypeName  " << it->typeName << std::endl;
-            std::cout << "    Offset    " << it->offsetInBits << std::endl;
-            std::cout << std::endl;
-        }
-    } */   
+bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
+{
+    const clang::ASTRecordLayout &typeLayout(decl->getASTContext().getASTRecordLayout(decl));
 
-    registry.add(compound);
+    for(clang::RecordDecl::field_iterator fit = decl->field_begin(); fit != decl->field_end(); fit++)
+    {
+//         TemporaryFieldType fieldType;
+        const clang::QualType qualType = fit->getType().getLocalUnqualifiedType().getCanonicalType();
+        
+        if(fit->isAnonymousStructOrUnion())
+        {
+            std::cout << "Warning, ignoring Record with Anonymous Struct or Union " << canonicalTypeName << std::endl;
+            return false;
+        }
+        
+        
+        clang::LangOptions o;
+        clang::PrintingPolicy p(o);
+        p.SuppressTagKeyword = true;
+        
+        std::string canonicalFieldTypeName = "/" + qualType.getAsString(p);
+        
+        
+//         std::cout << "Parent of " << canonicalFieldTypeName << " is " << fit->getParent()->getQualifiedNameAsString() << std::endl;
+
+        canonicalFieldTypeName = cxxToTyplibName(canonicalFieldTypeName);
+
+        if(!registry.has(canonicalFieldTypeName))
+        {
+//             fit->getDeclContext()->getDeclKind();
+            std::cout << "Found field with non registered Type " << canonicalFieldTypeName << " registering it" << std::endl;
+            
+            const clang::Type *type = qualType.getTypePtr();
+            if(!registerType(canonicalFieldTypeName, type, decl->getASTContext()))
+            {
+                std::cout << "Not regstering type " << canonicalTypeName << " as as field type " << canonicalFieldTypeName << " could not be registerd " << std::endl;
+                return false;
+            }
+        }
+        
+        const Typelib::Type *typelibFieldType = registry.get(canonicalFieldTypeName);
+        if(!typelibFieldType)
+        {
+            std::cout << "Error, type of field is not known " << canonicalFieldTypeName << std::endl;
+            return false;
+        }
+            
+        compound.addField(fit->getNameAsString(), *typelibFieldType, typeLayout.getFieldOffset(fit->getFieldIndex()));
+    }
+    
+    return true;
 }
 
 

@@ -46,6 +46,7 @@ public:
     void buildRegistry();
     
 private:
+    bool addFieldsToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addEnum(const std::string& canonicalTypeName, const clang::EnumDecl* decl);
     
