@@ -96,6 +96,18 @@ void TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const
         registry.add(newNumeric);
     }
     
+
+bool TypelibBuilder::isConstant(const std::string name, size_t pos)
+{
+    if(name.size() > pos)
+    {
+        char c = name.at(pos);
+        if(std::isalpha(c) || c == '_')
+            return false;
+        
+        return true;
+    }
+    return false;
 }
 
 std::string TypelibBuilder::cxxToTyplibName(const std::string name)
@@ -113,29 +125,43 @@ std::string TypelibBuilder::cxxToTyplibName(const std::string name)
     from = std::string("<");
     to = std::string("</");
     
-    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
+    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos))
     {
-        ret.replace(start_pos, from.length(), to);
+        std::cout << "Start pos " << start_pos << " char at + 1 " << ret.at(start_pos + 1) << std::endl;
+        
+        if(!isConstant(ret, start_pos + 1))
+        {
+            ret.replace(start_pos, from.length(), to);
+            start_pos += to.length();
+        }
+        else
+        {
+            start_pos += from.length();
+        }
     }
     
     from = std::string(", ");
     to = std::string(",/");
+    std::string toConst(",");
     
-    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
+    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos))
     {
-        ret.replace(start_pos, from.length(), to);
+        std::cout << "Start pos " << start_pos << " char at + 2 " << ret.at(start_pos + 2) << std::endl;
+        
+        if(!isConstant(ret, start_pos + 2))
+        {
+            ret.replace(start_pos, from.length(), to);
+            start_pos += to.length();
+        }
+        else
+        {
+            ret.replace(start_pos, from.length(), toConst);
+            start_pos += toConst.length();
+        }
     }
     
     from = std::string(" >");
     to = std::string(">");
-    
-    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
-    {
-        ret.replace(start_pos, from.length(), to);
-    }
-
-    from = std::string(" &");
-    to = std::string("&");
     
     for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
     {
