@@ -47,7 +47,7 @@ namespace Typelib
 
     static bool isValidTypeBasename(std::string s, bool absolute, bool accept_integers)
     {
-        if (accept_integers && s.find_first_not_of("0123456789") == string::npos)
+        if (accept_integers && s.find_first_not_of("-0123456789") == string::npos)
             return true;
 
         int pos = 0;
