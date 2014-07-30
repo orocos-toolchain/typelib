@@ -24,7 +24,7 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     if(typeName.size() <= 1)
         return;
     
-    if(registry.has(typeName))
+    if(registry.has(typeName, false))
         return;
 
 
@@ -75,7 +75,7 @@ bool TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const
     
     std::string typeName = std::string("/") + builtin->getNameAsCString(clang::PrintingPolicy(clang::LangOptions()));
     
-    if(registry.has(typeName))
+    if(registry.has(typeName, false))
         return true;
     
     Typelib::Numeric *newNumeric = 0;
@@ -262,7 +262,7 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
 
 const Typelib::Type* TypelibBuilder::checkRegisterType(const std::string& canonicalTypeName, const clang::Type *type, clang::ASTContext& context)
 {
-    if(!registry.has(canonicalTypeName))
+    if(!registry.has(canonicalTypeName, false))
     {
         std::cerr << "Trying to register unknown Type " << canonicalTypeName << std::endl;
         
