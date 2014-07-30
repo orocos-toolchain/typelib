@@ -65,6 +65,26 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
         // typeDecls, so prevent adding them both!
         if (const CXXRecordDecl *D = Result.Nodes.getNodeAs<CXXRecordDecl>("typeDecl")) {
 
+            // this removes the bodus double-match of "nested_records::S2::S2"
+            // for "struct nested_records::S2". it it not needed by us.
+            if (D->isInjectedClassName()) {
+                std::cerr << " -- skipping '"
+                          << D->getQualifiedNameAsString()
+                          << "' because its injected classname\n";
+                return;
+            }
+
+            // this prohibits adding "struct __locale_struct" to the database
+            // ust becuase it's declaration. if it is needed inside one of the
+            // registered structs, we'll hit fast and hit hard by adding it to
+            // the database.
+            if (!Result.SourceManager->isInMainFile(D->getLocation())) {
+                std::cerr << " -- skipping '"
+                          << D->getQualifiedNameAsString()
+                          << "' because its not in main header\n";
+                return;
+            }
+
             builder.registerNamedDecl(D);
 
         } else if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
