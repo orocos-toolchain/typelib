@@ -98,3 +98,44 @@ target_link_libraries(extractor
     typeLib
     )
 
+# for the time beeing, until all this is properly implemented into the
+# existinging testing "conventions" of this project (if i might be so bold to
+# call them so...) we need a way to easily and reproducibly test a set of
+# headers.
+#
+# create a dummy target which depends on all the single test-headers
+add_custom_target(create-test-header-tlb)
+add_custom_target(check-test-header-tlb)
+# then glob em
+file(GLOB TEST_HEADER_DATA "${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/*.h")
+# and create a custom target for the corresponding tlb-file created from these headers
+foreach(HEADER_FILE ${TEST_HEADER_DATA})
+    # we need the actual header-name
+    get_filename_component(HEADER_NAME ${HEADER_FILE} NAME_WE)
+    set(TLB_FILE "${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.tlb")
+    # call the "extractor" tool, give it the header and pipe stdout into the new tlb-file
+    add_custom_target(create-test-${HEADER_NAME}.tlb
+        # NOTE: gross hack to return always true, even if the extractor throwed
+        # or something! this should be removed in times...? might be that
+        # throwing is ok, for the negative test-cases for example...
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/extractor ${HEADER_FILE} -- -x c++ > ${TLB_FILE} || true
+        DEPENDS extractor
+        )
+    # add it to the dummy-target
+    add_dependencies(create-test-header-tlb create-test-${HEADER_NAME}.tlb)
+    #
+    # aaand compare the created tlb to the one stored in VCS. we assume that
+    # the ones checked in are "good" so we just look if they are the same...
+    # crude, but effective. so we can at least point to a header file if
+    # something in the tlb-creation changed -- in a good or bad way. if the
+    # change is good just place the new tlb-file besides the respective header
+    # in the VCS.
+    add_custom_target(compare-test-${HEADER_NAME}.tlb
+        COMMAND diff -u
+            ${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.tlb
+            ${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/${HEADER_NAME}.tlb
+        DEPENDS create-test-${HEADER_NAME}.tlb
+        )
+    # again, dependency on top-level dummy target
+    add_dependencies(check-test-header-tlb compare-test-${HEADER_NAME}.tlb)
+endforeach(HEADER_FILE)
