@@ -15,11 +15,11 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     //check if we allready know the type
     std::string typeName = "/" + decl->getQualifiedNameAsString();
     
-    std::cout << "New Type with qualified name " << typeName << std::endl;
+    std::cerr << "New Type with qualified name " << typeName << std::endl;
 
     typeName = cxxToTyplibName(typeName);
     
-    std::cout << "Typelib name " << typeName << std::endl;
+    std::cerr << "Typelib name " << typeName << std::endl;
     
     if(typeName.size() <= 1)
         return;
@@ -32,38 +32,38 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     const clang::Type *typeForDecl = decl->getTypeForDecl();
     if(!typeForDecl)
     {
-        std::cout << "TypeDecl " << decl->getNameAsString() << " has no type " << std::endl;
+        std::cerr << "TypeDecl " << decl->getNameAsString() << " has no type " << std::endl;
         return;
     }
 
     //check for structs that are only defined inside of functions
     if(decl->getParentFunctionOrMethod())
     {
-        std::cout << "Ignoring type " << typeName << " as it is defined inside a function" << std::endl;
+        std::cerr << "Ignoring type " << typeName << " as it is defined inside a function" << std::endl;
         return;
     }
     
     if(decl->isHidden())
     {
-        std::cout << "Ignoring hidden type " << typeName << std::endl;
+        std::cerr << "Ignoring hidden type " << typeName << std::endl;
         return;
     }
     
     
 //     if(typeForDecl->isCanonicalUnqualified())
 //     {
-//         std::cout << "Ignoring " << typeName << " as it is not canonical identifiable" << std::endl;
+//         std::cerr << "Ignoring " << typeName << " as it is not canonical identifiable" << std::endl;
 //         return;
 //     }
     
     if(decl->isInAnonymousNamespace())
     {
-        std::cout << "Ignoring " << typeName << " as it is in an anonymous namespace" << std::endl;
+        std::cerr << "Ignoring " << typeName << " as it is in an anonymous namespace" << std::endl;
         return;
     }
     
-//     std::cout << "TypeClassName " << typeForDecl->getTypeClassName() << std::endl;;
-//     std::cout << "DeclName " << decl->getNameAsString() << std::endl;;
+//     std::cerr << "TypeClassName " << typeForDecl->getTypeClassName() << std::endl;;
+//     std::cerr << "DeclName " << decl->getNameAsString() << std::endl;;
     
 
     
@@ -190,25 +190,25 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
     
     if(canonicalTypeName.find("anonymous") != std::string::npos)
     {
-        std::cout << "Ignoring anonymous type " << canonicalTypeName << std::endl;
+        std::cerr << "Ignoring anonymous type " << canonicalTypeName << std::endl;
         return false;
     }
     
     if(canonicalTypeName.find("&") != std::string::npos)
     {
-        std::cout << "Ignoring type with reference " << canonicalTypeName << std::endl;
+        std::cerr << "Ignoring type with reference " << canonicalTypeName << std::endl;
         return false;
     }
     
     if(canonicalTypeName.find("sizeof") != std::string::npos)
     {
-        std::cout << "Ignoring type with weired sizeof " << canonicalTypeName << std::endl;
+        std::cerr << "Ignoring type with weired sizeof " << canonicalTypeName << std::endl;
         return false;
     }
 
     if(canonicalTypeName.find("(") != std::string::npos)
     {
-        std::cout << "Ignoring type with function pointer " << canonicalTypeName << std::endl;
+        std::cerr << "Ignoring type with function pointer " << canonicalTypeName << std::endl;
         return false;
     }
     
@@ -236,7 +236,7 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
         }
             break;
 //         default:
-//             std::cout << "Found unknown type " << canonicalTypeName << std::endl;
+//             std::cerr << "Found unknown type " << canonicalTypeName << std::endl;
 //             break;
     }
     return true;
@@ -250,7 +250,7 @@ bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::
     for(clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin(); it != decl->enumerator_end(); it++)
     {
         enumVal->add(it->getDeclName().getAsString(), it->getInitVal().getSExtValue());
-        std::cout << "Enum CONST " << it->getDeclName().getAsString() << " Value " << it->getInitVal().getSExtValue() << std::endl;
+        std::cerr << "Enum CONST " << it->getDeclName().getAsString() << " Value " << it->getInitVal().getSExtValue() << std::endl;
     }
     
     registry.add(enumVal);
@@ -268,19 +268,19 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
 
     if(!decl->hasDefinition())
     {
-        std::cout << "Ignoring type " << canonicalTypeName << " as it has no definition " << std::endl;
+        std::cerr << "Ignoring type " << canonicalTypeName << " as it has no definition " << std::endl;
         return false;
     }
     
     if(decl->isPolymorphic() || decl->isAbstract())
     {
-        std::cout << "Ignoring Type " << canonicalTypeName << " as it is polymorphic" << std::endl;
+        std::cerr << "Ignoring Type " << canonicalTypeName << " as it is polymorphic" << std::endl;
         return false;
     }
     
     if(decl->isDependentType() || decl->isInvalidDecl())
     {
-        std::cout << "Ignoring Type " << canonicalTypeName << " as it is dependents / Invalid " << std::endl;
+        std::cerr << "Ignoring Type " << canonicalTypeName << " as it is dependents / Invalid " << std::endl;
         //ignore incomplete / forward declared types
         return false;
     }
@@ -310,11 +310,11 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
 
     if(compound->getFields().empty())
     {
-        std::cout << "Ignoring Type " << canonicalTypeName << " as it has no fields " << std::endl;
+        std::cerr << "Ignoring Type " << canonicalTypeName << " as it has no fields " << std::endl;
         return false;
     }
     
-    std::cout << "Registered Compound " << canonicalTypeName << std::endl;
+    std::cerr << "Registered Compound " << canonicalTypeName << std::endl;
 
     registry.add(compound);
     
@@ -332,7 +332,7 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
         
         if(fit->isAnonymousStructOrUnion())
         {
-            std::cout << "Warning, ignoring Record with Anonymous Struct or Union " << canonicalTypeName << std::endl;
+            std::cerr << "Warning, ignoring Record with Anonymous Struct or Union " << canonicalTypeName << std::endl;
             return false;
         }
         
@@ -344,19 +344,19 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
         std::string canonicalFieldTypeName = "/" + qualType.getAsString(p);
         
         
-//         std::cout << "Parent of " << canonicalFieldTypeName << " is " << fit->getParent()->getQualifiedNameAsString() << std::endl;
+//         std::cerr << "Parent of " << canonicalFieldTypeName << " is " << fit->getParent()->getQualifiedNameAsString() << std::endl;
 
         canonicalFieldTypeName = cxxToTyplibName(canonicalFieldTypeName);
 
         if(!registry.has(canonicalFieldTypeName))
         {
 //             fit->getDeclContext()->getDeclKind();
-            std::cout << "Found field with non registered Type " << canonicalFieldTypeName << " registering it" << std::endl;
+            std::cerr << "Found field with non registered Type " << canonicalFieldTypeName << " registering it" << std::endl;
             
             const clang::Type *type = qualType.getTypePtr();
             if(!registerType(canonicalFieldTypeName, type, decl->getASTContext()))
             {
-                std::cout << "Not regstering type " << canonicalTypeName << " as as field type " << canonicalFieldTypeName << " could not be registerd " << std::endl;
+                std::cerr << "Not regstering type " << canonicalTypeName << " as as field type " << canonicalFieldTypeName << " could not be registerd " << std::endl;
                 return false;
             }
         }
@@ -364,7 +364,7 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
         const Typelib::Type *typelibFieldType = registry.get(canonicalFieldTypeName);
         if(!typelibFieldType)
         {
-            std::cout << "Error, type of field is not known " << canonicalFieldTypeName << std::endl;
+            std::cerr << "Error, type of field is not known " << canonicalFieldTypeName << std::endl;
             return false;
         }
             
@@ -377,7 +377,7 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
 
 void TypelibBuilder::registerTypeDef(const clang::TypedefType* type)
 {
-    std::cout << "Found Typedef " << type->getDecl()->getQualifiedNameAsString() << " for Canonical Type "
+    std::cerr << "Found Typedef " << type->getDecl()->getQualifiedNameAsString() << " for Canonical Type "
     << clang::QualType::getAsString(type->getDecl()->getUnderlyingType().getCanonicalType().split()) << std::endl << std::endl;
     
     std::string typeDefName = type->getDecl()->getQualifiedNameAsString();
