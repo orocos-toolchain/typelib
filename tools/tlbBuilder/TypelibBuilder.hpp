@@ -49,6 +49,7 @@ private:
     bool addFieldsToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addEnum(const std::string& canonicalTypeName, const clang::EnumDecl* decl);
+    const Typelib::Type *checkRegisterType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
     
     typedef std::map<std::string, TemporaryType> TypeMap;
     std::map<std::string, TemporaryType> typeMap;

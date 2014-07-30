@@ -240,6 +240,28 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
 //             break;
     }
     return true;
+const Typelib::Type* TypelibBuilder::checkRegisterType(const std::string& canonicalTypeName, const clang::Type *type, clang::ASTContext& context)
+{
+    if(!registry.has(canonicalTypeName))
+    {
+        std::cerr << "Trying to register unknown Type " << canonicalTypeName << std::endl;
+        
+        if(!registerType(canonicalTypeName, type, context))
+        {
+            return NULL;
+        }
+    }
+    
+    const Typelib::Type *typelibType = registry.get(canonicalTypeName);
+
+    if(!typelibType)
+    {
+        std::cerr << "Internal error : Just registed Type " + canonicalTypeName +  " was not found in registry" << std::endl;
+//         throw std::runtime_error("Just registed Type " + canonicalTypeName +  " was not found in registry" );
+    }
+
+    return typelibType;
+}
     
 }
 
@@ -348,23 +370,10 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
 
         canonicalFieldTypeName = cxxToTyplibName(canonicalFieldTypeName);
 
-        if(!registry.has(canonicalFieldTypeName))
-        {
-//             fit->getDeclContext()->getDeclKind();
-            std::cerr << "Found field with non registered Type " << canonicalFieldTypeName << " registering it" << std::endl;
-            
-            const clang::Type *type = qualType.getTypePtr();
-            if(!registerType(canonicalFieldTypeName, type, decl->getASTContext()))
-            {
-                std::cerr << "Not regstering type " << canonicalTypeName << " as as field type " << canonicalFieldTypeName << " could not be registerd " << std::endl;
-                return false;
-            }
-        }
-        
-        const Typelib::Type *typelibFieldType = registry.get(canonicalFieldTypeName);
+        const Typelib::Type *typelibFieldType = checkRegisterType(canonicalFieldTypeName, qualType.getTypePtr(), decl->getASTContext());
         if(!typelibFieldType)
         {
-            std::cerr << "Error, type of field is not known " << canonicalFieldTypeName << std::endl;
+            std::cerr << "Not regstering type " << canonicalTypeName << " as as field type " << canonicalFieldTypeName << " could not be registerd " << std::endl;
             return false;
         }
             
