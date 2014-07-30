@@ -294,6 +294,12 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
         return false;
     }
     
+    if(decl->isInjectedClassName())
+    {
+        std::cerr << "Ignoring Type " << canonicalTypeName << " as it is injected" << std::endl;
+        return false;
+    }
+    
     if(decl->isPolymorphic() || decl->isAbstract())
     {
         std::cerr << "Ignoring Type " << canonicalTypeName << " as it is polymorphic" << std::endl;
