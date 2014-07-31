@@ -50,6 +50,15 @@ class TypeDefCallback : public MatchFinder::MatchCallback {
         const TypedefType *T = Result.Nodes.getNodeAs<TypedefType>("typeDef");
 
         if(T) {
+            
+            if (!Result.SourceManager->isInMainFile(T->getDecl()->getTypeSourceInfo()->getTypeLoc().getLocStart())) {
+            std::cerr << " -- skipping '"
+                        << T->getDecl()->getQualifiedNameAsString()
+                        << "' because its not in main header\n";
+                return;
+            }
+
+            
             builder.registerTypeDef(T);
         }
     }
@@ -89,6 +98,12 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
 
         } else if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
 
+            if (!Result.SourceManager->isInMainFile(D->getLocation())) {
+                std::cerr << " -- skipping '"
+                            << D->getQualifiedNameAsString()
+                            << "' because its not in main header\n";
+                return;
+            }
             builder.registerNamedDecl(D);
 
         }
