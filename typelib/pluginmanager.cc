@@ -99,7 +99,7 @@ bool PluginManager::loadPlugin(std::string const& path)
     void* libentry  = dlsym(libhandle, "registerPlugins");
     if (!libentry)
     {
-        cerr << "typelib: " << libentry << " does not seem to be a valid typelib plugin" << endl;
+        cerr << "typelib: '" << path << "' does not seem to be a valid typelib plugin" << endl;
         return false;
     }
 
