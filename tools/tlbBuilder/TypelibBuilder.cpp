@@ -444,16 +444,20 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
 
 void TypelibBuilder::registerTypeDef(const clang::TypedefType* type)
 {
-    std::cerr << "Found Typedef " << type->getDecl()->getQualifiedNameAsString() << " for Canonical Type "
-    << clang::QualType::getAsString(type->getDecl()->getUnderlyingType().getCanonicalType().split()) << std::endl << std::endl;
+//     std::cerr << "Found Typedef " << type->getDecl()->getQualifiedNameAsString() << " for Canonical Type "
+//     << clang::QualType::getAsString(type->getDecl()->getUnderlyingType().getCanonicalType().split()) << std::endl << std::endl;
     
-    std::string typeDefName = type->getDecl()->getQualifiedNameAsString();
-    std::string forCanonicalType = clang::QualType::getAsString(type->getDecl()->getUnderlyingType().getCanonicalType().split());
+    std::string typeDefName = cxxToTyplibName(type->getDecl()->getQualifiedNameAsString());
+    std::string forCanonicalType = getTypelibNameForQualType(type->getDecl()->getUnderlyingType().getCanonicalType());
+
+    if(!Typelib::isValidTypename(typeDefName, true))
+    {
+        std::cerr << "Warning, ignoring typedef for " << typeDefName << std::endl;
+        return;
+    }
     
-    ;
-    
-//     registry.alias(forCanonicalType, typeDefName);
-    
+    if(checkRegisterType(forCanonicalType, type->getDecl()->getUnderlyingType().getTypePtr(), type->getDecl()->getASTContext()))
+        registry.alias(forCanonicalType, typeDefName);    
 }
 
 void TypelibBuilder::buildRegistry()
