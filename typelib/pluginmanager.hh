@@ -23,7 +23,7 @@ namespace Typelib
     /** Exception thrown when an unknown plugin is found */
     struct PluginNotFound : std::runtime_error
     {
-        PluginNotFound() : std::runtime_error("plugin not found") { }
+        PluginNotFound(const std::string& name) : std::runtime_error("plugin '"+name+"' not found") { }
     };
 
     /** Generic error for problems during export */

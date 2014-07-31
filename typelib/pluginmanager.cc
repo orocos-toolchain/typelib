@@ -24,7 +24,7 @@ namespace
     {
         typename map<string, Object*>::const_iterator it = plugin_map.find(name);
         if (it == plugin_map.end())
-            throw PluginNotFound();
+            throw PluginNotFound(name);
         return it->second;
     }
 
