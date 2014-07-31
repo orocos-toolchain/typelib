@@ -240,9 +240,10 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
         {            
             return addArray(canonicalTypeName, type, context);
         }
-//         default:
-//             std::cerr << "Found unknown type " << canonicalTypeName << std::endl;
-//             break;
+        default:
+            std::cerr << "Trying to register '" << canonicalTypeName
+                      << "' with unhandled type '" << type->getTypeClassName() << "'\n";
+
     }
     return false;
     
