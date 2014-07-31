@@ -5,6 +5,13 @@
 
 namespace arrays {
 
+    // taken from "laser.h"
+    struct D1 {
+        int sec;
+        unsigned int usec;
+        double ranges[256];
+    };
+
     // simple array
     double A1[3];
 
