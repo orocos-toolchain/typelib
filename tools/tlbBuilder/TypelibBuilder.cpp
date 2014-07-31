@@ -7,6 +7,7 @@
 #include <iostream>
 #include <typelib/registry.hh>
 #include <typelib/typemodel.hh>
+#include <typelib/typename.hh>
 
 
 
@@ -15,11 +16,11 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     //check if we allready know the type
     std::string typeName = "/" + decl->getQualifiedNameAsString();
     
-    std::cerr << "New Type with qualified name " << typeName << std::endl;
+//     std::cerr << "New Type with qualified name " << typeName << std::endl;
 
     typeName = cxxToTyplibName(typeName);
     
-    std::cerr << "Typelib name " << typeName << std::endl;
+//     std::cerr << "Typelib name " << typeName << std::endl;
     
     if(typeName.size() <= 1)
         return;
@@ -49,23 +50,11 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
         return;
     }
     
-    
-//     if(typeForDecl->isCanonicalUnqualified())
-//     {
-//         std::cerr << "Ignoring " << typeName << " as it is not canonical identifiable" << std::endl;
-//         return;
-//     }
-    
     if(decl->isInAnonymousNamespace())
     {
         std::cerr << "Ignoring " << typeName << " as it is in an anonymous namespace" << std::endl;
         return;
-    }
-    
-//     std::cerr << "TypeClassName " << typeForDecl->getTypeClassName() << std::endl;;
-//     std::cerr << "DeclName " << decl->getNameAsString() << std::endl;;
-    
-
+    }    
     
     registerType(typeName, typeForDecl, decl->getASTContext());
 }
@@ -248,8 +237,7 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
         }
             break;
         case clang::Type::ConstantArray:
-        {
-            
+        {            
             return addArray(canonicalTypeName, type, context);
         }
 //         default:
@@ -271,12 +259,18 @@ const Typelib::Type* TypelibBuilder::checkRegisterType(const std::string& canoni
             return NULL;
         }
     }
+    else
+    {
+//         std::cerr << "registry claims to know " << canonicalTypeName << std::endl;
+    }
+    
     
     const Typelib::Type *typelibType = registry.get(canonicalTypeName);
 
     if(!typelibType)
     {
         std::cerr << "Internal error : Just registed Type " + canonicalTypeName +  " was not found in registry" << std::endl;
+        exit(0);
 //         throw std::runtime_error("Just registed Type " + canonicalTypeName +  " was not found in registry" );
     }
 
@@ -312,7 +306,7 @@ bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::
     for(clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin(); it != decl->enumerator_end(); it++)
     {
         enumVal->add(it->getDeclName().getAsString(), it->getInitVal().getSExtValue());
-        std::cerr << "Enum CONST " << it->getDeclName().getAsString() << " Value " << it->getInitVal().getSExtValue() << std::endl;
+//         std::cerr << "Enum CONST " << it->getDeclName().getAsString() << " Value " << it->getInitVal().getSExtValue() << std::endl;
     }
     
     registry.add(enumVal);
@@ -382,7 +376,7 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
         return false;
     }
     
-    std::cerr << "Registered Compound " << canonicalTypeName << std::endl;
+//     std::cerr << "Registered Compound " << canonicalTypeName << std::endl;
 
     registry.add(compound);
     
