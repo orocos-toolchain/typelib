@@ -27,6 +27,7 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Signals.h"
 #include "TypelibBuilder.hpp"
+#include "../../lang/tlb/export.hh"
 
 #include <iostream>
 // }}}
@@ -116,11 +117,16 @@ int main(int argc, const char **argv) {
 
   // optparsing {{{1
   llvm::sys::PrintStackTraceOnErrorSignal();
+  
+  static llvm::cl::opt<std::string> tlbPathOption("tlbPath");
+  
   CommonOptionsParser OptionsParser(argc, argv);
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
   // }}}
 
+  std::string savePath = tlbPathOption.getValue();
+  
   ast_matchers::MatchFinder Finder;
 
   TypeDeclCallback typeDeclCallback;
@@ -137,6 +143,12 @@ int main(int argc, const char **argv) {
 
   builder.getRegistry().dump(std::cout);
   
+  if(!savePath.empty())
+  {
+      std::cout << "Saving tlb into file " << savePath << std::endl;
+      TlbExport exporter;
+      exporter.save(savePath, utilmm::config_set(), builder.getRegistry());
+  }
   
   return 0;
   

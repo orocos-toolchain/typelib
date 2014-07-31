@@ -96,6 +96,7 @@ target_link_libraries(extractor
     ${TINFO_LIBRARIES}
     ${LIBDL_LIBRARIES}
     typeLib
+    typeLang_tlb
     )
 
 # for the time beeing, until all this is properly implemented into the
