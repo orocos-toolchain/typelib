@@ -284,7 +284,12 @@ namespace Typelib
     }
 
     Type& Registry::get_(Type const& type)
-    { return *get_(type.getName()); }
+    {
+        Type* pType = get_(type.getName());
+        if (!pType)
+            throw Undefined(type.getName());
+        return *pType;
+    }
 
     const Type* Registry::get(const std::string& name) const
     {
