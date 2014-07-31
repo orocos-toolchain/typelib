@@ -455,10 +455,4 @@ void TypelibBuilder::registerTypeDef(const clang::TypedefType* type)
         registry.alias(forCanonicalType, typeDefName);    
 }
 
-void TypelibBuilder::buildRegistry()
-{
-    registry.dump(std::cout);
-
-    
-}
 

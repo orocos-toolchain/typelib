@@ -134,8 +134,9 @@ int main(int argc, const char **argv) {
     std::cerr << "whoops\n";
     return retval;
   }
+
+  builder.getRegistry().dump(std::cout);
   
-  builder.buildRegistry();
   
   return 0;
   
