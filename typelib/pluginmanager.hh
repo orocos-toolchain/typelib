@@ -51,6 +51,7 @@ namespace Typelib
         std::map<std::string, ImportPlugin*> m_importers;
         std::vector<TypeDefinitionPlugin*> m_definition_plugins;
         std::vector<void*> m_library_handles;
+        bool loadPluginFromDirectory(std::string const& directory);
         bool loadPlugin(std::string const& path);
 
         typedef void (*PluginEntryPoint)(PluginManager&);

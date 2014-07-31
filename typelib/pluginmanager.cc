@@ -39,20 +39,9 @@ namespace
 
 PluginManager::PluginManager()
 {
-    // Load plugins from standard path
-    if (! exists(TYPELIB_PLUGIN_PATH))
-        return;
-    path plugin_dir(TYPELIB_PLUGIN_PATH);
-
-    directory_iterator end_it;
-    for (directory_iterator it(plugin_dir); it != end_it; ++it)
-    {
-        if (it->path().extension() == ".so" || it->path().extension() == ".dylib")
-#if BOOST_VERSION >= 104600
-            loadPlugin(it->path().string());
-#else
-            loadPlugin(it->path().file_string());
-#endif
+    // Load plugins from compiled-in path
+    if (exists(TYPELIB_PLUGIN_PATH)) {
+        loadPluginFromDirectory(TYPELIB_PLUGIN_PATH);
     }
 }
 
@@ -66,6 +55,36 @@ PluginManager::~PluginManager()
     m_definition_plugins.clear();
     //for (vector<void*>::iterator it = m_library_handles.begin(); it != m_library_handles.end(); ++it)
     //    dlclose(*it);
+}
+
+   /**
+    * uses "loadPlugin" to try to load all "*.so" or "*.dylib" files in the
+    * given directory
+    *
+    * @param directory place to look for "*.so" or "*.dylib" dynamic libraries
+    * @return true if any plugin could be loaded, false if no plugin could be
+    *         loaded (and prints a warning)
+    */
+bool PluginManager::loadPluginFromDirectory(std::string const& directory)
+{
+    path plugin_dir(directory);
+    bool success = false;
+
+    directory_iterator end_it;
+    for (directory_iterator it(plugin_dir); it != end_it; ++it)
+    {
+        if (it->path().extension() == ".so" || it->path().extension() == ".dylib")
+#if BOOST_VERSION >= 104600
+            success |= loadPlugin(it->path().string());
+#else
+            success |= loadPlugin(it->path().file_string());
+#endif
+    }
+
+    if (!success)
+        std::cerr << "typelib: can't load a plugin from directory '" << directory << "'" << endl;
+
+    return success;
 }
 
 bool PluginManager::loadPlugin(std::string const& path)
