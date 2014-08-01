@@ -1,10 +1,21 @@
-Types in registry
-compound /arrays/D1 [16448] {
-  (+0) sint(32)
-  (+32) uint(32)
-  (+64) array[256] of
-    float(64)
-};
-float(64)
-sint(32)
-uint(32)
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/double" category="float" size="8" >
+  </numeric>
+  <numeric name="/int" category="sint" size="4" >
+  </numeric>
+  <numeric name="/unsigned int" category="uint" size="4" >
+  </numeric>
+  <compound name="/arrays/D1" size="2056" >
+    <field name="sec" type="/int" offset="0">
+
+    </field>
+    <field name="usec" type="/unsigned int" offset="4">
+
+    </field>
+    <field name="ranges" type="/double[256]" offset="8">
+
+    </field>
+
+  </compound>
+</typelib>

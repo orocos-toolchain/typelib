@@ -1,2 +1,5 @@
-Types in registry
-sint(32)
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/int" category="sint" size="4" >
+  </numeric>
+</typelib>

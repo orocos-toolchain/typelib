@@ -1,32 +1,54 @@
-Types in registry
-compound /Compound [384] {
-  (+0) sint(32)
-  (+32) sint(16)
-  (+48) sint(8)
-  (+64) array[10] of
-    sint(32)
-};
-compound /CompoundInCompound [3840] {
-  (+0) array[10] of
-    compound /Compound [384] {
-      (+0) sint(32)
-      (+32) sint(16)
-      (+48) sint(8)
-      (+64) array[10] of
-        sint(32)
-    };
-};
-compound /NS1/NS1_1/Test [48] {
-  (+0) sint(32)
-  (+32) sint(16)
-};
-compound /NS1/Test [48] {
-  (+0) compound /NS1/NS1_1/Test [48] {
-    (+0) sint(32)
-    (+32) sint(16)
-  };
-};
-enum /TestEnum
-sint(8)
-sint(32)
-sint(16)
+<?xml version="1.0"?>
+<typelib>
+  <enum name="/TestEnum" >
+    <value symbol="A" value="0"/>
+    <value symbol="B" value="1"/>
+    <value symbol="C" value="2"/>
+
+  </enum>
+  <numeric name="/char" category="sint" size="1" >
+  </numeric>
+  <numeric name="/int" category="sint" size="4" >
+  </numeric>
+  <numeric name="/short" category="sint" size="2" >
+  </numeric>
+  <compound name="/Compound" size="48" >
+    <field name="a" type="/int" offset="0">
+
+    </field>
+    <field name="b" type="/short" offset="4">
+
+    </field>
+    <field name="c" type="/char" offset="6">
+
+    </field>
+    <field name="array" type="/int[10]" offset="8">
+
+    </field>
+
+  </compound>
+  <alias name="/EnumAlias" source="/TestEnum"/>
+  <compound name="/CompoundInCompound" size="480" >
+    <field name="test" type="/Compound[10]" offset="0">
+
+    </field>
+
+  </compound>
+  <alias name="/OtherEnum" source="/TestEnum"/>
+  <compound name="/NS1/NS1_1/Test" size="8" >
+    <field name="a" type="/int" offset="0">
+
+    </field>
+    <field name="b" type="/short" offset="4">
+
+    </field>
+
+  </compound>
+  <alias name="/NS1/NS1_2/Test" source="/NS1/NS1_1/Test"/>
+  <compound name="/NS1/Test" size="8" >
+    <field name="test2" type="/NS1/NS1_1/Test" offset="0">
+
+    </field>
+
+  </compound>
+</typelib>

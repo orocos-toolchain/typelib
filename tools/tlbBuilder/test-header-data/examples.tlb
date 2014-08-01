@@ -1,7 +1,11 @@
-Types in registry
-compound /examples/MultiArrayStruct [128] {
-  (+0) array[2] of
-    array[2] of
-      sint(32)
-};
-sint(32)
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/int" category="sint" size="4" >
+  </numeric>
+  <compound name="/examples/MultiArrayStruct" size="16" >
+    <field name="array" type="/int[2][2]" offset="0">
+
+    </field>
+
+  </compound>
+</typelib>

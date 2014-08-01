@@ -1,25 +1,42 @@
-Types in registry
-sint(32)
-sint(64)
-compound /nested_records/S1 [64] {
-  (+0) sint(32)
-  (+32) uint(32)
-};
-compound /nested_records/S2 [96] {
-  (+0) sint(32)
-  (+32) compound /nested_records/S1 [64] {
-    (+0) sint(32)
-    (+32) uint(32)
-  };
-};
-compound /nested_records/S3 [128] {
-  (+0) compound /timespec [128] {
-    (+0) sint(64)
-    (+64) sint(64)
-  };
-};
-compound /timespec [128] {
-  (+0) sint(64)
-  (+64) sint(64)
-};
-uint(32)
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/int" category="sint" size="4" >
+  </numeric>
+  <numeric name="/long" category="sint" size="8" >
+  </numeric>
+  <numeric name="/unsigned int" category="uint" size="4" >
+  </numeric>
+  <compound name="/timespec" size="16" >
+    <field name="tv_sec" type="/long" offset="0">
+
+    </field>
+    <field name="tv_nsec" type="/long" offset="8">
+
+    </field>
+
+  </compound>
+  <compound name="/nested_records/S1" size="8" >
+    <field name="a" type="/int" offset="0">
+
+    </field>
+    <field name="b" type="/unsigned int" offset="4">
+
+    </field>
+
+  </compound>
+  <compound name="/nested_records/S3" size="16" >
+    <field name="t" type="/timespec" offset="0">
+
+    </field>
+
+  </compound>
+  <compound name="/nested_records/S2" size="12" >
+    <field name="m" type="/int" offset="0">
+
+    </field>
+    <field name="n" type="/nested_records/S1" offset="4">
+
+    </field>
+
+  </compound>
+</typelib>

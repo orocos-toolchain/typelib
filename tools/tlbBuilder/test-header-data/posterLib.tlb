@@ -1,2 +1,8 @@
-Types in registry
-enum /H2_ENDIANNESS
+<?xml version="1.0"?>
+<typelib>
+  <enum name="/H2_ENDIANNESS" >
+    <value symbol="H2_BIG_ENDIAN" value="0"/>
+    <value symbol="H2_LITTLE_ENDIAN" value="1"/>
+
+  </enum>
+</typelib>

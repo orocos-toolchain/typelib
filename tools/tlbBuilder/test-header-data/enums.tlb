@@ -1,15 +1,41 @@
-Types in registry
-enum /enums/E1
-enum /enums/E2
-/enums/E2_t is an alias for /enums/E2
-compound /enums/S1 [36] {
-  (+0) sint(32)
-  (+32) enum /enums/E1
-};
-compound /enums/S2 [4] {
-  (+0) enum /enums/E2
-};
-compound /enums/S3 [4] {
-  (+0) enum /enums/E2
-};
-sint(32)
+<?xml version="1.0"?>
+<typelib>
+  <enum name="/enums/E1" >
+    <value symbol="E1_VAL1" value="42"/>
+    <value symbol="E1_VAL2" value="43"/>
+    <value symbol="E1_VAL3" value="44"/>
+    <value symbol="E1_VAL4" value="45"/>
+
+  </enum>
+  <enum name="/enums/E2" >
+    <value symbol="E2_VAL1" value="0"/>
+    <value symbol="E2_VAL2" value="1"/>
+    <value symbol="E2_VAL3" value="2"/>
+    <value symbol="E2_VAL4" value="3"/>
+
+  </enum>
+  <alias name="/enums/E2_t" source="/enums/E2"/>
+  <compound name="/enums/S2" size="4" >
+    <field name="A" type="/enums/E2" offset="0">
+
+    </field>
+
+  </compound>
+  <compound name="/enums/S3" size="4" >
+    <field name="A" type="/enums/E2" offset="0">
+
+    </field>
+
+  </compound>
+  <numeric name="/int" category="sint" size="4" >
+  </numeric>
+  <compound name="/enums/S1" size="8" >
+    <field name="A" type="/int" offset="0">
+
+    </field>
+    <field name="B" type="/enums/E1" offset="4">
+
+    </field>
+
+  </compound>
+</typelib>

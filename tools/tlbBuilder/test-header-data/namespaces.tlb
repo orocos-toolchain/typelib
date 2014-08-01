@@ -1,9 +1,21 @@
-Types in registry
-compound /N1/N2/S1 [136] {
-  (+0) sint(32)
-  (+64) float(64)
-  (+128) sint(8)
-};
-sint(8)
-float(64)
-sint(32)
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/char" category="sint" size="1" >
+  </numeric>
+  <numeric name="/double" category="float" size="8" >
+  </numeric>
+  <numeric name="/int" category="sint" size="4" >
+  </numeric>
+  <compound name="/N1/N2/S1" size="24" >
+    <field name="A" type="/int" offset="0">
+
+    </field>
+    <field name="B" type="/double" offset="8">
+
+    </field>
+    <field name="C" type="/char" offset="16">
+
+    </field>
+
+  </compound>
+</typelib>
