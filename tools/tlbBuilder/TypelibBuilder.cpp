@@ -363,14 +363,6 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     Typelib::Compound *compound = new Typelib::Compound(canonicalTypeName);
     
     size_t typeSize = typeLayout.getSize().getQuantity();
-    if(typeSize % 8 != 0)
-    {
-        std::cout << "Warning, can not register record which has no Byte aligned size " << canonicalTypeName << std::endl;
-        return false;
-    }
-    
-    typeSize /= 8;
-    
     compound->setSize(typeSize);
 
     for(clang::CXXRecordDecl::base_class_const_iterator it = decl->bases_begin(); it != decl->bases_end(); it++)
