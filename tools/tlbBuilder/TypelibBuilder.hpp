@@ -17,12 +17,14 @@ class ConstantArrayType;
 class Type;
 class ASTContext;
 class QualType;
+class TypedefNameDecl;
 }
 class TypelibBuilder
 {
 public:
     bool registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
     void registerTypeDef(const clang::TypedefType *type);
+    void registerTypeDef(const clang::TypedefNameDecl *decl);
     void registerNamedDecl(const clang::TypeDecl *decl);
     std::string cxxToTyplibName(const std::string name);
     bool isConstant(const std::string name, size_t pos);

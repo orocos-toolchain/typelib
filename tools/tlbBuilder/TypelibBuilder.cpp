@@ -30,6 +30,11 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
         return;
 
 
+    if(decl->getKind() == clang::Decl::Typedef)
+    {
+        registerTypeDef(static_cast<const clang::TypedefDecl *>(decl));
+        return;
+    }
     
     const clang::Type *typeForDecl = decl->getTypeForDecl();
     if(!typeForDecl)
@@ -458,14 +463,13 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
     return true;
 }
 
-
-void TypelibBuilder::registerTypeDef(const clang::TypedefType* type)
+void TypelibBuilder::registerTypeDef(const clang::TypedefNameDecl* decl)
 {
-//     std::cerr << "Found Typedef " << type->getDecl()->getQualifiedNameAsString() << " for Canonical Type "
-//     << clang::QualType::getAsString(type->getDecl()->getUnderlyingType().getCanonicalType().split()) << std::endl << std::endl;
+    std::cerr << "Found Typedef " << decl->getQualifiedNameAsString() << " for Canonical Type "
+    << clang::QualType::getAsString(decl->getUnderlyingType().getCanonicalType().split()) << std::endl << std::endl;
     
-    std::string typeDefName = cxxToTyplibName(type->getDecl()->getQualifiedNameAsString());
-    std::string forCanonicalType = getTypelibNameForQualType(type->getDecl()->getUnderlyingType().getCanonicalType());
+    std::string typeDefName = cxxToTyplibName(decl->getQualifiedNameAsString());
+    std::string forCanonicalType = getTypelibNameForQualType(decl->getUnderlyingType().getCanonicalType());
 
     if(!Typelib::isValidTypename(typeDefName, true))
     {
@@ -473,8 +477,14 @@ void TypelibBuilder::registerTypeDef(const clang::TypedefType* type)
         return;
     }
     
-    if(checkRegisterType(forCanonicalType, type->getDecl()->getUnderlyingType().getTypePtr(), type->getDecl()->getASTContext()))
+    if(checkRegisterType(forCanonicalType, decl->getUnderlyingType().getTypePtr(), decl->getASTContext()))
         registry.alias(forCanonicalType, typeDefName);    
+}
+
+
+void TypelibBuilder::registerTypeDef(const clang::TypedefType* type)
+{
+    registerTypeDef(type->getDecl());
 }
 
 bool TypelibBuilder::loadRegistry(const std::string& filename)
