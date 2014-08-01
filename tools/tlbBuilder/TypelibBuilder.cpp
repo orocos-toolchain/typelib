@@ -199,6 +199,21 @@ std::string TypelibBuilder::cxxToTyplibName(const std::string name)
     return ret;
 }
 
+std::string TypelibBuilder::typlibtoCxxName(const std::string name)
+{
+    std::string ret(name);
+    
+    std::string from("/");
+    std::string to("::");
+    
+    for (size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
+    {
+        ret.replace(start_pos, from.length(), to);
+    }
+    
+
+    return ret;
+}
 
 bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context)
 {
