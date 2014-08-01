@@ -39,8 +39,24 @@ namespace
 
 PluginManager::PluginManager()
 {
-    // Load plugins from compiled-in path
-    if (exists(TYPELIB_HARDCODED_PLUGIN_PATH)) {
+    // use the environment variable to override the load-path
+    if (const char* pluginPath = getenv("TYPELIB_PLUGIN_PATH")) {
+        // the delimiter inside the env-var
+        const std::string delim(":");
+        // make a copy of the env-var, which we can modify
+        std::string s(pluginPath);
+        // pos of delim for initial loop
+        size_t pos = s.find(delim);
+        do {
+            // use matched substr to lookup plugins in the directory
+            loadPluginFromDirectory(s.substr(0,pos));
+            // and remote the matched substr from the stored copy
+            s.erase(0, pos + delim.length());
+        // do all this until we reach the end of the stored copy
+        } while ((pos = s.find(delim)) != std::string::npos);
+    }
+    // fall back to load plugins from compiled-in path
+    else if (exists(TYPELIB_HARDCODED_PLUGIN_PATH)) {
         loadPluginFromDirectory(TYPELIB_HARDCODED_PLUGIN_PATH);
     }
 }
