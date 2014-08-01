@@ -69,21 +69,29 @@ bool TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const
         return true;
     
     Typelib::Numeric *newNumeric = 0;
+    size_t typeSize = context.getTypeSize(builtin->desugar());
+    if(typeSize % 8 != 0)
+    {
+        std::cout << "Warning, can not register type which is not Byte Aligned " << canonicalTypeName << std::endl;
+        return false;
+    }
+    
+    typeSize /= 8;
     
     if(builtin->isFloatingPoint())
     {
-        newNumeric = new Typelib::Numeric(typeName, context.getTypeSize(builtin->desugar()), Typelib::Numeric::Float);
+        newNumeric = new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::Float);
     }
     
     if(builtin->isInteger())
     {
         if(builtin->isSignedInteger())
         {
-            newNumeric =new Typelib::Numeric(typeName, context.getTypeSize(builtin->desugar()), Typelib::Numeric::SInt);
+            newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::SInt);
         }
         else
         {
-            newNumeric =new Typelib::Numeric(typeName, context.getTypeSize(builtin->desugar()), Typelib::Numeric::UInt);
+            newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::UInt);
         }
     }
     
@@ -353,7 +361,17 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
 
     
     Typelib::Compound *compound = new Typelib::Compound(canonicalTypeName);
-    compound->setSize(typeLayout.getSize().getQuantity());
+    
+    size_t typeSize = typeLayout.getSize().getQuantity();
+    if(typeSize % 8 != 0)
+    {
+        std::cout << "Warning, can not register record which has no Byte aligned size " << canonicalTypeName << std::endl;
+        return false;
+    }
+    
+    typeSize /= 8;
+    
+    compound->setSize(typeSize);
 
     for(clang::CXXRecordDecl::base_class_const_iterator it = decl->bases_begin(); it != decl->bases_end(); it++)
     {
@@ -430,8 +448,19 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
             std::cerr << "Not regstering type " << canonicalTypeName << " as as field type " << canonicalFieldTypeName << " could not be registerd " << std::endl;
             return false;
         }
-            
-        compound.addField(fit->getNameAsString(), *typelibFieldType, typeLayout.getFieldOffset(fit->getFieldIndex()));
+
+        size_t fieldOffset = typeLayout.getFieldOffset(fit->getFieldIndex());
+        
+        if(fieldOffset % 8 != 0)
+        {
+            std::cout << "Warning, can not register field were the offset is not Byte Aligned " << canonicalFieldTypeName << std::endl;
+            return false;
+        }
+        
+        fieldOffset /= 8;
+
+        
+        compound.addField(fit->getNameAsString(), *typelibFieldType, fieldOffset);
     }
     
     return true;
