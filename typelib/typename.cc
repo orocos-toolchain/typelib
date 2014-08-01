@@ -9,7 +9,6 @@ using namespace Typelib;
 namespace
 {
     typedef std::string::value_type   NamespaceMarkType;
-    static const NamespaceMarkType    NamespaceMark = '/';
     static const char*                NamespaceMarkString = "/";
 
     struct NameSeparator : public char_separator<NamespaceMarkType>

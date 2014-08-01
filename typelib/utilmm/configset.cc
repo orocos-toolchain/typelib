@@ -65,7 +65,7 @@ void config_set::insert(std::string const& name, std::string const& value)
 { m_values.insert( make_pair(name, value) ); }
 void config_set::insert(std::string const& name, std::list<std::string> const& value)
 { 
-    list<string>::const_iterator it, end = value.end();
+    list<string>::const_iterator it;
     for (it = value.begin(); it != value.end(); ++it)
         insert(name, *it);
 }
