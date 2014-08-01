@@ -1,0 +1,99 @@
+Types in registry
+compound /Eigen/DenseStorage</float,12,3,4,0> [384] {
+  (+0) compound /Eigen/internal/plain_array</float,12,0,16> [384] {
+    (+0) array[12] of
+      float(32)
+  };
+};
+compound /Eigen/DenseStorage</float,3,3,1,0> [96] {
+  (+0) compound /Eigen/internal/plain_array</float,3,0,0> [96] {
+    (+0) array[3] of
+      float(32)
+  };
+};
+compound /Eigen/DenseStorage</float,4,4,1,0> [128] {
+  (+0) compound /Eigen/internal/plain_array</float,4,0,16> [128] {
+    (+0) array[4] of
+      float(32)
+  };
+};
+compound /Eigen/Matrix</float,3,1,0,3,1> [96] {
+  (+0) compound /Eigen/DenseStorage</float,3,3,1,0> [96] {
+    (+0) compound /Eigen/internal/plain_array</float,3,0,0> [96] {
+      (+0) array[3] of
+        float(32)
+    };
+  };
+};
+compound /Eigen/Matrix</float,3,4,0,3,4> [384] {
+  (+0) compound /Eigen/DenseStorage</float,12,3,4,0> [384] {
+    (+0) compound /Eigen/internal/plain_array</float,12,0,16> [384] {
+      (+0) array[12] of
+        float(32)
+    };
+  };
+};
+compound /Eigen/Matrix</float,4,1,0,4,1> [128] {
+  (+0) compound /Eigen/DenseStorage</float,4,4,1,0> [128] {
+    (+0) compound /Eigen/internal/plain_array</float,4,0,16> [128] {
+      (+0) array[4] of
+        float(32)
+    };
+  };
+};
+compound /Eigen/Quaternion</float,0> [128] {
+  (+0) compound /Eigen/Matrix</float,4,1,0,4,1> [128] {
+    (+0) compound /Eigen/DenseStorage</float,4,4,1,0> [128] {
+      (+0) compound /Eigen/internal/plain_array</float,4,0,16> [128] {
+        (+0) array[4] of
+          float(32)
+      };
+    };
+  };
+};
+compound /Eigen/internal/plain_array</float,12,0,16> [384] {
+  (+0) array[12] of
+    float(32)
+};
+compound /Eigen/internal/plain_array</float,3,0,0> [96] {
+  (+0) array[3] of
+    float(32)
+};
+compound /Eigen/internal/plain_array</float,4,0,16> [128] {
+  (+0) array[4] of
+    float(32)
+};
+float(32)
+compound /templates/eigen/S1 [384] {
+  (+0) compound /Eigen/Matrix</float,3,4,0,3,4> [384] {
+    (+0) compound /Eigen/DenseStorage</float,12,3,4,0> [384] {
+      (+0) compound /Eigen/internal/plain_array</float,12,0,16> [384] {
+        (+0) array[12] of
+          float(32)
+      };
+    };
+  };
+};
+compound /templates/eigen/S2 [96] {
+  (+0) compound /Eigen/Matrix</float,3,1,0,3,1> [96] {
+    (+0) compound /Eigen/DenseStorage</float,3,3,1,0> [96] {
+      (+0) compound /Eigen/internal/plain_array</float,3,0,0> [96] {
+        (+0) array[3] of
+          float(32)
+      };
+    };
+  };
+};
+compound /templates/eigen/S3 [128] {
+  (+0) compound /Eigen/Quaternion</float,0> [128] {
+    (+0) compound /Eigen/Matrix</float,4,1,0,4,1> [128] {
+      (+0) compound /Eigen/DenseStorage</float,4,4,1,0> [128] {
+        (+0) compound /Eigen/internal/plain_array</float,4,0,16> [128] {
+          (+0) array[4] of
+            float(32)
+        };
+      };
+    };
+  };
+};
+/templates/eigen/aMatrix is an alias for /Eigen/Matrix</float,3,4,0,3,4>

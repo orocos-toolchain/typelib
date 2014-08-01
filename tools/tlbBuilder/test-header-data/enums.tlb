@@ -1,6 +1,7 @@
 Types in registry
 enum /enums/E1
 enum /enums/E2
+/enums/E2_t is an alias for /enums/E2
 compound /enums/S1 [36] {
   (+0) sint(32)
   (+32) enum /enums/E1

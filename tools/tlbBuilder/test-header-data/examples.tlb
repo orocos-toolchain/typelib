@@ -1,1 +1,7 @@
 Types in registry
+compound /examples/MultiArrayStruct [128] {
+  (+0) array[2] of
+    array[2] of
+      sint(32)
+};
+sint(32)

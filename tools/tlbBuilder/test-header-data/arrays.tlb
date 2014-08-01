@@ -1,3 +1,10 @@
 Types in registry
+compound /arrays/D1 [16448] {
+  (+0) sint(32)
+  (+32) uint(32)
+  (+64) array[256] of
+    float(64)
+};
+float(64)
 sint(32)
 uint(32)

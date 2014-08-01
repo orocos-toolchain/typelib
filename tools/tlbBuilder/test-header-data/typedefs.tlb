@@ -3,6 +3,9 @@ sint(32)
 compound /ns/aClass [32] {
   (+0) sint(32)
 };
+/ns/aClassTypedef is an alias for /ns/aClass
+/ns/intTypedef is an alias for /int
+/ns/intTypedefTypedef is an alias for /int
 compound /ns/test [128] {
   (+0) uint(8)
   (+32) compound /ns/aClass [32] {
