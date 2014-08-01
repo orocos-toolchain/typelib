@@ -31,6 +31,7 @@ public:
     bool isConstant(const std::string name, size_t pos);
     bool registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
     
+    void lookupOpaque(const clang::TypeDecl *decl);
     bool loadRegistry(const std::string &filename);
     
     const Typelib::Registry &getRegistry()

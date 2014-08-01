@@ -65,6 +65,42 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     registerType(typeName, typeForDecl, decl->getASTContext());
 }
 
+void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
+{
+    std::cout << "Qualified Name " << decl->getQualifiedNameAsString() << std::endl;
+
+    std::string opaqueName = cxxToTyplibName(decl->getQualifiedNameAsString());
+    std::string canoniclaOpaqueName;
+    
+    if(decl->getKind() == clang::Decl::Typedef)
+    {
+        const clang::TypedefDecl *typeDefDecl = static_cast<const clang::TypedefDecl *>(decl);
+        canoniclaOpaqueName = getTypelibNameForQualType(typeDefDecl->getUnderlyingType().getCanonicalType());
+    }
+    else
+    {
+        if(!decl->getTypeForDecl())
+        {
+            std::cout << "Error, could not get Type for Opaque Declaration" << decl->getQualifiedNameAsString() << std::endl;
+            exit(0);
+        }
+        
+        canoniclaOpaqueName = getTypelibNameForQualType(decl->getTypeForDecl()->getCanonicalTypeInternal());
+        
+    }
+        
+    std::cout << "Opaque name is " << opaqueName << " canonicalName is " << canoniclaOpaqueName << std::endl;
+    
+    if(opaqueName != canoniclaOpaqueName)
+    {
+        //as we want to resolve opaques by their canonical name
+        //we need to register an alias from the canonical name 
+        //to the opaque name.
+        registry.alias(opaqueName, canoniclaOpaqueName);
+    }
+}
+
+
 bool TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context)
 {
     
