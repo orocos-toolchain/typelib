@@ -28,6 +28,8 @@ public:
     bool isConstant(const std::string name, size_t pos);
     bool registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
     
+    bool loadRegistry(const std::string &filename);
+    
     const Typelib::Registry &getRegistry()
     {
         return registry;

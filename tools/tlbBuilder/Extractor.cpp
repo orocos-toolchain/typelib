@@ -115,40 +115,50 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
 
 int main(int argc, const char **argv) {
 
-  // optparsing {{{1
-  llvm::sys::PrintStackTraceOnErrorSignal();
-  
-  static llvm::cl::opt<std::string> tlbPathOption("tlbPath");
-  
-  CommonOptionsParser OptionsParser(argc, argv);
-  ClangTool Tool(OptionsParser.getCompilations(),
-                 OptionsParser.getSourcePathList());
-  // }}}
+    // optparsing {{{1
+    llvm::sys::PrintStackTraceOnErrorSignal();
+    
+    static llvm::cl::opt<std::string> tlbLoadPathOption("tlbLoadPath");
+    static llvm::cl::opt<std::string> tlbSavePathOption("tlbSavePath");
+    
+    CommonOptionsParser OptionsParser(argc, argv);
+    ClangTool Tool(OptionsParser.getCompilations(),
+                    OptionsParser.getSourcePathList());
+    // }}}
 
-  ast_matchers::MatchFinder Finder;
+    std::string loadPath = tlbLoadPathOption.getValue();
 
-  TypeDeclCallback typeDeclCallback;
-  internal::VariadicDynCastAllOfMatcher<Decl, TypeDecl> typeDecl;
-  Finder.addMatcher(typeDecl().bind("typeDecl"), &typeDeclCallback);
+    //load initial registry
+    if(!loadPath.empty())
+    {
+        std::cout << "Loaded tlb registry" << std::endl;
+        builder.loadRegistry(loadPath);
+    }
+  
+    ast_matchers::MatchFinder Finder;
 
-  TypeDefCallback typeDefCallback;
-  Finder.addMatcher(typedefType().bind("typeDef"), &typeDefCallback);
-  
-  if (int retval = Tool.run(newFrontendActionFactory(&Finder))) {
-    std::cerr << "Parsing error in clang, cannot continue" << std::endl;
-    return retval;
-  }
+    TypeDeclCallback typeDeclCallback;
+    internal::VariadicDynCastAllOfMatcher<Decl, TypeDecl> typeDecl;
+    Finder.addMatcher(typeDecl().bind("typeDecl"), &typeDeclCallback);
 
-  builder.getRegistry().dump(std::cout);
-  
-  std::string savePath = tlbPathOption.getValue();
-  if(!savePath.empty())
-  {
-      std::cerr << "Saving tlb into file " << savePath << std::endl;
-      TlbExport exporter;
-      exporter.save(savePath, utilmm::config_set(), builder.getRegistry());
-  }
-  
-  return 0;
+        TypeDefCallback typeDefCallback;
+    Finder.addMatcher(typedefType().bind("typeDef"), &typeDefCallback);
+    
+    if (int retval = Tool.run(newFrontendActionFactory(&Finder))) {
+        std::cerr << "Parsing error in clang, cannot continue" << std::endl;
+        return retval;
+    }
+
+    builder.getRegistry().dump(std::cout);
+    
+    std::string savePath = tlbSavePathOption.getValue();
+    if(!savePath.empty())
+    {
+        std::cout << "Saving tlb into file " << savePath << std::endl;
+        TlbExport exporter;
+        exporter.save(savePath, utilmm::config_set(), builder.getRegistry());
+    }
+    
+    return 0;
   
 }

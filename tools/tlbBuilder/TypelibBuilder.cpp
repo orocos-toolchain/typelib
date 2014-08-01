@@ -8,6 +8,7 @@
 #include <typelib/registry.hh>
 #include <typelib/typemodel.hh>
 #include <typelib/typename.hh>
+#include <lang/tlb/import.hh>
 
 
 
@@ -453,6 +454,13 @@ void TypelibBuilder::registerTypeDef(const clang::TypedefType* type)
     
     if(checkRegisterType(forCanonicalType, type->getDecl()->getUnderlyingType().getTypePtr(), type->getDecl()->getASTContext()))
         registry.alias(forCanonicalType, typeDefName);    
+}
+
+bool TypelibBuilder::loadRegistry(const std::string& filename)
+{
+    TlbImport importer;
+    importer.load(filename, utilmm::config_set(), registry);
+    return true;
 }
 
 
