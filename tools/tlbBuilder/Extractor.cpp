@@ -64,6 +64,27 @@ class TypeDefCallback : public MatchFinder::MatchCallback {
         }
     }
 };
+
+class OpaqueCallback : public MatchFinder::MatchCallback {
+    public:
+
+    virtual void run(const MatchFinder::MatchResult &Result) {
+
+        std::cout << "Found my Opaque" << std::endl;
+        
+   
+        if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
+
+            builder.lookupOpaque(D);
+            
+        }
+        else
+        {
+            std::cout << "WEIRED" << std::endl;
+            exit(1);
+        }
+    }
+};
     
 class TypeDeclCallback : public MatchFinder::MatchCallback {
     public:
@@ -134,7 +155,24 @@ int main(int argc, const char **argv) {
         std::cout << "Loaded tlb registry" << std::endl;
         builder.loadRegistry(loadPath);
     }
-  
+
+    ast_matchers::MatchFinder OpaqueFinder;
+    internal::VariadicDynCastAllOfMatcher<Decl, TypeDecl> oTypeDecl;
+    OpaqueCallback opaqueCallback;
+
+    for(Typelib::Registry::Iterator it = builder.getRegistry().begin(); it != builder.getRegistry().end(); it++)
+    {
+        if(it->getCategory() == Typelib::Type::Opaque)
+        {
+            OpaqueFinder.addMatcher(oTypeDecl(hasName(builder.typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
+        }
+    }
+
+    OpaqueFinder.addMatcher(oTypeDecl(hasName(builder.typlibtoCxxName("/base/Waypoint"))).bind("typeDecl"), &opaqueCallback);
+    if (int retval = Tool.run(newFrontendActionFactory(&OpaqueFinder))) {
+        std::cerr << "Parsing error in clang, cannot continue" << std::endl;
+        return retval;
+    }
     ast_matchers::MatchFinder Finder;
 
     TypeDeclCallback typeDeclCallback;
