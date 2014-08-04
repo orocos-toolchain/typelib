@@ -53,9 +53,9 @@ class TypeDefCallback : public MatchFinder::MatchCallback {
         if(T) {
             
             if (!Result.SourceManager->isInMainFile(T->getDecl()->getTypeSourceInfo()->getTypeLoc().getLocStart())) {
-            std::cerr << " -- skipping '"
-                        << T->getDecl()->getQualifiedNameAsString()
-                        << "' because its not in main header\n";
+//             std::cerr << " -- skipping '"
+//                         << T->getDecl()->getQualifiedNameAsString()
+//                         << "' because its not in main header\n";
                 return;
             }
 
@@ -99,9 +99,9 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
             // this removes the bodus double-match of "nested_records::S2::S2"
             // for "struct nested_records::S2". it it not needed by us.
             if (D->isInjectedClassName()) {
-                std::cerr << " -- skipping '"
-                          << D->getQualifiedNameAsString()
-                          << "' because its injected classname\n";
+//                 std::cerr << " -- skipping '"
+//                           << D->getQualifiedNameAsString()
+//                           << "' because its injected classname\n";
                 return;
             }
 
@@ -110,9 +110,9 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
             // registered structs, we'll hit fast and hit hard by adding it to
             // the database.
             if (!Result.SourceManager->isInMainFile(D->getLocation())) {
-                std::cerr << " -- skipping '"
-                          << D->getQualifiedNameAsString()
-                          << "' because its not in main header\n";
+//                 std::cerr << " -- skipping '"
+//                           << D->getQualifiedNameAsString()
+//                           << "' because its not in main header\n";
                 return;
             }
 
@@ -121,9 +121,9 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
         } else if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
 
             if (!Result.SourceManager->isInMainFile(D->getLocation())) {
-                std::cerr << " -- skipping '"
-                            << D->getQualifiedNameAsString()
-                            << "' because its not in main header\n";
+//                 std::cerr << " -- skipping '"
+//                             << D->getQualifiedNameAsString()
+//                             << "' because its not in main header\n";
                 return;
             }
             builder.registerNamedDecl(D);
