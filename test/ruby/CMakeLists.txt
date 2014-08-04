@@ -14,3 +14,9 @@ ADD_TEST(NAME Ruby
         -I${CMAKE_CURRENT_SOURCE_DIR}
         -I${CMAKE_CURRENT_BINARY_DIR} -rminitest/autorun -e "${test_requires}")
 
+# the pluginmanager can load plugins from a list of paths set in the
+# environment. for testing we don't want to use the plugins in the
+# install-folder, but the freshly compiled ones in the build-folder. note that
+# the folders set in the env-var are hardcoded...
+set_property(TEST Ruby APPEND PROPERTY ENVIRONMENT
+    "TYPELIB_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lang/csupport:${CMAKE_BINARY_DIR}/lang/tlb:${CMAKE_BINARY_DIR}/lang/idl")
