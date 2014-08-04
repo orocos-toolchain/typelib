@@ -120,5 +120,17 @@ void Typelib::CXX::addStandardTypes(Typelib::Registry& registry)
         ::addStandardTypes(registry);
 //     if (!registry.has("/std/string"))
 //         registry.add(new String(registry));
+    if (!registry.has("/std/basic_string"))
+    {
+        const Type *charType = registry.get("/char");
+        String *stringType = new String(*charType);
+        registry.add(stringType);
+        if(!registry.has("/std/basic_string</int8_t>"))
+        {
+            std::cout << "Error, string not registered " << std::endl;
+            exit(1);
+        }
+        registry.alias("/std/basic_string</int8_t>", "/std/string");
+    }
 }
 
