@@ -108,6 +108,7 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
             std::string argTypelibName = getTypelibNameForQualType(arg.getAsType().getCanonicalType());
             
             //HACK ignore allocators
+#warning HACK, ignoring types named '/std/allocator'
             if(argTypelibName.find("/std/allocator") != std::string::npos)
             {
                 continue;
