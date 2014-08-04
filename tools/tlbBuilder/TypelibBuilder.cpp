@@ -95,7 +95,7 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
         
         std::list<const Typelib::Type *> typelibArgList;
         //create argument list
-        for(int i = 0; i < argumentList.size(); i++)
+        for(size_t i = 0; i < argumentList.size(); i++)
         {
             clang::TemplateArgument arg = argumentList.get(i);
             const clang::Type *typePtr = arg.getAsType().getTypePtr();
