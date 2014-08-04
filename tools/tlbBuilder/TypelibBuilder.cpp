@@ -4,6 +4,7 @@
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/DeclLookups.h"
 #include "clang/AST/Type.h"
+#include <clang/AST/DeclTemplate.h>
 #include <iostream>
 #include <typelib/registry.hh>
 #include <typelib/typemodel.hh>
@@ -63,6 +64,82 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     }    
     
     registerType(typeName, typeForDecl, decl->getASTContext());
+}
+
+bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
+{
+    
+    const clang::NamedDecl *underlyingType = decl->getUnderlyingDecl();
+    
+    
+    if(!underlyingType || ( underlyingType->getKind() != clang::Decl::ClassTemplateSpecialization))
+        return false;
+
+    std::cout << canonicalTypeName <<  " is possibly a Container " << std::endl;
+    
+    
+    std::cout << "Underlying name " << decl->getUnderlyingDecl()->getQualifiedNameAsString() << std::endl;;
+
+    Typelib::Container::AvailableContainers containers = Typelib::Container::availableContainers();
+
+    Typelib::Container::AvailableContainers::const_iterator it = containers.find(cxxToTyplibName(underlyingType->getQualifiedNameAsString()));
+    
+    if(it != containers.end())
+    {
+        std::cout << "Typelib knowns about this container : " << it->first << std::endl << std::endl;
+        const clang::ClassTemplateSpecializationDecl *sdecl = static_cast<const clang::ClassTemplateSpecializationDecl *>(underlyingType);
+        
+        const clang::TemplateArgumentList &argumentList(sdecl->getTemplateArgs());
+        
+        Typelib::Container::ContainerFactory factory = it->second;
+        
+        std::list<const Typelib::Type *> typelibArgList;
+        //create argument list
+        std::cout << "Argument list has size " << argumentList.size() << std::endl;
+        for(int i = 0; i < argumentList.size(); i++)
+        {
+            clang::TemplateArgument arg = argumentList.get(i);
+            const clang::Type *typePtr = arg.getAsType().getTypePtr();
+            if(!typePtr)
+            {
+                std::cout << "Error, argument has not type" <<std::endl;
+                return false;
+            }
+            
+            std::string argTypelibName = getTypelibNameForQualType(arg.getAsType().getCanonicalType());
+            
+            //HACK ignore allocators
+            if(argTypelibName.find("/std/allocator") != std::string::npos)
+            {
+                continue;
+            }
+            
+            const Typelib::Type *argType = checkRegisterType(getTypelibNameForQualType(arg.getAsType().getCanonicalType()), typePtr, decl->getASTContext());
+            if(!argType)
+            {
+                return false;
+            }
+            
+            typelibArgList.push_back(argType);
+            
+            
+            std::cout << "Arg is " << getTypelibNameForQualType(arg.getAsType()) << std::endl;
+        }
+        
+        
+        const Typelib::Container &newContainer(factory(registry, typelibArgList));
+        
+        if(newContainer.getName() != canonicalTypeName)
+        {
+            registry.alias(newContainer.getName(), canonicalTypeName);
+        }
+        
+        std::cout << "Container registerd" << std::endl;
+        
+        return true;
+    }
+
+    return false;
 }
 
 void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
@@ -433,6 +510,13 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     
     const clang::ASTRecordLayout &typeLayout(decl->getASTContext().getASTRecordLayout(decl));
 
+    
+    //container are special record, who have a seperate handling.
+    if(checkRegisterContainer(canonicalTypeName, decl))
+    {
+        return true;
+    }
+    
     
     Typelib::Compound *compound = new Typelib::Compound(canonicalTypeName);
     

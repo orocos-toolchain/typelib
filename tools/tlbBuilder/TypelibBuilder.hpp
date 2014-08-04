@@ -48,6 +48,7 @@ private:
     
     const Typelib::Type *checkRegisterType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
     
+    bool checkRegisterContainer(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     std::string getTypelibNameForQualType(const clang::QualType &type);
     
     Typelib::Registry registry;
