@@ -139,18 +139,17 @@ int main(int argc, const char **argv) {
     // optparsing {{{1
     llvm::sys::PrintStackTraceOnErrorSignal();
     
-    static llvm::cl::opt<std::string> opaquePathOption("opaquePath");
-    opaquePathOption.setDescription("A registry of opaques, which are defined in the given header files. These Types need to be resolved to their canonical names before the main run of the parser.");
+    static llvm::cl::opt<std::string> opaquePath("opaquePath");
+    opaquePath.setDescription("A registry of opaques, which are defined in the given header files. These Types need to be resolved to their canonical names before the main run of the parser.");
     
-    static llvm::cl::opt<std::string> tlbLoadPathOption("tlbLoadPath");
-    static llvm::cl::opt<std::string> tlbSavePathOption("tlbSavePath");
+    static llvm::cl::opt<std::string> tlbLoadPath("tlbLoadPath");
+    static llvm::cl::opt<std::string> tlbSavePath("tlbSavePath");
+
     
     CommonOptionsParser OptionsParser(argc, argv);
     ClangTool Tool(OptionsParser.getCompilations(),
                     OptionsParser.getSourcePathList());
     // }}}
-
-    std::string opaquePath = opaquePathOption.getValue();
 
     //load opque registry
     if(!opaquePath.empty())
@@ -197,12 +196,11 @@ int main(int argc, const char **argv) {
 
     builder.getRegistry().dump(std::cout);
     
-    std::string savePath = tlbSavePathOption.getValue();
-    if(!savePath.empty())
+    if(!tlbSavePath.empty())
     {
-        std::cout << "Saving tlb into file " << savePath << std::endl;
         TlbExport exporter;
-        exporter.save(savePath, utilmm::config_set(), builder.getRegistry());
+        std::cout << "Saving tlb into file " << tlbSavePath << std::endl;
+        exporter.save(tlbSavePath, utilmm::config_set(), builder.getRegistry());
     }
     
     return 0;
