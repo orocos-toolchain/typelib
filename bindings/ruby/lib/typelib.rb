@@ -325,6 +325,7 @@ end
 
 if ENV['TYPELIB_USE_GCCXML'] != '0'
     require 'typelib/gccxml'
+    require 'typelib/clang'
 end
 
 # Finally, set guard types on the root classes
