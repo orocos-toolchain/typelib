@@ -40,8 +40,8 @@ namespace
 PluginManager::PluginManager()
 {
     // Load plugins from compiled-in path
-    if (exists(TYPELIB_PLUGIN_PATH)) {
-        loadPluginFromDirectory(TYPELIB_PLUGIN_PATH);
+    if (exists(TYPELIB_HARDCODED_PLUGIN_PATH)) {
+        loadPluginFromDirectory(TYPELIB_HARDCODED_PLUGIN_PATH);
     }
 }
 
