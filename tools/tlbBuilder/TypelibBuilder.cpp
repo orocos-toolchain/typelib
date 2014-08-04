@@ -114,6 +114,11 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
                 continue;
             }
             
+            if(argTypelibName.find("/std/char_traits") != std::string::npos)
+            {
+                continue;
+            }
+            
             const Typelib::Type *argType = checkRegisterType(getTypelibNameForQualType(arg.getAsType().getCanonicalType()), typePtr, decl->getASTContext());
             if(!argType)
             {
