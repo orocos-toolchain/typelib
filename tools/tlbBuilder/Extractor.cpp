@@ -139,6 +139,9 @@ int main(int argc, const char **argv) {
     // optparsing {{{1
     llvm::sys::PrintStackTraceOnErrorSignal();
     
+    static llvm::cl::opt<std::string> opaquePathOption("opaquePath");
+    opaquePathOption.setDescription("A registry of opaques, which are defined in the given header files. These Types need to be resolved to their canonical names before the main run of the parser.");
+    
     static llvm::cl::opt<std::string> tlbLoadPathOption("tlbLoadPath");
     static llvm::cl::opt<std::string> tlbSavePathOption("tlbSavePath");
     
@@ -147,32 +150,37 @@ int main(int argc, const char **argv) {
                     OptionsParser.getSourcePathList());
     // }}}
 
-    std::string loadPath = tlbLoadPathOption.getValue();
+    std::string opaquePath = opaquePathOption.getValue();
 
-    //load initial registry
-    if(!loadPath.empty())
+    //load opque registry
+    if(!opaquePath.empty())
     {
         std::cout << "Loaded tlb registry" << std::endl;
-        builder.loadRegistry(loadPath);
-    }
+        builder.loadRegistry(opaquePath);
 
-    ast_matchers::MatchFinder OpaqueFinder;
-    internal::VariadicDynCastAllOfMatcher<Decl, TypeDecl> oTypeDecl;
-    OpaqueCallback opaqueCallback;
+        //resolve opaues to canonical names
+        ast_matchers::MatchFinder OpaqueFinder;
+        internal::VariadicDynCastAllOfMatcher<Decl, TypeDecl> oTypeDecl;
+        OpaqueCallback opaqueCallback;
 
-    for(Typelib::Registry::Iterator it = builder.getRegistry().begin(); it != builder.getRegistry().end(); it++)
-    {
-        if(it->getCategory() == Typelib::Type::Opaque)
+        for(Typelib::Registry::Iterator it = builder.getRegistry().begin(); it != builder.getRegistry().end(); it++)
         {
-            OpaqueFinder.addMatcher(oTypeDecl(hasName(builder.typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
+            if(it->getCategory() == Typelib::Type::Opaque)
+            {
+                OpaqueFinder.addMatcher(oTypeDecl(hasName(builder.typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
+            }
+        }
+
+        if (int retval = Tool.run(newFrontendActionFactory(&OpaqueFinder))) {
+            std::cerr << "Parsing error in clang, cannot continue" << std::endl;
+            return retval;
         }
     }
 
-    OpaqueFinder.addMatcher(oTypeDecl(hasName(builder.typlibtoCxxName("/base/Waypoint"))).bind("typeDecl"), &opaqueCallback);
-    if (int retval = Tool.run(newFrontendActionFactory(&OpaqueFinder))) {
-        std::cerr << "Parsing error in clang, cannot continue" << std::endl;
-        return retval;
-    }
+    std::cout << "Resolved Opaques " << std::endl;
+    builder.getRegistry().dump(std::cout);
+    
+    
     ast_matchers::MatchFinder Finder;
 
     TypeDeclCallback typeDeclCallback;
