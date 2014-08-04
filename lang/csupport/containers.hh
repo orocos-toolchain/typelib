@@ -48,8 +48,10 @@ public:
 class String : public Typelib::Container
 {
 public:
-    String(Typelib::Registry const& registry);
+    String(Typelib::Type const& on);
 
+    static std::string fullName(std::string const& element_name);
+        
     size_t getElementCount(void const* ptr) const;
     void init(void* ptr) const;
     void destroy(void* ptr) const;

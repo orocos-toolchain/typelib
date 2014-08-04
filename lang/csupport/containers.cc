@@ -355,16 +355,14 @@ Container const& Vector::factory(Registry& registry, std::list<Type const*> cons
 Container::ContainerFactory Vector::getFactory() const { return factory; }
 
 
-Type const& String::getElementType(Typelib::Registry const& registry)
-{
-    if (std::numeric_limits<char>::is_signed)
-        return *registry.get("/int8_t");
-    else
-        return *registry.get("/uint8_t");
-}
-String::String(Typelib::Registry const& registry)
-    : Container("/std/string", "/std/string", getNaturalSize(), String::getElementType(registry)) {}
+String::String(const Type& on)
+    : Container("/std/basic_string", fullName(on.getName()), getNaturalSize(), on) {}
 
+string String::fullName(const string& element_name)
+{
+    return "/std/basic_string<" + element_name + ">";
+}
+    
 size_t String::getElementCount(void const* ptr) const
 {
     size_t byte_count = reinterpret_cast< std::string const* >(ptr)->length();
@@ -462,18 +460,13 @@ void String::delete_if_impl(void* ptr, DeleteIfPredicate& pred) const
 
 Container const& String::factory(Registry& registry, std::list<Type const*> const& on)
 {
-    if (registry.has("/std/string"))
-        return dynamic_cast<Container const&>(*registry.get("/std/string"));
+    if (registry.has("/std/basic_string"))
+        return dynamic_cast<Container const&>(*registry.get("/std/basic_string"));
 
     if (on.size() != 1)
         throw std::runtime_error("expected only one template argument for std::string");
 
-    Type const& contained_type = *on.front();
-    Type const& expected_type  = String::getElementType(registry);
-    if (contained_type != expected_type)
-        throw std::runtime_error("std::string can only be built on top of '" + expected_type.getName() + "' -- found " + contained_type.getName());
-
-    String* new_type = new String(registry);
+    String* new_type = new String(*on.front());
     registry.add(new_type);
     return *new_type;
 }
