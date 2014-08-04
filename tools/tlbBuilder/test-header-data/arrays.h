@@ -21,6 +21,11 @@ namespace arrays {
     // array of records
     struct timespec A3[2];
 
+    // the same wrapped inside a container
+    class C1 {
+        struct timespec A3[2];
+    };
+
 }
 
 #endif /*TEST_HEADER_DATA_ARRAYS_H*/

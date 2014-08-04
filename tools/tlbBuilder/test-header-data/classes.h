@@ -3,11 +3,20 @@
 
 // testing stuff with classes
 
+struct timespec;
+
 namespace classes {
 
     // we have a base-class with a member
     class BaseClass {
         int a;
+
+        double thisIsSomeFancyFunction(struct timespec* input) {
+            a = -10;
+            float local_variable = 10000.0f;
+            double another(a + local_variable);
+            return another;
+        }
     };
 
     // an inheriting class which adds nothing to the interface
