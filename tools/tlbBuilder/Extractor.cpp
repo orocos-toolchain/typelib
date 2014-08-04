@@ -134,17 +134,21 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
 };
 } // end anonymous namespace
 
+static llvm::cl::opt<std::string> opaquePath(
+        "opaquePath",
+        llvm::cl::desc("A registry of opaques, which are defined in the given header files. These Types need to be resolved to their canonical names before the main run of the parser."),
+        llvm::cl::Optional);
+
+static llvm::cl::opt<std::string> tlbSavePath(
+        "tlbSavePath",
+        llvm::cl::desc("file of where to save resulting tlb-database. printed to stdout if not given"),
+        llvm::cl::Optional);
+
 int main(int argc, const char **argv) {
 
     // optparsing {{{1
     llvm::sys::PrintStackTraceOnErrorSignal();
     
-    static llvm::cl::opt<std::string> opaquePath("opaquePath");
-    opaquePath.setDescription("A registry of opaques, which are defined in the given header files. These Types need to be resolved to their canonical names before the main run of the parser.");
-    
-    static llvm::cl::opt<std::string> tlbLoadPath("tlbLoadPath");
-    static llvm::cl::opt<std::string> tlbSavePath("tlbSavePath");
-
     
     CommonOptionsParser OptionsParser(argc, argv);
     ClangTool Tool(OptionsParser.getCompilations(),
@@ -154,7 +158,7 @@ int main(int argc, const char **argv) {
     //load opque registry
     if(!opaquePath.empty())
     {
-        std::cout << "Loaded tlb registry" << std::endl;
+        std::cout << "Loading opaque tlb-registry from '" << opaquePath << "'" << std::endl;
         builder.loadRegistry(opaquePath);
 
         //resolve opaues to canonical names
@@ -193,7 +197,7 @@ int main(int argc, const char **argv) {
     TlbExport exporter;
     if(!tlbSavePath.empty())
     {
-        std::cout << "Saving tlb into file " << tlbSavePath << std::endl;
+        std::cout << "Saving tlb-registry into file '" << tlbSavePath << "'" << std::endl;
         exporter.save(tlbSavePath, utilmm::config_set(), builder.getRegistry());
     } else {
         exporter.save(std::cout, utilmm::config_set(), builder.getRegistry());
