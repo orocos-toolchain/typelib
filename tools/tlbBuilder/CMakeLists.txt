@@ -119,7 +119,7 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
         # NOTE: gross hack to return always true, even if the extractor throwed
         # or something! this should be removed in times...? might be that
         # throwing is ok, for the negative test-cases for example...
-        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/extractor ${HEADER_FILE} -- -x c++ > ${TLB_FILE} || true
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/extractor ${HEADER_FILE} -tlbSavePath=${TLB_FILE} -- -x c++ || true
         DEPENDS extractor
         )
     # add it to the dummy-target
