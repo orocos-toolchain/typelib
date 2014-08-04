@@ -1,2 +1,84 @@
-Resolved Opaques
-Types in registry
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/float" category="float" size="4" >  
+  </numeric>
+  <compound name="/Eigen/internal/plain_array&lt;/float,12,0,16&gt;" size="48" >
+    <field name="array" type="/float[12]" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/Eigen/internal/plain_array&lt;/float,3,0,0&gt;" size="12" >
+    <field name="array" type="/float[3]" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/Eigen/internal/plain_array&lt;/float,4,0,16&gt;" size="16" >
+    <field name="array" type="/float[4]" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/Eigen/DenseStorage&lt;/float,12,3,4,0&gt;" size="48" >
+    <field name="m_data" type="/Eigen/internal/plain_array&lt;/float,12,0,16&gt;" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/Eigen/DenseStorage&lt;/float,3,3,1,0&gt;" size="12" >
+    <field name="m_data" type="/Eigen/internal/plain_array&lt;/float,3,0,0&gt;" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/Eigen/DenseStorage&lt;/float,4,4,1,0&gt;" size="16" >
+    <field name="m_data" type="/Eigen/internal/plain_array&lt;/float,4,0,16&gt;" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/Eigen/Matrix&lt;/float,3,1,0,3,1&gt;" size="12" >
+    <field name="m_storage" type="/Eigen/DenseStorage&lt;/float,3,3,1,0&gt;" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;" size="48" >
+    <field name="m_storage" type="/Eigen/DenseStorage&lt;/float,12,3,4,0&gt;" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/Eigen/Matrix&lt;/float,4,1,0,4,1&gt;" size="16" >
+    <field name="m_storage" type="/Eigen/DenseStorage&lt;/float,4,4,1,0&gt;" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/Eigen/Quaternion&lt;/float,0&gt;" size="16" >
+    <field name="m_coeffs" type="/Eigen/Matrix&lt;/float,4,1,0,4,1&gt;" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/templates/eigen/S1" size="48" >
+    <field name="M" type="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/templates/eigen/S2" size="12" >
+    <field name="V" type="/Eigen/Matrix&lt;/float,3,1,0,3,1&gt;" offset="0">
+    
+    </field>
+  
+  </compound>
+  <compound name="/templates/eigen/S3" size="16" >
+    <field name="Q" type="/Eigen/Quaternion&lt;/float,0&gt;" offset="0">
+    
+    </field>
+  
+  </compound>
+  <alias name="/templates/eigen/aMatrix" source="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;"/>
+</typelib>
