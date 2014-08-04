@@ -41,6 +41,7 @@ public:
     
 private:
     bool addFieldsToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
+    bool addBaseClassToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addEnum(const std::string& canonicalTypeName, const clang::EnumDecl* decl);
     bool addArray(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);

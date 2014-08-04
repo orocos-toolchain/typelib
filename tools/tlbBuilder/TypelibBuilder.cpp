@@ -380,6 +380,24 @@ bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::
     return true;
 }
 
+bool TypelibBuilder::addBaseClassToCompound(Typelib::Compound& compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
+{
+    for(clang::CXXRecordDecl::base_class_const_iterator it = decl->bases_begin(); it != decl->bases_end(); it++)
+    {
+        const clang::CXXRecordDecl* curDecl = it->getType()->getAsCXXRecordDecl();
+        
+        addBaseClassToCompound(compound, canonicalTypeName, curDecl);
+        
+        if(!addFieldsToCompound(compound, canonicalTypeName, curDecl))
+        {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+
 bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
 {
     if(!decl)
@@ -421,15 +439,10 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     size_t typeSize = typeLayout.getSize().getQuantity();
     compound->setSize(typeSize);
 
-    for(clang::CXXRecordDecl::base_class_const_iterator it = decl->bases_begin(); it != decl->bases_end(); it++)
+    if(!addBaseClassToCompound(*compound, canonicalTypeName, decl))
     {
-        const clang::CXXRecordDecl* curDecl = it->getType()->getAsCXXRecordDecl();
-        if(!addFieldsToCompound(*compound, canonicalTypeName, curDecl))
-        {
-            delete compound;
-            return false;
-        }
-        
+        delete compound;
+        return false;
     }
 
     if(!addFieldsToCompound(*compound, canonicalTypeName, decl))
