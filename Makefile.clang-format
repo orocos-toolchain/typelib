@@ -1,0 +1,10 @@
+
+FILES=$(shell git ls-files "*.hpp" "*.cpp" "*.cxx" "*.hxx" "*.cc" "*.hh" "*.c" "*.h")
+
+STYLE="{BasedOnStyle: llvm, IndentWidth: 4, Standard: Cpp03}"
+
+format-all: $(addsuffix -convert,$(FILES)) $(addsuffix -convert,$(FILES))
+
+%-convert: %
+	clang-format-3.5 -style=$(STYLE) -i $<
+

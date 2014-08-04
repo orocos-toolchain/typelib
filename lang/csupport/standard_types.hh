@@ -3,14 +3,11 @@
 
 #include <typelib/registry.hh>
 
-namespace Typelib
-{
-    namespace CXX
-    {
-        /** Adds some definitions for standard C++ types that Typelib can handle */
-        void addStandardTypes(Typelib::Registry& registry);
-    }
+namespace Typelib {
+namespace CXX {
+/** Adds some definitions for standard C++ types that Typelib can handle */
+void addStandardTypes(Typelib::Registry &registry);
+}
 }
 
 #endif
-

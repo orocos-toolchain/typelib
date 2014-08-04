@@ -2,7 +2,6 @@
  * documentation block
  */
 
-struct DocumentedType
-{
+struct DocumentedType {
     int field; // otherwise the type is ignored
 };
