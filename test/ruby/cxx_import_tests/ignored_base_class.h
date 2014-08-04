@@ -1,11 +1,8 @@
-struct Base
-{
-private:
+struct Base {
+  private:
     double first;
 };
 
-struct Derived : public Base
-{
+struct Derived : public Base {
     double second;
 };
-

@@ -6,4 +6,3 @@
 #else
 #error "GOOD is not defined"
 #endif
-

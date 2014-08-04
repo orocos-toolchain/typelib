@@ -1,6 +1,3 @@
 struct Root {
-    enum Bla {
-        VALUE = 5
-    };
+    enum Bla { VALUE = 5 };
 };
-

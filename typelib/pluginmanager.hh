@@ -8,188 +8,159 @@
 #include <typelib/utilmm/configset.hh>
 #include <stdexcept>
 
-namespace Typelib
-{
-    class Registry;
-    
-    class Exporter;
-    class ExportPlugin;
+namespace Typelib {
+class Registry;
 
-    class Importer;
-    class ImportPlugin;
+class Exporter;
+class ExportPlugin;
 
-    class TypeDefinitionPlugin;
-    
-    /** Exception thrown when an unknown plugin is found */
-    struct PluginNotFound : std::runtime_error
-    {
-        PluginNotFound() : std::runtime_error("plugin not found") { }
-    };
+class Importer;
+class ImportPlugin;
 
-    /** Generic error for problems during export */
-    struct ExportError : std::runtime_error
-    { 
-        ExportError(std::string const& msg) : std::runtime_error(msg) {}
-    };
+class TypeDefinitionPlugin;
 
-    /** The plugin manager 
-     * 
-     * It is a singleton, using utilmm::singleton
-     * You have to access it using
-     * <code>
-     *  PluginManager::self manager;
-     *
-     *  manager->importer()
-     * </code>
-     *
-     * The object is destroyed when the last of the use<> objects
-     * is, and created back when a new use<> object is built.
+/** Exception thrown when an unknown plugin is found */
+struct PluginNotFound : std::runtime_error {
+    PluginNotFound() : std::runtime_error("plugin not found") {}
+};
+
+/** Generic error for problems during export */
+struct ExportError : std::runtime_error {
+    ExportError(std::string const &msg) : std::runtime_error(msg) {}
+};
+
+/** The plugin manager
+ *
+ * It is a singleton, using utilmm::singleton
+ * You have to access it using
+ * <code>
+ *  PluginManager::self manager;
+ *
+ *  manager->importer()
+ * </code>
+ *
+ * The object is destroyed when the last of the use<> objects
+ * is, and created back when a new use<> object is built.
+ */
+class PluginManager {
+    std::map<std::string, ExportPlugin *> m_exporters;
+    std::map<std::string, ImportPlugin *> m_importers;
+    std::vector<TypeDefinitionPlugin *> m_definition_plugins;
+    std::vector<void *> m_library_handles;
+    bool loadPlugin(std::string const &path);
+
+    typedef void (*PluginEntryPoint)(PluginManager &);
+
+    PluginManager();
+    ~PluginManager();
+
+  public:
+    /** Registers a new exporter */
+    bool add(ExportPlugin *plugin);
+
+    /** Build a new import plugin from its plugin name
+     * @throws PluginNotFound */
+    Importer *importer(std::string const &name) const;
+
+    /** Registers a new importer */
+    bool add(ImportPlugin *plugin);
+
+    /** Build a new export plugin from its plugin name
+     * @throws PluginNotFound */
+    Exporter *exporter(std::string const &name) const;
+
+    /** Adds a type definition plugin. A type definition plugin defines a
+     * set of "default" types that gets added automatically to new
+     * registries
      */
-    class PluginManager
-    {
-        std::map<std::string, ExportPlugin*> m_exporters;
-        std::map<std::string, ImportPlugin*> m_importers;
-        std::vector<TypeDefinitionPlugin*> m_definition_plugins;
-        std::vector<void*> m_library_handles;
-        bool loadPlugin(std::string const& path);
+    void add(TypeDefinitionPlugin *plugin);
 
-        typedef void (*PluginEntryPoint)(PluginManager&);
+    /** Adds the types from the type definition plugins to \c registry
+     */
+    void registerPluginTypes(Registry &registry);
 
-        PluginManager();
-        ~PluginManager();
-        
-    public:
-	/** Registers a new exporter */
-        bool add(ExportPlugin* plugin);
+    /** \overload
+     * This is provided for backward compatibility only
+     */
+    static std::string save(std::string const &kind, Registry const &registry);
 
-	/** Build a new import plugin from its plugin name
-	 * @throws PluginNotFound */
-        Importer* importer(std::string const& name) const;
+    /** \overload
+     */
+    static std::string save(std::string const &kind,
+                            utilmm::config_set const &config,
+                            Registry const &registry);
 
-	/** Registers a new importer */
-        bool add(ImportPlugin* plugin);
+    /** \overload
+     * This is provided for backward compatibility only
+     */
+    static void save(std::string const &kind, Registry const &registry,
+                     std::ostream &into);
 
-	/** Build a new export plugin from its plugin name 
-	 * @throws PluginNotFound */
-        Exporter* exporter(std::string const& name) const;
+    /** Exports a registry to an ostream object
+     * @arg kind	    the output format. It has to be a valid exporter
+     * name
+     * @arg config      format-specific configuration. See each exporter
+     * documentation for details.
+     * @arg registry    the registry to export
+     * @arg into	    the ostream object to export to
+     * @throws PluginNotFound if \c kind is invalid
+     * @throws UnsupportedType if a specific type cannot be exported into this
+     * format
+     * @throws ExportError if another error occured during the export
+     */
+    static void save(std::string const &kind, utilmm::config_set const &config,
+                     Registry const &registry, std::ostream &into);
 
-        /** Adds a type definition plugin. A type definition plugin defines a
-         * set of "default" types that gets added automatically to new
-         * registries
-         */
-        void add(TypeDefinitionPlugin* plugin);
+    /** \overload
+     */
+    static Registry *load(std::string const &kind, std::istream &stream);
 
-        /** Adds the types from the type definition plugins to \c registry
-         */
-        void registerPluginTypes(Registry& registry);
+    /** Imports types from a istream object to an already existing registry
+     */
+    static void load(std::string const &kind, std::istream &stream,
+                     Registry &into);
 
-	/** \overload
-	 * This is provided for backward compatibility only
-	 */
-        static std::string save
-	    ( std::string const& kind
-	    , Registry const& registry);
+    /** Creates a registry from a file
+     * @see Importer::load
+     */
+    static Registry *load(std::string const &kind, std::string const &file);
 
-	/** \overload
-	 */
-        static std::string save
-	    ( std::string const& kind
-	    , utilmm::config_set const& config
-	    , Registry const& registry);
+    /** Imports types from a file into an already existing registry
+     * @see Importer::load
+     */
+    static void load(std::string const &kind, std::string const &file,
+                     Registry &into);
 
-       	/** \overload
-	 * This is provided for backward compatibility only
-	 */
-	static void save
-	    ( std::string const& kind
-	    , Registry const& registry
-	    , std::ostream& into);
+    /** \overload
+     */
+    static Registry *load(std::string const &kind, std::istream &stream,
+                          utilmm::config_set const &config);
 
-       	/** Exports a registry to an ostream object
-	 * @arg kind	    the output format. It has to be a valid exporter name
-	 * @arg config      format-specific configuration. See each exporter documentation for details.
-	 * @arg registry    the registry to export
-	 * @arg into	    the ostream object to export to
-	 * @throws PluginNotFound if \c kind is invalid
-	 * @throws UnsupportedType if a specific type cannot be exported into this format
-	 * @throws ExportError if another error occured during the export
-	 */
-	static void save
-	    ( std::string const& kind
-	    , utilmm::config_set const& config
-	    , Registry const& registry
-	    , std::ostream& into);
+    /** Imports types from a istream object to an already existing registry
+     */
+    static void load(std::string const &kind, std::istream &stream,
+                     utilmm::config_set const &config, Registry &into);
 
-	/** \overload
-	 */
-        static Registry* load
-            ( std::string const& kind
-            , std::istream& stream );
-	
-       	/** Imports types from a istream object to an already existing registry
-	 */
-	static void load
-            ( std::string const& kind
-            , std::istream& stream
-            , Registry& into );
+    /** Creates a registry from a file
+     * @see Importer::load
+     */
+    static Registry *load(std::string const &kind, std::string const &file,
+                          utilmm::config_set const &config);
 
-       	/** Creates a registry from a file
-	 * @see Importer::load
-	 */
-        static Registry* load
-            ( std::string const& kind
-            , std::string const& file );
+    /** Imports types from a file into an already existing registry
+     * @see Importer::load
+     */
+    static void load(std::string const &kind, std::string const &file,
+                     utilmm::config_set const &config, Registry &into);
 
-       	/** Imports types from a file into an already existing registry
-	 * @see Importer::load
-	 */
-        static void load
-            ( std::string const& kind
-            , std::string const& file
-            , Registry& into );
+    /** The one PluginManager object. See main PluginManager documentation
+     * for its use.
+     */
+    typedef utilmm::singleton::use<PluginManager> self;
 
-
-	/** \overload
-	 */
-        static Registry* load
-            ( std::string const& kind
-            , std::istream& stream
-            , utilmm::config_set const& config );
-	
-       	/** Imports types from a istream object to an already existing registry
-	 */
-	static void load
-            ( std::string const& kind
-            , std::istream& stream
-            , utilmm::config_set const& config
-            , Registry& into );
-
-       	/** Creates a registry from a file
-	 * @see Importer::load
-	 */
-        static Registry* load
-            ( std::string const& kind
-            , std::string const& file
-            , utilmm::config_set const& config );
-
-       	/** Imports types from a file into an already existing registry
-	 * @see Importer::load
-	 */
-        static void load
-            ( std::string const& kind
-            , std::string const& file
-            , utilmm::config_set const& config
-            , Registry& into );
-
-	/** The one PluginManager object. See main PluginManager documentation
-	 * for its use.
-	 */
-        typedef utilmm::singleton::use<PluginManager> self;
-
-    private:
-        friend class utilmm::singleton::wrapper<PluginManager>;
-    };
+  private:
+    friend class utilmm::singleton::wrapper<PluginManager>;
+};
 }
 
 #endif
-

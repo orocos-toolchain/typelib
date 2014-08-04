@@ -2,15 +2,14 @@
  * $Id: use_fwd.hh 949 2005-02-11 14:51:00Z fpy $
  */
 #ifndef UTILMM_SINGLETON_USE_FWD
-#  define UTILMM_SINGLETON_USE_FWD
+#define UTILMM_SINGLETON_USE_FWD
 
 namespace utilmm {
-  namespace singleton {
+namespace singleton {
 
-    template<typename Ty>
-    struct use;
+template <typename Ty> struct use;
 
-  } // namespace utilmm::singleton
+} // namespace utilmm::singleton
 } // namespace utilmm
 
 #endif // UTILMM_SINGLETON_USE_FWD

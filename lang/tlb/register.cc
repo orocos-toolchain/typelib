@@ -3,4 +3,3 @@
 #include <typelib/plugins.hh>
 
 TYPELIB_REGISTER_IO2(tlb, TlbExport, TlbImport)
-

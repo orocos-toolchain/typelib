@@ -14,4 +14,3 @@ VALUE typelib_to_ruby(Typelib::Value v, VALUE registry, VALUE parent);
 VALUE typelib_from_ruby(Typelib::Value value, VALUE new_value);
 
 #endif
-

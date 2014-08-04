@@ -2,15 +2,14 @@
  * $Id: wrapper_fwd.hh 949 2005-02-11 14:51:00Z fpy $
  */
 #ifndef UTILMM_SINGLETON_WRAPPER_FWD
-# define UTILMM_SINGLETON_WRAPPER_FWD
+#define UTILMM_SINGLETON_WRAPPER_FWD
 
 namespace utilmm {
-  namespace singleton {
+namespace singleton {
 
-    template<typename Ty>
-    class wrapper;
+template <typename Ty> class wrapper;
 
-  } // namespace utilmm::singleton
+} // namespace utilmm::singleton
 } // namespace utilmm
 
 #endif // UTILMM_SINGLETON_WRAPPER_FWD
