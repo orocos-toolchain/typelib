@@ -58,6 +58,10 @@ PluginManager::PluginManager()
     // fall back to load plugins from compiled-in path
     else if (exists(TYPELIB_HARDCODED_PLUGIN_PATH)) {
         loadPluginFromDirectory(TYPELIB_HARDCODED_PLUGIN_PATH);
+    } else {
+        std::cerr << "typelib: neither env-var 'TYPELIB_PLUGIN_PATH' nor hardcoded path "
+            << "'" << TYPELIB_HARDCODED_PLUGIN_PATH << "' point to existing directories. "
+            << "you probably won't have any plugins\n";
     }
 }
 
