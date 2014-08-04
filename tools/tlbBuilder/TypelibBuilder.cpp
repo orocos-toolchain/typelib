@@ -109,13 +109,13 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
             
             //HACK ignore allocators
 #warning HACK, ignoring types named '/std/allocator'
-            if(argTypelibName.find("/std/allocator") != std::string::npos)
+            if(argTypelibName.find("/std/allocator") == 0)
             {
                 continue;
             }
 
 #warning HACK, ignoring '/std/char_traits' for std::basic_string support
-            if(argTypelibName.find("/std/char_traits") != std::string::npos)
+            if(argTypelibName.find("/std/char_traits") == 0)
             {
                 continue;
             }
