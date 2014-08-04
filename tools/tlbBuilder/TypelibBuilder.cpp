@@ -113,7 +113,8 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
             {
                 continue;
             }
-            
+
+#warning HACK, ignoring '/std/char_traits' for std::basic_string support
             if(argTypelibName.find("/std/char_traits") != std::string::npos)
             {
                 continue;
