@@ -176,10 +176,6 @@ int main(int argc, const char **argv) {
         }
     }
 
-    std::cout << "Resolved Opaques " << std::endl;
-    builder.getRegistry().dump(std::cout);
-    
-    
     ast_matchers::MatchFinder Finder;
 
     TypeDeclCallback typeDeclCallback;
@@ -194,13 +190,13 @@ int main(int argc, const char **argv) {
         return retval;
     }
 
-    builder.getRegistry().dump(std::cout);
-    
+    TlbExport exporter;
     if(!tlbSavePath.empty())
     {
-        TlbExport exporter;
         std::cout << "Saving tlb into file " << tlbSavePath << std::endl;
         exporter.save(tlbSavePath, utilmm::config_set(), builder.getRegistry());
+    } else {
+        exporter.save(std::cout, utilmm::config_set(), builder.getRegistry());
     }
     
     return 0;
