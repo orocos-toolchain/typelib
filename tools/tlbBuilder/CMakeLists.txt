@@ -113,7 +113,7 @@ file(GLOB TEST_HEADER_DATA "${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/*.h")
 foreach(HEADER_FILE ${TEST_HEADER_DATA})
     # we need the actual header-name
     get_filename_component(HEADER_NAME ${HEADER_FILE} NAME_WE)
-    set(TLB_FILE "${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.tlb")
+    set(TLB_FILE "${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/${HEADER_NAME}.tlb")
     # call the "extractor" tool, give it the header and pipe stdout into the new tlb-file
     add_custom_target(create-test-${HEADER_NAME}.tlb
         # NOTE: gross hack to return always true, even if the extractor throwed
