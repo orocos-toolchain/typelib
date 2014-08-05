@@ -23,7 +23,7 @@ namespace Typelib
     /** Exception thrown when an unknown plugin is found */
     struct PluginNotFound : std::runtime_error
     {
-        PluginNotFound() : std::runtime_error("plugin not found") { }
+        PluginNotFound(const std::string& name) : std::runtime_error("plugin '"+name+"' not found") { }
     };
 
     /** Generic error for problems during export */
@@ -51,6 +51,7 @@ namespace Typelib
         std::map<std::string, ImportPlugin*> m_importers;
         std::vector<TypeDefinitionPlugin*> m_definition_plugins;
         std::vector<void*> m_library_handles;
+        bool loadPluginFromDirectory(std::string const& directory);
         bool loadPlugin(std::string const& path);
 
         typedef void (*PluginEntryPoint)(PluginManager&);

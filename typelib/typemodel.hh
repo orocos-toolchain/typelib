@@ -659,7 +659,7 @@ namespace Typelib
         Type* do_merge(Registry& registry, RecursionStack& stack) const;
 
     private:
-        static AvailableContainers* s_available_containers;
+        static AvailableContainers s_available_containers;
     };
 
     struct TypeException : public std::runtime_error

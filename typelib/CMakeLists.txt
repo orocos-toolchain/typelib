@@ -4,13 +4,13 @@ ADD_LIBRARY(typeLib SHARED
     importer.cc csvoutput.cc endianness.cc memory_layout.cc value_ops.cc
     utilmm/configset.cc utilmm/singleton/server.cc utilmm/singleton/dummy.cc)
 
-if (NOT TYPELIB_PLUGIN_PATH)
+if (NOT TYPELIB_HARDCODED_PLUGIN_PATH)
 set_source_files_properties(pluginmanager.cc PROPERTIES
-   COMPILE_FLAGS -DTYPELIB_PLUGIN_PATH="\\"${CMAKE_INSTALL_PREFIX}/lib/typelib\\"")
-else (NOT TYPELIB_PLUGIN_PATH)
+    COMPILE_FLAGS -DTYPELIB_HARDCODED_PLUGIN_PATH=\\"${CMAKE_INSTALL_PREFIX}/lib/typelib\\")
+else (NOT TYPELIB_HARDCODED_PLUGIN_PATH)
 set_source_files_properties(pluginmanager.cc PROPERTIES
-   COMPILE_FLAGS -DTYPELIB_PLUGIN_PATH="\\"${TYPELIB_PLUGIN_PATH}\\"")
-endif (NOT TYPELIB_PLUGIN_PATH)
+   COMPILE_FLAGS -DTYPELIB_HARDCODED_PLUGIN_PATH=\\"${TYPELIB_PLUGIN_PATH}\\")
+endif (NOT TYPELIB_HARDCODED_PLUGIN_PATH)
 
 set_source_files_properties(endianness.cc PROPERTIES
     COMPILE_FLAGS -fno-strict-aliasing)
