@@ -39,9 +39,7 @@ module Typelib
             #call extractor
             retVal = `#{finalCmd}`
             
-            result = Registry.new()
-            
-            result.from_xml(tmpReg.load())
+            result = Registry.from_xml(tmpReg.read())
             
             registry.merge(result)
         end
