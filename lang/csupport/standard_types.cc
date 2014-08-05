@@ -120,7 +120,7 @@ void Typelib::CXX::addStandardTypes(Typelib::Registry& registry)
         ::addStandardTypes(registry);
 //     if (!registry.has("/std/string"))
 //         registry.add(new String(registry));
-    if (!registry.has("/std/basic_string"))
+    if (!registry.has("/std/basic_string</int8_t>"))
     {
         const Type *charType = registry.get("/char");
         String *stringType = new String(*charType);
