@@ -83,13 +83,13 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(DL)
 include_directories(${LIBDL_INCLUDE_DIR})
 
-add_executable(extractor
-    Extractor.cpp
+add_executable(tlbBuilder
+    main.cpp
     TypelibBuilder.cpp
     )
 
 
-target_link_libraries(extractor
+target_link_libraries(tlbBuilder
     ${CLANG_LIBRARIES}
     ${LLVM_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
@@ -114,13 +114,13 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
     # we need the actual header-name
     get_filename_component(HEADER_NAME ${HEADER_FILE} NAME_WE)
     set(TLB_FILE "${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/${HEADER_NAME}.tlb")
-    # call the "extractor" tool, give it the header and pipe stdout into the new tlb-file
+    # call the "tlbBuilder" tool, give it the header and pipe stdout into the new tlb-file
     add_custom_target(create-test-${HEADER_NAME}.tlb
-        # NOTE: gross hack to return always true, even if the extractor throwed
+        # NOTE: gross hack to return always true, even if the tlbBuilder throwed
         # or something! this should be removed in times...? might be that
         # throwing is ok, for the negative test-cases for example...
-        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/extractor ${HEADER_FILE} -tlbSavePath=${TLB_FILE} -- -x c++ || true
-        DEPENDS extractor
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tlbBuilder ${HEADER_FILE} -tlbSavePath=${TLB_FILE} -- -x c++ || true
+        DEPENDS tlbBuilder
         )
     # add it to the dummy-target
     add_dependencies(create-test-header-tlb create-test-${HEADER_NAME}.tlb)
