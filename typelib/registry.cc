@@ -325,7 +325,11 @@ namespace Typelib
         if (old_type == new_type) 
             return; 
         else if (old_type)
+        {
+            if(old_type->getName() != name && old_type->isSame(*new_type))
+                return;
             throw AlreadyDefined(name);
+        }
 
         RegistryType regtype = 
             { new_type
