@@ -14,7 +14,7 @@ namespace templates {
         };
 
         struct S2 {
-            Eigen::Vector3f V;
+            Eigen::Vector3d V;
         };
 
         struct S3 {
@@ -22,11 +22,22 @@ namespace templates {
         };
     }
 
-    // just a testcase...
+    // just a testcase... is not detected, as there is not instantiation
     template<class T>
     class C1 {
         T A;
     };
+
+    namespace templateclasses {
+	class D1 {
+	    // array as template parameter...? the actual array in C1 is
+	    // currently not detected, while the size-offset is correct.
+	    //
+	    // needs some more love... but using templates asks for pain.
+	    templates::C1<float[4]> m1;
+	    int m2;
+	};
+    }
 
 }
 
