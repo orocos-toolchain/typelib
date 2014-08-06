@@ -391,6 +391,14 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
         {            
             return addArray(canonicalTypeName, type, context);
         }
+        case clang::Type::Elaborated:
+        {            
+            const clang::ElaboratedType* etype = static_cast<const clang::ElaboratedType*>(type);
+
+            //hm, this type is somehow strange, I have no idea, what it actually is...
+            return registerType(canonicalTypeName, etype->getNamedType().getTypePtr(), context);
+            
+        }
         default:
             std::cerr << "Trying to register '" << canonicalTypeName << "'"
                       << " with unhandled type '" << type->getTypeClassName() << "'" << std::endl;
