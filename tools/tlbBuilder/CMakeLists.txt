@@ -115,11 +115,15 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
     get_filename_component(HEADER_NAME ${HEADER_FILE} NAME_WE)
     set(TLB_FILE "${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/${HEADER_NAME}.tlb")
     # call the "tlbBuilder" tool, give it the header and pipe stdout into the new tlb-file
+    # hardcoded hack for eigen ;-)
+    if (${HEADER_NAME} STREQUAL "templates")
+	set(ADDITIONAL_TEST_FLAGS "-I/usr/include/eigen3")
+    endif (${HEADER_NAME} STREQUAL "templates")
     add_custom_target(create-test-${HEADER_NAME}.tlb
         # NOTE: gross hack to return always true, even if the tlbBuilder throwed
         # or something! this should be removed in times...? might be that
         # throwing is ok, for the negative test-cases for example...
-        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tlbBuilder ${HEADER_FILE} -tlbSavePath=${TLB_FILE} -- -x c++ || true
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tlbBuilder ${HEADER_FILE} -tlbSavePath=${TLB_FILE} -- -x c++ ${ADDITIONAL_TEST_FLAGS} || true
         DEPENDS tlbBuilder
         )
     # add it to the dummy-target
