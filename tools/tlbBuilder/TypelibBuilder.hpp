@@ -18,6 +18,7 @@ class Type;
 class ASTContext;
 class QualType;
 class TypedefNameDecl;
+class Decl;
 }
 class TypelibBuilder
 {
@@ -49,6 +50,8 @@ private:
     const Typelib::Type *checkRegisterType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
     
     bool checkRegisterContainer(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
+    
+    void setHeaderPath(const clang::Decl *decl, Typelib::Type &type);
     std::string getTypelibNameForQualType(const clang::QualType &type);
     
     Typelib::Registry registry;

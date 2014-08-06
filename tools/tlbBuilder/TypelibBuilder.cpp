@@ -554,6 +554,17 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     return true;
 }
 
+void TypelibBuilder::setHeaderPath(const clang::Decl* decl, Typelib::Type& type)
+{
+    std::string sourceLocation = decl->getSourceRange().getBegin().printToString(decl->getASTContext().getSourceManager());
+    size_t collonPos = sourceLocation.find(':');
+    
+    type.setPathToDefiningHeader(sourceLocation.substr(0, collonPos));
+    
+    
+}
+
+
 std::string TypelibBuilder::getTypelibNameForQualType(const clang::QualType& type)
 {
     const clang::QualType qualType = type.getLocalUnqualifiedType().getCanonicalType();
