@@ -171,6 +171,9 @@ void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
         canoniclaOpaqueName = getTypelibNameForQualType(decl->getTypeForDecl()->getCanonicalTypeInternal());
         
     }
+
+    Typelib::Type *opaqueType = registry.get_(opaqueName);
+    setHeaderPath(decl, *opaqueType);
         
     std::cerr << "Opaque name is '" << opaqueName << "' canonicalName is '" << canoniclaOpaqueName << "'" << std::endl;
     
@@ -451,6 +454,7 @@ bool TypelibBuilder::addArray(const std::string& canonicalTypeName, const clang:
 bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::EnumDecl *decl)
 {
     Typelib::Enum *enumVal =new Typelib::Enum(canonicalTypeName);
+    setHeaderPath(decl, *enumVal);
     
     for(clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin(); it != decl->enumerator_end(); it++)
     {
@@ -529,6 +533,7 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     size_t typeSize = typeLayout.getSize().getQuantity();
     compound->setSize(typeSize);
 
+    setHeaderPath(decl, *compound);
     if(!addBaseClassToCompound(*compound, canonicalTypeName, decl))
     {
         delete compound;
