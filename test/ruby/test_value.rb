@@ -296,17 +296,6 @@ class TC_Value < Minitest::Test
         assert(v1 == v0, "copy failed: memory is not equal")
     end
 
-    def test_nan_handling
-        registry = make_registry
-        lib = Library.open(File.join(BUILDDIR, 'ruby', 'libtest_ruby.so'), registry)
-        wrapper = lib.find('generate_nand').
-            returns(nil).returns('double*')
-	assert_equal(1.0/0.0, wrapper.call);
-        wrapper = lib.find('generate_nanf').
-            returns(nil).returns('float*')
-	assert_equal(1.0/0.0, wrapper.call);
-    end
-
     def test_convertion_to_from_ruby
         Typelib.convert_to_ruby '/NS1/Test', Integer do |value|
             value.a

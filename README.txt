@@ -13,8 +13,7 @@ The following import/export plugins are available:
   - export IDL files (CORBA definition language)
 
 A binding to the Ruby language is provided, which allows to very easily interface
-a dynamic library from within Ruby code. This Ruby binding is based on the dyncall
-library, whose full source code is provided in this release.
+a dynamic library from within Ruby code.
 
 Typelib has been written by Sylvain Joyeux <sylvain.joyeux@m4x.org>
 

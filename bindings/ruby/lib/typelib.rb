@@ -319,10 +319,6 @@ module Typelib
     end
 end
 
-if Typelib.with_dyncall?
-require 'typelib/dyncall'
-end
-
 if ENV['TYPELIB_USE_GCCXML'] != '0'
     require 'typelib/gccxml'
 end
