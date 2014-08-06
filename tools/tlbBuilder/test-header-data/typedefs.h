@@ -17,6 +17,7 @@ namespace ns {
 
     // a simple typedef
     typedef int intTypedef;
+    typedef int anotherIntTypedef;
     // a two-level typedef
     typedef intTypedef intTypedefTypedef;
 
