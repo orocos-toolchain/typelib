@@ -45,6 +45,34 @@ module Typelib
         include Typelib::ContainerType::StdVector
     end
 
+    convert_from_ruby String, '/std/basic_string</char>' do |value, typelib_type|
+        typelib_type.wrap([value.length, value].pack("QA#{value.length}"))
+    end
+    convert_to_ruby '/std/basic_string</char>', String do |value|
+        value = value.to_byte_array[8..-1]
+        if value.respond_to?(:force_encoding)
+            value.force_encoding(Encoding.default_internal || __ENCODING__)
+        end
+        value
+    end
+    specialize '/std/basic_string</char>' do
+        def to_str
+            Typelib.to_ruby(self)
+        end
+
+        def pretty_print(pp)
+            to_str
+        end
+
+        def concat(other_string)
+            if other_string.respond_to?(:to_str)
+                super(Typelib.from_ruby(other_string, self.class))
+            else super
+            end
+        end
+    end
+
+    
     ####
     # C string handling
     if String.instance_methods.include? :ord
