@@ -32,7 +32,7 @@ module Typelib
 
             header_files = options[:required_files].join(" ") 
             
-            finalCmd = "/home/scotch/item/tools/typelib/build/tools/tlbBuilder/extractor -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++ -isystem /usr/lib/clang/3.4/include"
+            finalCmd = "/home/scotch/item/tools/typelib/build/tools/tlbBuilder/tlbBuilder -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++ -isystem /usr/lib/clang/3.4/include"
             
             puts("Cmd is : #{finalCmd}")
             
