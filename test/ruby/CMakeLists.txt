@@ -20,3 +20,11 @@ ADD_TEST(NAME Ruby
 # the folders set in the env-var are hardcoded...
 set_property(TEST Ruby APPEND PROPERTY ENVIRONMENT
     "TYPELIB_PLUGIN_PATH=${CMAKE_BINARY_DIR}/lang/csupport:${CMAKE_BINARY_DIR}/lang/tlb:${CMAKE_BINARY_DIR}/lang/idl")
+# prepend another RUBYLIB to the already existing list, so that all the other
+# rock-depenencies are found.
+set_property(TEST Ruby APPEND PROPERTY ENVIRONMENT
+    "RUBYLIB=${CMAKE_BINARY_DIR}/bindings/ruby:$ENV{RUBYLIB}")
+# there are no typelib-plugins inside _this_ single project which we might
+# wanna test
+set_property(TEST Ruby APPEND PROPERTY ENVIRONMENT
+    "TYPELIB_RUBY_PLUGIN_PATH=")
