@@ -105,42 +105,41 @@ target_link_libraries(tlbBuilder
 # headers.
 #
 # create a dummy target which depends on all the single test-headers
-add_custom_target(create-test-header-tlb)
-add_custom_target(check-test-header-tlb)
-# then glob em
+add_custom_target(create-test-header)
+# circumvent the cmake-quirk that targets for testing are not part of all...
+# http://stackoverflow.com/a/736838/3520187
+add_custom_target(check
+    COMMAND ${CMAKE_CTEST_COMMAND}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    DEPENDS create-test-header)
+
+# now glob all test-headers
 file(GLOB TEST_HEADER_DATA "${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/*.h")
 # and create a custom target for the corresponding tlb-file created from these headers
 foreach(HEADER_FILE ${TEST_HEADER_DATA})
     # we need the actual header-name
     get_filename_component(HEADER_NAME ${HEADER_FILE} NAME_WE)
-    set(TLB_FILE "${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/${HEADER_NAME}.tlb")
+    set(TLB_FILE "${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.tlb")
     # call the "tlbBuilder" tool, give it the header and pipe stdout into the new tlb-file
     # hardcoded hack for eigen ;-)
     if (${HEADER_NAME} STREQUAL "templates")
 	set(ADDITIONAL_TEST_FLAGS "-I/usr/include/eigen3")
     endif (${HEADER_NAME} STREQUAL "templates")
     add_custom_target(create-test-${HEADER_NAME}.tlb
-        # NOTE: gross hack to return always true, even if the tlbBuilder throwed
-        # or something! this should be removed in times...? might be that
-        # throwing is ok, for the negative test-cases for example...
-        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tlbBuilder ${HEADER_FILE} -tlbSavePath=${TLB_FILE} -- -x c++ ${ADDITIONAL_TEST_FLAGS} || true
+        # the "tlbBuilder" is not allowed to throw while parsing the header!
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tlbBuilder ${HEADER_FILE} -tlbSavePath=${TLB_FILE} -- -x c++ ${ADDITIONAL_TEST_FLAGS}
         DEPENDS tlbBuilder
         )
-    # add it to the dummy-target
-    add_dependencies(create-test-header-tlb create-test-${HEADER_NAME}.tlb)
+    # add it to the target
+    add_dependencies(create-test-header create-test-${HEADER_NAME}.tlb)
     #
     # aaand compare the created tlb to the one stored in VCS. we assume that
     # the ones checked in are "good" so we just look if they are the same...
     # crude, but effective. so we can at least point to a header file if
     # something in the tlb-creation changed -- in a good or bad way. if the
     # change is good just place the new tlb-file besides the respective header
-    # in the VCS.
-    add_custom_target(compare-test-${HEADER_NAME}.tlb
-        COMMAND diff -u
-            ${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.tlb
-            ${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/${HEADER_NAME}.tlb
-        DEPENDS create-test-${HEADER_NAME}.tlb
+    # in the VCS and rerun the test
+    add_test(NAME compare-${HEADER_NAME}.tlb
+        COMMAND diff -u ${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.tlb ${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/${HEADER_NAME}.tlb
         )
-    # again, dependency on top-level dummy target
-    add_dependencies(check-test-header-tlb compare-test-${HEADER_NAME}.tlb)
 endforeach(HEADER_FILE)
