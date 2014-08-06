@@ -485,7 +485,7 @@ namespace Typelib
         TypeDisplayVisitor display(stream, "");
         for (TypeMap::const_iterator it = m_global.begin(); it != m_global.end(); ++it)
         {
-            RegistryType regtype(it->second);
+            const RegistryType& regtype(it->second);
             if (! regtype.persistent)
                 continue;
             if (!filter_source(source_filter, regtype.source_id))
@@ -493,24 +493,22 @@ namespace Typelib
 
             if (mode & WithSourceId)
             {
-                string it_source_id = regtype.source_id;
-                if (it_source_id.empty()) stream << "\t\t";
-                else stream << it_source_id << "\t";
+                if (regtype.source_id.empty()) stream << "\t\t";
+                else stream << regtype.source_id << "\t";
             }
 
-            Type const* type = regtype.type;
             if (mode & AllType)
             {
-                if (type->getName() == it->first)
+                if (regtype.type->getName() == it->first)
                 {
-                    display.apply(*type);
+                    display.apply(*regtype.type);
                     stream << "\n";
                 }
                 else
-                    stream << it->first << " is an alias for " << type->getName() << "\n";
+                    stream << it->first << " is an alias for " << regtype.type->getName() << "\n";
             }
             else
-                stream << "\t" << type->getName() << endl;
+                stream << "\t" << regtype.type->getName() << endl;
         }
     }
 
