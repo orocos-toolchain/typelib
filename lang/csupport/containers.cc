@@ -460,11 +460,11 @@ void String::delete_if_impl(void* ptr, DeleteIfPredicate& pred) const
 
 Container const& String::factory(Registry& registry, std::list<Type const*> const& on)
 {
-    if (registry.has("/std/basic_string"))
-        return dynamic_cast<Container const&>(*registry.get("/std/basic_string"));
-
     if (on.size() != 1)
         throw std::runtime_error("expected only one template argument for std::string");
+
+    if (registry.has(fullName(on.front()->getName())))
+        return dynamic_cast<Container const&>(*registry.get(fullName(on.front()->getName())));
 
     String* new_type = new String(*on.front());
     registry.add(new_type);
