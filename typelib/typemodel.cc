@@ -50,6 +50,17 @@ namespace Typelib
     void   Type::setSize(size_t size) { m_size = size; }
     size_t Type::getSize() const { return m_size; }
     bool   Type::isNull() const { return m_category == NullType; }
+    
+    const string& Type::getPathToDefiningHeader() const
+    {
+        return m_definitionHeaderPath;
+    }
+
+    void Type::setPathToDefiningHeader(const string& path)
+    {
+        m_definitionHeaderPath = path;
+    }
+    
     bool   Type::operator != (Type const& with) const { return (this != &with); }
     bool   Type::operator == (Type const& with) const { return (this == &with); }
     bool   Type::isSame(Type const& with) const
