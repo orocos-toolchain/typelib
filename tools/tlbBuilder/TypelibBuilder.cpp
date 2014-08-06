@@ -561,6 +561,7 @@ void TypelibBuilder::setHeaderPath(const clang::Decl* decl, Typelib::Type& type)
     
     type.setPathToDefiningHeader(sourceLocation.substr(0, collonPos));
     
+    type.getMetaData().add("orogen_include", type.getPathToDefiningHeader());
     
 }
 
