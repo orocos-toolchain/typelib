@@ -2,7 +2,7 @@
 #include "containers.hh"
 #include <boost/lexical_cast.hpp>
 #include "typelib/typename.hh"
-
+#include <iostream>
 using namespace Typelib;
 
 static void addStandardTypes(Typelib::Registry& r)
