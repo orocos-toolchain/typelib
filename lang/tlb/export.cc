@@ -145,7 +145,7 @@ namespace
         m_stream 
             << "<numeric name=\"" << type.getName() << "\" " 
             << "category=\"" << getStringCategory(type.getNumericCategory()) << "\" "
-            << "size=\"" << type.getSize() << "\" " << emitSourceID() << ">";
+            << "size=\"" << type.getSize() << "\" " << emitSourceID() << ">\n";
         m_stream << m_indent << emitMetaData(type) << "\n";
         m_stream << m_indent << "</numeric>";
 
@@ -153,7 +153,7 @@ namespace
     }
     bool TlbExportVisitor::visit_ (NullType const& type)
     {
-        m_stream << "<null " << " name=\"" << type.getName() << "\" " << emitSourceID() << ">";
+        m_stream << "<null " << " name=\"" << type.getName() << "\" " << emitSourceID() << ">\n";
         m_stream << m_indent << emitMetaData(type) << "\n";
         m_stream << m_indent << "</null>";
 	return true;
