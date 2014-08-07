@@ -8,20 +8,18 @@ add_definitions("-Wno-unused-local-typedefs")
 # more bogus warnings from system-headers...
 add_definitions("-Wno-strict-aliasing")
 
-include_directories("/usr/lib/llvm-3.4/include/")
-
 macro(llvm_find_config LLVM_REQUIRED_VERSION)
-    message("REQUIRED ${LLVM_REQUIRED_VERSION}")
     if (LLVM_REQUIRED_VERSION STREQUAL "")
         list(APPEND __llvm_names llvm-config-3.6 llvm-config-3.5 llvm-config-3.4)
     else()
         list(APPEND __llvm_names llvm-config-${LLVM_REQUIRED_VERSION})
     endif()
-    message("NAMES ${__llvm_names}")
+    message("-- llvm: looking for ${__llvm_names}")
     find_program(LLVM_CONFIG_EXECUTABLE NAMES ${__llvm_names})
     if (NOT LLVM_CONFIG_EXECUTABLE)
         message(FATAL_ERROR "could not find the llvm-config script (candidates: ${__llvm_names})")
     endif()
+    message("-- llvm: found ${LLVM_CONFIG_EXECUTABLE}")
 endmacro()
 
 macro(llvm_get_config OUTPUT)
@@ -49,11 +47,21 @@ macro(resolve_library_flags VARIABLE)
     set(${VARIABLE}_LIBRARIES ${_${VARIABLE}_LIBRARIES} CACHE INTERNAL "")
 endmacro()
 
+# we tested and developed _only_ against llvm-3.4
 llvm_find_config(3.4)
-message(${LLVM_CONFIG_EXECUTABLE})
+
+# note that "cxxflags" additionally returns the "-I" flags... which might not
+# be what you want!
 llvm_get_config(LLVM_CXXFLAGS "--cxxflags")
+string(REGEX REPLACE "-I[^ ]+" "" LLVM_CXXFLAGS ${LLVM_CXXFLAGS})
+
 llvm_get_config(LLVM_LIBRARY_DIRS "--libdir")
-llvm_get_config(LLVM_LIBRARIES "--libs" core option analysis support bitreader mcparser transformutils)
+llvm_get_config(LLVM_LIBRARIES "--libs"
+    core option analysis support bitreader mcparser transformutils)
+
+# tell cmake where to look for includes
+llvm_get_config(LLVM_INCLUDE_DIRS "--includedir")
+include_directories(${LLVM_INCLUDE_DIRS})
 
 # Convert the library as reported by llvm-config into a cmake list
 string(REPLACE " " ";" LLVM_LIBRARIES "${LLVM_LIBRARIES}")
@@ -68,8 +76,6 @@ list(APPEND CLANG_LIBRARIES
 
 add_definitions(${LLVM_CXXFLAGS})
 link_directories(${LLVM_LIBRARY_DIRS})
-resolve_library_flags(LLVM)
-resolve_library_flags(CLANG)
 
 find_package(Threads)
 
@@ -77,7 +83,6 @@ find_package(PkgConfig)
 pkg_check_modules(TINFO REQUIRED tinfo)
 add_definitions(${TINFO_CFLAGS})
 include_directories(${TINFO_INCLUDE_DIRS})
-resolve_library_flags(TINFO)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(DL)
