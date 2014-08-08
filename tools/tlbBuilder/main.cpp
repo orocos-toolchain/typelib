@@ -134,23 +134,34 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
 };
 } // end anonymous namespace
 
+static llvm::cl::OptionCategory tlbBuilderCategory("tlbBuilder options");
 static llvm::cl::opt<std::string> opaquePath(
         "opaquePath",
-        llvm::cl::desc("A registry of opaques, which are defined in the given header files. These Types need to be resolved to their canonical names before the main run of the parser."),
-        llvm::cl::Optional);
+        llvm::cl::desc("registry of opaques, which have to be defined in the header files"),
+        llvm::cl::cat(tlbBuilderCategory));
 
 static llvm::cl::opt<std::string> tlbSavePath(
         "tlbSavePath",
-        llvm::cl::desc("file of where to save resulting tlb-database. printed to stdout if not given"),
-        llvm::cl::Optional);
+        llvm::cl::desc("where to save tlb-database"),
+        llvm::cl::cat(tlbBuilderCategory));
 
 int main(int argc, const char **argv) {
+    llvm::sys::PrintStackTraceOnErrorSignal();
 
     // optparsing {{{1
-    llvm::sys::PrintStackTraceOnErrorSignal();
-    
-    
-    CommonOptionsParser OptionsParser(argc, argv);
+
+    // Hide unrelated options. This can be done nicely by the
+    // CommonOptionsParser in later clang-releases
+    StringMap<cl::Option *> Options;
+    cl::getRegisteredOptions(Options);
+    for (StringMap<cl::Option*>::const_iterator Option=Options.begin();
+            Option!=Options.end();Option++)
+        if (Option->second->Category != &tlbBuilderCategory &&
+                Option->first() != "help" && Option->first() != "version")
+            Option->second->setHiddenFlag(cl::ReallyHidden);
+
+    CommonOptionsParser OptionsParser(
+            argc, argv, "typelib tlbBuilder: serialize/deserialize C++");
     ClangTool Tool(OptionsParser.getCompilations(),
                     OptionsParser.getSourcePathList());
     // }}}
