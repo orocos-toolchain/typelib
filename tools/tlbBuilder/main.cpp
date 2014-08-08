@@ -163,14 +163,13 @@ int main(int argc, const char **argv) {
 
         //resolve opaues to canonical names
         ast_matchers::MatchFinder OpaqueFinder;
-        internal::VariadicDynCastAllOfMatcher<Decl, TypeDecl> oTypeDecl;
         OpaqueCallback opaqueCallback;
 
         for(Typelib::Registry::Iterator it = builder.getRegistry().begin(); it != builder.getRegistry().end(); it++)
         {
             if(it->getCategory() == Typelib::Type::Opaque)
             {
-                OpaqueFinder.addMatcher(oTypeDecl(hasName(builder.typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
+                OpaqueFinder.addMatcher(namedDecl(hasName(builder.typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
             }
         }
 
@@ -183,10 +182,9 @@ int main(int argc, const char **argv) {
     ast_matchers::MatchFinder Finder;
 
     TypeDeclCallback typeDeclCallback;
-    internal::VariadicDynCastAllOfMatcher<Decl, TypeDecl> typeDecl;
-    Finder.addMatcher(typeDecl().bind("typeDecl"), &typeDeclCallback);
+    Finder.addMatcher(namedDecl().bind("typeDecl"), &typeDeclCallback);
 
-        TypeDefCallback typeDefCallback;
+    TypeDefCallback typeDefCallback;
     Finder.addMatcher(typedefType().bind("typeDef"), &typeDefCallback);
     
     if (int retval = Tool.run(newFrontendActionFactory(&Finder))) {
