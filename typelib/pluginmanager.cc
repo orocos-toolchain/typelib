@@ -45,6 +45,9 @@ PluginManager::PluginManager()
         const std::string delim(":");
         // make a copy of the env-var, which we can modify
         std::string s(pluginPath);
+        // we need ":" at the end, to catch the last entry in the list
+        if (s.find_last_of(delim) != s.length())
+            s += ":";
         // pos of delim for initial loop
         size_t pos = s.find(delim);
         do {
