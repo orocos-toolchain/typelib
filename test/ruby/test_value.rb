@@ -297,14 +297,15 @@ class TC_Value < Minitest::Test
     end
 
     def test_nan_handling
-        registry = make_registry
-        lib = Library.open(File.join(BUILDDIR, 'ruby', 'libtest_ruby.so'), registry)
-        wrapper = lib.find('generate_nand').
-            returns(nil).returns('double*')
-	assert_equal(1.0/0.0, wrapper.call);
-        wrapper = lib.find('generate_nanf').
-            returns(nil).returns('float*')
-	assert_equal(1.0/0.0, wrapper.call);
+        reg = Typelib::CXXRegistry.new
+
+        double_t = reg.get('/double')
+        nan_d = [Float::NAN].pack("d")
+        assert double_t.wrap(nan_d).to_ruby.nan?
+
+        float_t = reg.get('/float')
+        nan_f = [Float::NAN].pack("f")
+        assert float_t.wrap(nan_f).to_ruby.nan?
     end
 
     def test_convertion_to_from_ruby

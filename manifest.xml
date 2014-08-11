@@ -5,8 +5,7 @@
       that are instances of those types.
 
       A Ruby binding is included, which gives a fast and transparent
-      modification of C/C++ in-memory types from Ruby, and an associated
-      interface to call C functions from shared libraries.
+      modification of C/C++ in-memory types from Ruby.
   </description>
   <author>Sylvain Joyeux/sylvain.joyeux@m4x.org</author>
   <copyright>
