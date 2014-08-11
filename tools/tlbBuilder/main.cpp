@@ -160,6 +160,14 @@ int main(int argc, const char **argv) {
                 Option->first() != "help" && Option->first() != "version")
             Option->second->setHiddenFlag(cl::ReallyHidden);
 
+    // FIXME: using the "CommonOptionsParser" is bad -- if someone is giving
+    // extra-compiler-options on the commandline and a build-path like:
+    //
+    //     tlbBuilder $HEADER -p=compile_commands.json -- -x c++
+    //
+    // the data from the compile-commands is overridden _override_ by extra
+    // compiler options instead of augmenting them...
+
     CommonOptionsParser OptionsParser(
             argc, argv, "typelib tlbBuilder: serialize/deserialize C++");
     ClangTool Tool(OptionsParser.getCompilations(),
