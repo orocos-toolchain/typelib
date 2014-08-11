@@ -296,6 +296,18 @@ class TC_Value < Minitest::Test
         assert(v1 == v0, "copy failed: memory is not equal")
     end
 
+    def test_nan_handling
+        reg = Typelib::CXXRegistry.new
+
+        double_t = reg.get('/double')
+        nan_d = [Float::NAN].pack("d")
+        assert double_t.wrap(nan_d).to_ruby.nan?
+
+        float_t = reg.get('/float')
+        nan_f = [Float::NAN].pack("f")
+        assert float_t.wrap(nan_f).to_ruby.nan?
+    end
+
     def test_convertion_to_from_ruby
         Typelib.convert_to_ruby '/NS1/Test', Integer do |value|
             value.a
