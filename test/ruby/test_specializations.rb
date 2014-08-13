@@ -1,5 +1,4 @@
 require 'typelib/test'
-require BUILDDIR + '/ruby/libtest_ruby'
 require 'utilrb/hash/map_value'
 
 class TC_RubyMappingCustomization < Minitest::Test
