@@ -1,5 +1,4 @@
-require 'typelib'
-require 'minitest/spec'
+require 'typelib/test'
 
 describe Typelib::CompoundType do
     attr_reader :registry
