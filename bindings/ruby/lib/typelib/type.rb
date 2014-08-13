@@ -728,5 +728,12 @@ module Typelib
         def to_simple_value(options = Hash.new)
             raise NotImplementedError, "there is no way to convert a value of type #{self.class} into a simple ruby value"
         end
+
+        # Returns a representation of this type that can be serialized with JSON
+        #
+        # (see Type#to_simple_value)
+        def to_json_value(options = Hash.new)
+            to_simple_value(options)
+        end
     end
 end

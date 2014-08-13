@@ -89,10 +89,27 @@ module Typelib
         end
 
         # (see Type#to_simple_value)
-        #
-        # Numerics are returned as their value (a number)
         def to_simple_value(options = Hash.new)
             to_ruby
         end
+
+        # Returns a representation of this type that can be serialized as JSON
+        #
+        # This handles the floating-point special values "Infinity", "-Infinity"
+        # and "NaN" specially by converting them into strings as JSON cannot
+        # handle them.
+        def to_json_value(options = Hash.new)
+            v = to_simple_value(options)
+            if self.class.integer? then v
+            elsif v.nan?
+                "NaN"
+            elsif v.infinite?
+                if v > 0 then "Infinity"
+                else "-Infinity"
+                end
+            else v
+            end
+        end
     end
 end
+
