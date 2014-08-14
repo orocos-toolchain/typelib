@@ -53,7 +53,7 @@ class TypeDefCallback : public MatchFinder::MatchCallback {
         if(T) {
             
             if (!Result.SourceManager->isInMainFile(T->getDecl()->getTypeSourceInfo()->getTypeLoc().getLocStart())) {
-//             std::cerr << " -- skipping '"
+//             std::cout << " -- skipping '"
 //                         << T->getDecl()->getQualifiedNameAsString()
 //                         << "' because its not in main header\n";
                 return;
@@ -70,7 +70,7 @@ class OpaqueCallback : public MatchFinder::MatchCallback {
 
     virtual void run(const MatchFinder::MatchResult &Result) {
 
-        std::cerr << "Found my Opaque" << std::endl;
+        std::cout << "Found my Opaque" << std::endl;
         
    
         if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
@@ -80,7 +80,7 @@ class OpaqueCallback : public MatchFinder::MatchCallback {
         }
         else
         {
-            std::cerr << "WEIRED" << std::endl;
+            std::cout << "WEIRED" << std::endl;
             exit(EXIT_FAILURE);
         }
     }
@@ -99,7 +99,7 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
             // this removes the bodus double-match of "nested_records::S2::S2"
             // for "struct nested_records::S2". it it not needed by us.
             if (D->isInjectedClassName()) {
-//                 std::cerr << " -- skipping '"
+//                 std::cout << " -- skipping '"
 //                           << D->getQualifiedNameAsString()
 //                           << "' because its injected classname\n";
                 return;
@@ -110,7 +110,7 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
             // registered structs, we'll hit fast and hit hard by adding it to
             // the database.
             if (!Result.SourceManager->isInMainFile(D->getLocation())) {
-//                 std::cerr << " -- skipping '"
+//                 std::cout << " -- skipping '"
 //                           << D->getQualifiedNameAsString()
 //                           << "' because its not in main header\n";
                 return;
@@ -121,7 +121,7 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
         } else if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
 
             if (!Result.SourceManager->isInMainFile(D->getLocation())) {
-//                 std::cerr << " -- skipping '"
+//                 std::cout << " -- skipping '"
 //                             << D->getQualifiedNameAsString()
 //                             << "' because its not in main header\n";
                 return;
@@ -143,6 +143,7 @@ static llvm::cl::opt<std::string> opaquePath(
 static llvm::cl::opt<std::string> tlbSavePath(
         "tlbSavePath",
         llvm::cl::desc("where to save tlb-database"),
+        llvm::cl::Required,
         llvm::cl::cat(ToolCategory));
 
 int main(int argc, const char **argv) {
@@ -177,7 +178,7 @@ int main(int argc, const char **argv) {
     //load opque registry
     if(!opaquePath.empty())
     {
-        std::cerr << "Loading opaque tlb-registry from '" << opaquePath << "'" << std::endl;
+        std::cout << "Loading opaque tlb-registry from '" << opaquePath << "'" << std::endl;
         builder.loadRegistry(opaquePath);
 
         //resolve opaues to canonical names
@@ -195,7 +196,7 @@ int main(int argc, const char **argv) {
         }
 
         if (int retval = Tool.run(newFrontendActionFactory(&OpaqueFinder))) {
-            std::cerr << "Parsing error in clang, cannot continue" << std::endl;
+            std::cout << "Parsing error in clang, cannot continue" << std::endl;
             exit(retval);
         }
         
@@ -207,14 +208,14 @@ int main(int argc, const char **argv) {
                 Typelib::MetaData &mdata(it->getMetaData());
                 if(mdata.get().count("found"))
                 {
-                    std::cerr << "Error, opaque " << it->getName() << " could not be resolved " << std::endl;
+                    std::cout << "Error, opaque " << it->getName() << " could not be resolved " << std::endl;
                     opaquesFound = false;
                 }
                 OpaqueFinder.addMatcher(namedDecl(hasName(builder.typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
             }
         }
         if(!opaquesFound) {
-            std::cerr << "hello, boy..." << std::endl;
+            std::cout << "hello, boy..." << std::endl;
             exit(EXIT_FAILURE);
         }
     }
@@ -230,18 +231,13 @@ int main(int argc, const char **argv) {
     Finder.addMatcher(typedefType().bind("typeDef"), &typeDefCallback);
     
     if (int retval = Tool.run(newFrontendActionFactory(&Finder))) {
-        std::cerr << "Parsing error in clang, cannot continue" << std::endl;
+        std::cout << "Parsing error in clang, cannot continue" << std::endl;
         exit(retval);
     }
 
     TlbExport exporter;
-    if(!tlbSavePath.empty())
-    {
-        std::cerr << "Saving tlb-registry into file '" << tlbSavePath << "'" << std::endl;
-        exporter.save(tlbSavePath, utilmm::config_set(), builder.getRegistry());
-    } else {
-        exporter.save(std::cout, utilmm::config_set(), builder.getRegistry());
-    }
+    std::cout << "Saving tlb-registry into file '" << tlbSavePath << "'" << std::endl;
+    exporter.save(tlbSavePath, utilmm::config_set(), builder.getRegistry());
     
     exit(EXIT_SUCCESS);
 }
