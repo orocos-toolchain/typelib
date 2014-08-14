@@ -15,11 +15,8 @@ public:
     virtual bool save
         ( std::ostream& stream
         , Typelib::RegistryIterator const& type);
-        
-    virtual void save(std::ostream& stream, const utilmm::config_set& config, const Typelib::Registry& registry);
-    virtual bool save(std::ostream& stream, const Typelib::Registry& registry);
-    virtual void save(const std::string& file_name, const utilmm::config_set& config, const Typelib::Registry& registry);
 
+    using Typelib::Exporter::save;
 };
 
 #endif

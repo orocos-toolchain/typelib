@@ -250,19 +250,3 @@ bool TlbExport::save
     }
     return true;
 }
-
-void TlbExport::save(ostream& stream, const utilmm::config_set& config, const Registry& registry)
-{
-    Typelib::Exporter::save(stream, config, registry);
-}
-
-bool TlbExport::save(ostream& stream, const Registry& registry)
-{
-    return Typelib::Exporter::save(stream, registry);
-}
-
-void TlbExport::save(const string& file_name, const utilmm::config_set& config, const Registry& registry)
-{
-    Typelib::Exporter::save(file_name, config, registry);
-}
-
