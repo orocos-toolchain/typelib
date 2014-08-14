@@ -19,7 +19,7 @@
     <field name="C" type="/char" offset="16">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/namespaces.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/namespaces.h]]></metadata>
 
   </compound>
 </typelib>

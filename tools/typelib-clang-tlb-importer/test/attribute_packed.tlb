@@ -37,7 +37,7 @@
     <field name="f" type="/unsigned short" offset="18">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/attribute_packed.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/attribute_packed.h]]></metadata>
 
   </compound>
   <compound name="/attribute_packed/S1" size="20" >
@@ -59,7 +59,7 @@
     <field name="f" type="/unsigned short" offset="18">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/attribute_packed.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/attribute_packed.h]]></metadata>
 
   </compound>
 </typelib>

@@ -34,8 +34,8 @@ module Typelib
 
             header_files = options[:required_files].join(" ") 
             
-            # FIXME: this should be installed later
-            finalCmd = "#{ENV["AUTOPROJ_CURRENT_ROOT"]}/tools/typelib/build/tools/typelib-clang-tlb-importer/tlbBuilder -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++"
+            # FIXME: this should be the installed tool
+            finalCmd = "#{ENV["AUTOPROJ_CURRENT_ROOT"]}/tools/typelib/build/tools/typelib-clang-tlb-importer/typelib-clang-tlb-importer -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++"
             
             puts("Cmd is : #{finalCmd}")
             

@@ -19,7 +19,7 @@
     <field name="ranges" type="/double[256]" offset="8">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/laser.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/laser.h]]></metadata>
 
   </compound>
   <alias name="/Laser/array_typedef" source="/int[256]"/>

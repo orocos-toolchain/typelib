@@ -83,35 +83,35 @@
     <field name="A" type="/float[4]" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/templates.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
 
   </compound>
   <compound name="/templates/C1&lt;/float[4]&gt;" size="16" >
     <field name="A" type="/float[4]" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/templates.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
 
   </compound>
   <compound name="/templates/eigen/S1" size="48" >
     <field name="M" type="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/templates.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
 
   </compound>
   <compound name="/templates/eigen/S2" size="24" >
     <field name="V" type="/Eigen/Matrix&lt;/double,3,1,0,3,1&gt;" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/templates.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
 
   </compound>
   <compound name="/templates/eigen/S3" size="16" >
     <field name="Q" type="/Eigen/Quaternion&lt;/float,0&gt;" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/templates.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
 
   </compound>
   <alias name="/templates/eigen/aMatrix" source="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;"/>
@@ -122,7 +122,7 @@
     <field name="m2" type="/int" offset="16">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/templates.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
 
   </compound>
 </typelib>

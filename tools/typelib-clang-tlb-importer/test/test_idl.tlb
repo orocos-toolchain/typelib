@@ -4,7 +4,7 @@
     <value symbol="A" value="0"/>
     <value symbol="B" value="1"/>
     <value symbol="C" value="2"/>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/test_idl.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h]]></metadata>
 
   </enum>
   <numeric name="/char" category="sint" size="1" >
@@ -29,7 +29,7 @@
     <field name="array" type="/int[10]" offset="8">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/test_idl.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h]]></metadata>
 
   </compound>
   <alias name="/EnumAlias" source="/TestEnum"/>
@@ -37,7 +37,7 @@
     <field name="test" type="/Compound[10]" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/test_idl.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h]]></metadata>
 
   </compound>
   <alias name="/OtherEnum" source="/TestEnum"/>
@@ -48,7 +48,7 @@
     <field name="b" type="/short" offset="4">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/test_idl.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h]]></metadata>
 
   </compound>
   <alias name="/NS1/NS1_2/Test" source="/NS1/NS1_1/Test"/>
@@ -56,7 +56,7 @@
     <field name="test2" type="/NS1/NS1_1/Test" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/test_idl.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h]]></metadata>
 
   </compound>
 </typelib>

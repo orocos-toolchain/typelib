@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.8)
 add_definitions("-Wno-unused-local-typedefs")
 
 # when compiling inside the rock-framework "Wall" is used. This adds alotta
-# more bogus warnings from system-headers...
+# more bogus warnings from Debians llvm-3.4 headers...
 add_definitions("-Wno-strict-aliasing")
 
 macro(llvm_find_config LLVM_REQUIRED_VERSION)
@@ -88,13 +88,13 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(DL)
 include_directories(${LIBDL_INCLUDE_DIR})
 
-add_executable(tlbBuilder
+add_executable(typelib-clang-tlb-importer
     main.cpp
     TypelibBuilder.cpp
     )
 
 
-target_link_libraries(tlbBuilder
+target_link_libraries(typelib-clang-tlb-importer
     ${CLANG_LIBRARIES}
     ${LLVM_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
@@ -119,21 +119,21 @@ add_custom_target(check
     DEPENDS create-test-header)
 
 # now glob all test-headers
-file(GLOB TEST_HEADER_DATA "${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/*.h")
+file(GLOB TEST_HEADER_DATA "${CMAKE_CURRENT_SOURCE_DIR}/test/*.h")
 # and create a custom target for the corresponding tlb-file created from these headers
 foreach(HEADER_FILE ${TEST_HEADER_DATA})
     # we need the actual header-name
     get_filename_component(HEADER_NAME ${HEADER_FILE} NAME_WE)
     set(TLB_FILE "${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.tlb")
-    # call the "tlbBuilder" tool, give it the header and pipe stdout into the new tlb-file
-    # hardcoded hack for eigen ;-)
+    # call the "typelib-clang-tlb-importer" tool, give it the header and pipe
+    # stdout into the new tlb-file hardcoded hack for eigen ;-)
     if (${HEADER_NAME} STREQUAL "templates")
 	set(ADDITIONAL_TEST_FLAGS "-I/usr/include/eigen3")
     endif (${HEADER_NAME} STREQUAL "templates")
     add_custom_target(create-test-${HEADER_NAME}.tlb
-        # the "tlbBuilder" is not allowed to throw while parsing the header!
-        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tlbBuilder ${HEADER_FILE} -tlbSavePath=${TLB_FILE} -- -x c++ ${ADDITIONAL_TEST_FLAGS}
-        DEPENDS tlbBuilder
+        # if the "typelib-clang-tlb-importer" throws while parsing a header this is an error!
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/typelib-clang-tlb-importer ${HEADER_FILE} -tlbSavePath=${TLB_FILE} -- -x c++ ${ADDITIONAL_TEST_FLAGS}
+        DEPENDS typelib-clang-tlb-importer
         )
     # add it to the target
     add_dependencies(create-test-header create-test-${HEADER_NAME}.tlb)
@@ -145,6 +145,6 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
     # change is good just place the new tlb-file besides the respective header
     # in the VCS and rerun the test
     add_test(NAME compare-${HEADER_NAME}.tlb
-        COMMAND diff -u ${TLB_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/${HEADER_NAME}.tlb
+        COMMAND diff -u ${TLB_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/test/${HEADER_NAME}.tlb
         )
 endforeach(HEADER_FILE)

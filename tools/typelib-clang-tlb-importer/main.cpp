@@ -134,16 +134,16 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
 };
 } // end anonymous namespace
 
-static llvm::cl::OptionCategory tlbBuilderCategory("tlbBuilder options");
+static llvm::cl::OptionCategory ToolCategory("typelib-clang-tlb-importer options");
 static llvm::cl::opt<std::string> opaquePath(
         "opaquePath",
         llvm::cl::desc("registry of opaques, which have to be defined in the header files"),
-        llvm::cl::cat(tlbBuilderCategory));
+        llvm::cl::cat(ToolCategory));
 
 static llvm::cl::opt<std::string> tlbSavePath(
         "tlbSavePath",
         llvm::cl::desc("where to save tlb-database"),
-        llvm::cl::cat(tlbBuilderCategory));
+        llvm::cl::cat(ToolCategory));
 
 int main(int argc, const char **argv) {
     llvm::sys::PrintStackTraceOnErrorSignal();
@@ -156,20 +156,20 @@ int main(int argc, const char **argv) {
     cl::getRegisteredOptions(Options);
     for (StringMap<cl::Option*>::const_iterator Option=Options.begin();
             Option!=Options.end();Option++)
-        if (Option->second->Category != &tlbBuilderCategory &&
+        if (Option->second->Category != &ToolCategory &&
                 Option->first() != "help" && Option->first() != "version")
             Option->second->setHiddenFlag(cl::ReallyHidden);
 
     // FIXME: using the "CommonOptionsParser" is bad -- if someone is giving
     // extra-compiler-options on the commandline and a build-path like:
     //
-    //     tlbBuilder $HEADER -p=compile_commands.json -- -x c++
+    //     typelib-clang-tlb-importer $HEADER -p=compile_commands.json -- -x c++
     //
     // the data from the compile-commands is overridden _override_ by extra
     // compiler options instead of augmenting them...
 
     CommonOptionsParser OptionsParser(
-            argc, argv, "typelib tlbBuilder: serialize/deserialize C++");
+            argc, argv, "typelib-clang-tlb-importer: serialize/deserialize C++");
     ClangTool Tool(OptionsParser.getCompilations(),
                     OptionsParser.getSourcePathList());
     // }}}

@@ -10,7 +10,7 @@
     <field name="A" type="/int" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/typedefs.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h]]></metadata>
 
   </compound>
   <alias name="/ns/anotherIntTypedef" source="/int"/>
@@ -30,7 +30,7 @@
     <field name="D" type="/int" offset="12">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/typedefs.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h]]></metadata>
 
   </compound>
 </typelib>

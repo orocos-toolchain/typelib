@@ -5,8 +5,8 @@
 # handpicked two tlb-files that work...
 add_test(NAME create-typelib-tlb-merger-result
     COMMAND typelib-tlb-merger
-        ${CMAKE_SOURCE_DIR}/tools/tlbBuilder/test-header-data/arrays.tlb
-        ${CMAKE_SOURCE_DIR}/tools/tlbBuilder/test-header-data/typedefs.tlb
+        ${CMAKE_SOURCE_DIR}/tools/typelib-clang-tlb-importer/test/arrays.tlb
+        ${CMAKE_SOURCE_DIR}/tools/typelib-clang-tlb-importer/test/typedefs.tlb
         ${CMAKE_CURRENT_BINARY_DIR}/test-merge-result.tlb
     )
 add_test(NAME compare-typelib-tlb-merger-result

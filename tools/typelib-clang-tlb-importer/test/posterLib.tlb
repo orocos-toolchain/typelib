@@ -3,14 +3,14 @@
   <enum name="/H2_ENDIANNESS" >
     <value symbol="H2_BIG_ENDIAN" value="0"/>
     <value symbol="H2_LITTLE_ENDIAN" value="1"/>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/posterLib.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/posterLib.h]]></metadata>
 
   </enum>
   <enum name="/POSTER_OP" >
     <value symbol="POSTER_IOCTL" value="2"/>
     <value symbol="POSTER_READ" value="0"/>
     <value symbol="POSTER_WRITE" value="1"/>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/posterLib.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/posterLib.h]]></metadata>
 
   </enum>
 </typelib>

@@ -26,14 +26,14 @@
     <field name="b" type="/unsigned int" offset="4">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/nested_records.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h]]></metadata>
 
   </compound>
   <compound name="/nested_records/S3" size="16" >
     <field name="t" type="/timespec" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/nested_records.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h]]></metadata>
 
   </compound>
   <compound name="/nested_records/S2" size="12" >
@@ -43,7 +43,7 @@
     <field name="n" type="/nested_records/S1" offset="4">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/nested_records.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h]]></metadata>
 
   </compound>
 </typelib>

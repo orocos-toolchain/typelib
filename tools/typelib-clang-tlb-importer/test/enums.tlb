@@ -5,7 +5,7 @@
     <value symbol="E1_VAL2" value="43"/>
     <value symbol="E1_VAL3" value="44"/>
     <value symbol="E1_VAL4" value="45"/>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/enums.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.h]]></metadata>
 
   </enum>
   <enum name="/enums/E2" >
@@ -13,7 +13,7 @@
     <value symbol="E2_VAL2" value="1"/>
     <value symbol="E2_VAL3" value="2"/>
     <value symbol="E2_VAL4" value="3"/>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/enums.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.h]]></metadata>
 
   </enum>
   <alias name="/enums/E2_t" source="/enums/E2"/>
@@ -21,14 +21,14 @@
     <field name="A" type="/enums/E2" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/enums.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.h]]></metadata>
 
   </compound>
   <compound name="/enums/S3" size="4" >
     <field name="A" type="/enums/E2" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/enums.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.h]]></metadata>
 
   </compound>
   <numeric name="/int" category="sint" size="4" >
@@ -41,7 +41,7 @@
     <field name="B" type="/enums/E1" offset="4">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/enums.h]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.h]]></metadata>
 
   </compound>
 </typelib>
