@@ -1,3 +1,3 @@
 
 add_subdirectory(tlbBuilder)
-add_subdirectory(tlbMerger)
+add_subdirectory(typelib-tlb-merger)
