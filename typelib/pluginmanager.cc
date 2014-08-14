@@ -24,7 +24,7 @@ namespace
     {
         typename map<string, Object*>::const_iterator it = plugin_map.find(name);
         if (it == plugin_map.end())
-            throw PluginNotFound();
+            throw PluginNotFound(name);
         return it->second;
     }
 
@@ -39,20 +39,32 @@ namespace
 
 PluginManager::PluginManager()
 {
-    // Load plugins from standard path
-    if (! exists(TYPELIB_PLUGIN_PATH))
-        return;
-    path plugin_dir(TYPELIB_PLUGIN_PATH);
-
-    directory_iterator end_it;
-    for (directory_iterator it(plugin_dir); it != end_it; ++it)
-    {
-        if (it->path().extension() == ".so" || it->path().extension() == ".dylib")
-#if BOOST_VERSION >= 104600
-            loadPlugin(it->path().string());
-#else
-            loadPlugin(it->path().file_string());
-#endif
+    // use the environment variable to override the load-path
+    if (const char* pluginPath = getenv("TYPELIB_PLUGIN_PATH")) {
+        // the delimiter inside the env-var
+        const std::string delim(":");
+        // make a copy of the env-var, which we can modify
+        std::string s(pluginPath);
+        // we need ":" at the end, to catch the last entry in the list
+        if (s.find_last_of(delim) != s.length())
+            s += ":";
+        // pos of delim for initial loop
+        size_t pos = s.find(delim);
+        do {
+            // use matched substr to lookup plugins in the directory
+            loadPluginFromDirectory(s.substr(0,pos));
+            // and remote the matched substr from the stored copy
+            s.erase(0, pos + delim.length());
+        // do all this until we reach the end of the stored copy
+        } while ((pos = s.find(delim)) != std::string::npos);
+    }
+    // fall back to load plugins from compiled-in path
+    else if (exists(TYPELIB_HARDCODED_PLUGIN_PATH)) {
+        loadPluginFromDirectory(TYPELIB_HARDCODED_PLUGIN_PATH);
+    } else {
+        std::cerr << "typelib: neither env-var 'TYPELIB_PLUGIN_PATH' nor hardcoded path "
+            << "'" << TYPELIB_HARDCODED_PLUGIN_PATH << "' point to existing directories. "
+            << "you probably won't have any plugins\n";
     }
 }
 
@@ -68,6 +80,36 @@ PluginManager::~PluginManager()
     //    dlclose(*it);
 }
 
+   /**
+    * uses "loadPlugin" to try to load all "*.so" or "*.dylib" files in the
+    * given directory
+    *
+    * @param directory place to look for "*.so" or "*.dylib" dynamic libraries
+    * @return true if any plugin could be loaded, false if no plugin could be
+    *         loaded (and prints a warning)
+    */
+bool PluginManager::loadPluginFromDirectory(std::string const& directory)
+{
+    path plugin_dir(directory);
+    bool success = false;
+
+    directory_iterator end_it;
+    for (directory_iterator it(plugin_dir); it != end_it; ++it)
+    {
+        if (it->path().extension() == ".so" || it->path().extension() == ".dylib")
+#if BOOST_VERSION >= 104600
+            success |= loadPlugin(it->path().string());
+#else
+            success |= loadPlugin(it->path().file_string());
+#endif
+    }
+
+    if (!success)
+        std::cerr << "typelib: can't load a plugin from directory '" << directory << "'" << endl;
+
+    return success;
+}
+
 bool PluginManager::loadPlugin(std::string const& path)
 {
     void* libhandle = dlopen(path.c_str(), RTLD_LAZY);
@@ -80,7 +122,7 @@ bool PluginManager::loadPlugin(std::string const& path)
     void* libentry  = dlsym(libhandle, "registerPlugins");
     if (!libentry)
     {
-        cerr << "typelib: " << libentry << " does not seem to be a valid typelib plugin" << endl;
+        cerr << "typelib: '" << path << "' does not seem to be a valid typelib plugin" << endl;
         return false;
     }
 

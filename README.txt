@@ -12,10 +12,6 @@ The following import/export plugins are available:
   - import/export into Typelib's own XML format
   - export IDL files (CORBA definition language)
 
-A binding to the Ruby language is provided, which allows to very easily interface
-a dynamic library from within Ruby code. This Ruby binding is based on the dyncall
-library, whose full source code is provided in this release.
-
 Typelib has been written by Sylvain Joyeux <sylvain.joyeux@m4x.org>
 
 Copyright 2004-2008 LAAS/CNRS <openrobots@laas.fr> and DGA <arnaud.paronian@dga.gouv.fr>

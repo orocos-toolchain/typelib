@@ -33,9 +33,6 @@ namespace typelib_ruby {
     extern void Typelib_init_specialized_types();
     extern void Typelib_init_registry();
     extern void Typelib_init_metadata();
-#ifdef WITH_DYNCALL
-    extern void Typelib_init_functions();
-#endif
 
     namespace cxx2rb {
         using namespace Typelib;

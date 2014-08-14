@@ -13,53 +13,10 @@ elseif(RDOC_EXECUTABLE)
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
-SET(SUPPORTED_DYNCALL_SYSTEMS Linux-i486 Linux-i586 Linux-i686 Linux-x86_64 Linux-ppc Darwin-i386 Darwin-x86_64)
-LIST(FIND SUPPORTED_DYNCALL_SYSTEMS ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR} SYSTEM_SUPPORTED)
-
-SET(ENABLE_DYNCALL ON)
-IF(${SYSTEM_SUPPORTED} EQUAL -1)
-    MESSAGE(STATUS "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR} is not (yet) supported by dyncall. dyncall support disabled")
-    SET(ENABLE_DYNCALL OFF)
-ENDIF(${SYSTEM_SUPPORTED} EQUAL -1)
-
-IF(ENABLE_DYNCALL)
-    IF(APPLE)
-        SET(DYNCALL_ARGS --target-macosx)
-    ENDIF(APPLE)
-    MESSAGE(STATUS "Ruby: enabled dyncall support")
-    SET(DYNCALL_SOURCE_DIR  "${CMAKE_CURRENT_BINARY_DIR}/dyncall-0.6")
-    SET(DYNCALL_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/dyncall")
-    SET(DYNCALL_INCLUDE_DIR ${DYNCALL_INSTALL_DIR}/include)
-    SET(DYNCALL_LIBRARIES ${DYNCALL_INSTALL_DIR}/lib/libdyncall_s.a ${DYNCALL_INSTALL_DIR}/lib/libdynload_s.a)
-    INCLUDE_DIRECTORIES("${DYNCALL_INSTALL_DIR}/include")
-    LINK_DIRECTORIES("${DYNCALL_INSTALL_DIR}/lib")
-
-    ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_SOURCE_DIR}/ConfigVars
-        COMMAND tar xzf ${CMAKE_CURRENT_SOURCE_DIR}/dyncall-0.6.tar.gz
-        COMMAND cd ${DYNCALL_SOURCE_DIR} && ./configure --prefix=${DYNCALL_INSTALL_DIR} ${DYNCALL_ARGS}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dyncall-0.6.tar.gz)
-
-    ADD_CUSTOM_COMMAND(OUTPUT ${DYNCALL_LIBRARIES}
-        COMMAND $(MAKE) -j1 "CFLAGS=-O3 -fPIC" "CC=gcc"
-        COMMAND $(MAKE) -j1 install
-        DEPENDS ${DYNCALL_SOURCE_DIR}/ConfigVars
-        WORKING_DIRECTORY ${DYNCALL_SOURCE_DIR})
-
-    ADD_CUSTOM_TARGET(dyncall DEPENDS ${DYNCALL_LIBRARIES})
-    ADD_DEFINITIONS(-DWITH_DYNCALL)
-
-    SET(DYNCALL_INTERFACE ext/functions.cc)
-ENDIF(ENABLE_DYNCALL)
-
 ADD_RUBY_EXTENSION(typelib_ruby 
     ext/typelib_ruby.cc ext/value.cc ext/strings.cc
     ext/convert.cc ext/specialized_types.cc 
-    ext/registry.cc ext/memory.cc ext/metadata.cc ${DYNCALL_INTERFACE})
-
-IF(ENABLE_DYNCALL)
-    TARGET_LINK_LIBRARIES(typelib_ruby ${DYNCALL_LIBRARIES})
-    ADD_DEPENDENCIES(typelib_ruby dyncall)
-ENDIF(ENABLE_DYNCALL)
+    ext/registry.cc ext/memory.cc ext/metadata.cc)
 
 TARGET_LINK_LIBRARIES(typelib_ruby typeLib typeLang_cSupport ${Utilmm_LIBRARIES})
 

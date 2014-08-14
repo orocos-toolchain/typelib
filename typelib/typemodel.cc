@@ -566,19 +566,14 @@ namespace Typelib
 
     std::string Container::kind() const { return m_kind; }
 
-    Container::AvailableContainers* Container::s_available_containers;
+    Container::AvailableContainers Container::s_available_containers;
     Container::AvailableContainers Container::availableContainers() {
-        if (!s_available_containers)
-            return Container::AvailableContainers();
-        return *s_available_containers;
+        return s_available_containers;
     }
 
     void Container::registerContainer(std::string const& name, ContainerFactory factory)
     {
-        if (s_available_containers == 0)
-            s_available_containers = new Container::AvailableContainers;
-
-        (*s_available_containers)[name] = factory;
+        s_available_containers[name] = factory;
     }
     Container const& Container::createContainer(Registry& r, std::string const& name, Type const& on)
     {
@@ -588,8 +583,8 @@ namespace Typelib
     }
     Container const& Container::createContainer(Registry& r, std::string const& name, std::list<Type const*> const& on)
     {
-        AvailableContainers::const_iterator it = s_available_containers->find(name);
-        if (it == s_available_containers->end())
+        AvailableContainers::const_iterator it = s_available_containers.find(name);
+        if (it == s_available_containers.end())
             throw UnknownContainer(name);
         return (*it->second)(r, on);
     }
