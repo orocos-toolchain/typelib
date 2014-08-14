@@ -178,12 +178,6 @@ namespace
             m_front = "string";
         }
         else
-        if (type.getName() == "/std/basic_string</char>")
-        {
-            m_namespace = "";
-            m_front = "string";
-        }
-        else
         {
             // Get the basename for "kind"
             m_namespace = getIDLBase(type.getIndirection()).first;
