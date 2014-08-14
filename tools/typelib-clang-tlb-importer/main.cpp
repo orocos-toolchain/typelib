@@ -188,6 +188,8 @@ int main(int argc, const char **argv) {
         {
             if(it->getCategory() == Typelib::Type::Opaque)
             {
+                Typelib::MetaData &mdata(it->getMetaData());
+                mdata.add("found", "false");
                 OpaqueFinder.addMatcher(namedDecl(hasName(builder.typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
             }
         }
@@ -196,7 +198,26 @@ int main(int argc, const char **argv) {
             std::cerr << "Parsing error in clang, cannot continue" << std::endl;
             return retval;
         }
+        
+        bool opaquesFound = true;;
+        for(Typelib::Registry::Iterator it = builder.getRegistry().begin(); it != builder.getRegistry().end(); it++)
+        {
+            if(it->getCategory() == Typelib::Type::Opaque)
+            {
+                Typelib::MetaData &mdata(it->getMetaData());
+                if(mdata.get().count("found"))
+                {
+                    std::cout << "Error, opaque " << it->getName() << " could not be resolved " << std::endl;
+                    opaquesFound = false;
+                }
+                OpaqueFinder.addMatcher(namedDecl(hasName(builder.typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
+            }
+        }
+        if(!opaquesFound)
+            exit(0);
     }
+    
+    
 
     ast_matchers::MatchFinder Finder;
 
