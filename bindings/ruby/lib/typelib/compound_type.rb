@@ -359,20 +359,20 @@ module Typelib
                 fields = Array.new
                 if options[:recursive]
                     each_field.map do |name, type|
-                        fields << Hash['name' => name, 'type' => type.to_h(options)]
+                        fields << Hash[name: name, type: type.to_h(options)]
                     end
                 else
                     each_field.map do |name, type|
-                        fields << Hash['name' => name, 'type' => type.to_h_minimal(options)]
+                        fields << Hash[name: name, type: type.to_h_minimal(options)]
                     end
                 end
 
                 if options[:layout_info]
                     fields.each do |field|
-                        field['offset'] = offset_of(field['name'])
+                        field[:offset] = offset_of(field[:name])
                     end
                 end
-                super.merge('fields' => fields)
+                super.merge(fields: fields)
             end
 
 	    def pretty_print_common(pp) # :nodoc:
@@ -502,8 +502,8 @@ module Typelib
 
         # (see Type#to_simple_value)
         #
-        # Compound types are returned as a hash from the field name to the
-        # converted field value.
+        # Compound types are returned as a hash from the field name (as a
+        # string) to the converted field value.
         def to_simple_value(options = Hash.new)
             result = Hash.new
             raw_each_field { |name, v| result[name.to_s] = v.to_simple_value(options) }

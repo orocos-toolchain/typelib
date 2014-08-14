@@ -90,9 +90,9 @@ module Typelib
             #
             # @return [Hash]
             def to_h_minimal(options = Hash.new)
-                result = Hash['name' => name, 'class' => superclass.name]
+                result = Hash[name: name, class: superclass.name]
                 if options[:layout_info]
-                    result['size'] = size
+                    result[:size] = size
                 end
                 result
             end

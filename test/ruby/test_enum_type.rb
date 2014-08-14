@@ -17,11 +17,11 @@ describe Typelib::EnumType do
             end
 
             it "should be able to describe the type" do
-                expected = Hash['class' => 'Typelib::EnumType',
-                                'name' => enum_t.name,
-                                'values' => [
-                                    Hash['name' => 'S0', 'value' => 0],
-                                    Hash['name' => 'S10', 'value' => 10]
+                expected = Hash[class: 'Typelib::EnumType',
+                                name: enum_t.name,
+                                values: [
+                                    Hash[name: 'S0', value: 0],
+                                    Hash[name: 'S10', value: 10]
                                 ]]
                 assert_equal expected, enum_t.to_h
             end

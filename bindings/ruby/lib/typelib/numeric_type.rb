@@ -37,12 +37,12 @@ module Typelib
         # @return (see Type#to_h)
         def self.to_h(options = Hash.new)
             info = super
-            info['size'] = size
+            info[:size] = size
             if integer?
-                info['integer'] = true
-                info['unsigned'] = unsigned?
+                info[:integer] = true
+                info[:unsigned] = unsigned?
             else
-                info['integer'] = false
+                info[:integer] = false
             end
             info
         end

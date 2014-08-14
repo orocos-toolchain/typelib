@@ -19,32 +19,32 @@ describe Typelib::CompoundType do
             end
 
             it "should be able to describe the type" do
-                expected = Hash['class' => 'Typelib::CompoundType',
-                                'name' => compound_t.name,
-                                'fields' => [
-                                    Hash['name' => 'f0', 'type' => f0_t.to_h_minimal(layout_info: false)],
-                                    Hash['name' => 'f1', 'type' => f1_t.to_h_minimal(layout_info: false)]
+                expected = Hash[class: 'Typelib::CompoundType',
+                                name: compound_t.name,
+                                fields: [
+                                    Hash[name: 'f0', type: f0_t.to_h_minimal(layout_info: false)],
+                                    Hash[name: 'f1', type: f1_t.to_h_minimal(layout_info: false)]
                                 ]]
                 assert_equal expected, compound_t.to_h(layout_info: false, recursive: false)
             end
 
             it "should describe the sub-type fully if recursive is true" do
-                expected = Hash['class' => 'Typelib::CompoundType',
-                                'name' => compound_t.name,
-                                'fields' => [
-                                    Hash['name' => 'f0', 'type' => f0_t.to_h(layout_info: false)],
-                                    Hash['name' => 'f1', 'type' => f1_t.to_h(layout_info: false)]
+                expected = Hash[class: 'Typelib::CompoundType',
+                                name: compound_t.name,
+                                fields: [
+                                    Hash[name: 'f0', type: f0_t.to_h(layout_info: false)],
+                                    Hash[name: 'f1', type: f1_t.to_h(layout_info: false)]
                                 ]]
                 assert_equal expected, compound_t.to_h(layout_info: false, recursive: true)
             end
 
             it "should add the field offsets if layout_info is true" do
-                expected = Hash['class' => 'Typelib::CompoundType',
-                                'name' => compound_t.name,
-                                'size' => compound_t.size,
-                                'fields' => [
-                                    Hash['name' => 'f0', 'type' => f0_t.to_h_minimal(layout_info: true), 'offset' => 0],
-                                    Hash['name' => 'f1', 'type' => f1_t.to_h_minimal(layout_info: true), 'offset' => 100]
+                expected = Hash[class: 'Typelib::CompoundType',
+                                name: compound_t.name,
+                                size: compound_t.size,
+                                fields: [
+                                    Hash[name: 'f0', type: f0_t.to_h_minimal(layout_info: true), offset: 0],
+                                    Hash[name: 'f1', type: f1_t.to_h_minimal(layout_info: true), offset: 100]
                                 ]]
                 assert_equal expected, compound_t.to_h(layout_info: true, recursive: false)
             end

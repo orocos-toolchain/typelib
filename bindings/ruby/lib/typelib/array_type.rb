@@ -193,8 +193,8 @@ module Typelib
         # @return (see Type#to_h)
         def self.to_h(options = Hash.new)
             info = super
-            info['length'] = length
-            info['element'] =
+            info[:length] = length
+            info[:element] =
                 if options[:recursive]
                     deference.to_h(options)
                 else
@@ -209,8 +209,8 @@ module Typelib
         # elements, or the hash described for the :pack_simple_arrays option.
         def to_simple_value(options = Hash.new)
             if options[:pack_simple_arrays] && element_t.respond_to?(:pack_code)
-                Hash['pack_code' => element_t.pack_code,
-                     'data' => to_byte_array]
+                Hash[:pack_code => element_t.pack_code,
+                     :data => to_byte_array]
             else
                 raw_each.map { |v| v.to_simple_value(options) }
             end

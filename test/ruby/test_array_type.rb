@@ -15,18 +15,18 @@ describe Typelib::ArrayType do
             end
 
             it "should be able to describe the type" do
-                expected = Hash['class' => 'Typelib::ArrayType',
-                                'name' => array_t.name,
-                                'element' => element_t.to_h_minimal(layout_info: false),
-                                'length' => 10]
+                expected = Hash[class: 'Typelib::ArrayType',
+                                name: array_t.name,
+                                element: element_t.to_h_minimal(layout_info: false),
+                                length: 10]
                 assert_equal expected, array_t.to_h(layout_info: false, recursive: false)
             end
 
             it "should describe the sub-type fully if recursive is true" do
-                expected = Hash['class' => 'Typelib::ArrayType',
-                                'name' => array_t.name,
-                                'element' => element_t.to_h(layout_info: false),
-                                'length' => 10]
+                expected = Hash[class: 'Typelib::ArrayType',
+                                name: array_t.name,
+                                element: element_t.to_h(layout_info: false),
+                                length: 10]
                 assert_equal expected, array_t.to_h(layout_info: false, recursive: true)
             end
         end
@@ -47,7 +47,7 @@ describe Typelib::ArrayType do
         end
         it "returns the pack code as well as the packed data if :pack_simple_arrays is true and the array elements are numerics" do
             value = array.to_simple_value(pack_simple_arrays: true)
-            assert_equal ruby_array, value['data'].unpack("#{value['pack_code']}*")
+            assert_equal ruby_array, value[:data].unpack("#{value[:pack_code]}*")
         end
     end
 end

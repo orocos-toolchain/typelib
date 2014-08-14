@@ -35,8 +35,8 @@ module Typelib
             # @return (see Type#to_h)
             def to_h(options = Hash.new)
                 info = super
-                info['values'] = keys.map do |n, v|
-                    Hash['name' => n, 'value' => v]
+                info[:values] = keys.map do |n, v|
+                    Hash[name: n, value: v]
                 end
                 info
             end

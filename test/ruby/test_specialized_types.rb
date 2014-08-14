@@ -1,7 +1,8 @@
 require 'typelib/test'
-require BUILDDIR + '/ruby/libtest_ruby'
 
 class TC_SpecializedTypes < Minitest::Test
+    SRCDIR = File.expand_path('..', File.dirname(__FILE__))
+
     include Typelib
     def setup
         super
@@ -46,7 +47,7 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_compound_type_definition
-	t = compound_t
+        t = compound_t
         assert(t < Typelib::CompoundType)
 
         fields = [['plain', registry.get('/int8_t')],
@@ -250,7 +251,7 @@ class TC_SpecializedTypes < Minitest::Test
             array[i] = Float(i)/10.0
         end
         (0..(array.size - 1)).each do |i|
-	    assert_in_delta(Float(i) / 10.0, array[i], 0.01)
+            assert_in_delta(Float(i) / 10.0, array[i], 0.01)
         end
     end
 
@@ -402,30 +403,30 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_numeric
-	long = make_registry.get("/int")
-	assert(long < NumericType)
-	assert(long.integer?)
-	assert(!long.unsigned?)
-	assert_equal(4, long.size)
+        long = make_registry.get("/int")
+        assert(long < NumericType)
+        assert(long.integer?)
+        assert(!long.unsigned?)
+        assert_equal(4, long.size)
 
         long_v = long.from_ruby(10)
         assert_equal 10, long_v.to_ruby
 
-	ulong = make_registry.get("/unsigned int")
-	assert(ulong < NumericType)
-	assert_equal(4, ulong.size)
-	assert(ulong.integer?)
-	assert(ulong.unsigned?)
+        ulong = make_registry.get("/unsigned int")
+        assert(ulong < NumericType)
+        assert_equal(4, ulong.size)
+        assert(ulong.integer?)
+        assert(ulong.unsigned?)
 
-	double = make_registry.get("/double")
-	assert(double < NumericType)
-	assert_equal(8, double.size)
-	assert(!double.integer?)
-	assert_raises(ArgumentError) { double.unsigned? }
+        double = make_registry.get("/double")
+        assert(double < NumericType)
+        assert_equal(8, double.size)
+        assert(!double.integer?)
+        assert_raises(ArgumentError) { double.unsigned? }
     end
 
     def test_numeric_to_ruby
-	long = make_registry.get("/int")
+        long = make_registry.get("/int")
         v = long.new
         v.zero!
         zero = Typelib.to_ruby(v)
@@ -434,21 +435,21 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_numeric_from_ruby
-	long = make_registry.get("/int")
+        long = make_registry.get("/int")
         zero = Typelib.from_ruby(0, long)
         assert_kind_of Typelib::NumericType, zero
         assert_equal 0, Typelib.to_ruby(zero)
     end
 
     def test_numeric_from_ruby_raises_UnknownConversionRequested_when_converting_a_non_numeric
-	long = make_registry.get("/int")
+        long = make_registry.get("/int")
         assert_raises(UnknownConversionRequested) { long.from_ruby('10') }
     end
 
     def test_string_handling
-	char_pointer  = make_registry.build("char*").new
-	assert(char_pointer.string_handler?)
-	assert(char_pointer.respond_to?(:to_str))
+        char_pointer  = make_registry.build("char*").new
+        assert(char_pointer.string_handler?)
+        assert(char_pointer.respond_to?(:to_str))
     end
 
     def test_null
