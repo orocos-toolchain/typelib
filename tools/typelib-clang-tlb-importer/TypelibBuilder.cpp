@@ -82,13 +82,9 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
 
     const Typelib::Container::AvailableContainers& containers = Typelib::Container::availableContainers();
 
-#warning HACK, renaming '/std/basic_string</char>' to '/std/string'
-    std::string typeName = cxxToTyplibName(underlyingType->getQualifiedNameAsString());
-    if (typeName == "/std/basic_string</char>")
-        typeName = "/std/string";
+    std::string containerName = cxxToTyplibName(underlyingType->getQualifiedNameAsString());
 
-    Typelib::Container::AvailableContainers::const_iterator it = containers.find(typeName);
-    
+    Typelib::Container::AvailableContainers::const_iterator it = containers.find(containerName);
     if(it != containers.end())
     {
         std::cerr << "Typelib knowns about this container: '" << it->first << "'" << std::endl;
@@ -125,14 +121,22 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
                 continue;
             }
             
-            const Typelib::Type *argType = checkRegisterType(getTypelibNameForQualType(arg.getAsType().getCanonicalType()), typePtr, decl->getASTContext());
+            std::string originalTypeName = getTypelibNameForQualType(arg.getAsType().getCanonicalType());
+            
+            const Typelib::Type *argType = checkRegisterType(originalTypeName, typePtr, decl->getASTContext());
             if(!argType)
             {
                 return false;
             }
             
-            typelibArgList.push_back(argType);
+            if(containerName == "/std/string" && originalTypeName != "/char")
+            {
+                std::cout << "Ignoring any basic string, that is not of argument type char" << std::endl;
+                //wo only support std::basic_string<char>
+                return false;
+            }
             
+            typelibArgList.push_back(argType);
             
             std::cerr << "Arg is '" << getTypelibNameForQualType(arg.getAsType()) << "'" << std::endl;
         }
@@ -219,11 +223,29 @@ bool TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const
     {
         if(builtin->isSignedInteger())
         {
-            newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::SInt);
+            if(typeName == "/char")
+            {
+                typeName = "/int8_t";
+                newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::SInt);
+                registry.add(newNumeric);
+                registry.alias(newNumeric->getName(), "/char");
+                return true;
+            }
+            else
+                newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::SInt);
         }
         else
         {
-            newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::UInt);
+            if(typeName == "/char")
+            {
+                typeName = "/uint8_t";
+                newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::UInt);
+                registry.add(newNumeric);
+                registry.alias(newNumeric->getName(), "/char");
+                return true;
+            }
+            else
+                newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::UInt);
         }
     }
     
@@ -323,6 +345,14 @@ std::string TypelibBuilder::cxxToTyplibName(const std::string name)
     {
         ret.replace(start_pos, from.length(), to);
     }
+    
+#warning HACK, renaming '/std/basic_string</char>' to '/std/string'
+    if(ret == "/std/basic_string")
+        return "/std/string";
+    
+    if(ret == "/std/basic_string</char>")
+        return "/std/string";
+    
     return ret;
 }
 
