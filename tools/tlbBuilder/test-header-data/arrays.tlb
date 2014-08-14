@@ -1,33 +1,39 @@
 <?xml version="1.0"?>
 <typelib>
-  <numeric name="/double" category="float" size="8" >  
+  <numeric name="/double" category="float" size="8" >
+  
   </numeric>
-  <numeric name="/int" category="sint" size="4" >  
+  <numeric name="/int" category="sint" size="4" >
+  
   </numeric>
-  <numeric name="/long" category="sint" size="8" >  
+  <numeric name="/long" category="sint" size="8" >
+  
   </numeric>
-  <numeric name="/unsigned int" category="uint" size="4" >  
+  <numeric name="/unsigned int" category="uint" size="4" >
+  
   </numeric>
   <numeric name="/unsigned long long" category="uint" size="8" >
-
+  
   </numeric>
   <compound name="/timespec" size="16" >
     <field name="tv_sec" type="/long" offset="0">
-
+    
     </field>
     <field name="tv_nsec" type="/long" offset="8">
     
     </field>
-  
+  <metadata key="orogen_include"><![CDATA[/usr/include/time.h]]></metadata>
+
   </compound>
   <compound name="/arrays/C1" size="40" >
     <field name="A3" type="/timespec[2]" offset="0">
     
     </field>
     <field name="m1" type="/int" offset="32">
-
+    
     </field>
-  
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/arrays.h]]></metadata>
+
   </compound>
   <compound name="/arrays/D1" size="2064" >
     <field name="sec" type="/int" offset="0">
@@ -40,8 +46,9 @@
     
     </field>
     <field name="a" type="/unsigned long long" offset="2056">
-
+    
     </field>
-  
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/arrays.h]]></metadata>
+
   </compound>
 </typelib>

@@ -1,18 +1,21 @@
 <?xml version="1.0"?>
 <typelib>
-  <numeric name="/int" category="sint" size="4" >  
+  <numeric name="/int" category="sint" size="4" >
+  
   </numeric>
   <compound name="/classes/BaseClass" size="4" >
     <field name="a" type="/int" offset="0">
     
     </field>
-  
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/classes.h]]></metadata>
+
   </compound>
   <compound name="/classes/FirstLevel" size="4" >
     <field name="a" type="/int" offset="0">
     
     </field>
-  
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/classes.h]]></metadata>
+
   </compound>
   <compound name="/classes/NextLevel" size="8" >
     <field name="a" type="/int" offset="0">
@@ -21,6 +24,7 @@
     <field name="b" type="/int" offset="4">
     
     </field>
-  
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/classes.h]]></metadata>
+
   </compound>
 </typelib>

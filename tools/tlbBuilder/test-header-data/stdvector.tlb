@@ -1,5 +1,69 @@
 <?xml version="1.0"?>
 <typelib>
-  <numeric name="/int" category="sint" size="4" >
+  <numeric name="/double" category="float" size="8" >
+  
   </numeric>
+  <numeric name="/float" category="float" size="4" >
+  
+  </numeric>
+  <numeric name="/int" category="sint" size="4" >
+  
+  </numeric>
+  <numeric name="/long" category="sint" size="8" >
+  
+  </numeric>
+  <compound name="/timespec" size="16" >
+    <field name="tv_sec" type="/long" offset="0">
+    
+    </field>
+    <field name="tv_nsec" type="/long" offset="8">
+    
+    </field>
+  <metadata key="orogen_include"><![CDATA[/usr/include/time.h]]></metadata>
+
+  </compound>
+  <container  name="/std/vector&lt;/double&gt;" of="/double" size="24" kind="/std/vector" >
+  
+  </container>
+  <container  name="/std/vector&lt;/float&gt;" of="/float" size="24" kind="/std/vector" >
+  
+  </container>
+  <container  name="/std/vector&lt;/timespec&gt;" of="/timespec" size="24" kind="/std/vector" >
+  
+  </container>
+  <alias name="/std/vector&lt;/double,/std/allocator&lt;/double&gt;&gt;" source="/std/vector&lt;/double&gt;"/>
+  <alias name="/std/vector&lt;/float,/std/allocator&lt;/float&gt;&gt;" source="/std/vector&lt;/float&gt;"/>
+  <alias name="/std/vector&lt;/timespec,/std/allocator&lt;/timespec&gt;&gt;" source="/std/vector&lt;/timespec&gt;"/>
+  <compound name="/stdvector/C1" size="48" >
+    <field name="v" type="/std/vector&lt;/double&gt;[2]" offset="0">
+    
+    </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/stdvector.h]]></metadata>
+
+  </compound>
+  <compound name="/stdvector/S1" size="32" >
+    <field name="a" type="/int" offset="0">
+    
+    </field>
+    <field name="v1" type="/std/vector&lt;/float&gt;" offset="8">
+    
+    </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/stdvector.h]]></metadata>
+
+  </compound>
+  <compound name="/stdvector/S2" size="24" >
+    <field name="v1" type="/std/vector&lt;/timespec&gt;" offset="0">
+    
+    </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/stdvector.h]]></metadata>
+
+  </compound>
+  <compound name="/stdvector/S3" size="24" >
+    <field name="v2" type="/std/vector&lt;/double&gt;" offset="0">
+    
+    </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/stdvector.h]]></metadata>
+
+  </compound>
+  <alias name="/stdvector/myvec" source="/std/vector&lt;/double&gt;"/>
 </typelib>

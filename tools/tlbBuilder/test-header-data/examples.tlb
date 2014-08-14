@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
 <typelib>
   <numeric name="/int" category="sint" size="4" >
+  
   </numeric>
   <compound name="/examples/MultiArrayStruct" size="16" >
     <field name="array" type="/int[2][2]" offset="0">
-
+    
     </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/examples.h]]></metadata>
 
   </compound>
 </typelib>

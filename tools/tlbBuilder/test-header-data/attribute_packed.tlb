@@ -1,57 +1,65 @@
 <?xml version="1.0"?>
 <typelib>
   <numeric name="/float" category="float" size="4" >
+  
   </numeric>
   <numeric name="/int" category="sint" size="4" >
+  
   </numeric>
   <numeric name="/long" category="sint" size="8" >
+  
   </numeric>
   <numeric name="/signed char" category="sint" size="1" >
+  
   </numeric>
   <numeric name="/unsigned char" category="uint" size="1" >
+  
   </numeric>
   <numeric name="/unsigned short" category="uint" size="2" >
+  
   </numeric>
   <compound name="/attribute_packed/C1" size="20" >
     <field name="a" type="/unsigned char" offset="0">
-
+    
     </field>
     <field name="b" type="/int" offset="1">
-
+    
     </field>
     <field name="c" type="/long" offset="5">
-
+    
     </field>
     <field name="d" type="/signed char" offset="13">
-
+    
     </field>
     <field name="e" type="/float" offset="14">
-
+    
     </field>
     <field name="f" type="/unsigned short" offset="18">
-
+    
     </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/attribute_packed.h]]></metadata>
 
   </compound>
   <compound name="/attribute_packed/S1" size="20" >
     <field name="a" type="/unsigned char" offset="0">
-
+    
     </field>
     <field name="b" type="/int" offset="1">
-
+    
     </field>
     <field name="c" type="/long" offset="5">
-
+    
     </field>
     <field name="d" type="/signed char" offset="13">
-
+    
     </field>
     <field name="e" type="/float" offset="14">
-
+    
     </field>
     <field name="f" type="/unsigned short" offset="18">
-
+    
     </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/attribute_packed.h]]></metadata>
 
   </compound>
 </typelib>

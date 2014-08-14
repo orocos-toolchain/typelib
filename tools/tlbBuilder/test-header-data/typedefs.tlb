@@ -1,31 +1,36 @@
 <?xml version="1.0"?>
 <typelib>
   <numeric name="/int" category="sint" size="4" >
+  
   </numeric>
   <numeric name="/unsigned char" category="uint" size="1" >
+  
   </numeric>
   <compound name="/ns/aClass" size="4" >
     <field name="A" type="/int" offset="0">
-
+    
     </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/typedefs.h]]></metadata>
 
   </compound>
+  <alias name="/ns/anotherIntTypedef" source="/int"/>
   <alias name="/ns/intTypedef" source="/int"/>
   <alias name="/ns/intTypedefTypedef" source="/int"/>
   <alias name="/ns/aClassTypedef" source="/ns/aClass"/>
   <compound name="/ns/test" size="16" >
     <field name="C" type="/unsigned char" offset="0">
-
+    
     </field>
     <field name="A" type="/ns/aClass" offset="4">
-
+    
     </field>
     <field name="B" type="/int" offset="8">
-
+    
     </field>
     <field name="D" type="/int" offset="12">
-
+    
     </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/typedefs.h]]></metadata>
 
   </compound>
 </typelib>

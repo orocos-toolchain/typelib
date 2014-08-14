@@ -1,21 +1,25 @@
 <?xml version="1.0"?>
 <typelib>
   <numeric name="/double" category="float" size="8" >
+  
   </numeric>
   <numeric name="/int" category="sint" size="4" >
+  
   </numeric>
   <numeric name="/unsigned int" category="uint" size="4" >
+  
   </numeric>
   <compound name="/Laser/Data" size="2056" >
     <field name="sec" type="/int" offset="0">
-
+    
     </field>
     <field name="usec" type="/unsigned int" offset="4">
-
+    
     </field>
     <field name="ranges" type="/double[256]" offset="8">
-
+    
     </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/laser.h]]></metadata>
 
   </compound>
   <alias name="/Laser/array_typedef" source="/int[256]"/>

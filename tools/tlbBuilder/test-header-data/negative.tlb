@@ -1,3 +1,26 @@
 <?xml version="1.0"?>
 <typelib>
+  <numeric name="/int" category="sint" size="4" >
+  
+  </numeric>
+  <compound name="/negative/anon_C2" size="8" >
+    <field name="A" type="/int" offset="0">
+    
+    </field>
+    <field name="B" type="/int" offset="4">
+    
+    </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/negative.h]]></metadata>
+
+  </compound>
+  <compound name="/negative/anon_S2" size="8" >
+    <field name="A" type="/int" offset="0">
+    
+    </field>
+    <field name="B" type="/int" offset="4">
+    
+    </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/tlbBuilder/test-header-data/negative.h]]></metadata>
+
+  </compound>
 </typelib>
