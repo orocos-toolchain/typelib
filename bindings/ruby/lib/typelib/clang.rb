@@ -37,7 +37,7 @@ module Typelib
             puts("clang.rb: Cmd is : #{finalCmd}")
             
             #call extractor
-            retVal = `#{finalCmd}`
+            retVal = system(finalCmd)
             
             result = Registry.from_xml(tmpReg.read())
             
