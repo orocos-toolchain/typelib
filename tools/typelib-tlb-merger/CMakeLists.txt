@@ -6,3 +6,5 @@ target_link_libraries(typelib-tlb-merger
     typeLib
     typeLang_tlb
     )
+
+add_subdirectory(test)
