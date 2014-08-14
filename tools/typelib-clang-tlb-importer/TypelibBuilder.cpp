@@ -80,9 +80,14 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
     
     std::cerr << "Underlying name " << decl->getUnderlyingDecl()->getQualifiedNameAsString() << std::endl;;
 
-    Typelib::Container::AvailableContainers containers = Typelib::Container::availableContainers();
+    const Typelib::Container::AvailableContainers& containers = Typelib::Container::availableContainers();
 
-    Typelib::Container::AvailableContainers::const_iterator it = containers.find(cxxToTyplibName(underlyingType->getQualifiedNameAsString()));
+#warning HACK, renaming '/std/basic_string</char>' to '/std/string'
+    std::string typeName = cxxToTyplibName(underlyingType->getQualifiedNameAsString());
+    if (typeName == "/std/basic_string</char>")
+        typeName = "/std/string";
+
+    Typelib::Container::AvailableContainers::const_iterator it = containers.find(typeName);
     
     if(it != containers.end())
     {
