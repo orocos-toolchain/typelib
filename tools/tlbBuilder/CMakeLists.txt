@@ -145,6 +145,6 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
     # change is good just place the new tlb-file besides the respective header
     # in the VCS and rerun the test
     add_test(NAME compare-${HEADER_NAME}.tlb
-        COMMAND diff -u ${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.tlb ${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/${HEADER_NAME}.tlb
+        COMMAND diff -u ${TLB_FILE} ${CMAKE_CURRENT_SOURCE_DIR}/test-header-data/${HEADER_NAME}.tlb
         )
 endforeach(HEADER_FILE)
