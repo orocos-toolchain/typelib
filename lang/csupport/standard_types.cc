@@ -13,7 +13,7 @@ static void addStandardTypes(Typelib::Registry& r)
     r.alias("/nil", "/void");
     
     // Add standard sized integers
-    static const int sizes[] = { 2, 4, 8 };
+    static const int sizes[] = { 1, 2, 4, 8 };
     for (int i = 0; i < 4; ++i)
     {
         std::string suffix = "int" + boost::lexical_cast<std::string>(sizes[i] * 8) + "_t";
@@ -21,24 +21,17 @@ static void addStandardTypes(Typelib::Registry& r)
         r.add(new Numeric("/u" + suffix, sizes[i], Numeric::UInt));
     }
 
-    r.add(new Numeric("/signed char", sizeof(signed char), Numeric::SInt));
-    r.add(new Numeric("/unsigned char", sizeof(unsigned char), Numeric::UInt));
-
-    r.alias("/signed char", "/int8_t");
-    r.alias("/unsigned char", "/uint8_t");
-    
+    std::string normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<signed char>::digits + 1) + "_t";
+    r.alias(normalized_type_name, "/signed char");
     if (std::numeric_limits<char>::is_signed)
-    {
-        r.add(new Numeric("/char", sizeof(char), Numeric::SInt));
-        r.alias("/char", "/int8_t");
-    }
-    else
-    {
-        r.add(new Numeric("/char", sizeof(char), Numeric::UInt));
-        r.alias("/char", "/uint8_t");
-    }
+        r.alias(normalized_type_name, "/char");
+    normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<signed char>::digits + 1) + "_t";
+    if (!std::numeric_limits<char>::is_signed)
+        r.alias(normalized_type_name, "/char");
+    r.alias(normalized_type_name, "/unsigned char");
 
-    std::string normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<short int>::digits + 1) + "_t";
+
+    normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<short int>::digits + 1) + "_t";
     r.alias(normalized_type_name, "/signed short int");
     r.alias(normalized_type_name, "/signed int short");
     r.alias(normalized_type_name, "/int signed short");
