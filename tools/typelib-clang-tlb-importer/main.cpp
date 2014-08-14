@@ -70,7 +70,7 @@ class OpaqueCallback : public MatchFinder::MatchCallback {
 
     virtual void run(const MatchFinder::MatchResult &Result) {
 
-        std::cout << "Found my Opaque" << std::endl;
+        std::cerr << "Found my Opaque" << std::endl;
         
    
         if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
@@ -80,8 +80,8 @@ class OpaqueCallback : public MatchFinder::MatchCallback {
         }
         else
         {
-            std::cout << "WEIRED" << std::endl;
-            exit(1);
+            std::cerr << "WEIRED" << std::endl;
+            exit(EXIT_FAILURE);
         }
     }
 };
@@ -177,7 +177,7 @@ int main(int argc, const char **argv) {
     //load opque registry
     if(!opaquePath.empty())
     {
-        std::cout << "Loading opaque tlb-registry from '" << opaquePath << "'" << std::endl;
+        std::cerr << "Loading opaque tlb-registry from '" << opaquePath << "'" << std::endl;
         builder.loadRegistry(opaquePath);
 
         //resolve opaues to canonical names
@@ -196,7 +196,7 @@ int main(int argc, const char **argv) {
 
         if (int retval = Tool.run(newFrontendActionFactory(&OpaqueFinder))) {
             std::cerr << "Parsing error in clang, cannot continue" << std::endl;
-            return retval;
+            exit(retval);
         }
         
         bool opaquesFound = true;;
@@ -207,14 +207,16 @@ int main(int argc, const char **argv) {
                 Typelib::MetaData &mdata(it->getMetaData());
                 if(mdata.get().count("found"))
                 {
-                    std::cout << "Error, opaque " << it->getName() << " could not be resolved " << std::endl;
+                    std::cerr << "Error, opaque " << it->getName() << " could not be resolved " << std::endl;
                     opaquesFound = false;
                 }
                 OpaqueFinder.addMatcher(namedDecl(hasName(builder.typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
             }
         }
-        if(!opaquesFound)
-            exit(0);
+        if(!opaquesFound) {
+            std::cerr << "hello, boy..." << std::endl;
+            exit(EXIT_FAILURE);
+        }
     }
     
     
@@ -229,18 +231,17 @@ int main(int argc, const char **argv) {
     
     if (int retval = Tool.run(newFrontendActionFactory(&Finder))) {
         std::cerr << "Parsing error in clang, cannot continue" << std::endl;
-        return retval;
+        exit(retval);
     }
 
     TlbExport exporter;
     if(!tlbSavePath.empty())
     {
-        std::cout << "Saving tlb-registry into file '" << tlbSavePath << "'" << std::endl;
+        std::cerr << "Saving tlb-registry into file '" << tlbSavePath << "'" << std::endl;
         exporter.save(tlbSavePath, utilmm::config_set(), builder.getRegistry());
     } else {
         exporter.save(std::cout, utilmm::config_set(), builder.getRegistry());
     }
     
-    return 0;
-  
+    exit(EXIT_SUCCESS);
 }

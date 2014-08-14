@@ -72,8 +72,15 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
     const clang::NamedDecl *underlyingType = decl->getUnderlyingDecl();
     
     
-    if(!underlyingType || ( underlyingType->getKind() != clang::Decl::ClassTemplateSpecialization))
+    // skip non-template specializations
+    if (!underlyingType ||
+        (underlyingType->getKind() != clang::Decl::ClassTemplateSpecialization))
         return false;
+
+    // some things of later use
+    const clang::ClassTemplateSpecializationDecl *sdecl =
+        static_cast<const clang::ClassTemplateSpecializationDecl *>(decl);
+    const clang::TemplateArgumentList &argumentList(sdecl->getTemplateArgs());
 
     std::cerr << canonicalTypeName <<  " is possibly a Container " << std::endl;
     
@@ -88,9 +95,6 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
     if(it != containers.end())
     {
         std::cerr << "Typelib knowns about this container: '" << it->first << "'" << std::endl;
-        const clang::ClassTemplateSpecializationDecl *sdecl = static_cast<const clang::ClassTemplateSpecializationDecl *>(underlyingType);
-        
-        const clang::TemplateArgumentList &argumentList(sdecl->getTemplateArgs());
         
         Typelib::Container::ContainerFactory factory = it->second;
         
@@ -131,7 +135,7 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
             
             if(containerName == "/std/string" && originalTypeName != "/char")
             {
-                std::cout << "Ignoring any basic string, that is not of argument type char" << std::endl;
+                std::cerr << "Ignoring any basic string, that is not of argument type char" << std::endl;
                 //wo only support std::basic_string<char>
                 return false;
             }
@@ -174,7 +178,7 @@ void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
         if(!decl->getTypeForDecl())
         {
             std::cerr << "Error, could not get Type for Opaque Declaration '" << decl->getQualifiedNameAsString() << "'" << std::endl;
-            exit(0);
+            exit(EXIT_FAILURE);
         }
         
         canoniclaOpaqueName = getTypelibNameForQualType(decl->getTypeForDecl()->getCanonicalTypeInternal());
@@ -437,7 +441,7 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
             
         }
         default:
-            std::cerr << "Trying to register '" << canonicalTypeName << "'"
+            std::cerr << "Cannot register '" << canonicalTypeName << "'"
                       << " with unhandled type '" << type->getTypeClassName() << "'" << std::endl;
 
     }
@@ -467,7 +471,7 @@ const Typelib::Type* TypelibBuilder::checkRegisterType(const std::string& canoni
     if(!typelibType)
     {
         std::cerr << "Internal error : Just registed Type '" << canonicalTypeName << "' was not found in registry" << std::endl;
-        exit(0);
+        exit(EXIT_FAILURE);
 //         throw std::runtime_error("Just registed Type " + canonicalTypeName +  " was not found in registry" );
     }
 
@@ -484,7 +488,9 @@ bool TypelibBuilder::addArray(const std::string& canonicalTypeName, const clang:
     const Typelib::Type *typelibArrayBaseType = checkRegisterType(arrayBaseTypeName, arrayBaseType, context);
     if(!typelibArrayBaseType)
     {
-        std::cerr << "Not registering Array '" << canonicalTypeName << "' as its elementary type '" << arrayBaseTypeName << "' could not be registered " << std::endl;
+        std::cerr << "Not registering Array '" << canonicalTypeName
+                  << "' as its elementary type '" << arrayBaseTypeName
+                  << "' could not be registered " << std::endl;
         return false;
     }
     
@@ -658,7 +664,7 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
         const Typelib::Type *typelibFieldType = checkRegisterType(canonicalFieldTypeName, qualType.getTypePtr(), decl->getASTContext());
         if(!typelibFieldType)
         {
-            std::cerr << "Not regstering type '" << canonicalTypeName << "' as as field type '" << canonicalFieldTypeName << "' could not be registerd " << std::endl;
+            std::cerr << "Not registering type '" << canonicalTypeName << "' as as field type '" << canonicalFieldTypeName << "' could not be registerd " << std::endl;
             return false;
         }
 
