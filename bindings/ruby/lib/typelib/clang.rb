@@ -11,8 +11,9 @@ module Typelib
             opaques = options[:opaques]
             
             #create a registry from it
-#            opaqueReg = Tempfile.open("tmp_opaques")
-            opaqueReg = File.open("/home/scotch/item/opaques", "w+")
+            # FIXME: instead of usign the "Tempfile", just use a fixed known file in the rock-install for human inspection. to be removed!
+            #opaqueReg = Tempfile.open("tmp_opaques")
+            opaqueReg = File.open("#{ENV["AUTOPROJ_CURRENT_ROOT"]}/opaques", "w+")
             opaqueReg << "<typelib>"
             opaques.each do |opaque|
                 typedef = "<opaque name=\"#{opaque.gsub('<', '&lt;').gsub('>', '&gt;')}\" size=\"#{0}\" />"
@@ -21,7 +22,8 @@ module Typelib
             opaqueReg << "</typelib>"
             opaqueReg.flush
             
-            tmpReg = File.open("/home/scotch/item/registry", "w+")
+            # FIXME: see above
+            tmpReg = File.open("#{ENV["AUTOPROJ_CURRENT_ROOT"]}/registry", "w+")
             
             puts("test ?")
             
@@ -32,7 +34,8 @@ module Typelib
 
             header_files = options[:required_files].join(" ") 
             
-            finalCmd = "/home/scotch/item/tools/typelib/build/tools/tlbBuilder/tlbBuilder -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++ -isystem /usr/lib/clang/3.4/include"
+            # FIXME: this should be installed later
+            finalCmd = "#{ENV["AUTOPROJ_CURRENT_ROOT"]}/tools/typelib/build/tools/typelib-clang-tlb-importer/tlbBuilder -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++"
             
             puts("Cmd is : #{finalCmd}")
             
