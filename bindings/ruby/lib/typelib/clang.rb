@@ -25,19 +25,16 @@ module Typelib
             # FIXME: see above
             tmpReg = File.open("#{ENV["AUTOPROJ_CURRENT_ROOT"]}/registry", "w+")
             
-            puts("test ?")
-            
-            puts("Loading options are #{options}")
+            puts("clang.rb: Loading options are #{options}")
             include_dirs = options[:include_paths]
             include_path = include_dirs.map { |d| "-I #{d}" }.join(" ")
-            puts("Include Path #{include_path}")
 
             header_files = options[:required_files].join(" ") 
             
             # FIXME: this should be the installed tool
             finalCmd = "#{ENV["AUTOPROJ_CURRENT_ROOT"]}/tools/typelib/build/tools/typelib-clang-tlb-importer/typelib-clang-tlb-importer -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++"
             
-            puts("Cmd is : #{finalCmd}")
+            puts("clang.rb: Cmd is : #{finalCmd}")
             
             #call extractor
             retVal = `#{finalCmd}`
