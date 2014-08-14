@@ -567,7 +567,7 @@ namespace Typelib
     std::string Container::kind() const { return m_kind; }
 
     Container::AvailableContainers Container::s_available_containers;
-    Container::AvailableContainers Container::availableContainers() {
+    const Container::AvailableContainers& Container::availableContainers() {
         return s_available_containers;
     }
 

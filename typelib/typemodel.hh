@@ -654,7 +654,7 @@ namespace Typelib
         typedef Container const& (*ContainerFactory)(Registry& r, std::list<Type const*> const& base_type);
         typedef std::map<std::string, ContainerFactory> AvailableContainers;
 
-        static AvailableContainers availableContainers();
+        static const AvailableContainers& availableContainers();
         static void registerContainer(std::string const& name, ContainerFactory factory);
         static Container const& createContainer(Registry& r, std::string const& name, Type const& on);
         static Container const& createContainer(Registry& r, std::string const& name, std::list<Type const*> const& on);
