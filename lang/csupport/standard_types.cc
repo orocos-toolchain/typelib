@@ -14,7 +14,7 @@ static void addStandardTypes(Typelib::Registry& r)
     
     // Add standard sized integers
     static const int sizes[] = { 1, 2, 4, 8 };
-    for (int i = 0; i < 4; ++i)
+    for (size_t i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i)
     {
         std::string suffix = "int" + boost::lexical_cast<std::string>(sizes[i] * 8) + "_t";
         r.add(new Numeric("/"  + suffix, sizes[i], Numeric::SInt));
