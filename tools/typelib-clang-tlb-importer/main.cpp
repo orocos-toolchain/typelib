@@ -138,6 +138,7 @@ static llvm::cl::OptionCategory ToolCategory("typelib-clang-tlb-importer options
 static llvm::cl::opt<std::string> opaquePath(
         "opaquePath",
         llvm::cl::desc("registry of opaques, which have to be defined in the header files"),
+        llvm::cl::Optional,
         llvm::cl::cat(ToolCategory));
 
 static llvm::cl::opt<std::string> tlbSavePath(
