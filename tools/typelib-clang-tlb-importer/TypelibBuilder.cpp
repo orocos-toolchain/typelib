@@ -415,12 +415,10 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
             
             return registerBuildIn(canonicalTypeName, builtin, context);
         }
-        break;
         case clang::Type::Record:
         {
             return addRecord(canonicalTypeName, type->getAsCXXRecordDecl());
         }
-        break;
         case clang::Type::Enum:
         {
             const clang::EnumType *enumType = static_cast<const clang::EnumType *>(type);
@@ -428,7 +426,6 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
             assert(enumDecl);
             return addEnum(canonicalTypeName, enumDecl);
         }
-            break;
         case clang::Type::ConstantArray:
         {            
             return addArray(canonicalTypeName, type, context);
@@ -473,7 +470,6 @@ const Typelib::Type* TypelibBuilder::checkRegisterType(const std::string& canoni
     {
         std::cout << "Internal error : Just registed Type '" << canonicalTypeName << "' was not found in registry" << std::endl;
         exit(EXIT_FAILURE);
-//         throw std::runtime_error("Just registed Type " + canonicalTypeName +  " was not found in registry" );
     }
 
     return typelibType;
@@ -581,7 +577,7 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     
     
     Typelib::Compound *compound = new Typelib::Compound(canonicalTypeName);
-    
+
     size_t typeSize = typeLayout.getSize().getQuantity();
     compound->setSize(typeSize);
 
@@ -655,12 +651,8 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
         clang::PrintingPolicy p(o);
         p.SuppressTagKeyword = true;
         
-        std::string canonicalFieldTypeName = "/" + qualType.getAsString(p);
-        
-        
-//         std::cout << "Parent of " << canonicalFieldTypeName << " is " << fit->getParent()->getQualifiedNameAsString() << std::endl;
+        std::string canonicalFieldTypeName = cxxToTyplibName("/" + qualType.getAsString(p));
 
-        canonicalFieldTypeName = cxxToTyplibName(canonicalFieldTypeName);
 
         const Typelib::Type *typelibFieldType = checkRegisterType(canonicalFieldTypeName, qualType.getTypePtr(), decl->getASTContext());
         if(!typelibFieldType)
