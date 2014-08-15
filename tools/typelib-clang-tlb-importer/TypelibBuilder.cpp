@@ -498,6 +498,14 @@ bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::
 {
     Typelib::Enum *enumVal =new Typelib::Enum(canonicalTypeName);
     setHeaderPath(decl, *enumVal);
+
+
+    if(!decl->getIdentifier())
+    {
+        std::cout << "Ignoring type '" << canonicalTypeName
+                  << "' without proper identifier" << std::endl;
+        return false;
+    }
     
     for(clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin(); it != decl->enumerator_end(); it++)
     {
@@ -641,8 +649,14 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
     {
 //         TemporaryFieldType fieldType;
         const clang::QualType qualType = fit->getType().getLocalUnqualifiedType().getCanonicalType();
-        
-        
+
+        if (fit->isAnonymousStructOrUnion()) {
+            std::cout
+                << "Warning, ignoring Record with Anonymous Struct or Union '"
+                << canonicalTypeName << "'" << std::endl;
+            return false;
+        }
+
         clang::LangOptions o;
         clang::PrintingPolicy p(o);
         p.SuppressTagKeyword = true;
