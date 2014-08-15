@@ -382,18 +382,13 @@ std::string TypelibBuilder::typlibtoCxxName(const std::string name)
 bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context)
 {
     
-    if(canonicalTypeName.find("anonymous") != std::string::npos)
-    {
-        std::cout << "Ignoring anonymous type '" << canonicalTypeName << "'" << std::endl;
-        return false;
-    }
-    
     if(canonicalTypeName.find("&") != std::string::npos)
     {
         std::cout << "Ignoring type with reference '" << canonicalTypeName << "'" << std::endl;
         return false;
     }
     
+    // FIXME: this is bound to break...
     if(canonicalTypeName.find("sizeof") != std::string::npos)
     {
         std::cout << "Ignoring type with weird sizeof '" << canonicalTypeName << "'" << std::endl;
@@ -541,6 +536,13 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
         return false;
     }
 
+    if(!decl->getIdentifier())
+    {
+        std::cout << "Ignoring type '" << canonicalTypeName
+                  << "' without proper identifier" << std::endl;
+        return false;
+    }
+
     if(!decl->hasDefinition())
     {
         std::cout << "Ignoring type '" << canonicalTypeName << "' as it has no definition " << std::endl;
@@ -639,12 +641,6 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
     {
 //         TemporaryFieldType fieldType;
         const clang::QualType qualType = fit->getType().getLocalUnqualifiedType().getCanonicalType();
-        
-        if(fit->isAnonymousStructOrUnion())
-        {
-            std::cout << "Warning, ignoring Record with Anonymous Struct or Union '" << canonicalTypeName << "'" << std::endl;
-            return false;
-        }
         
         
         clang::LangOptions o;
