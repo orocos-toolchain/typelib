@@ -28,6 +28,10 @@ namespace classes {
         int b;
     };
 
+    class NextWith_anonymous_InName {
+        int spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam;
+    };
+
 }
 
 #endif /*TEST_HEADER_DATA_CLASSES_H*/
