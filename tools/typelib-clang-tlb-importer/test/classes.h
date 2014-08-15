@@ -32,6 +32,20 @@ namespace classes {
         int spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam;
     };
 
+    struct With_sizeof_InName {
+        int holymolymotherfucker;
+    };
+
+    class StructWithAnonStruct {
+        int b;
+        class {
+            int c;
+        } firstAnonVariant;
+        struct secondAnonVariant{
+            int e;
+        };
+    };
+
 }
 
 #endif /*TEST_HEADER_DATA_CLASSES_H*/
