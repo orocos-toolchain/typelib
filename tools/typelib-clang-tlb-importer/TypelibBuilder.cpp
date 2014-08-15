@@ -188,8 +188,6 @@ void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
     Typelib::Type *opaqueType = registry.get_(opaqueName);
     setHeaderPath(decl, *opaqueType);
         
-    Typelib::MetaData &mdata(opaqueType->getMetaData());
-    mdata.clear("found");
     std::cout << "Opaque name is '" << opaqueName << "' canonicalName is '" << canoniclaOpaqueName << "'" << std::endl;
     
     if(opaqueName != canoniclaOpaqueName)
