@@ -163,39 +163,42 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
 
 void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
 {
-    std::cout << "Qualified Name '" << decl->getQualifiedNameAsString() << "'" << std::endl;
 
     std::string opaqueName = cxxToTyplibName(decl->getQualifiedNameAsString());
-    std::string canoniclaOpaqueName;
+    std::string canonicalOpaqueName;
     
     if(decl->getKind() == clang::Decl::Typedef)
     {
         const clang::TypedefDecl *typeDefDecl = static_cast<const clang::TypedefDecl *>(decl);
-        canoniclaOpaqueName = getTypelibNameForQualType(typeDefDecl->getUnderlyingType().getCanonicalType());
+        canonicalOpaqueName = getTypelibNameForQualType(
+            typeDefDecl->getUnderlyingType().getCanonicalType());
     }
     else
     {
         if(!decl->getTypeForDecl())
         {
-            std::cout << "Error, could not get Type for Opaque Declaration '" << decl->getQualifiedNameAsString() << "'" << std::endl;
+            std::cout
+                << "Could not get Type for Opaque Declaration '"
+                << decl->getQualifiedNameAsString() << "'" << std::endl;
             exit(EXIT_FAILURE);
         }
         
-        canoniclaOpaqueName = getTypelibNameForQualType(decl->getTypeForDecl()->getCanonicalTypeInternal());
+        canonicalOpaqueName = getTypelibNameForQualType(decl->getTypeForDecl()->getCanonicalTypeInternal());
         
     }
 
     Typelib::Type *opaqueType = registry.get_(opaqueName);
     setHeaderPath(decl, *opaqueType);
-        
-    std::cout << "Opaque name is '" << opaqueName << "' canonicalName is '" << canoniclaOpaqueName << "'" << std::endl;
-    
-    if(opaqueName != canoniclaOpaqueName)
+
+    std::cout << "Resolved Opaque '" << opaqueName << "' to '"
+              << canonicalOpaqueName << "'" << std::endl;
+
+    if(opaqueName != canonicalOpaqueName)
     {
         //as we want to resolve opaques by their canonical name
         //we need to register an alias from the canonical name 
         //to the opaque name.
-        registry.alias(opaqueName, canoniclaOpaqueName);
+        registry.alias(opaqueName, canonicalOpaqueName);
     }
 }
 
@@ -440,8 +443,8 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
         }
         default:
             std::cout << "Cannot register '" << canonicalTypeName << "'"
-                      << " with unhandled type '" << type->getTypeClassName() << "'" << std::endl;
-
+                      << " with unhandled type '" << type->getTypeClassName()
+                      << "'" << std::endl;
     }
     return false;
     
