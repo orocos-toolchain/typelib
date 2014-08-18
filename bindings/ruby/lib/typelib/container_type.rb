@@ -336,5 +336,44 @@ module Typelib
 	    pp.breakable
 	    pp.text ']'
         end
+
+        # Returns the description of a type using only simple ruby objects
+        # (Hash, Array, Numeric and String).
+        # 
+        #    { name: TypeName,
+        #      class: NameOfTypeClass, # CompoundType, ...
+        #       # The content of 'element' is controlled by the :recursive option
+        #      element: DescriptionOfArrayElement,
+        #      size: SizeOfTypeInBytes # Only if :layout_info is true
+        #    }
+        #
+        # @option (see Type#to_h)
+        # @return (see Type#to_h)
+        def self.to_h(options = Hash.new)
+            info = super
+            info[:element] =
+                if options[:recursive]
+                    deference.to_h(options)
+                else
+                    deference.to_h_minimal(options)
+                end
+            info
+        end
+
+        # (see Type#to_simple_value)
+        #
+        # Container types are returned as either an array of their converted
+        # elements, or the hash described for the :pack_simple_arrays option. In
+        # the latter case, a 'size' field is added with the number of elements
+        # in the container to allow for validation on the receiving end.
+        def to_simple_value(options = Hash.new)
+            if options[:pack_simple_arrays] && element_t.respond_to?(:pack_code)
+                Hash[pack_code: element_t.pack_code,
+                     size: size,
+                     data: to_byte_array[8..-1]]
+            else
+                raw_each.map { |v| v.to_simple_value(options) }
+            end
+        end
     end
 end

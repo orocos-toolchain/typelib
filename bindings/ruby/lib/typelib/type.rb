@@ -51,6 +51,51 @@ module Typelib
             def define_method_if_possible(name, &block)
                 Typelib.define_method_if_possible(self, self, name, Type::ALLOWED_OVERLOADINGS, &block)
             end
+
+            # Returns the description of a type using only simple ruby objects
+            # (Hash, Array, Numeric and String).
+            #
+            # The exact set of returned values is dependent on the exact type.
+            # See the documentation of {to_h} on the subclasses of Type for more
+            # details
+            #
+            # Some fields are always present, see {to_h_minimal}
+            #
+            # @option options [Boolean] :recursive (false) if true, the value
+            #   returned by types that refer to other types (e.g. an array) will
+            #   contain the reference's full definition. Otherwise, only the
+            #   value returned by {to_h_minimal} will be stored in the
+            #   type's description
+            # @option options [Boolean] :layout_info (false) if true, add binary
+            #   layout information from the type
+            #
+            # @return [Hash]
+            def to_h(options = Hash.new)
+                to_h_minimal(options)
+            end
+
+            # Returns the minimal description of a type using only simple ruby
+            # objects (Hash, Array, Numeric and String).
+            #
+            #    { 'name' => TypeName,
+            #      'class' => NameOfTypeClass, # CompoundType, ...
+            #      'size' => SizeOfTypeInBytes # Only if :layout_info is true
+            #    }
+            #
+            # It is mainly used as a helper by sub-types {to_h} method when
+            # :recursive is false
+            #
+            # @option options [Boolean] :layout_info (false) if true, add binary
+            #   layout information from the type
+            #
+            # @return [Hash]
+            def to_h_minimal(options = Hash.new)
+                result = Hash[name: name, class: superclass.name]
+                if options[:layout_info]
+                    result[:size] = size
+                end
+                result
+            end
         end
         @convertions_from_ruby = Hash.new
 
@@ -667,6 +712,38 @@ module Typelib
 
         def inspect
             sprintf("#<%s:%s @%s>", self.class.superclass.name, self.class.name, to_memory_ptr.inspect)
+        end
+
+        # Returns a representation of this type only into simple Ruby values,
+        # that is strings, numbers and arrays / hashes.
+        #
+        # @option options [Boolean] :special_float_values () if :string, the
+        #   floating point special values NaN and Infinity are converted to
+        #   strings. If :nil, they are converted to nil. Otherwise, they are
+        #   left as-is. This is required for marshalling formats that can't
+        #   represent them.
+        # @option options [Boolean] :pack_simple_arrays (true) if true, arrays
+        #   and containers of numeric types will be packed into a hash of the form
+        #   {size: size_in_elements, pack_code: code, data: packed_data}. The
+        #   pack_code field describes the type of element in the array (from
+        #   String#unpack or Array#pack), which tells both the type of the data
+        #   and its endianness.
+        #
+        # @return [Object]
+        def to_simple_value(options = Hash.new)
+            raise NotImplementedError, "there is no way to convert a value of type #{self.class} into a simple ruby value"
+        end
+
+        # Returns a representation of this type that can be serialized with JSON
+        #
+        # This is calling to_simple_value with the :special_float_values option
+        # set to :nil by default, as JSON cannot represent NaN and Infinity and
+        # converting those to null is the behaviour specified in the JSON
+        # documentation.
+        # 
+        # (see Type#to_simple_value)
+        def to_json_value(options = Hash.new)
+            to_simple_value(Hash[:special_float_values => :nil].merge(options))
         end
     end
 end
