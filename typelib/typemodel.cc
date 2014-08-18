@@ -10,7 +10,6 @@
 
 #include <numeric>
 #include <algorithm>
-#include <cassert>
 using namespace std;
 
 #include <iostream>

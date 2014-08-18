@@ -134,9 +134,9 @@ namespace
                     return "uint";
                 case Numeric::Float:
                     return "float";
+                default:
+                    throw "invalid category";
             }
-            // never reached
-            return 0;
         }
     }
 
