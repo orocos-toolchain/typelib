@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/int" category="sint" size="4" >
+  
+  </numeric>
+  <opaque name="/opaques/C1" size="0" >
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.h]]></metadata>
+
+  </opaque>
+  <compound name="/opaques/cruft" size="16" >
+    <field name="data" type="/int[4]" offset="0">
+    
+    </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.h]]></metadata>
+
+  </compound>
+</typelib>
