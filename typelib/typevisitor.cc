@@ -1,5 +1,4 @@
 #include "typevisitor.hh"
-#include <cassert>
 
 namespace Typelib
 {
@@ -55,10 +54,9 @@ namespace Typelib
                 return visit_( dynamic_cast<Compound const&>(type) );
             case Type::Container:
                 return visit_( dynamic_cast<Container const&>(type) );
+            default:
+                throw UnsupportedType(type, "unsupported type category");
         }
-        // Never reached
-        assert(false);
-	return false; // to shut up gcc
     }
 
     void TypeVisitor::apply(Type const& type)
