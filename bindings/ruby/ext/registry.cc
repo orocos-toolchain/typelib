@@ -632,14 +632,14 @@ static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs,
 
 /*
  * call-seq:
- *   registry.create_opaque(name, size)
+ *   registry.create_opaque(name)
  *
- * Creates a new opaque type with the given name and size
+ * Creates a new opaque type with the given name
  */
-static VALUE registry_create_opaque(VALUE registry, VALUE _name, VALUE _size)
+static VALUE registry_create_opaque(VALUE registry, VALUE _name)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
-    Typelib::Type* type = new Typelib::OpaqueType(StringValuePtr(_name), NUM2INT(_size));
+    Typelib::Type* type = new Typelib::OpaqueType(StringValuePtr(_name));
     try { reg.add(type, true, ""); }
     catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
@@ -687,7 +687,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "source_id_of", RUBY_METHOD_FUNC(registry_source_id_of), 1);
     rb_define_method(cRegistry, "do_create_compound", RUBY_METHOD_FUNC(registry_create_compound), 3);
     rb_define_method(cRegistry, "do_create_enum", RUBY_METHOD_FUNC(registry_create_enum), 3);
-    rb_define_method(cRegistry, "create_opaque", RUBY_METHOD_FUNC(registry_create_opaque), 2);
+    rb_define_method(cRegistry, "create_opaque", RUBY_METHOD_FUNC(registry_create_opaque), 1);
     rb_define_method(cRegistry, "create_null", RUBY_METHOD_FUNC(registry_create_null), 1);
 
     rb_define_singleton_method(cRegistry, "add_standard_cxx_types", RUBY_METHOD_FUNC(registry_add_standard_cxx_types), 1);

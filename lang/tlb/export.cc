@@ -91,7 +91,7 @@ namespace
 
     bool TlbExportVisitor::visit_(OpaqueType const& type)
     {
-        m_stream << "<opaque name=\"" << xmlEscape(type.getName()) << "\" size=\"" << type.getSize() << "\" " << emitSourceID() << ">\n";
+        m_stream << "<opaque name=\"" << xmlEscape(type.getName()) << "\" " << emitSourceID() << ">\n";
         m_stream << m_indent << emitMetaData(type) << "\n";
         m_stream << m_indent << "</opaque>";
         return true;

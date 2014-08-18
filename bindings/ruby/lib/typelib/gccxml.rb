@@ -763,7 +763,7 @@ module Typelib
                 # resolve_opaques as resolve_opaques will add the resolved
                 # opaque names to +opaques+
                 opaques.each do |type_name|
-                    registry.create_opaque type_name, 0
+                    registry.create_opaque type_name
                 end
                 resolve_opaques
             end

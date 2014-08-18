@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
 
     // Check an opaque type (must throw)
     {
-        OpaqueType type("test_opaque", 10);
+        OpaqueType type("test_opaque");
 	CompileEndianSwapVisitor compiled;
         BOOST_CHECK_THROW(compiled.apply(type), Typelib::UnsupportedEndianSwap);
     }
