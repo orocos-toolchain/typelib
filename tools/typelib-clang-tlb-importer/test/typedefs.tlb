@@ -16,6 +16,12 @@
   <alias name="/ns/anotherIntTypedef" source="/int"/>
   <alias name="/ns/intTypedef" source="/int"/>
   <alias name="/ns/intTypedefTypedef" source="/int"/>
+  <opaque name="/ns/myTestTypedef" size="0" >
+  <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:41]]></metadata>
+
+  </opaque>
+  <alias name="/ns/S1" source="/ns/myTestTypedef"/>
   <alias name="/ns/aClassTypedef" source="/ns/aClass"/>
   <compound name="/ns/test" size="16" >
     <field name="C" type="/unsigned char" offset="0">

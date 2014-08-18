@@ -28,6 +28,18 @@ namespace ns {
         intTypedef B;
         intTypedefTypedef D;
     };
+
+    // testing the opaque-system using typedefs. therefore we need a "compound"
+    // which is (by itself) an invalid typelib-datatype. but the compound has
+    // as a typedef which is named in the "typedefs.opaque" file in the
+    // test-dir.
+    struct S1 {
+        int a;
+        float *c; // this would invalidate this struct if it would not be named
+                  // as a opaque
+    };
+    typedef struct S1 myTestTypedef;
+
 }
 
 

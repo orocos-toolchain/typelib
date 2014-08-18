@@ -190,6 +190,11 @@ void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
     Typelib::Type *opaqueType = registry.get_(opaqueName);
     setHeaderPathForTypeFromDecl(decl, *opaqueType);
 
+    // typdef-opaques are specially marked in the Typelib metadata
+    if(decl->getKind() == clang::Decl::Typedef) {
+        opaqueType->getMetaData().add("opaque_is_typedef", "1");
+    }
+
     std::cout << "Resolved Opaque '" << opaqueName << "' to '"
               << canonicalOpaqueName << "'" << std::endl;
 
