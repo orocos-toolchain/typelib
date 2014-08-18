@@ -72,9 +72,9 @@ namespace Typelib
             Enum   ,
             Compound,
             Opaque,
-            Container
+            Container,
+            NumberOfValidCategories
         };
-        static const int ValidCategories = Compound + 1;
         
     private:
         std::string m_name;
@@ -278,11 +278,11 @@ namespace Typelib
     public:
         enum NumericCategory
         { 
-	    SInt = Type::ValidCategories, /// signed integer
+	    SInt = Type::NumberOfValidCategories, /// signed integer
 	    UInt,			  /// unsigned integer
-	    Float			  /// floating point
+	    Float,			  /// floating point
+	    NumberOfValidCategories
 	};
-        static const int ValidCategories = Float + 1;
 
 	/** The category of this numeric type */
         NumericCategory getNumericCategory() const;
