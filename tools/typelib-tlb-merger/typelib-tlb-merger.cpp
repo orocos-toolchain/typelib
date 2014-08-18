@@ -1,5 +1,6 @@
 #include "../../lang/tlb/export.hh"
 #include "../../lang/tlb/import.hh"
+#include "../../lang/csupport/standard_types.hh"
 
 #include <iostream>
 #include <fstream>
@@ -17,6 +18,9 @@ int main(int argc, const char **argv) {
     std::string input2(argv[2]);
     std::string output(argv[3]);
 
+    Typelib::Registry reg_out;
+    Typelib::CXX::addStandardTypes(reg_out);
+
     Typelib::Registry reg1;
     Typelib::Registry reg2;
 
@@ -25,10 +29,11 @@ int main(int argc, const char **argv) {
     importer.load(input1, utilmm::config_set(), reg1);
     importer.load(input2, utilmm::config_set(), reg2);
 
-    reg1.merge(reg2);
+    reg_out.merge(reg1);
+    reg_out.merge(reg2);
 
     TlbExport exporter;
-    exporter.save(output, utilmm::config_set(), reg1);
+    exporter.save(output, utilmm::config_set(), reg_out);
 
     return 0;
 
