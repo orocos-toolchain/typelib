@@ -188,7 +188,7 @@ void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
     }
 
     Typelib::Type *opaqueType = registry.get_(opaqueName);
-    setHeaderPath(decl, *opaqueType);
+    setHeaderPathForTypeFromDecl(decl, *opaqueType);
 
     std::cout << "Resolved Opaque '" << opaqueName << "' to '"
               << canonicalOpaqueName << "'" << std::endl;
@@ -497,8 +497,7 @@ bool TypelibBuilder::addArray(const std::string& canonicalTypeName, const clang:
 bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::EnumDecl *decl)
 {
     Typelib::Enum *enumVal =new Typelib::Enum(canonicalTypeName);
-    setHeaderPath(decl, *enumVal);
-
+    setHeaderPathForTypeFromDecl(decl, *enumVal);
 
     if(!decl->getIdentifier())
     {
@@ -591,7 +590,7 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     size_t typeSize = typeLayout.getSize().getQuantity();
     compound->setSize(typeSize);
 
-    setHeaderPath(decl, *compound);
+    setHeaderPathForTypeFromDecl(decl, *compound);
     if(!addBaseClassToCompound(*compound, canonicalTypeName, decl))
     {
         delete compound;
@@ -617,15 +616,20 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     return true;
 }
 
-void TypelibBuilder::setHeaderPath(const clang::Decl* decl, Typelib::Type& type)
+void TypelibBuilder::setHeaderPathForTypeFromDecl(const clang::Decl* decl, Typelib::Type& type)
 {
-    std::string sourceLocation = decl->getSourceRange().getBegin().printToString(decl->getASTContext().getSourceManager());
-    size_t collonPos = sourceLocation.find(':');
-    
-    type.setPathToDefiningHeader(sourceLocation.substr(0, collonPos));
-    
-    type.getMetaData().add("orogen_include", type.getPathToDefiningHeader());
-    
+    std::string sourceLocation =
+        decl->getSourceRange().getBegin().printToString(
+            decl->getASTContext().getSourceManager());
+
+    // clang knows the "/path/to/file:line:column" while we in typelib only(?)
+    // need the column information. we have to detect the last colon, so that
+    // we can put just the beginning of the string into the metadata of the
+    // type-object
+    type.setPathToDefiningHeader(
+        sourceLocation.substr(0, sourceLocation.find_last_of(':')));
+
+    type.getMetaData().add("source_file_line", type.getPathToDefiningHeader());
 }
 
 
