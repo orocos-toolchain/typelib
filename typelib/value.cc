@@ -44,8 +44,9 @@ namespace Typelib
                         case sizeof(float):  return m_visitor.visit_(*reinterpret_cast<float*>(value));
                         case sizeof(double): return m_visitor.visit_(*reinterpret_cast<double*>(value));
                     }
+                default:
+                    throw UnsupportedType(type, "unsupported numeric category");
             }
-	    throw UnsupportedType(type, "unsupported numeric category");
         }
 
         virtual bool visit_ (Enum const& type)
