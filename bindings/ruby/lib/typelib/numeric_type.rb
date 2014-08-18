@@ -90,24 +90,25 @@ module Typelib
 
         # (see Type#to_simple_value)
         def to_simple_value(options = Hash.new)
-            to_ruby
-        end
+            v = to_ruby
+            return v if !options[:special_float_values]
+            return v if self.class.integer?
 
-        # Returns a representation of this type that can be serialized as JSON
-        #
-        # This handles the floating-point special values "Infinity", "-Infinity"
-        # and "NaN" specially by converting them into strings as JSON cannot
-        # handle them.
-        def to_json_value(options = Hash.new)
-            v = to_simple_value(options)
-            if self.class.integer? then v
-            elsif v.nan?
-                "NaN"
-            elsif v.infinite?
-                if v > 0 then "Infinity"
-                else "-Infinity"
+            if options[:special_float_values] == :string
+                if v.nan?
+                    "NaN"
+                elsif v.infinite?
+                    if v > 0 then "Infinity"
+                    else "-Infinity"
+                    end
+                else v
                 end
-            else v
+            elsif options[:special_float_values] == :nil
+                if v.nan? || v.infinite?
+                    nil
+                else v
+                end
+            else raise ArgumentError, ":special_float_values can only either be :string or :nil, found #{options[:special_float_values].inspect}"
             end
         end
     end

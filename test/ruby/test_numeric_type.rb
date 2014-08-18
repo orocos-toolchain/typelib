@@ -80,29 +80,43 @@ describe Typelib::NumericType do
             @int_t   = registry.get '/int'
             @float_t = registry.get '/float'
         end
-        it "calls to_simple_value for an integer" do
+        it "returns an integer as-is" do
             int = Typelib.from_ruby(0, int_t)
-            options = flexmock
-            flexmock(int).should_receive(:to_simple_value).with(options).once.pass_thru
-            assert_equal 0, int.to_json_value(options)
+            assert_equal 0, int.to_json_value
         end
-        it "calls to_simple_value for a regular float" do
+        it "returns a normal float as-is" do
             float = Typelib.from_ruby(0.0, float_t)
-            options = flexmock
-            flexmock(float).should_receive(:to_simple_value).with(options).once.pass_thru
-            assert_equal 0.0, float.to_json_value(options)
+            assert_equal 0.0, float.to_json_value
         end
-        it "converts a NaN into a string" do
-            float = Typelib.from_ruby(Float::NAN, float_t)
-            assert_equal "NaN", float.to_json_value
+
+        describe "convertion to nil" do
+            it "converts a NaN into nil" do
+                float = Typelib.from_ruby(Float::NAN, float_t)
+                assert_equal nil, float.to_json_value(:special_float_values => :nil)
+            end
+            it "converts a positive infinity into nil" do
+                float = Typelib.from_ruby(Float::INFINITY, float_t)
+                assert_equal nil, float.to_json_value(:special_float_values => :nil)
+            end
+            it "converts a negative infinity into nil" do
+                float = Typelib.from_ruby(-Float::INFINITY, float_t)
+                assert_equal nil, float.to_json_value(:special_float_values => :nil)
+            end
         end
-        it "converts a positive infinity into a string" do
-            float = Typelib.from_ruby(Float::INFINITY, float_t)
-            assert_equal "Infinity", float.to_json_value
-        end
-        it "converts a negative infinity into a string" do
-            float = Typelib.from_ruby(-Float::INFINITY, float_t)
-            assert_equal "-Infinity", float.to_json_value
+
+        describe "convertion to string" do
+            it "converts a NaN into a string" do
+                float = Typelib.from_ruby(Float::NAN, float_t)
+                assert_equal "NaN", float.to_json_value(:special_float_values => :string)
+            end
+            it "converts a positive infinity into a string" do
+                float = Typelib.from_ruby(Float::INFINITY, float_t)
+                assert_equal "Infinity", float.to_json_value(:special_float_values => :string)
+            end
+            it "converts a negative infinity into a string" do
+                float = Typelib.from_ruby(-Float::INFINITY, float_t)
+                assert_equal "-Infinity", float.to_json_value(:special_float_values => :string)
+            end
         end
     end
 end

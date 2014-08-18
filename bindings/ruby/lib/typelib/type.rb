@@ -717,6 +717,11 @@ module Typelib
         # Returns a representation of this type only into simple Ruby values,
         # that is strings, numbers and arrays / hashes.
         #
+        # @option options [Boolean] :special_float_values () if :string, the
+        #   floating point special values NaN and Infinity are converted to
+        #   strings. If :nil, they are converted to nil. Otherwise, they are
+        #   left as-is. This is required for marshalling formats that can't
+        #   represent them.
         # @option options [Boolean] :pack_simple_arrays (true) if true, arrays
         #   and containers of numeric types will be packed into a hash of the form
         #   {size: size_in_elements, pack_code: code, data: packed_data}. The
@@ -731,9 +736,14 @@ module Typelib
 
         # Returns a representation of this type that can be serialized with JSON
         #
+        # This is calling to_simple_value with the :special_float_values option
+        # set to :nil by default, as JSON cannot represent NaN and Infinity and
+        # converting those to null is the behaviour specified in the JSON
+        # documentation.
+        # 
         # (see Type#to_simple_value)
         def to_json_value(options = Hash.new)
-            to_simple_value(options)
+            to_simple_value(Hash[:special_float_values => :nil].merge(options))
         end
     end
 end
