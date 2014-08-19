@@ -41,26 +41,26 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     const clang::Type *typeForDecl = decl->getTypeForDecl();
     if(!typeForDecl)
     {
-        std::cout << "TypeDecl '" << decl->getNameAsString() << "' has no type " << std::endl;
+        std::cout << "TypeDecl '" << decl->getQualifiedNameAsString() << "' has no type " << std::endl;
         return;
     }
 
     //check for structs that are only defined inside of functions
     if(decl->getParentFunctionOrMethod())
     {
-        std::cout << "Ignoring type '" << typeName << "' as it is defined inside a function" << std::endl;
+        std::cout << "Ignoring type '" << decl->getQualifiedNameAsString() << "' as it is defined inside a function" << std::endl;
         return;
     }
     
     if(decl->isHidden())
     {
-        std::cout << "Ignoring hidden type '" << typeName << "' because it is hidden" << std::endl;
+        std::cout << "Ignoring hidden type '" << decl->getQualifiedNameAsString() << "' because it is hidden" << std::endl;
         return;
     }
     
     if(decl->isInAnonymousNamespace())
     {
-        std::cout << "Ignoring '" << typeName << "' as it is in an anonymous namespace" << std::endl;
+        std::cout << "Ignoring '" << decl->getQualifiedNameAsString() << "' as it is in an anonymous namespace" << std::endl;
         return;
     }    
     
