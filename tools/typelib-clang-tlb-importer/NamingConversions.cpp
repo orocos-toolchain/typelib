@@ -65,6 +65,21 @@ std::vector<std::string> template_tokenizer(std::string name)
     return result;
 }
 
+// using the given string, looking up all instances of "from" and replacing
+// them with "to" and returning the new string
+std::string stringFromToReplace(const std::string& string, const std::string& from,
+        const std::string& to) {
+
+    std::string result(string);
+
+    for (size_t start_pos = result.find(from); start_pos != std::string::npos;
+         start_pos = result.find(from, start_pos + to.length())) {
+        result.replace(start_pos, from.length(), to);
+    }
+
+    return result;
+}
+
 std::string cxxToTyplibName(const std::string& name)
 {
     std::string ret(name);
