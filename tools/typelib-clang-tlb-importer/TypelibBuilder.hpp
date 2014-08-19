@@ -27,8 +27,6 @@ public:
     void registerTypeDef(const clang::TypedefType *type);
     void registerTypeDef(const clang::TypedefNameDecl *decl);
     void registerNamedDecl(const clang::TypeDecl *decl);
-    std::string cxxToTyplibName(const std::string name);
-    std::string typlibtoCxxName(const std::string name);
     bool isConstant(const std::string name, size_t pos);
     bool registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
     

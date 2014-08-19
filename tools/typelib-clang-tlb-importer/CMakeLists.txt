@@ -91,6 +91,7 @@ include_directories(${LIBDL_INCLUDE_DIR})
 add_executable(typelib-clang-tlb-importer
     main.cpp
     TypelibBuilder.cpp
+    NamingConversions.cpp
     )
 
 
