@@ -26,7 +26,10 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Signals.h"
+
 #include "TypelibBuilder.hpp"
+#include "NamingConversions.hpp"
+
 #include "../../lang/tlb/export.hh"
 
 #include <iostream>
@@ -190,7 +193,7 @@ int main(int argc, const char **argv) {
         {
             if(it->getCategory() == Typelib::Type::Opaque)
             {
-                OpaqueFinder.addMatcher(namedDecl(hasName(builder.typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
+                OpaqueFinder.addMatcher(namedDecl(hasName(typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
             }
         }
 
