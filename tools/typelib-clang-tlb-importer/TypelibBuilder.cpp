@@ -16,21 +16,6 @@
 
 void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
 {
-    //check if we allready know the type
-    std::string typeName = "/" + decl->getQualifiedNameAsString();
-    
-//     std::cout << "New Type with qualified name " << typeName << std::endl;
-
-    typeName = cxxToTyplibName(typeName);
-    
-//     std::cout << "Typelib name " << typeName << std::endl;
-    
-    if(typeName.size() <= 1)
-        return;
-    
-    if(registry.has(typeName, false))
-        return;
-
 
     if(decl->getKind() == clang::Decl::Typedef)
     {
@@ -62,9 +47,10 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
     {
         std::cout << "Ignoring '" << decl->getQualifiedNameAsString() << "' as it is in an anonymous namespace" << std::endl;
         return;
-    }    
-    
-    registerType(typeName, typeForDecl, decl->getASTContext());
+    }
+
+    registerType(cxxToTyplibName(decl->getQualifiedNameAsString()), typeForDecl,
+                 decl->getASTContext());
 }
 
 bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
@@ -557,7 +543,7 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
         clang::PrintingPolicy p(o);
         p.SuppressTagKeyword = true;
         
-        std::string canonicalFieldTypeName = cxxToTyplibName("/" + qualType.getAsString(p));
+        std::string canonicalFieldTypeName = cxxToTyplibName(qualType.getAsString(p));
 
 
         const Typelib::Type *typelibFieldType = checkRegisterType(canonicalFieldTypeName, qualType.getTypePtr(), decl->getASTContext());
