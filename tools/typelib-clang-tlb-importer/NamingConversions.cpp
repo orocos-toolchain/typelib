@@ -165,18 +165,21 @@ std::string cxxToTyplibName(const std::string& name)
     return ret;
 }
 
-std::string typlibtoCxxName(const std::string& name)
+std::string typlibtoCxxName(const std::string& typelibName)
 {
-    std::string ret(name);
+    std::string cxxName = stringFromToReplace(typelibName, "/", "::");
 
-    std::string from("/");
-    std::string to("::");
+    // this was done by the corresponding gccxml-ruby function. this will hide
+    // if someone deliberately gave us classes or objects from the global
+    // namespace... well, corner-cases... go along, nothing to see
+    cxxName = stringFromToReplace(cxxName, "<::", "<");
+    cxxName = stringFromToReplace(cxxName, ",::", ",");
+    // note that one behaviour of the ruby-side was not ported -- adding a
+    // space after a comma, like ',([^\s])' -> ', \1'
 
-    for (size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
-    {
-        ret.replace(start_pos, from.length(), to);
-    }
-
-
-    return ret;
+    // again, same behaviour which the gccxml-ruby code had.
+    if ((cxxName.size() > 2) && (cxxName.substr(0,2) == std::string("::")))
+        return cxxName.substr(2, std::string::npos);
+    else
+        return cxxName;
 }
