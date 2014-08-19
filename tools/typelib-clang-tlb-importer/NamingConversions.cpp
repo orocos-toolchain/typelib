@@ -15,6 +15,56 @@ bool isConstant(const std::string& name, size_t pos)
     return false;
 }
 
+// removing leading or trailing whitespaces from a given string
+// see http://stackoverflow.com/a/1798170/3520187
+std::string trim(const std::string &str,
+                 const std::string &whitespace = " \t") {
+    const size_t strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos)
+        return ""; // no content
+
+    const size_t strEnd = str.find_last_not_of(whitespace);
+    const size_t strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
+}
+
+// private helper function for splitting a string like
+//    'std::vector<std::pair<double, double> >'
+// into a vector of strings like
+//    'std::vector'
+//    '<'
+//    'std::pair'
+//    '<'
+//    'double'
+//    ','
+//    'double'
+//    '>'
+//    '>'
+std::vector<std::string> template_tokenizer(std::string name)
+{
+    std::vector<std::string> result;
+    const char* chars = "<,>";
+
+    while(!name.empty()) {
+        size_t idx = name.find_first_of(chars);
+        std::string match = trim(name.substr(0, idx));
+
+        if (!match.empty())
+            result.push_back(match);
+
+        if (idx == std::string::npos)
+            break;
+
+        char _char = name.at(idx);
+        name = name.substr(idx+1, std::string::npos);
+
+        result.push_back(std::string(&_char));
+    }
+
+    return result;
+}
+
 std::string cxxToTyplibName(const std::string& name)
 {
     std::string ret(name);
