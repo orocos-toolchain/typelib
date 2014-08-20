@@ -10,13 +10,13 @@
     <field name="A" type="/int" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:15]]></metadata>
 
   </compound>
   <alias name="/ns/anotherIntTypedef" source="/int"/>
   <alias name="/ns/intTypedef" source="/int"/>
   <alias name="/ns/intTypedefTypedef" source="/int"/>
-  <opaque name="/ns/myTestTypedef" size="0" >
+  <opaque name="/ns/myTestTypedef" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:41]]></metadata>
 
@@ -36,7 +36,7 @@
     <field name="D" type="/int" offset="12">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:25]]></metadata>
 
   </compound>
 </typelib>

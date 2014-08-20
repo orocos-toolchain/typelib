@@ -10,7 +10,7 @@
     <field name="b" type="/int" offset="4">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/forward_declaration.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/forward_declaration.h:8]]></metadata>
 
   </compound>
 </typelib>

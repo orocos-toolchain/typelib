@@ -1,20 +1,48 @@
 <?xml version="1.0"?>
 <typelib>
+  <opaque name="/classes/C1" >
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:53]]></metadata>
+
+  </opaque>
+  <opaque name="/classes/C2" >
+  <metadata key="base_classes"><![CDATA[/classes/C1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:54]]></metadata>
+
+  </opaque>
+  <opaque name="/classes/C3" >
+  <metadata key="base_classes"><![CDATA[/S1]]></metadata>
+<metadata key="base_classes"><![CDATA[/classes/C1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:55]]></metadata>
+
+  </opaque>
+  <numeric name="/double" category="float" size="8" >
+  
+  </numeric>
   <numeric name="/int" category="sint" size="4" >
   
   </numeric>
+  <numeric name="/long" category="sint" size="8" >
+  
+  </numeric>
+  <compound name="/S1" size="16" >
+    <field name="l" type="/long[2]" offset="0">
+    
+    </field>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:8]]></metadata>
+
+  </compound>
   <compound name="/classes/BaseClass" size="4" >
     <field name="a" type="/int" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:14]]></metadata>
 
   </compound>
   <compound name="/classes/FirstLevel" size="4" >
     <field name="a" type="/int" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:26]]></metadata>
 
   </compound>
   <compound name="/classes/NextLevel" size="8" >
@@ -24,7 +52,21 @@
     <field name="b" type="/int" offset="4">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:30]]></metadata>
+
+  </compound>
+  <compound name="/classes/NextWith_anonymous_InName" size="4" >
+    <field name="spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam" type="/int" offset="0">
+    
+    </field>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:34]]></metadata>
+
+  </compound>
+  <compound name="/classes/StructWithAnonStruct/secondAnonVariant" size="4" >
+    <field name="e" type="/int" offset="0">
+    
+    </field>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:47]]></metadata>
 
   </compound>
 </typelib>
