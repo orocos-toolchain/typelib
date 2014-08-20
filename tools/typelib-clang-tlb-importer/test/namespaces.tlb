@@ -1,14 +1,15 @@
 <?xml version="1.0"?>
 <typelib>
-  <numeric name="/char" category="sint" size="1" >
-  
-  </numeric>
   <numeric name="/double" category="float" size="8" >
   
   </numeric>
   <numeric name="/int" category="sint" size="4" >
   
   </numeric>
+  <numeric name="/int8_t" category="sint" size="1" >
+  
+  </numeric>
+  <alias name="/char" source="/int8_t"/>
   <compound name="/N1/N2/S1" size="24" >
     <field name="A" type="/int" offset="0">
     
@@ -16,10 +17,10 @@
     <field name="B" type="/double" offset="8">
     
     </field>
-    <field name="C" type="/char" offset="16">
+    <field name="C" type="/int8_t" offset="16">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/namespaces.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/namespaces.h:16]]></metadata>
 
   </compound>
 </typelib>

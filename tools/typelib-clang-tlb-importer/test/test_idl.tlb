@@ -4,13 +4,13 @@
     <value symbol="A" value="0"/>
     <value symbol="B" value="1"/>
     <value symbol="C" value="2"/>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h:16]]></metadata>
 
   </enum>
-  <numeric name="/char" category="sint" size="1" >
+  <numeric name="/int" category="sint" size="4" >
   
   </numeric>
-  <numeric name="/int" category="sint" size="4" >
+  <numeric name="/int8_t" category="sint" size="1" >
   
   </numeric>
   <numeric name="/short" category="sint" size="2" >
@@ -23,13 +23,13 @@
     <field name="b" type="/short" offset="4">
     
     </field>
-    <field name="c" type="/char" offset="6">
+    <field name="c" type="/int8_t" offset="6">
     
     </field>
     <field name="array" type="/int[10]" offset="8">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h:4]]></metadata>
 
   </compound>
   <alias name="/EnumAlias" source="/TestEnum"/>
@@ -37,10 +37,11 @@
     <field name="test" type="/Compound[10]" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h:12]]></metadata>
 
   </compound>
   <alias name="/OtherEnum" source="/TestEnum"/>
+  <alias name="/char" source="/int8_t"/>
   <compound name="/NS1/NS1_1/Test" size="8" >
     <field name="a" type="/int" offset="0">
     
@@ -48,7 +49,7 @@
     <field name="b" type="/short" offset="4">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h:22]]></metadata>
 
   </compound>
   <alias name="/NS1/NS1_2/Test" source="/NS1/NS1_1/Test"/>
@@ -56,7 +57,7 @@
     <field name="test2" type="/NS1/NS1_1/Test" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h:32]]></metadata>
 
   </compound>
 </typelib>

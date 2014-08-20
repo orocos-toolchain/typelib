@@ -1,3 +1,20 @@
 <?xml version="1.0"?>
 <typelib>
+  <numeric name="/int8_t" category="sint" size="1" >
+  
+  </numeric>
+  <numeric name="/wchar_t" category="sint" size="4" >
+  
+  </numeric>
+  <alias name="/char" source="/int8_t"/>
+  <container  name="/std/string" of="/int8_t" size="8" kind="/std/string" >
+  
+  </container>
+  <compound name="/strings/S1" size="8" >
+    <field name="myS" type="/std/string" offset="0">
+    
+    </field>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/strings.h:8]]></metadata>
+
+  </compound>
 </typelib>
