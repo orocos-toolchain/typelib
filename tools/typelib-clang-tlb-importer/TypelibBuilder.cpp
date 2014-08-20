@@ -211,6 +211,24 @@ void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
         opaqueType->getMetaData().add("opaque_is_typedef", "1");
     }
 
+    // we are also required to note all base-classes of the opaque in the
+    // metadata
+    if (const clang::CXXRecordDecl *cxxRecord =
+            llvm::dyn_cast<clang::CXXRecordDecl>(decl)) {
+        clang::CXXRecordDecl::base_class_const_iterator base;
+        for (base = cxxRecord->bases_begin(); base != cxxRecord->bases_end();
+             base++) {
+            const clang::QualType &type = base->getType();
+
+            clang::LangOptions o;
+            clang::PrintingPolicy p(o);
+            p.SuppressTagKeyword = true;
+
+            opaqueType->getMetaData().add("base_classes",
+                                          cxxToTyplibName(type.getAsString(p)));
+        }
+    }
+
     std::cout << "Resolved Opaque '" << opaqueName << "' to '"
               << canonicalOpaqueName << "'" << std::endl;
 
