@@ -11,8 +11,37 @@
 #include <typelib/typemodel.hh>
 #include <typelib/typename.hh>
 #include <lang/tlb/import.hh>
+#include <clang/AST/Comment.h>
+#include <llvm/Support/Casting.h>
 
 
+void TypelibBuilder::printCommentForDecl(const clang::Decl* decl) const {
+
+    clang::comments::FullComment *comment =
+        decl->getASTContext().getCommentForDecl(decl, NULL);
+
+    if (comment) {
+        std::cout << " -- got comments:\n";
+        clang::ArrayRef<clang::comments::BlockContentComment *>::const_iterator
+            i;
+        for (i = comment->getBlocks().begin(); i != comment->getBlocks().end(); i++) {
+            std::cout << " ---- got block:\n";
+            const clang::comments::ParagraphComment *p =
+                static_cast<const clang::comments::ParagraphComment *>((*i));
+
+            clang::comments::ParagraphComment::child_iterator c;
+
+            for (c = p->child_begin(); c != p->child_end(); c++) {
+                if (const clang::comments::TextComment *TC =
+                        llvm::dyn_cast<clang::comments::TextComment>(*c)) {
+                    std::cout << TC->getText().str() << "\n";
+                }
+            }
+        }
+
+        std::cout << "\n\n";
+    }
+}
 
 void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
 {
