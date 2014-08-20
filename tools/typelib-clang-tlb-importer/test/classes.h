@@ -5,6 +5,9 @@
 
 struct timespec;
 
+struct S1 { long l[2]; };
+
+
 namespace classes {
 
     // we have a base-class with a member
@@ -45,6 +48,11 @@ namespace classes {
             int e;
         };
     };
+
+    // second: test the "base_classes" meta-data feature
+    class C1 { double a; };
+    class C2 : public C1 { double b; };
+    class C3 : public S1, private C1 { double c; };
 
 }
 
