@@ -516,7 +516,8 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
         return false;
     }
     
-//     std::cout << "Registered Compound " << canonicalTypeName << std::endl;
+    if (registry.get(compound->getName()))
+        return false;
 
     registry.add(compound);
     
