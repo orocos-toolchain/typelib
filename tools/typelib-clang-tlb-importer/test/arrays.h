@@ -24,7 +24,10 @@ namespace arrays {
     // array of records -- also not detected
     struct timespec A3[2];
 
-    // the same wrapped inside a container -- detected and exported
+    /// more text, formatted to be able to be extracted as a
+    /// "clang::comments::FullComment".
+    ///
+    /// blalba. more text. the same wrapped inside a container -- detected and exported
     class C1 {
         struct timespec A3[2];
         int m1;

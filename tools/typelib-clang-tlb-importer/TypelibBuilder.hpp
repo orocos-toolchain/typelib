@@ -55,6 +55,8 @@ private:
                                       Typelib::Type &type);
 
     std::string getTypelibNameForQualType(const clang::QualType &type);
+
+    void printCommentForDecl(const clang::Decl* decl) const;
     
     Typelib::Registry registry;
 };
