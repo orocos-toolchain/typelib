@@ -260,7 +260,7 @@ namespace Typelib
     class OpaqueType : public Type
     {
     public:
-        OpaqueType(std::string const& name, size_t size) : Type(name, size, Type::Opaque) {}
+        OpaqueType(std::string const& name) : Type(name, 0, Type::Opaque) {}
 	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
 	virtual bool do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const { return new OpaqueType(*this); }

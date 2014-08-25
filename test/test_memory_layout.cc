@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( test_layout_simple )
  
     // Check an opaque type
     {
-        OpaqueType type("test_opaque", 10);
+        OpaqueType type("test_opaque");
         BOOST_CHECK_THROW(Typelib::layout_of(type), Typelib::NoLayout);
     }
 }

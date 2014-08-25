@@ -288,8 +288,8 @@ class TC_Registry < Minitest::Test
 
     def test_create_opaque_raises_ArgumentError_if_the_name_is_already_used
         reg = Typelib::Registry.new
-        reg.create_opaque '/Test', 10
-        assert_raises(ArgumentError) { reg.create_opaque '/Test', 10 }
+        reg.create_opaque '/Test'
+        assert_raises(ArgumentError) { reg.create_opaque '/Test' }
     end
 
     def test_create_null_raises_ArgumentError_if_the_name_is_already_used

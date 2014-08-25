@@ -193,8 +193,7 @@ namespace
     }
     Type const* load_opaque(TypeNode const& node, Factory& factory)
     {
-        size_t size = getAttribute<size_t>(node.xml, "size");
-        Type* type = new OpaqueType(node.name, size);
+        Type* type = new OpaqueType(node.name);
         factory.insert(node, type);
         return type;
     }
