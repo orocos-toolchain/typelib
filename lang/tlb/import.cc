@@ -318,7 +318,7 @@ namespace
     void parse(std::string const& source_id, xmlDocPtr doc, Registry& registry)
     {
 	if (!doc) 
-	    throw Parsing::MalformedXML();
+	    throw Parsing::MalformedXML("error parsing '"+source_id+"'");
 
         xmlNodePtr root_node = xmlDocGetRootElement(doc);
         if (!root_node) 
@@ -363,6 +363,8 @@ void TlbImport::load
 
     try
     {
+        // giving "" as source_id is rather counterproductive... later
+        // errormessages are not informative anymore...
         parse("", doc, registry);
         xmlFreeDoc(doc);
     }
@@ -382,6 +384,8 @@ void TlbImport::load
     // Loading from files seams to be broken on some distro's libxml2-packages, 
     // so we load the whole file into memory before parsing
     std::ifstream stream(path.c_str());
+    if (!stream.good())
+        throw Parsing::ImportError("problem opening '"+path+"' for import");
     load(stream, config, registry);
 }
 
