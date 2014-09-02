@@ -85,12 +85,12 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
 bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
 {
     
-    const clang::NamedDecl *underlyingType = decl->getUnderlyingDecl();
+    const clang::NamedDecl *underlyingDecl = decl->getUnderlyingDecl();
     
     
     // skip non-template specializations
-    if (!underlyingType ||
-        (underlyingType->getKind() != clang::Decl::ClassTemplateSpecialization))
+    if (!underlyingDecl ||
+        (underlyingDecl->getKind() != clang::Decl::ClassTemplateSpecialization))
         return false;
 
     // some things of later use
@@ -105,7 +105,7 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
 
     const Typelib::Container::AvailableContainers& containers = Typelib::Container::availableContainers();
 
-    std::string containerName = cxxToTyplibName(underlyingType->getQualifiedNameAsString());
+    std::string containerName = cxxToTyplibName(underlyingDecl->getQualifiedNameAsString());
 
     Typelib::Container::AvailableContainers::const_iterator it = containers.find(containerName);
     if(it != containers.end())
