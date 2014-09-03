@@ -30,7 +30,24 @@ public:
     bool isConstant(const std::string name, size_t pos);
     bool registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
     
-    void lookupOpaque(const clang::TypeDecl *decl);
+    /** fill properties of a decl into Opaque of registry
+     *
+     * if a type was found in the parsed headers which is to be added as a
+     * opaque. Will also fill some metadata of the Type:
+     *
+     * - 'source_file_line' the "path/to/file:columnNumber" of the opaque
+     * - 'opaque_is_typedef' a bool saying wether this opaque is a typedef. If
+     *   it is, an alias to the underlying type is also added to the registry.
+     * - 'base_classes' if the opaque is a CXXRecord, all inherited
+     *   child-classes will be noted in the registry
+     *
+     * this function expects the Opaques to be pre-loaded into the registry, by
+     * loading the respective tlb-file for example.
+     *
+     * @param decl decl of the declaration to be added to the database as opaque
+     */
+    void registerOpaque(const clang::TypeDecl *decl);
+
     bool loadRegistry(const std::string &filename);
     
     const Typelib::Registry &getRegistry()

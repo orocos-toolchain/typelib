@@ -179,63 +179,54 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
     return false;
 }
 
-void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
+void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
 {
 
-    std::string opaqueName = cxxToTyplibName(decl->getQualifiedNameAsString());
-    std::string canonicalOpaqueName;
-    
-    if(decl->getKind() == clang::Decl::Typedef)
-    {
-        const clang::TypedefDecl *typeDefDecl = static_cast<const clang::TypedefDecl *>(decl);
-        canonicalOpaqueName = getTypelibNameForQualType(
-            typeDefDecl->getUnderlyingType().getCanonicalType());
-    }
-    else
-    {
-        if(!decl->getTypeForDecl())
-        {
-            std::cout
-                << "Could not get Type for Opaque Declaration '"
-                << decl->getQualifiedNameAsString() << "'" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        
-        canonicalOpaqueName = getTypelibNameForQualType(decl->getTypeForDecl()->getCanonicalTypeInternal());
-        
+    // get a typelib-name for the given opaque-decl
+    std::string opaqueName = cxxToTyplibName(decl);
+
+    // registry can be pre-filled with all the opaque-type names loaded from a
+    // tlb-databse given to the tool
+    Typelib::Type * opaqueType = registry.get_(opaqueName);
+
+    if (!opaqueType) {
+        std::cout << "Opaque '" << decl->getQualifiedNameAsString()
+                  << "' of kind '" << decl->getDeclKindName()
+                  << "' not found in registry\n";
+        return;
     }
 
-    Typelib::Type *opaqueType = registry.get_(opaqueName);
-    setHeaderPathForTypeFromDecl(decl, *opaqueType);
+    std::cout << "Opaque '" << decl->getQualifiedNameAsString()
+              << "' of kind '" << decl->getDeclKindName()
+              << "' is in database as '" << opaqueName << "'\n";
 
-    // typdef-opaques are specially marked in the Typelib metadata
-    if(decl->getKind() == clang::Decl::Typedef) {
+    // note the bases for inherited classes...
+    setBaseClassesForTypeFromDecl(decl, opaqueType);
+
+    // also note the filename for the decl in the metadata
+    setHeaderPathForTypeFromDecl(decl, opaqueType);
+
+    // and special care if this is a typedef: we have to note an alias from the
+    // given opaque to the actual type.
+    if (decl->getKind() == clang::Decl::Typedef) {
+
+        // behold, clang-API magic at work!
+        const clang::QualType &actualType =
+            llvm::dyn_cast<clang::TypedefNameDecl>(decl)
+                ->getUnderlyingType()
+                .getCanonicalType();
+
+        // convert the type of the decl into a typelib-string
+        std::string canonicalOpaqueName = cxxToTyplibName(actualType);
+
+        // typedef-opaques are specially marked in the Typelib metadata
         opaqueType->getMetaData().add("opaque_is_typedef", "1");
-    }
 
-    // we are also required to note all base-classes of the opaque in the
-    // metadata
-    if (const clang::CXXRecordDecl *cxxRecord =
-            llvm::dyn_cast<clang::CXXRecordDecl>(decl)) {
-        clang::CXXRecordDecl::base_class_const_iterator base;
-        for (base = cxxRecord->bases_begin(); base != cxxRecord->bases_end();
-             base++) {
-            const clang::QualType &type = base->getType();
-
-            opaqueType->getMetaData().add("base_classes",
-                                          cxxToTyplibName(type.getAsString(suppressTagKeyword)));
-        }
-    }
-
-    std::cout << "Resolved Opaque '" << opaqueName << "' to '"
-              << canonicalOpaqueName << "'" << std::endl;
-
-    if(opaqueName != canonicalOpaqueName)
-    {
-        //as we want to resolve opaques by their canonical name
-        //we need to register an alias from the canonical name 
-        //to the opaque name.
         registry.alias(opaqueName, canonicalOpaqueName);
+
+        std::cout << "Opaque '" << decl->getQualifiedNameAsString()
+                  << "' is a typedef of '" << actualType.getAsString()
+                  << "', alias created to '" << canonicalOpaqueName << "'\n";
     }
 }
 
