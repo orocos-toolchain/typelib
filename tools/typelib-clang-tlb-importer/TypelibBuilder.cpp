@@ -554,6 +554,21 @@ void TypelibBuilder::setHeaderPathForTypeFromDecl(const clang::Decl* decl, Typel
     type->getMetaData().add("source_file_line", type->getPathToDefiningHeader());
 }
 
+void TypelibBuilder::setBaseClassesForTypeFromDecl(const clang::Decl *decl,
+                                       Typelib::Type *type) {
+    // we are also required to note all base-classes of the decl in the
+    // metadata
+    if (const clang::CXXRecordDecl *cxxRecord =
+            llvm::dyn_cast<clang::CXXRecordDecl>(decl)) {
+        clang::CXXRecordDecl::base_class_const_iterator base;
+        for (base = cxxRecord->bases_begin(); base != cxxRecord->bases_end();
+             base++) {
+            const clang::QualType &qualType = base->getType();
+
+            type->getMetaData().add("base_classes", cxxToTyplibName(qualType));
+        }
+    }
+}
 
 
 bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)

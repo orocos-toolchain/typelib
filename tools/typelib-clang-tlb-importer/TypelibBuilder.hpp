@@ -53,6 +53,10 @@ private:
     // and store in into the meta-data system of the given Typelib::Type
     void setHeaderPathForTypeFromDecl(const clang::Decl *decl,
                                       Typelib::Type *type);
+    // add all base-classes of the given clang::Decl into the meta-data of the
+    // Typelib::Type
+    void setBaseClassesForTypeFromDecl(const clang::Decl *decl,
+                                       Typelib::Type *type);
 
     void printCommentForDecl(const clang::Decl* decl) const;
     
