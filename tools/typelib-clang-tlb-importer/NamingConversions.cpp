@@ -1,74 +1,15 @@
 #include "NamingConversions.hpp"
 
-#include <vector>
+#include <iostream>
 
-bool isConstant(const std::string& name, size_t pos)
-{
-    if(name.size() > pos)
-    {
-        char c = name.at(pos);
-        if(std::isalpha(c) || c == '_')
-            return false;
+#include <clang/AST/DeclTemplate.h>
+#include <clang/AST/PrettyPrinter.h>
 
-        return true;
-    }
-    return false;
-}
-
-// removing leading or trailing whitespaces from a given string
-// see http://stackoverflow.com/a/1798170/3520187
-std::string trim(const std::string &str,
-                 const std::string &whitespace = " \t") {
-    const size_t strBegin = str.find_first_not_of(whitespace);
-    if (strBegin == std::string::npos)
-        return ""; // no content
-
-    const size_t strEnd = str.find_last_not_of(whitespace);
-    const size_t strRange = strEnd - strBegin + 1;
-
-    return str.substr(strBegin, strRange);
-}
-
-// private helper function for splitting a string like
-//    'std::vector<std::pair<double, double> >'
-// into a vector of strings like
-//    'std::vector'
-//    '<'
-//    'std::pair'
-//    '<'
-//    'double'
-//    ','
-//    'double'
-//    '>'
-//    '>'
-std::vector<std::string> template_tokenizer(std::string name)
-{
-    std::vector<std::string> result;
-    const char* chars = "<,>";
-
-    while(!name.empty()) {
-        size_t idx = name.find_first_of(chars);
-        std::string match = trim(name.substr(0, idx));
-
-        if (!match.empty())
-            result.push_back(match);
-
-        if (idx == std::string::npos)
-            break;
-
-        char _char = name.at(idx);
-        name = name.substr(idx+1, std::string::npos);
-
-        result.push_back(std::string(&_char));
-    }
-
-    return result;
-}
-
-// using the given string, looking up all instances of "from" and replacing
-// them with "to" and returning the new string
-std::string stringFromToReplace(const std::string& string, const std::string& from,
-        const std::string& to) {
+// helperfunction: using the given string, looking up all instances of "from"
+// and replacing them with "to" and returning the new string
+std::string stringFromToReplace(const std::string &string,
+                                const std::string &from,
+                                const std::string &to) {
 
     std::string result(string);
 
@@ -80,89 +21,114 @@ std::string stringFromToReplace(const std::string& string, const std::string& fr
     return result;
 }
 
-std::string cxxToTyplibName(const std::string& name)
+// the actual string-conversion function converting single cxx-names:
+std::string cxxToTyplibName(std::string cxxName)
 {
-    std::string ret(name);
+    std::string typelibName(cxxName);
 
-    if(!ret.empty() && ret.at(0) != '/')
-    {
-        ret.insert(0, "/");
+    typelibName = stringFromToReplace(typelibName, "::", "/");
+    // hmprf: this "hack" is still needed:
+    typelibName = stringFromToReplace(typelibName, " [", "[");
+
+    // reproducing the old gccxml behaviour
+    if (typelibName.at(0) != '/')
+        typelibName.insert(0, 1, '/');
+
+    // deliberately not check for the "/std/vector" case, so
+    if (typelibName == "/std/vector") {
+        typelibName = "/std/vector";
+    } else if (typelibName == "/std/basic_string") {
+#warning renaming '/std/basic_string' to '/std/string' -- need to add the other way around?
+        typelibName = "/std/string";
     }
 
-    std::string from("::");
-    std::string to("/");
+    return typelibName;
+}
 
-    for (size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos))
-    {
-        ret.replace(start_pos, from.length(), to);
-    }
+// helperfunction: convert a decl of a "template specialization" into a string in typelib-lingo
+std::string
+templateToTypelibName(const clang::ClassTemplateSpecializationDecl *tDecl) {
 
-    from = std::string("<");
-    to = std::string("</");
+    if (!tDecl->getTemplateArgs().size())
+        return "";
 
-    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos))
-    {
-        if(!isConstant(ret, start_pos + 1))
-        {
-            ret.replace(start_pos, from.length(), to);
-            start_pos += to.length();
+    std::string retval("<");
+
+    const clang::TemplateArgumentList &tmpArgs(tDecl->getTemplateArgs());
+    for (size_t idx = 0; idx < tmpArgs.size(); idx++) {
+        // we need commas as separator at certain places
+        if (idx != 0)
+            retval += ",";
+        switch (tmpArgs.get(idx).getKind()) {
+        case clang::TemplateArgument::Declaration:
+            /* std::cerr */
+            /*     << " -- template arg declaration: " */
+            /*     << tmpArgs.get(idx).getAsDecl()->getQualifiedNameAsString() */
+            /*     << "\n"; */
+            retval += cxxToTyplibName(
+                tmpArgs.get(idx).getAsDecl()->getQualifiedNameAsString());
+            break;
+        case clang::TemplateArgument::Type:
+            /* std::cerr << " -- template arg type: " */
+            /*           << cxxToTyplibName(tmpArgs.get(idx).getAsType()) << "\n"; */
+            retval += cxxToTyplibName(tmpArgs.get(idx).getAsType());
+            break;
+        case clang::TemplateArgument::Integral:
+            /* std::cerr << " -- template arg integral: " */
+            /*           << tmpArgs.get(idx).getAsIntegral().toString(10) << "\n"; */
+            retval +=
+                cxxToTyplibName(tmpArgs.get(idx).getAsIntegral().toString(10));
+            break;
+        case clang::TemplateArgument::Template:
+            std::cerr << " -- template arg template expansion... recursion? "
+                         "not implemented yet... but should be easy\n";
+            // retval += templateToTypelibName(tmpArgs.get(idx).getAsDecl());
+            exit(EXIT_FAILURE);
+            break;
+        default:
+            std::cerr << " -- template arg unhandled case "
+                      << tmpArgs.get(idx).getKind() << "\n";
+            exit(EXIT_FAILURE);
         }
-        else
-        {
-            start_pos += from.length();
-        }
     }
 
-    from = std::string(", ");
-    to = std::string(",/");
-    std::string toConst(",");
+    // and finally close everything
+    retval += ">";
 
-    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos))
-    {
-        if(!isConstant(ret, start_pos + 2))
-        {
-            ret.replace(start_pos, from.length(), to);
-            start_pos += to.length();
-        }
-        else
-        {
-            ret.replace(start_pos, from.length(), toConst);
-            start_pos += toConst.length();
-        }
+    return retval;
+}
+
+std::string cxxToTyplibName(const clang::NamedDecl* decl)
+{
+    // just convert the name
+    std::string typelibName(cxxToTyplibName(decl->getQualifiedNameAsString()));
+
+    // note: template declarations as such and partial specializations are ignored here!
+    if (const clang::ClassTemplateSpecializationDecl *tDecl =
+            llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(decl)) {
+
+        typelibName += templateToTypelibName(tDecl);
     }
 
-    from = std::string(" >");
-    to = std::string(">");
+    return typelibName;
+}
 
-    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
-    {
-        ret.replace(start_pos, from.length(), to);
+std::string cxxToTyplibName(const clang::QualType &type) {
+
+    // this will give special handling for "Records" (e.g. classes, structs,
+    // templates and so on)
+    if (const clang::CXXRecordDecl *rDecl =
+            type.getTypePtr()->getAsCXXRecordDecl()) {
+
+        return cxxToTyplibName(rDecl);
     }
 
-    from = std::string(" &");
-    to = std::string("&");
+    // everything else is handled as a "Type"
+    clang::LangOptions o;
+    clang::PrintingPolicy suppressTagKeyword(o);
+    suppressTagKeyword.SuppressTagKeyword = true;
 
-    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
-    {
-        ret.replace(start_pos, from.length(), to);
-    }
-
-    from = std::string(" [");
-    to = std::string("[");
-
-    for(size_t start_pos = ret.find(from); start_pos != std::string::npos; start_pos = ret.find(from, start_pos + to.length()))
-    {
-        ret.replace(start_pos, from.length(), to);
-    }
-
-#warning HACK, renaming '/std/basic_string</char>' to '/std/string'
-    if(ret == "/std/basic_string")
-        return "/std/string";
-
-    if(ret == "/std/basic_string</char>")
-        return "/std/string";
-
-    return ret;
+    return cxxToTyplibName(type.getAsString(suppressTagKeyword));
 }
 
 std::string typlibtoCxxName(const std::string& typelibName)
@@ -183,3 +149,4 @@ std::string typlibtoCxxName(const std::string& typelibName)
     else
         return cxxName;
 }
+
