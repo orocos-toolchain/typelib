@@ -14,7 +14,6 @@
 #include <clang/AST/Comment.h>
 #include <llvm/Support/Casting.h>
 
-
 void TypelibBuilder::printCommentForDecl(const clang::Decl* decl) const {
 
     clang::comments::FullComment *comment =
@@ -78,7 +77,7 @@ void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
         return;
     }
 
-    registerType(cxxToTyplibName(decl->getQualifiedNameAsString()), typeForDecl,
+    registerType(cxxToTyplibName(decl), typeForDecl,
                  decl->getASTContext());
 }
 
@@ -105,7 +104,7 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
 
     const Typelib::Container::AvailableContainers& containers = Typelib::Container::availableContainers();
 
-    std::string containerName = cxxToTyplibName(underlyingDecl->getQualifiedNameAsString());
+    std::string containerName = cxxToTyplibName(underlyingDecl);
 
     Typelib::Container::AvailableContainers::const_iterator it = containers.find(containerName);
     if(it != containers.end())
@@ -126,7 +125,7 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
                 return false;
             }
             
-            std::string argTypelibName = getTypelibNameForQualType(arg.getAsType().getCanonicalType());
+            std::string argTypelibName = cxxToTyplibName(arg.getAsType().getCanonicalType());
             
             //HACK ignore allocators
 #warning HACK, ignoring types named '/std/allocator'
@@ -141,7 +140,7 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
                 continue;
             }
             
-            std::string originalTypeName = getTypelibNameForQualType(arg.getAsType().getCanonicalType());
+            std::string originalTypeName = cxxToTyplibName(arg.getAsType().getCanonicalType());
             
             const Typelib::Type *argType = checkRegisterType(originalTypeName, typePtr, decl->getASTContext());
             if(!argType)
@@ -158,7 +157,7 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
             
             typelibArgList.push_back(argType);
             
-            std::cout << "Arg is '" << getTypelibNameForQualType(arg.getAsType()) << "'" << std::endl;
+            std::cout << "Arg is '" << cxxToTyplibName(arg.getAsType()) << "'" << std::endl;
         }
         
         
@@ -220,12 +219,8 @@ void TypelibBuilder::lookupOpaque(const clang::TypeDecl* decl)
              base++) {
             const clang::QualType &type = base->getType();
 
-            clang::LangOptions o;
-            clang::PrintingPolicy p(o);
-            p.SuppressTagKeyword = true;
-
             opaqueType->getMetaData().add("base_classes",
-                                          cxxToTyplibName(type.getAsString(p)));
+                                          cxxToTyplibName(type.getAsString(suppressTagKeyword)));
         }
     }
 
@@ -403,7 +398,7 @@ bool TypelibBuilder::addArray(const std::string& canonicalTypeName, const clang:
 {
     const clang::ConstantArrayType *type = static_cast<const clang::ConstantArrayType *>(gtype);
     const clang::Type *arrayBaseType = type->getElementType().getTypePtr();
-    std::string arrayBaseTypeName = getTypelibNameForQualType(type->getElementType());
+    std::string arrayBaseTypeName = cxxToTyplibName(type->getElementType());
 
     const Typelib::Type *typelibArrayBaseType =
         checkRegisterType(arrayBaseTypeName, arrayBaseType, context);
@@ -563,17 +558,6 @@ void TypelibBuilder::setHeaderPathForTypeFromDecl(const clang::Decl* decl, Typel
 }
 
 
-std::string TypelibBuilder::getTypelibNameForQualType(const clang::QualType& type)
-{
-    const clang::QualType qualType = type.getLocalUnqualifiedType().getCanonicalType();
-        
-    clang::LangOptions o;
-    clang::PrintingPolicy p(o);
-    p.SuppressTagKeyword = true;
-
-    return cxxToTyplibName(qualType.getAsString(p));
-}
-
 
 bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
 {
@@ -591,12 +575,7 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
             return false;
         }
 
-        clang::LangOptions o;
-        clang::PrintingPolicy p(o);
-        p.SuppressTagKeyword = true;
-        
-        std::string canonicalFieldTypeName = cxxToTyplibName(qualType.getAsString(p));
-
+        std::string canonicalFieldTypeName = cxxToTyplibName(qualType);
 
         const Typelib::Type *typelibFieldType = checkRegisterType(canonicalFieldTypeName, qualType.getTypePtr(), decl->getASTContext());
         if(!typelibFieldType)
@@ -629,8 +608,8 @@ void TypelibBuilder::registerTypeDef(const clang::TypedefNameDecl* decl)
        << decl->getUnderlyingType().getCanonicalType().getAsString()
        << "'\n";
     
-    std::string typeDefName = cxxToTyplibName(decl->getQualifiedNameAsString());
-    std::string forCanonicalType = getTypelibNameForQualType(decl->getUnderlyingType().getCanonicalType());
+    std::string typeDefName = cxxToTyplibName(decl);
+    std::string forCanonicalType = cxxToTyplibName(decl->getUnderlyingType().getCanonicalType());
 
     if(!Typelib::isValidTypename(typeDefName, true))
     {
