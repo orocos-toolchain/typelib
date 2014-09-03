@@ -57,9 +57,11 @@ private:
     // Typelib::Type
     void setBaseClassesForTypeFromDecl(const clang::Decl *decl,
                                        Typelib::Type *type);
+    // extract comments attached given clang::Decl and add them as meta-data to
+    // the Typelib::Type
+    void setDocStringForTypeFromDecl(const clang::Decl *decl,
+                                     Typelib::Type *type);
 
-    void printCommentForDecl(const clang::Decl* decl) const;
-    
     Typelib::Registry registry;
 };
 
