@@ -46,6 +46,7 @@ TypelibBuilder builder;
 
 namespace {
 
+// class TypeDefCallback {{{1
 class TypeDefCallback : public MatchFinder::MatchCallback {
     public:
 
@@ -54,41 +55,33 @@ class TypeDefCallback : public MatchFinder::MatchCallback {
         const TypedefType *T = Result.Nodes.getNodeAs<TypedefType>("typeDef");
 
         if(T) {
-            
-            if (!Result.SourceManager->isInMainFile(T->getDecl()->getTypeSourceInfo()->getTypeLoc().getLocStart())) {
-//             std::cout << " -- skipping '"
-//                         << T->getDecl()->getQualifiedNameAsString()
-//                         << "' because its not in main header\n";
+
+            if (!Result.SourceManager->isInMainFile(T->getDecl()
+                                                        ->getTypeSourceInfo()
+                                                        ->getTypeLoc()
+                                                        .getLocStart())) {
                 return;
             }
 
-            
             builder.registerTypeDef(T);
         }
     }
 };
+// }}}
 
+// class OpaqueCallback {{{1
 class OpaqueCallback : public MatchFinder::MatchCallback {
-    public:
-
+  public:
     virtual void run(const MatchFinder::MatchResult &Result) {
 
-        std::cout << "Found my Opaque" << std::endl;
-        
-   
-        if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
-
-            builder.lookupOpaque(D);
-            
-        }
-        else
-        {
-            std::cout << "WEIRED" << std::endl;
-            exit(EXIT_FAILURE);
+        if (const TypeDecl *decl = Result.Nodes.getNodeAs<TypeDecl>("opaque")) {
+            builder.registerOpaque(decl);
         }
     }
 };
+// }}}
     
+// class TypeDeclCallback {{{1
 class TypeDeclCallback : public MatchFinder::MatchCallback {
     public:
 
@@ -99,12 +92,9 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
         // typeDecls, so prevent adding them both!
         if (const CXXRecordDecl *D = Result.Nodes.getNodeAs<CXXRecordDecl>("typeDecl")) {
 
-            // this removes the bodus double-match of "nested_records::S2::S2"
+            // this removes the bogus double-match of "nested_records::S2::S2"
             // for "struct nested_records::S2". it it not needed by us.
             if (D->isInjectedClassName()) {
-//                 std::cout << " -- skipping '"
-//                           << D->getQualifiedNameAsString()
-//                           << "' because its injected classname\n";
                 return;
             }
 
@@ -113,9 +103,6 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
             // registered structs, we'll hit fast and hit hard by adding it to
             // the database.
             if (!Result.SourceManager->isInMainFile(D->getLocation())) {
-//                 std::cout << " -- skipping '"
-//                           << D->getQualifiedNameAsString()
-//                           << "' because its not in main header\n";
                 return;
             }
 
@@ -124,17 +111,17 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
         } else if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
 
             if (!Result.SourceManager->isInMainFile(D->getLocation())) {
-//                 std::cout << " -- skipping '"
-//                             << D->getQualifiedNameAsString()
-//                             << "' because its not in main header\n";
                 return;
             }
+
             builder.registerNamedDecl(D);
 
         }
     }
 
 };
+// }}}
+
 } // end anonymous namespace
 
 static llvm::cl::OptionCategory ToolCategory("typelib-clang-tlb-importer options");
@@ -179,7 +166,7 @@ int main(int argc, const char **argv) {
                     OptionsParser.getSourcePathList());
     // }}}
 
-    //load opque registry
+    //load opaque registry
     if(!opaquePath.empty())
     {
         std::cout << "Loading opaque tlb-registry from '" << opaquePath << "'" << std::endl;
@@ -189,11 +176,13 @@ int main(int argc, const char **argv) {
         ast_matchers::MatchFinder OpaqueFinder;
         OpaqueCallback opaqueCallback;
 
-        for(Typelib::Registry::Iterator it = builder.getRegistry().begin(); it != builder.getRegistry().end(); it++)
-        {
-            if(it->getCategory() == Typelib::Type::Opaque)
-            {
-                OpaqueFinder.addMatcher(namedDecl(hasName(typlibtoCxxName(it->getName()))).bind("typeDecl"), &opaqueCallback);
+        for (Typelib::Registry::Iterator it = builder.getRegistry().begin();
+             it != builder.getRegistry().end(); it++) {
+            if (it->getCategory() == Typelib::Type::Opaque) {
+                OpaqueFinder.addMatcher(
+                    namedDecl(hasName(typlibtoCxxName(it->getName())))
+                        .bind("opaque"),
+                    &opaqueCallback);
             }
         }
 
@@ -201,6 +190,7 @@ int main(int argc, const char **argv) {
             std::cout << "Parsing error in clang, cannot continue" << std::endl;
             exit(retval);
         }
+        std::cout << "Finished resolving opaque-registry\n\n";
     }
 
     ast_matchers::MatchFinder Finder;
