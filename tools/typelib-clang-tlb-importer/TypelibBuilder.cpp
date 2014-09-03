@@ -421,7 +421,7 @@ bool TypelibBuilder::addArray(const std::string& canonicalTypeName, const clang:
 bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::EnumDecl *decl)
 {
     Typelib::Enum *enumVal =new Typelib::Enum(canonicalTypeName);
-    setHeaderPathForTypeFromDecl(decl, *enumVal);
+    setHeaderPathForTypeFromDecl(decl, enumVal);
 
     if(!decl->getIdentifier())
     {
@@ -514,7 +514,7 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     size_t typeSize = typeLayout.getSize().getQuantity();
     compound->setSize(typeSize);
 
-    setHeaderPathForTypeFromDecl(decl, *compound);
+    setHeaderPathForTypeFromDecl(decl, compound);
     if(!addBaseClassToCompound(*compound, canonicalTypeName, decl))
     {
         delete compound;
@@ -541,20 +541,17 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     return true;
 }
 
-void TypelibBuilder::setHeaderPathForTypeFromDecl(const clang::Decl* decl, Typelib::Type& type)
+void TypelibBuilder::setHeaderPathForTypeFromDecl(const clang::Decl* decl, Typelib::Type* type)
 {
-    std::string sourceLocation =
-        decl->getSourceRange().getBegin().printToString(
-            decl->getASTContext().getSourceManager());
+    const clang::SourceManager& sm = decl->getASTContext().getSourceManager();
+    const clang::SourceLocation& loc = sm.getSpellingLoc(decl->getSourceRange().getBegin());
 
-    // clang knows the "/path/to/file:line:column" while we in typelib only(?)
-    // need the column information. we have to detect the last colon, so that
-    // we can put just the beginning of the string into the metadata of the
-    // type-object
-    type.setPathToDefiningHeader(
-        sourceLocation.substr(0, sourceLocation.find_last_of(':')));
+    // typelib needs the '/path/to/file:column' information
+    std::ostringstream stream;
+    stream << sm.getFilename(loc).str() << ":" << sm.getSpellingLineNumber(loc);
+    type->setPathToDefiningHeader(stream.str());
 
-    type.getMetaData().add("source_file_line", type.getPathToDefiningHeader());
+    type->getMetaData().add("source_file_line", type->getPathToDefiningHeader());
 }
 
 

@@ -49,10 +49,10 @@ private:
     
     bool checkRegisterContainer(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
 
-    // extract source-loc of given clang::Decl as "/path/tpo/file:linenumber"
-    // and store in into the metadata system of the given Typelib::Type
+    // extract source-loc of given clang::Decl as "/path/to/file:lineNumber"
+    // and store in into the meta-data system of the given Typelib::Type
     void setHeaderPathForTypeFromDecl(const clang::Decl *decl,
-                                      Typelib::Type &type);
+                                      Typelib::Type *type);
 
     void printCommentForDecl(const clang::Decl* decl) const;
     
