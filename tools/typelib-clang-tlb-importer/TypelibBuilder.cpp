@@ -628,11 +628,6 @@ void TypelibBuilder::registerTypeDef(const clang::TypedefNameDecl* decl)
 }
 
 
-void TypelibBuilder::registerTypeDef(const clang::TypedefType* type)
-{
-    registerTypeDef(type->getDecl());
-}
-
 bool TypelibBuilder::loadRegistry(const std::string& filename)
 {
     TlbImport importer;

@@ -63,7 +63,7 @@ class TypeDefCallback : public MatchFinder::MatchCallback {
                 return;
             }
 
-            builder.registerTypeDef(T);
+            builder.registerTypeDef(T->getDecl());
         }
     }
 };
