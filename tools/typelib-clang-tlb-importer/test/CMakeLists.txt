@@ -56,9 +56,9 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
         )
 endforeach(HEADER_FILE)
 
-set_property(SOURCE test-naming-conversions.cpp PROPERTY COMPILE_FLAGS -std=c++11)
-add_executable(test-naming-conversions
-    test-naming-conversions.cpp
-    ../NamingConversions.cpp
-    )
-add_test(naming-conversions test-naming-conversions)
+# set_property(SOURCE test-naming-conversions.cpp PROPERTY COMPILE_FLAGS -std=c++11)
+# add_executable(test-naming-conversions
+#     test-naming-conversions.cpp
+#     ../NamingConversions.cpp
+#     )
+# add_test(naming-conversions test-naming-conversions)
