@@ -314,6 +314,7 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
     }
     
     // FIXME: this is bound to break...
+    // caused by eigen doing a "sizeof(int)" as template argument.
     if(canonicalTypeName.find("sizeof") != std::string::npos)
     {
         std::cout << "Ignoring type with weird sizeof '" << canonicalTypeName << "'" << std::endl;
@@ -363,32 +364,34 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
                       << " with unhandled type '" << type->getTypeClassName()
                       << "'" << std::endl;
     }
+
+    std::cout << "Error: Unhandled type '" << canonicalTypeName << "'" << std::endl;
     return false;
-    
 }
 
-const Typelib::Type* TypelibBuilder::checkRegisterType(const std::string& canonicalTypeName, const clang::Type *type, clang::ASTContext& context)
-{
+const Typelib::Type *
+TypelibBuilder::checkRegisterType(const std::string &canonicalTypeName,
+                                  const clang::Type *type,
+                                  clang::ASTContext &context) {
     if(!registry.has(canonicalTypeName, false))
     {
-        std::cout << "Trying to register unknown Type '" << canonicalTypeName << "'" << std::endl;
-        
-        if(!registerType(canonicalTypeName, type, context))
-        {
+        std::cout << "Trying to register Type '" << canonicalTypeName
+                  << "' which is unknown to the database" << std::endl;
+
+        // what is this? why return NULL? makes it more complicated
+        // downstream...
+        if(!registerType(canonicalTypeName, type, context)) {
             return NULL;
         }
     }
-    else
-    {
-//         std::cout << "registry claims to know " << canonicalTypeName << std::endl;
-    }
-    
-    
+
     const Typelib::Type *typelibType = registry.get(canonicalTypeName);
 
     if(!typelibType)
     {
-        std::cout << "Internal error : Just registed Type '" << canonicalTypeName << "' was not found in registry" << std::endl;
+        std::cout << "Internal error : Just registed Type '"
+                  << canonicalTypeName << "' was not found in registry"
+                  << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -401,8 +404,9 @@ bool TypelibBuilder::addArray(const std::string& canonicalTypeName, const clang:
     const clang::ConstantArrayType *type = static_cast<const clang::ConstantArrayType *>(gtype);
     const clang::Type *arrayBaseType = type->getElementType().getTypePtr();
     std::string arrayBaseTypeName = getTypelibNameForQualType(type->getElementType());
-    
-    const Typelib::Type *typelibArrayBaseType = checkRegisterType(arrayBaseTypeName, arrayBaseType, context);
+
+    const Typelib::Type *typelibArrayBaseType =
+        checkRegisterType(arrayBaseTypeName, arrayBaseType, context);
     if(!typelibArrayBaseType)
     {
         std::cout << "Not registering Array '" << canonicalTypeName
@@ -621,9 +625,9 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
 void TypelibBuilder::registerTypeDef(const clang::TypedefNameDecl* decl)
 {
     std::cout << "Found Typedef '" << decl->getQualifiedNameAsString() << "'"
-       << " for Canonical Type '"
-       << clang::QualType::getAsString(decl->getUnderlyingType().getCanonicalType().split())
-       << "'" << std::endl;
+       << " of '"
+       << decl->getUnderlyingType().getCanonicalType().getAsString()
+       << "'\n";
     
     std::string typeDefName = cxxToTyplibName(decl->getQualifiedNameAsString());
     std::string forCanonicalType = getTypelibNameForQualType(decl->getUnderlyingType().getCanonicalType());
