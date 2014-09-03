@@ -24,7 +24,6 @@ class TypelibBuilder
 {
 public:
     bool registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
-    void registerTypeDef(const clang::TypedefType *type);
     void registerTypeDef(const clang::TypedefNameDecl *decl);
     void registerNamedDecl(const clang::TypeDecl *decl);
     bool isConstant(const std::string name, size_t pos);
