@@ -1,33 +1,25 @@
 #ifndef TYPELIBBUILDER_H
 #define TYPELIBBUILDER_H
-#include <map>
-#include <string>
-#include <stdint.h>
-#include <vector>
+
 #include <typelib/registry.hh>
+#include <string>
 
 namespace clang {
 class CXXRecordDecl;
-class TypedefType;
 class BuiltinType;
-class NamedDecl;
 class TypeDecl;
 class EnumDecl;
-class ConstantArrayType;
 class Type;
 class ASTContext;
-class QualType;
 class TypedefNameDecl;
 class Decl;
 }
+
 class TypelibBuilder
 {
 public:
-    bool registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
-    void registerTypeDef(const clang::TypedefNameDecl *decl);
-    void registerNamedDecl(const clang::TypeDecl *decl);
-    bool isConstant(const std::string name, size_t pos);
-    bool registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
+    void registerTypedefNameDecl(const clang::TypedefNameDecl *decl);
+    void registerTypeDecl(const clang::TypeDecl *decl);
     
     /** fill properties of a decl into Opaque of registry
      *
@@ -47,14 +39,28 @@ public:
      */
     void registerOpaque(const clang::TypeDecl *decl);
 
-    bool loadRegistry(const std::string &filename);
+    /** fill the internal registry-database with informations extracted from a tlb-file
+     *
+     * should be used to pre-load opaque-informations. might throw if something
+     * fishy detected.
+     *
+     * @param filename path to tlb-file to load
+     */
+    void loadRegistry(const std::string &filename);
     
+    /** accessor for internal registry
+     *
+     * @return const-ref of internal registry, for exporting for example
+     */
     const Typelib::Registry &getRegistry()
     {
         return registry;
     }
     
 private:
+    bool registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
+    bool registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
+
     bool addFieldsToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addBaseClassToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
