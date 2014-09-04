@@ -46,29 +46,8 @@ TypelibBuilder builder;
 
 namespace {
 
-// class TypeDefCallback {{{1
-class TypeDefCallback : public MatchFinder::MatchCallback {
-    public:
-
-    virtual void run(const MatchFinder::MatchResult &Result) {
-
-        const TypedefType *T = Result.Nodes.getNodeAs<TypedefType>("typeDef");
-
-        if(T) {
-
-            if (!Result.SourceManager->isInMainFile(T->getDecl()
-                                                        ->getTypeSourceInfo()
-                                                        ->getTypeLoc()
-                                                        .getLocStart())) {
-                return;
-            }
-
-            builder.registerTypeDef(T->getDecl());
-        }
-    }
-};
-// }}}
-
+// first level: lookup typdefs named like entries from a tlb-database. then add
+// aliases to the tlb-database to the resolved underlying type in the "builder"
 // class OpaqueCallback {{{1
 class OpaqueCallback : public MatchFinder::MatchCallback {
   public:
@@ -80,9 +59,11 @@ class OpaqueCallback : public MatchFinder::MatchCallback {
     }
 };
 // }}}
-    
-// class TypeDeclCallback {{{1
-class TypeDeclCallback : public MatchFinder::MatchCallback {
+
+// second stage: do the heavy lifting to fill the tlb-database with all types
+// defined in the main-header file
+// class TlbImportCallback {{{1
+class TlbImportCallback : public MatchFinder::MatchCallback {
     public:
 
     virtual void run(const MatchFinder::MatchResult &Result) {
@@ -90,32 +71,42 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
         // check the different possibilities of a match: "recordDecl" or
         // "typeDecl", and handle them accordingly. recordDecls are also
         // typeDecls, so prevent adding them both!
-        if (const CXXRecordDecl *D = Result.Nodes.getNodeAs<CXXRecordDecl>("typeDecl")) {
+        if (const CXXRecordDecl *rDecl = Result.Nodes.getNodeAs<CXXRecordDecl>("namedDecl")) {
 
             // this removes the bogus double-match of "nested_records::S2::S2"
             // for "struct nested_records::S2". it it not needed by us.
-            if (D->isInjectedClassName()) {
+            if (rDecl->isInjectedClassName()) {
                 return;
             }
 
-            // this prohibits adding "struct __locale_struct" to the database
-            // ust becuase it's declaration. if it is needed inside one of the
-            // registered structs, we'll hit fast and hit hard by adding it to
-            // the database.
-            if (!Result.SourceManager->isInMainFile(D->getLocation())) {
+            // this prohibits adding system-header-stuff like "struct
+            // __locale_struct" to the database just becuase it's a
+            // declaration. if it is used later _inside_ an other registered
+            // struct, we'll add it later to the database nevertheless.
+            if (!Result.SourceManager->isInMainFile(rDecl->getLocation())) {
                 return;
             }
 
-            builder.registerNamedDecl(D);
+            builder.registerNamedDecl(rDecl);
 
-        } else if(const TypeDecl *D = Result.Nodes.getNodeAs<TypeDecl>("typeDecl")) {
+        } else if(const TypeDecl *tDecl = Result.Nodes.getNodeAs<TypeDecl>("namedDecl")) {
 
-            if (!Result.SourceManager->isInMainFile(D->getLocation())) {
+            if (!Result.SourceManager->isInMainFile(tDecl->getLocation())) {
                 return;
             }
 
-            builder.registerNamedDecl(D);
+            builder.registerNamedDecl(tDecl);
 
+        } else if(const TypedefType *tType = Result.Nodes.getNodeAs<TypedefType>("typedefType")) {
+
+            if (!Result.SourceManager->isInMainFile(tType->getDecl()
+                                                        ->getTypeSourceInfo()
+                                                        ->getTypeLoc()
+                                                        .getLocStart())) {
+                return;
+            }
+
+            builder.registerTypeDef(tType->getDecl());
         }
     }
 
@@ -124,6 +115,7 @@ class TypeDeclCallback : public MatchFinder::MatchCallback {
 
 } // end anonymous namespace
 
+// commandline options {{{1
 static llvm::cl::OptionCategory ToolCategory("typelib-clang-tlb-importer options");
 static llvm::cl::opt<std::string> opaquePath(
         "opaquePath",
@@ -136,6 +128,7 @@ static llvm::cl::opt<std::string> tlbSavePath(
         llvm::cl::desc("where to save tlb-database"),
         llvm::cl::Required,
         llvm::cl::cat(ToolCategory));
+// }}}
 
 int main(int argc, const char **argv) {
     llvm::sys::PrintStackTraceOnErrorSignal();
@@ -195,11 +188,9 @@ int main(int argc, const char **argv) {
 
     ast_matchers::MatchFinder Finder;
 
-    TypeDeclCallback typeDeclCallback;
-    Finder.addMatcher(namedDecl().bind("typeDecl"), &typeDeclCallback);
-
-    TypeDefCallback typeDefCallback;
-    Finder.addMatcher(typedefType().bind("typeDef"), &typeDefCallback);
+    TlbImportCallback tlbImportCallback;
+    Finder.addMatcher(namedDecl().bind("namedDecl"), &tlbImportCallback);
+    Finder.addMatcher(typedefType().bind("typedefType"), &tlbImportCallback);
     
     if (int retval = Tool.run(newFrontendActionFactory(&Finder))) {
         std::cout << "Parsing error in clang, cannot continue" << std::endl;
