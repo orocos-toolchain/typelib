@@ -428,6 +428,13 @@ bool TypelibBuilder::addBaseClassToCompound(Typelib::Compound& compound, const s
 
 bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
 {
+
+    // check if smth named like this is already there
+    if (registry.get(canonicalTypeName)) {
+        std::cout << "Can't register Record '" << canonicalTypeName << "', it is already known.\n";
+        return false;
+    }
+
     if(!decl)
     {
         std::cout << "Warning, got NULL Type" << std::endl;
@@ -500,9 +507,6 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
         return false;
     }
     
-    if (registry.get(compound->getName()))
-        return false;
-
     registry.add(compound);
     
     return true;
