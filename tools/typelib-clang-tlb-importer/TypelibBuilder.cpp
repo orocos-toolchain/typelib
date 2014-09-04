@@ -263,30 +263,22 @@ bool TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const
     return false;
 }
 
-bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context)
-{
-    
-    if(canonicalTypeName.find("&") != std::string::npos)
+bool TypelibBuilder::registerType(const std::string &canonicalTypeName,
+                                  const clang::Type *type,
+                                  clang::ASTContext &context) {
+
+    if(type->isReferenceType())
     {
-        std::cout << "Ignoring type with reference '" << canonicalTypeName << "'" << std::endl;
+        std::cout << "Ignoring type with reference '" << canonicalTypeName << "'\n";
         return false;
     }
     
-    // FIXME: this is bound to break...
-    // caused by eigen doing a "sizeof(int)" as template argument.
-    if(canonicalTypeName.find("sizeof") != std::string::npos)
+    if(type->isAnyPointerType())
     {
-        std::cout << "Ignoring type with weird sizeof '" << canonicalTypeName << "'" << std::endl;
+        std::cout << "Ignoring pointer type '" << canonicalTypeName << "'\n";
         return false;
     }
 
-    if(canonicalTypeName.find("(") != std::string::npos)
-    {
-        std::cout << "Ignoring type with function pointer '" << canonicalTypeName << "'" << std::endl;
-        return false;
-    }
-    
-    
     switch(type->getTypeClass())
     {
         case clang::Type::Builtin:
