@@ -69,4 +69,11 @@
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:47]]></metadata>
 
   </compound>
+  <compound name="/classes/With_sizeof_InName" size="4" >
+    <field name="holymolymotherfucker" type="/int" offset="0">
+
+    </field>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:38]]></metadata>
+
+  </compound>
 </typelib>
