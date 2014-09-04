@@ -21,6 +21,16 @@ std::string cxxToTyplibName(const clang::NamedDecl* decl);
  */
 std::string cxxToTyplibName(const clang::QualType& type);
 
+/** convert name of a c++ type into typelib syntax
+ *
+ * carefull, only use this function if you have to, as the other two versions
+ * automatically handle template-conversion.
+ *
+ * @param cxxName the string to convert.
+ * @return the resolved name of the cxx-type in typelib lingo
+ */
+std::string cxxToTyplibName(const std::string& cxxName);
+
 /** converts a "typelib" name to a "c++" name. uses some assumptions.
  *
  * for example:

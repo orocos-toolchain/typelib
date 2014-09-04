@@ -22,7 +22,7 @@ std::string stringFromToReplace(const std::string &string,
 }
 
 // the actual string-conversion function converting single cxx-names:
-std::string cxxToTyplibName(std::string cxxName)
+std::string cxxToTyplibName(const std::string& cxxName)
 {
     std::string typelibName(cxxName);
 
@@ -123,7 +123,8 @@ std::string cxxToTyplibName(const clang::QualType &type) {
         return cxxToTyplibName(rDecl);
     }
 
-    // everything else is handled as a "Type"
+    // everything else is simply handled as a "Type" whose complete name is
+    // printed into a string converted as-is
     clang::LangOptions o;
     clang::PrintingPolicy suppressTagKeyword(o);
     suppressTagKeyword.SuppressTagKeyword = true;
