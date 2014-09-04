@@ -30,7 +30,7 @@
 #include "TypelibBuilder.hpp"
 #include "NamingConversions.hpp"
 
-#include "../../lang/tlb/export.hh"
+#include "typelib/registryiterator.hh"
 
 #include <iostream>
 // }}}
@@ -197,9 +197,8 @@ int main(int argc, const char **argv) {
         exit(retval);
     }
 
-    TlbExport exporter;
     std::cout << "Saving tlb-registry into file '" << tlbSavePath << "'" << std::endl;
-    exporter.save(tlbSavePath, utilmm::config_set(), builder.getRegistry());
+    builder.saveRegistry(tlbSavePath);
     
     exit(EXIT_SUCCESS);
 }
