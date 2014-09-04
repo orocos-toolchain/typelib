@@ -65,7 +65,20 @@ public:
     
 private:
     bool registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
-    bool registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context);
+
+    /** add builtins to database: basically ints+floats as Typelib::Numeric
+     *
+     * attention, will silently rename "char" into "[u]int8_t" depending on
+     * signedness and create the apropriate alias.
+     *
+     * @param canonicalTypeName
+     * @param builtin
+     * @param context
+     * @return false if nothing was added
+     */
+    bool registerBuiltIn(const std::string &canonicalTypeName,
+                         const clang::BuiltinType *builtin,
+                         clang::ASTContext &context);
 
     bool addFieldsToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addBaseClassToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);

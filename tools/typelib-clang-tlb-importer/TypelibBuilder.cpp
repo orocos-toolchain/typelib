@@ -200,66 +200,72 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
     }
 }
 
+bool TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
+                                     const clang::BuiltinType *builtin,
+                                     clang::ASTContext &context) {
 
-bool TypelibBuilder::registerBuildIn(const std::string& canonicalTypeName, const clang::BuiltinType* builtin, clang::ASTContext& context)
-{
-    
-    std::string typeName = std::string("/") + builtin->getNameAsCString(clang::PrintingPolicy(clang::LangOptions()));
-    
-    if(registry.has(typeName, false))
+    // check if the to-be-registered type is already present
+    if(registry.has(canonicalTypeName, false))
         return true;
     
-    Typelib::Numeric *newNumeric = 0;
-    size_t typeSize = context.getTypeSize(builtin->desugar());
-    if(typeSize % 8 != 0)
-    {
-        std::cout << "Warning, can not register type which is not Byte Aligned '" << canonicalTypeName << "'" << std::endl;
+    // typelib expects sizes in bytes, while clang can return them in bits.
+    // should be of no concern for us, but adding a check anyways for extra
+    // portability.
+    uint64_t typeSizeInBits = context.getTypeSize(builtin);
+    if (typeSizeInBits % 8 != 0) {
+        std::cout << "Error, cannot register builtin '" << canonicalTypeName
+                  << "' whose size " << typeSizeInBits
+                  << " is not byte-aligned\n";
         return false;
     }
+    size_t typeSizeInBytes = typeSizeInBits / 8;
     
-    typeSize /= 8;
-    
-    if(builtin->isFloatingPoint())
-    {
-        newNumeric = new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::Float);
+    // pointer to hold the new TypeLib::Type
+    Typelib::Numeric *newNumeric = NULL;
+
+    if (builtin->isFloatingPoint()) {
+
+        newNumeric = new Typelib::Numeric(canonicalTypeName, typeSizeInBytes,
+                                          Typelib::Numeric::Float);
+
+    } else if (builtin->isSignedInteger()) {
+
+        // attention fold, here we rename "char" to "int8" automatically and
+        // create the appropriate...
+        if (canonicalTypeName == "/char") {
+            newNumeric = new Typelib::Numeric("/int8_t", typeSizeInBytes,
+                                              Typelib::Numeric::SInt);
+            registry.add(newNumeric);
+            registry.alias(newNumeric->getName(), canonicalTypeName);
+            return true;
+        } else
+            newNumeric = new Typelib::Numeric(
+                canonicalTypeName, typeSizeInBytes, Typelib::Numeric::SInt);
+
+    } else if (builtin->isUnsignedInteger()) {
+
+        // attention fold, here we rename "char" to "uint8" automatically and
+        // create the appropriate...
+        if (canonicalTypeName == "/char") {
+            newNumeric = new Typelib::Numeric("/uint8_t", typeSizeInBytes,
+                                              Typelib::Numeric::UInt);
+            registry.add(newNumeric);
+            registry.alias(newNumeric->getName(), canonicalTypeName);
+            return true;
+        } else
+            newNumeric = new Typelib::Numeric(
+                canonicalTypeName, typeSizeInBytes, Typelib::Numeric::UInt);
+
     }
-    
-    if(builtin->isInteger())
-    {
-        if(builtin->isSignedInteger())
-        {
-            if(typeName == "/char")
-            {
-                typeName = "/int8_t";
-                newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::SInt);
-                registry.add(newNumeric);
-                registry.alias(newNumeric->getName(), "/char");
-                return true;
-            }
-            else
-                newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::SInt);
-        }
-        else
-        {
-            if(typeName == "/char")
-            {
-                typeName = "/uint8_t";
-                newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::UInt);
-                registry.add(newNumeric);
-                registry.alias(newNumeric->getName(), "/char");
-                return true;
-            }
-            else
-                newNumeric =new Typelib::Numeric(typeName, typeSize, Typelib::Numeric::UInt);
-        }
-    }
-    
-    if(newNumeric)
-    {
+
+    // only if a numeric was detected and an object created, we can add smth to
+    // the database
+    if (newNumeric) {
         registry.add(newNumeric);
         return true;
     }
-    
+
+    // otherwise smth went wrong...
     return false;
 }
 
@@ -283,9 +289,7 @@ bool TypelibBuilder::registerType(const std::string &canonicalTypeName,
     {
         case clang::Type::Builtin:
         {
-            const clang::BuiltinType *builtin = llvm::dyn_cast<clang::BuiltinType>(type);
-            
-            return registerBuildIn(canonicalTypeName, builtin, context);
+            return registerBuiltIn(canonicalTypeName, llvm::dyn_cast<clang::BuiltinType>(type), context);
         }
         case clang::Type::Record:
         {
