@@ -68,29 +68,20 @@ class TlbImportCallback : public MatchFinder::MatchCallback {
 
     virtual void run(const MatchFinder::MatchResult &Result) {
 
-        // check the different possibilities of a match: "recordDecl" or
-        // "typeDecl", and handle them accordingly. recordDecls are also
-        // typeDecls, so prevent adding them both!
-        if (const CXXRecordDecl *rDecl = Result.Nodes.getNodeAs<CXXRecordDecl>("namedDecl")) {
+        if (const TypeDecl *tDecl = Result.Nodes.getNodeAs<TypeDecl>("namedDecl")) {
 
             // this removes the bogus double-match of "nested_records::S2::S2"
             // for "struct nested_records::S2". it it not needed by us.
-            if (rDecl->isInjectedClassName()) {
-                return;
+            if (const CXXRecordDecl *rDecl = dyn_cast<CXXRecordDecl>(tDecl)) {
+                if (rDecl->isInjectedClassName()) {
+                    return;
+                }
             }
 
-            // this prohibits adding system-header-stuff like "struct
-            // __locale_struct" to the database just becuase it's a
-            // declaration. if it is used later _inside_ an other registered
-            // struct, we'll add it later to the database nevertheless.
-            if (!Result.SourceManager->isInMainFile(rDecl->getLocation())) {
-                return;
-            }
-
-            builder.registerTypeDecl(rDecl);
-
-        } else if(const TypeDecl *tDecl = Result.Nodes.getNodeAs<TypeDecl>("namedDecl")) {
-
+            // don't add system-header-stuff like "struct __locale_struct" to
+            // the database just because it's a declaration. if it is used
+            // later _inside_ an other registered struct, we'll add it later to
+            // the database nevertheless.
             if (!Result.SourceManager->isInMainFile(tDecl->getLocation())) {
                 return;
             }
