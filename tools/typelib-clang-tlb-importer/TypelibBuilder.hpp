@@ -47,6 +47,12 @@ public:
      * @param filename path to tlb-file to load
      */
     void loadRegistry(const std::string &filename);
+
+    /** write internal registry to file
+     *
+     * @param filename path to tlb-file to save
+     */
+    void saveRegistry(const std::string &filename);
     
     /** accessor for internal registry
      *

@@ -11,6 +11,7 @@
 #include <typelib/typemodel.hh>
 #include <typelib/typename.hh>
 #include <lang/tlb/import.hh>
+#include <lang/tlb/export.hh>
 #include <clang/AST/Comment.h>
 #include <llvm/Support/Casting.h>
 
@@ -633,4 +634,9 @@ void TypelibBuilder::loadRegistry(const std::string& filename)
     importer.load(filename, utilmm::config_set(), registry);
 }
 
+void TypelibBuilder::saveRegistry(const std::string& filename)
+{
+    TlbExport exporter;
+    exporter.save(filename, utilmm::config_set(), registry);
+}
 
