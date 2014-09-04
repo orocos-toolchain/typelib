@@ -79,16 +79,14 @@ private:
 
     // extract source-loc of given clang::Decl as "/path/to/file:lineNumber"
     // and store in into the meta-data system of the given Typelib::Type
-    void setHeaderPathForTypeFromDecl(const clang::Decl *decl,
-                                      Typelib::Type *type);
+    void setMetaDataSourceFileLine(const clang::Decl *decl,
+                                   Typelib::Type *type);
     // add all base-classes of the given clang::Decl into the meta-data of the
     // Typelib::Type
-    void setBaseClassesForTypeFromDecl(const clang::Decl *decl,
-                                       Typelib::Type *type);
+    void setMetaDataBaseClasses(const clang::Decl *decl, Typelib::Type *type);
     // extract comments attached given clang::Decl and add them as meta-data to
     // the Typelib::Type
-    void setDocStringForTypeFromDecl(const clang::Decl *decl,
-                                     Typelib::Type *type);
+    void setMetaDataDoc(const clang::Decl *decl, Typelib::Type *type);
 
     Typelib::Registry registry;
 };
