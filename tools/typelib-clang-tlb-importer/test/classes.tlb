@@ -15,9 +15,6 @@
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:55]]></metadata>
 
   </opaque>
-  <numeric name="/double" category="float" size="8" >
-  
-  </numeric>
   <numeric name="/int" category="sint" size="4" >
   
   </numeric>
