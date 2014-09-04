@@ -306,18 +306,20 @@ bool TypelibBuilder::registerType(const std::string &canonicalTypeName,
         {            
             const clang::ElaboratedType* etype = llvm::dyn_cast<clang::ElaboratedType>(type);
 
-            //hm, this type is somehow strange, I have no idea, what it actually is...
+            // hm, this type is somehow strange, I have no idea, what it
+            // actually is...
+            //
+            // quote from the clang doku: "The type itself is always "sugar",
+            // used to express what was written in the source code but
+            // containing no additional semantic information"
             return registerType(canonicalTypeName, etype->getNamedType().getTypePtr(), context);
-            
         }
         default:
             std::cout << "Cannot register '" << canonicalTypeName << "'"
                       << " with unhandled type '" << type->getTypeClassName()
                       << "'" << std::endl;
+            return false;
     }
-
-    std::cout << "Error: Unhandled type '" << canonicalTypeName << "'" << std::endl;
-    return false;
 }
 
 const Typelib::Type *
