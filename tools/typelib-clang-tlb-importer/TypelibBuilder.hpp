@@ -10,6 +10,7 @@ class BuiltinType;
 class TypeDecl;
 class EnumDecl;
 class Type;
+class ConstantArrayType;
 class ASTContext;
 class TypedefNameDecl;
 class Decl;
@@ -84,8 +85,15 @@ private:
     bool addBaseClassToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addEnum(const std::string& canonicalTypeName, const clang::EnumDecl* decl);
-    bool addArray(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
-    
+
+    /** add array to database if the element-type can be added
+     *
+     * @return true if smth was added to database
+     */
+    bool addArray(const std::string &canonicalTypeName,
+                  const clang::ConstantArrayType *type,
+                  clang::ASTContext &context);
+
     const Typelib::Type *checkRegisterType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
     
     bool checkRegisterContainer(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);

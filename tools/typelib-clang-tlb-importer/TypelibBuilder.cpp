@@ -304,7 +304,7 @@ bool TypelibBuilder::registerType(const std::string &canonicalTypeName,
         }
         case clang::Type::ConstantArray:
         {            
-            return addArray(canonicalTypeName, type, context);
+            return addArray(canonicalTypeName, llvm::dyn_cast<clang::ConstantArrayType>(type), context);
         }
         case clang::Type::Elaborated:
         {            
@@ -355,27 +355,33 @@ TypelibBuilder::checkRegisterType(const std::string &canonicalTypeName,
     return typelibType;
 }
 
+bool TypelibBuilder::addArray(const std::string &canonicalTypeName,
+                              const clang::ConstantArrayType *arrayType,
+                              clang::ASTContext &context) {
 
-bool TypelibBuilder::addArray(const std::string& canonicalTypeName, const clang::Type *gtype, clang::ASTContext& context)
-{
-    const clang::ConstantArrayType *type = llvm::dyn_cast<clang::ConstantArrayType>(gtype);
-    const clang::Type *arrayBaseType = type->getElementType().getTypePtr();
-    std::string arrayBaseTypeName = cxxToTyplibName(type->getElementType());
+    const clang::QualType arrayElementType = arrayType->getElementType();
+    // before we can add the array in question we first have to check wether
+    // the element type of the array is addable. so at first get the
+    // typelib-name of the array elements...
+    std::string arrayElementTypeName = cxxToTyplibName(arrayElementType);
+    // ...then try to add it to the database
+    const Typelib::Type *typelibArrayElementType = checkRegisterType(
+        arrayElementTypeName, arrayElementType.getTypePtr(), context);
 
-    const Typelib::Type *typelibArrayBaseType =
-        checkRegisterType(arrayBaseTypeName, arrayBaseType, context);
-    if(!typelibArrayBaseType)
-    {
+    if (!typelibArrayElementType) {
         std::cout << "Not registering Array '" << canonicalTypeName
-                  << "' as its elementary type '" << arrayBaseTypeName
-                  << "' could not be registered " << std::endl;
+                  << "' as its elementary type '" << arrayElementTypeName
+                  << "' could not be registered.\n";
         return false;
     }
-    
-    Typelib::Array *array = new Typelib::Array(*typelibArrayBaseType, type->getSize().getZExtValue());
+
+    // giving the number of elements as second argument. does "zero extension"
+    // of the internal number.
+    Typelib::Array *array = new Typelib::Array(
+        *typelibArrayElementType, arrayType->getSize().getZExtValue());
 
     registry.add(array);
-    
+
     return true;
 }
 
