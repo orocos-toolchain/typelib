@@ -15,37 +15,6 @@
 #include <clang/AST/Comment.h>
 #include <llvm/Support/Casting.h>
 
-void TypelibBuilder::setDocStringForTypeFromDecl(const clang::Decl *decl,
-                                                 Typelib::Type *type) {
-
-    clang::comments::FullComment *comment =
-        decl->getASTContext().getCommentForDecl(decl, NULL);
-
-    if (!comment)
-        return;
-
-    std::ostringstream stream;
-
-    clang::ArrayRef<clang::comments::BlockContentComment *>::const_iterator i;
-    for (i = comment->getBlocks().begin(); i != comment->getBlocks().end();
-         i++) {
-
-        const clang::comments::ParagraphComment *p =
-            static_cast<const clang::comments::ParagraphComment *>((*i));
-
-        clang::comments::ParagraphComment::child_iterator c;
-
-        for (c = p->child_begin(); c != p->child_end(); c++) {
-            if (const clang::comments::TextComment *TC =
-                    llvm::dyn_cast<clang::comments::TextComment>(*c)) {
-                stream << TC->getText().str() << "\n";
-            }
-        }
-    }
-
-    type->getMetaData().add("doc", stream.str());
-}
-
 void TypelibBuilder::registerTypeDecl(const clang::TypeDecl* decl)
 {
 
@@ -202,10 +171,10 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
               << "' is in database as '" << opaqueName << "'\n";
 
     // note the bases for inherited classes...
-    setBaseClassesForTypeFromDecl(decl, opaqueType);
+    setMetaDataBaseClasses(decl, opaqueType);
 
     // also note the filename for the decl in the metadata
-    setHeaderPathForTypeFromDecl(decl, opaqueType);
+    setMetaDataSourceFileLine(decl, opaqueType);
 
     // and special care if this is a typedef: we have to note an alias from the
     // given opaque to the actual type.
@@ -416,7 +385,7 @@ bool TypelibBuilder::addArray(const std::string& canonicalTypeName, const clang:
 bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::EnumDecl *decl)
 {
     Typelib::Enum *enumVal =new Typelib::Enum(canonicalTypeName);
-    setHeaderPathForTypeFromDecl(decl, enumVal);
+    setMetaDataSourceFileLine(decl, enumVal);
 
     if(!decl->getIdentifier())
     {
@@ -508,7 +477,7 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     size_t typeSize = typeLayout.getSize().getQuantity();
     compound->setSize(typeSize);
 
-    setHeaderPathForTypeFromDecl(decl, compound);
+    setMetaDataSourceFileLine(decl, compound);
     if(!addBaseClassToCompound(*compound, canonicalTypeName, decl))
     {
         delete compound;
@@ -534,36 +503,6 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     
     return true;
 }
-
-void TypelibBuilder::setHeaderPathForTypeFromDecl(const clang::Decl* decl, Typelib::Type* type)
-{
-    const clang::SourceManager& sm = decl->getASTContext().getSourceManager();
-    const clang::SourceLocation& loc = sm.getSpellingLoc(decl->getSourceRange().getBegin());
-
-    // typelib needs the '/path/to/file:column' information
-    std::ostringstream stream;
-    stream << sm.getFilename(loc).str() << ":" << sm.getSpellingLineNumber(loc);
-    type->setPathToDefiningHeader(stream.str());
-
-    type->getMetaData().add("source_file_line", type->getPathToDefiningHeader());
-}
-
-void TypelibBuilder::setBaseClassesForTypeFromDecl(const clang::Decl *decl,
-                                       Typelib::Type *type) {
-    // we are also required to note all base-classes of the decl in the
-    // metadata
-    if (const clang::CXXRecordDecl *cxxRecord =
-            llvm::dyn_cast<clang::CXXRecordDecl>(decl)) {
-        clang::CXXRecordDecl::base_class_const_iterator base;
-        for (base = cxxRecord->bases_begin(); base != cxxRecord->bases_end();
-             base++) {
-            const clang::QualType &qualType = base->getType();
-
-            type->getMetaData().add("base_classes", cxxToTyplibName(qualType));
-        }
-    }
-}
-
 
 bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
 {
@@ -627,6 +566,67 @@ void TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl* decl)
         registry.alias(forCanonicalType, typeDefName);    
 }
 
+void TypelibBuilder::setMetaDataSourceFileLine(const clang::Decl *decl,
+                                               Typelib::Type *type) {
+    const clang::SourceManager &sm = decl->getASTContext().getSourceManager();
+    const clang::SourceLocation &loc =
+        sm.getSpellingLoc(decl->getSourceRange().getBegin());
+
+    // typelib needs the '/path/to/file:column' information
+    std::ostringstream stream;
+    stream << sm.getFilename(loc).str() << ":" << sm.getSpellingLineNumber(loc);
+    type->setPathToDefiningHeader(stream.str());
+
+    type->getMetaData().add("source_file_line",
+                            type->getPathToDefiningHeader());
+}
+
+void TypelibBuilder::setMetaDataBaseClasses(const clang::Decl *decl,
+                                            Typelib::Type *type) {
+    // we are also required to note all base-classes of the decl in the
+    // metadata
+    if (const clang::CXXRecordDecl *cxxRecord =
+            llvm::dyn_cast<clang::CXXRecordDecl>(decl)) {
+        clang::CXXRecordDecl::base_class_const_iterator base;
+        for (base = cxxRecord->bases_begin(); base != cxxRecord->bases_end();
+             base++) {
+            const clang::QualType &qualType = base->getType();
+
+            type->getMetaData().add("base_classes", cxxToTyplibName(qualType));
+        }
+    }
+}
+
+void TypelibBuilder::setMetaDataDoc(const clang::Decl *decl,
+                                    Typelib::Type *type) {
+
+    clang::comments::FullComment *comment =
+        decl->getASTContext().getCommentForDecl(decl, NULL);
+
+    if (!comment)
+        return;
+
+    std::ostringstream stream;
+
+    clang::ArrayRef<clang::comments::BlockContentComment *>::const_iterator i;
+    for (i = comment->getBlocks().begin(); i != comment->getBlocks().end();
+         i++) {
+
+        const clang::comments::ParagraphComment *p =
+            llvm::dyn_cast<clang::comments::ParagraphComment>((*i));
+
+        clang::comments::ParagraphComment::child_iterator c;
+
+        for (c = p->child_begin(); c != p->child_end(); c++) {
+            if (const clang::comments::TextComment *TC =
+                    llvm::dyn_cast<clang::comments::TextComment>(*c)) {
+                stream << TC->getText().str() << "\n";
+            }
+        }
+    }
+
+    type->getMetaData().add("doc", stream.str());
+}
 
 void TypelibBuilder::loadRegistry(const std::string& filename)
 {
