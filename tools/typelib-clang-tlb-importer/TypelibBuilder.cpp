@@ -45,12 +45,12 @@ void TypelibBuilder::setDocStringForTypeFromDecl(const clang::Decl *decl,
     type->getMetaData().add("doc", stream.str());
 }
 
-void TypelibBuilder::registerNamedDecl(const clang::TypeDecl* decl)
+void TypelibBuilder::registerTypeDecl(const clang::TypeDecl* decl)
 {
 
     if(decl->getKind() == clang::Decl::Typedef)
     {
-        registerTypeDef(static_cast<const clang::TypedefDecl *>(decl));
+        registerTypedefNameDecl(static_cast<const clang::TypedefDecl *>(decl));
         return;
     }
     
@@ -427,7 +427,6 @@ bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::
     for(clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin(); it != decl->enumerator_end(); it++)
     {
         enumVal->add(it->getDeclName().getAsString(), it->getInitVal().getSExtValue());
-//         std::cout << "Enum CONST " << it->getDeclName().getAsString() << " Value " << it->getInitVal().getSExtValue() << std::endl;
     }
     
     registry.add(enumVal);
@@ -523,7 +522,7 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
 
     if(compound->getFields().empty())
     {
-        std::cout << "Ignoring Type '" << canonicalTypeName << "' as it has no fields " << std::endl;
+        std::cout << "Ignoring Compound '" << canonicalTypeName << "' as it has no fields " << std::endl;
         return false;
     }
     
@@ -607,7 +606,7 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
     return true;
 }
 
-void TypelibBuilder::registerTypeDef(const clang::TypedefNameDecl* decl)
+void TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl* decl)
 {
     std::cout << "Found Typedef '" << decl->getQualifiedNameAsString() << "'"
        << " of '"
@@ -628,11 +627,10 @@ void TypelibBuilder::registerTypeDef(const clang::TypedefNameDecl* decl)
 }
 
 
-bool TypelibBuilder::loadRegistry(const std::string& filename)
+void TypelibBuilder::loadRegistry(const std::string& filename)
 {
     TlbImport importer;
     importer.load(filename, utilmm::config_set(), registry);
-    return true;
 }
 
 

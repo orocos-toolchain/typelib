@@ -87,7 +87,7 @@ class TlbImportCallback : public MatchFinder::MatchCallback {
                 return;
             }
 
-            builder.registerNamedDecl(rDecl);
+            builder.registerTypeDecl(rDecl);
 
         } else if(const TypeDecl *tDecl = Result.Nodes.getNodeAs<TypeDecl>("namedDecl")) {
 
@@ -95,7 +95,7 @@ class TlbImportCallback : public MatchFinder::MatchCallback {
                 return;
             }
 
-            builder.registerNamedDecl(tDecl);
+            builder.registerTypeDecl(tDecl);
 
         } else if(const TypedefType *tType = Result.Nodes.getNodeAs<TypedefType>("typedefType")) {
 
@@ -106,7 +106,7 @@ class TlbImportCallback : public MatchFinder::MatchCallback {
                 return;
             }
 
-            builder.registerTypeDef(tType->getDecl());
+            builder.registerTypedefNameDecl(tType->getDecl());
         }
     }
 
