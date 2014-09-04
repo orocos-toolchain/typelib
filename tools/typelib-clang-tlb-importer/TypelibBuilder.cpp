@@ -20,7 +20,7 @@ void TypelibBuilder::registerTypeDecl(const clang::TypeDecl* decl)
 
     if(decl->getKind() == clang::Decl::Typedef)
     {
-        registerTypedefNameDecl(static_cast<const clang::TypedefDecl *>(decl));
+        registerTypedefNameDecl(llvm::dyn_cast<clang::TypedefDecl>(decl));
         return;
     }
     
@@ -67,7 +67,7 @@ bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName
 
     // some things of later use
     const clang::ClassTemplateSpecializationDecl *sdecl =
-        static_cast<const clang::ClassTemplateSpecializationDecl *>(decl);
+        llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(decl);
     const clang::TemplateArgumentList &argumentList(sdecl->getTemplateArgs());
 
     std::cout << canonicalTypeName <<  " is possibly a Container " << std::endl;
@@ -291,7 +291,7 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
     {
         case clang::Type::Builtin:
         {
-            const clang::BuiltinType *builtin = static_cast<const clang::BuiltinType *>(type);
+            const clang::BuiltinType *builtin = llvm::dyn_cast<clang::BuiltinType>(type);
             
             return registerBuildIn(canonicalTypeName, builtin, context);
         }
@@ -301,7 +301,7 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
         }
         case clang::Type::Enum:
         {
-            const clang::EnumType *enumType = static_cast<const clang::EnumType *>(type);
+            const clang::EnumType *enumType = llvm::dyn_cast<clang::EnumType>(type);
             const clang::EnumDecl *enumDecl = enumType->getDecl();
             assert(enumDecl);
             return addEnum(canonicalTypeName, enumDecl);
@@ -312,7 +312,7 @@ bool TypelibBuilder::registerType(const std::string& canonicalTypeName, const cl
         }
         case clang::Type::Elaborated:
         {            
-            const clang::ElaboratedType* etype = static_cast<const clang::ElaboratedType*>(type);
+            const clang::ElaboratedType* etype = llvm::dyn_cast<clang::ElaboratedType>(type);
 
             //hm, this type is somehow strange, I have no idea, what it actually is...
             return registerType(canonicalTypeName, etype->getNamedType().getTypePtr(), context);
@@ -360,7 +360,7 @@ TypelibBuilder::checkRegisterType(const std::string &canonicalTypeName,
 
 bool TypelibBuilder::addArray(const std::string& canonicalTypeName, const clang::Type *gtype, clang::ASTContext& context)
 {
-    const clang::ConstantArrayType *type = static_cast<const clang::ConstantArrayType *>(gtype);
+    const clang::ConstantArrayType *type = llvm::dyn_cast<clang::ConstantArrayType>(gtype);
     const clang::Type *arrayBaseType = type->getElementType().getTypePtr();
     std::string arrayBaseTypeName = cxxToTyplibName(type->getElementType());
 
