@@ -17,6 +17,13 @@
 
 void TypelibBuilder::registerTypeDecl(const clang::TypeDecl* decl)
 {
+    // this removes the bogus double-match of "nested_records::S2::S2"
+    // for "struct nested_records::S2". it it not needed by us.
+    if (const clang::CXXRecordDecl *rDecl =
+            llvm::dyn_cast<clang::CXXRecordDecl>(decl)) {
+        if (rDecl->isInjectedClassName())
+            return;
+    }
 
     if(decl->getKind() == clang::Decl::Typedef)
     {
