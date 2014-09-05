@@ -624,6 +624,7 @@ void TypelibBuilder::setMetaDataDoc(const clang::Decl *decl,
     clang::comments::FullComment *comment =
         decl->getASTContext().getCommentForDecl(decl, NULL);
 
+    // if there is no comment the resulting task is simple...
     if (!comment)
         return;
 
@@ -633,16 +634,35 @@ void TypelibBuilder::setMetaDataDoc(const clang::Decl *decl,
     for (i = comment->getBlocks().begin(); i != comment->getBlocks().end();
          i++) {
 
-        const clang::comments::ParagraphComment *p =
-            llvm::dyn_cast<clang::comments::ParagraphComment>((*i));
+        switch ((*i)->getCommentKind()) {
+        case clang::comments::Comment::ParagraphCommentKind: {
+            const clang::comments::ParagraphComment *p =
+                llvm::dyn_cast<clang::comments::ParagraphComment>((*i));
 
-        clang::comments::ParagraphComment::child_iterator c;
+            clang::comments::ParagraphComment::child_iterator c;
 
-        for (c = p->child_begin(); c != p->child_end(); c++) {
-            if (const clang::comments::TextComment *TC =
-                    llvm::dyn_cast<clang::comments::TextComment>(*c)) {
-                stream << TC->getText().str() << "\n";
+            for (c = p->child_begin(); c != p->child_end(); c++) {
+                if (const clang::comments::TextComment *TC =
+                        llvm::dyn_cast<clang::comments::TextComment>(*c)) {
+                    stream << TC->getText().str() << "\n";
+                }
             }
+            break;
+        }
+        case clang::comments::Comment::VerbatimLineCommentKind: {
+            stream << llvm::dyn_cast<clang::comments::VerbatimLineComment>((*i))
+                          ->getText()
+                          .str();
+            break;
+        }
+        default: {
+            std::cout << "Non-handled comment type '"
+                      << (*i)->getCommentKindName() << "' for Type '"
+                      << type->getName() << "' located at '"
+                      << (*i)->getLocation().printToString(
+                             decl->getASTContext().getSourceManager()) << "'\n";
+            return;
+        }
         }
     }
 
