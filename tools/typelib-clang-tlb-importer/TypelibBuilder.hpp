@@ -95,8 +95,18 @@ private:
                   clang::ASTContext &context);
 
     const Typelib::Type *checkRegisterType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
-    
-    bool checkRegisterContainer(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
+
+
+    /** add entry to database if the given type is a "Typelib::Container"
+     *
+     * a "Typelib::Container" handle a small number of special records in typelib like
+     * "std::vector" or "std::string".
+     * fields or records containing these should be added to the database nevertheless.
+     *
+     * @return true if the given decl could be added as "Container"
+     */
+    bool checkRegisterContainer(const std::string &canonicalTypeName,
+                                const clang::CXXRecordDecl *decl);
 
     // extract source-loc of given clang::Decl as "/path/to/file:lineNumber"
     // and store in into the meta-data system of the given Typelib::Type

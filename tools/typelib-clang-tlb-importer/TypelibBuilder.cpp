@@ -54,99 +54,128 @@ void TypelibBuilder::registerTypeDecl(const clang::TypeDecl* decl)
                  decl->getASTContext());
 }
 
-bool TypelibBuilder::checkRegisterContainer(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
-{
-    
-    const clang::NamedDecl *underlyingDecl = decl->getUnderlyingDecl();
-    
-    
-    // skip non-template specializations
-    if (!underlyingDecl ||
-        (underlyingDecl->getKind() != clang::Decl::ClassTemplateSpecialization))
-        return false;
+bool
+TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
+                                       const clang::CXXRecordDecl *decl) {
 
-    // some things of later use
+    std::string modifiedTypeName(canonicalTypeName);
+
+    // skip non-template specializations... because... the two current
+    // "Container" implementation are both based on template specializations...
+    // and why not hardcode an assumption for all times which is valid today?
+    // what can possibly go wrong?
+    //
+    // this would have to be moved to the end. missing cases: typedefs
+    if (!decl ||
+        (decl->getKind() != clang::Decl::ClassTemplateSpecialization)) {
+        return false;
+    }
+
+    // the name of the Container -- basically we need a translation of the
+    // "Namespace::Class" part of the record-name. If the decl would point to a
+    // template, the cxxToTyplibName() whould convert and append the template
+    // as well.
+    if (decl->getDescribedClassTemplate()) {
+        std::cout << "\n\n";
+        decl->getDescribedClassTemplate()->dump();
+        std::cout << "\n\n";
+    }
+    // this is problematic...
+    std::string containerName = cxxToTyplibName(decl->getQualifiedNameAsString());
+
+    // needed to search for a specific container in all known ones.
+    const Typelib::Container::AvailableContainers &containers =
+        Typelib::Container::availableContainers();
+
+    Typelib::Container::AvailableContainers::const_iterator contIt = containers.find(containerName);
+    if(contIt == containers.end()) {
+        std::cout << "No Container named '" << containerName << "' for '"
+                  << modifiedTypeName << "' known to typelib\n";
+        return false;
+    }
+
+    // hurray!
+    std::cout << "Found Container '" << containerName
+              << "' for type '" << modifiedTypeName << "', trying to add Args to registry:\n";
+
+    // some shortcuts for later use
     const clang::ClassTemplateSpecializationDecl *sdecl =
         llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(decl);
     const clang::TemplateArgumentList &argumentList(sdecl->getTemplateArgs());
 
-    std::cout << canonicalTypeName <<  " is possibly a Container " << std::endl;
-    
-    
-    std::cout << "Underlying name " << decl->getUnderlyingDecl()->getQualifiedNameAsString() << std::endl;;
-
-    const Typelib::Container::AvailableContainers& containers = Typelib::Container::availableContainers();
-
-    std::string containerName = cxxToTyplibName(underlyingDecl);
-
-    Typelib::Container::AvailableContainers::const_iterator it = containers.find(containerName);
-    if(it != containers.end())
+    // create argument list
+    std::list<Typelib::Type const*> typelibArgList;
+    for(size_t i = 0; i < argumentList.size(); i++)
     {
-        std::cout << "Typelib knowns about this container: '" << it->first << "'" << std::endl;
-        
-        Typelib::Container::ContainerFactory factory = it->second;
-        
-        std::list<const Typelib::Type *> typelibArgList;
-        //create argument list
-        for(size_t i = 0; i < argumentList.size(); i++)
+        const clang::TemplateArgument& arg = argumentList.get(i);
+        const clang::Type *typePtr = arg.getAsType().getTypePtr();
+        if(!typePtr)
         {
-            clang::TemplateArgument arg = argumentList.get(i);
-            const clang::Type *typePtr = arg.getAsType().getTypePtr();
-            if(!typePtr)
-            {
-                std::cout << "Error, argument has not type" << std::endl;
-                return false;
-            }
-            
-            std::string argTypelibName = cxxToTyplibName(arg.getAsType().getCanonicalType());
-            
-            //HACK ignore allocators
-#warning HACK, ignoring types named '/std/allocator'
-            if(argTypelibName.find("/std/allocator") == 0)
-            {
-                continue;
-            }
+            std::cout << "Error, argument has not type" << std::endl;
+            return false;
+        }
+        
+        std::string argTypelibName = cxxToTyplibName(arg.getAsType().getCanonicalType());
+        
+        //HACK ignore allocators
+#warning HACK: ignoring templateArguments named '/std/allocator' in Typelib::Container support
+        if(argTypelibName.find("/std/allocator") == 0) {
+            std::cout << "Container '" << containerName << "' has Arg '"
+                      << argTypelibName << "' ignored \n";
+            continue;
+        }
 
-#warning HACK, ignoring '/std/char_traits' for std::basic_string support
-            if(argTypelibName.find("/std/char_traits") == 0)
-            {
-                continue;
-            }
-            
-            std::string originalTypeName = cxxToTyplibName(arg.getAsType().getCanonicalType());
-            
-            const Typelib::Type *argType = checkRegisterType(originalTypeName, typePtr, decl->getASTContext());
-            if(!argType)
-            {
-                return false;
-            }
-            
-            if(containerName == "/std/string" && originalTypeName != "/char")
-            {
-                std::cout << "Ignoring any basic string, that is not of argument type char" << std::endl;
-                //wo only support std::basic_string<char>
-                return false;
-            }
-            
-            typelibArgList.push_back(argType);
-            
-            std::cout << "Arg is '" << cxxToTyplibName(arg.getAsType()) << "'" << std::endl;
+/* #warning HACK: ignoring templateArguments named '/std/char_traits' in Typelib::Container support */
+/*         if(argTypelibName.find("/std/char_traits") == 0){ */
+/*             std::cout << "Container '" << containerName << "' has Arg '" */
+/*                       << argTypelibName << "' ignored \n"; */
+/*             continue; */
+/*         } */
+        
+        Typelib::Type const* argType = checkRegisterType(argTypelibName, typePtr, decl->getASTContext());
+
+        if(!argType) {
+            std::cout << "Creating new Container '" << containerName
+                      << "' failed because arg '" << argTypelibName
+                      << "' could not be registered\n";
+            return false;
         }
         
-        
-        const Typelib::Container &newContainer(factory(registry, typelibArgList));
-        
-        if(newContainer.getName() != canonicalTypeName)
+        // on parole... very very special handling
+        if(containerName == "/std/string" && argTypelibName != "/char")
         {
-            registry.alias(newContainer.getName(), canonicalTypeName);
+            std::cout << "Warning: Ignoring string that is not of "
+                         "character-type char but '" << argTypelibName << "'\n";
+            delete argType;
+            return false;
         }
         
-        std::cout << "Container registerd" << std::endl;
-        
-        return true;
+        std::cout << "Container '" << modifiedTypeName << "' has arg '"
+                  << argTypelibName << "'" << std::endl;
+
+        typelibArgList.push_back(argType);
     }
+    
+    
+    Typelib::Container::ContainerFactory factory = contIt->second;
+    Typelib::Container const& newContainer = factory(registry, typelibArgList);
+    
+    // the new container _can_ have a different name as the modifiedTypeName,
+    // if "/std/allocator" for example is ignored
+    /* if(newContainer->getName() != modifiedTypeName) */
+    /* { */
+    /*     std::cerr << "Warning, this should not happen...? containerName '" */
+    /*               << newContainer->getName() */
+    /*               << "' is different from modifiedTypeName '" */
+    /*               << modifiedTypeName << "'\n"; */
+    /*     registry.alias(newContainer->getName(), modifiedTypeName); */
+    /* } */
 
-    return false;
+    std::cout << "Type '" << modifiedTypeName
+              << "' successfully registered as Container for '" << containerName
+              << "'\n";
+
+    return true;
 }
 
 void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
