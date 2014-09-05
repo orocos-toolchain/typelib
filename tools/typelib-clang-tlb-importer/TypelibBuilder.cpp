@@ -505,6 +505,7 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
     if(compound->getFields().empty())
     {
         std::cout << "Ignoring Compound '" << canonicalTypeName << "' as it has no fields " << std::endl;
+        delete compound;
         return NULL;
     }
     
