@@ -39,24 +39,33 @@
     <field name="a" type="/int" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:26]]></metadata>
+  <metadata key="base_classes"><![CDATA[/classes/BaseClass]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:26]]></metadata>
 
   </compound>
   <compound name="/classes/NextLevel" size="8" >
+    <field name="b" type="/int" offset="4">
+    
+    </field>
     <field name="a" type="/int" offset="0">
+    
+    </field>
+  <metadata key="base_classes"><![CDATA[/classes/FirstLevel]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:30]]></metadata>
+
+  </compound>
+  <compound name="/classes/NextWith_anonymous_InName" size="12" >
+    <field name="spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam" type="/int" offset="8">
     
     </field>
     <field name="b" type="/int" offset="4">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:30]]></metadata>
-
-  </compound>
-  <compound name="/classes/NextWith_anonymous_InName" size="4" >
-    <field name="spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam" type="/int" offset="0">
+    <field name="a" type="/int" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:34]]></metadata>
+  <metadata key="base_classes"><![CDATA[/classes/NextLevel]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:34]]></metadata>
 
   </compound>
   <compound name="/classes/StructWithAnonStruct/secondAnonVariant" size="4" >
@@ -68,7 +77,7 @@
   </compound>
   <compound name="/classes/With_sizeof_InName" size="4" >
     <field name="holymolymotherfucker" type="/int" offset="0">
-
+    
     </field>
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.h:38]]></metadata>
 

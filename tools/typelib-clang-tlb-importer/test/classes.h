@@ -3,10 +3,11 @@
 
 // testing stuff with classes
 
+// this is just the declaration, no definition. should not end up in the
+// database, although its written in this header.
 struct timespec;
 
 struct S1 { long l[2]; };
-
 
 namespace classes {
 
@@ -31,7 +32,7 @@ namespace classes {
         int b;
     };
 
-    class NextWith_anonymous_InName {
+    class NextWith_anonymous_InName : public NextLevel {
         int spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam;
     };
 
@@ -41,9 +42,12 @@ namespace classes {
 
     class StructWithAnonStruct {
         int b;
+        // this class is anonymous and not exported. also causes the
+        // sorrounding class to be ignored
         class {
             int c;
         } firstAnonVariant;
+        // this is exported
         struct secondAnonVariant{
             int e;
         };
