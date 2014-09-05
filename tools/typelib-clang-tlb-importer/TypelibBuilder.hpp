@@ -88,6 +88,13 @@ private:
 
     Typelib::Type const *addRecord(const std::string &canonicalTypeName,
                                    const clang::CXXRecordDecl *decl);
+
+    /** add enum to database
+     *
+     * also add string-value pairs and some metadata
+     *
+     * @return ptr to added Type in database
+     */
     Typelib::Type const *addEnum(const std::string &canonicalTypeName,
                                  const clang::EnumDecl *decl);
 

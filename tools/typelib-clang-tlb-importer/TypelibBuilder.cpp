@@ -414,9 +414,6 @@ Typelib::Type const *
 TypelibBuilder::addEnum(const std::string &canonicalTypeName,
                         const clang::EnumDecl *decl) {
 
-    Typelib::Enum *enumVal = new Typelib::Enum(canonicalTypeName);
-    setMetaDataSourceFileLine(decl, enumVal);
-
     if(!decl->getIdentifier())
     {
         std::cout << "Ignoring enum '" << canonicalTypeName
@@ -424,11 +421,16 @@ TypelibBuilder::addEnum(const std::string &canonicalTypeName,
         return NULL;
     }
     
-    for(clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin(); it != decl->enumerator_end(); it++)
-    {
-        enumVal->add(it->getDeclName().getAsString(), it->getInitVal().getSExtValue());
+    Typelib::Enum *enumVal = new Typelib::Enum(canonicalTypeName);
+
+    for (clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin();
+         it != decl->enumerator_end(); it++) {
+        enumVal->add(it->getDeclName().getAsString(),
+                     it->getInitVal().getSExtValue());
     }
-    
+
+    setMetaDataSourceFileLine(decl, enumVal);
+
     registry.add(enumVal);
     
     return enumVal;
