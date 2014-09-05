@@ -436,23 +436,6 @@ TypelibBuilder::addEnum(const std::string &canonicalTypeName,
     return enumVal;
 }
 
-bool TypelibBuilder::addBaseClassToCompound(Typelib::Compound& compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
-{
-    for(clang::CXXRecordDecl::base_class_const_iterator it = decl->bases_begin(); it != decl->bases_end(); it++)
-    {
-        const clang::CXXRecordDecl* curDecl = it->getType()->getAsCXXRecordDecl();
-        
-        addBaseClassToCompound(compound, canonicalTypeName, curDecl);
-        
-        if(!addFieldsToCompound(compound, canonicalTypeName, curDecl))
-        {
-            return false;
-        }
-    }
-    
-    return true;
-}
-
 Typelib::Type const *
 TypelibBuilder::addRecord(const std::string &canonicalTypeName,
                           const clang::CXXRecordDecl *decl) {
@@ -513,13 +496,7 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
     compound->setSize(typeSizeInBytes);
 
     setMetaDataSourceFileLine(decl, compound);
-    if(!addBaseClassToCompound(*compound, canonicalTypeName, decl))
-    {
-        delete compound;
-        return NULL;
-    }
-
-    if(!addFieldsToCompound(*compound, canonicalTypeName, decl))
+    if(!addMembersOfClassToCompound(*compound, canonicalTypeName, decl))
     {
         delete compound;
         return NULL;
@@ -536,14 +513,19 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
     return compound;
 }
 
-bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
-{
-    const clang::ASTRecordLayout &typeLayout(decl->getASTContext().getASTRecordLayout(decl));
+bool TypelibBuilder::addMembersOfClassToCompound(
+    Typelib::Compound &compound, const std::string &canonicalTypeName,
+    const clang::CXXRecordDecl *decl) {
 
-    for(clang::RecordDecl::field_iterator fit = decl->field_begin(); fit != decl->field_end(); fit++)
-    {
-//         TemporaryFieldType fieldType;
-        const clang::QualType qualType = fit->getType().getLocalUnqualifiedType().getCanonicalType();
+    // this will be used for later querying of the byte-offset
+    const clang::ASTRecordLayout &typeLayout(
+        decl->getASTContext().getASTRecordLayout(decl));
+
+    for (clang::RecordDecl::field_iterator fit = decl->field_begin();
+         fit != decl->field_end(); fit++) {
+
+        const clang::QualType qualType =
+            fit->getType().getLocalUnqualifiedType().getCanonicalType();
 
         if (fit->isAnonymousStructOrUnion()) {
             std::cout
@@ -553,33 +535,57 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
             return false;
         }
 
+        // FIXME: what about testing for private-ness of inheritance of member-variable?
+
         std::string canonicalFieldTypeName = cxxToTyplibName(qualType);
 
+        // creating of getting the Typelib::Type
         const Typelib::Type *typelibFieldType =
             registerType(canonicalFieldTypeName, qualType.getTypePtr(),
                          decl->getASTContext());
-        if(!typelibFieldType)
-        {
-            std::cout << "Not registering type '" << canonicalTypeName
-                      << "' as as field type '" << canonicalFieldTypeName
-                      << "' could not be registered " << std::endl;
+
+        if (!typelibFieldType) {
+            std::cout << "Field type '" << canonicalFieldTypeName
+                      << "' of compound '" << canonicalTypeName
+                      << "' could not be registering in the database.\n";
             return false;
         }
 
         size_t fieldOffset = typeLayout.getFieldOffset(fit->getFieldIndex());
-        
-        if(fieldOffset % 8 != 0)
-        {
-            std::cout << "Warning, can not register field were the offset is not Byte Aligned '" << canonicalFieldTypeName << "'" << std::endl;
+
+        if (fieldOffset % 8 != 0) {
+            std::cout << "Warning, can not register field '"
+                      << canonicalFieldTypeName << "' of record '"
+                      << canonicalTypeName
+                      << "' because the offset is not Byte Aligned but "
+                      << fieldOffset << "\n";
             return false;
         }
-        
+
         fieldOffset /= 8;
 
-        
-        compound.addField(fit->getNameAsString(), *typelibFieldType, fieldOffset);
+        // meta-data is not added here, but should be added in the
+        // "registerType" for this thing
+        compound.addField(fit->getNameAsString(), *typelibFieldType,
+                          fieldOffset);
     }
     
+    // and then call this function here recursively add bases -- so that member
+    // variables defined as part of a base-class are added to the compound as well
+    for (clang::CXXRecordDecl::base_class_const_iterator it =
+             decl->bases_begin();
+         it != decl->bases_end(); it++) {
+        // this is the decl of one of the base-classes
+        const clang::CXXRecordDecl *curDecl =
+            it->getType()->getAsCXXRecordDecl();
+
+        if (!addMembersOfClassToCompound(compound, canonicalTypeName, curDecl)) {
+            return false;
+        }
+    }
+
+    // if we reach here everything worked fine and we got ourselfs a ready-made
+    // Typelib::Compound for further use
     return true;
 }
 
