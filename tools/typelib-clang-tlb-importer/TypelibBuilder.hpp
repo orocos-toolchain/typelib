@@ -83,8 +83,17 @@ private:
                                          const clang::BuiltinType *builtin,
                                          clang::ASTContext &context);
 
-    bool addFieldsToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
-    bool addBaseClassToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
+    /** add members and base-classes of a class to the given compound
+     *
+     * calls itself recursively for all the base-classes.
+     *
+     * does not test for private-ness anywhere.
+     *
+     * @return true if everything worked. false if some member-variable failed to be added
+     */
+    bool addMembersOfClassToCompound(Typelib::Compound &compound,
+                                     const std::string &canonicalTypeName,
+                                     const clang::CXXRecordDecl *decl);
 
     Typelib::Type const *addRecord(const std::string &canonicalTypeName,
                                    const clang::CXXRecordDecl *decl);
