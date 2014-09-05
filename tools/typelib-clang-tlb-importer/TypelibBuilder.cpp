@@ -249,8 +249,9 @@ TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
                                 clang::ASTContext &context) {
 
     // check if the to-be-registered type is already present
-    if(registry.has(canonicalTypeName, false))
-        return registry.get(canonicalTypeName);
+    if (Typelib::Type const* type = registry.get(canonicalTypeName)) {
+        return type;
+    }
     
     // typelib expects sizes in bytes, while clang can return them in bits.
     // should be of no concern for us, but adding a check anyways for extra
@@ -320,8 +321,9 @@ TypelibBuilder::registerType(const std::string &canonicalTypeName,
 
     // shortcut: if the requested name is already present in the database, we
     // don't have to do anything.
-    if (registry.has(canonicalTypeName))
-        return registry.get(canonicalTypeName);
+    if (Typelib::Type const* type = registry.get(canonicalTypeName)) {
+        return type;
+    }
 
     if(type->isReferenceType())
     {
@@ -452,9 +454,8 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
                           const clang::CXXRecordDecl *decl) {
 
     // check if smth named like this is already there
-    if (registry.get(canonicalTypeName)) {
-        std::cout << "Can't register Record '" << canonicalTypeName << "', it is already known.\n";
-        return NULL;
+    if (Typelib::Type const* type = registry.get(canonicalTypeName)) {
+        return type;
     }
 
     if(!decl)
