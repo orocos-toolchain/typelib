@@ -453,7 +453,7 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
 
     if(!decl->getIdentifier())
     {
-        std::cout << "Ignoring type '" << canonicalTypeName
+        std::cout << "Ignoring record '" << canonicalTypeName
                   << "' without proper identifier" << std::endl;
         return NULL;
     }
@@ -548,7 +548,7 @@ bool TypelibBuilder::addMembersOfClassToCompound(
         if (!typelibFieldType) {
             std::cout << "Field type '" << canonicalFieldTypeName
                       << "' of compound '" << canonicalTypeName
-                      << "' could not be registering in the database.\n";
+                      << "' could not be registered in the database.\n";
             return false;
         }
 
@@ -592,26 +592,23 @@ bool TypelibBuilder::addMembersOfClassToCompound(
 
 void TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl* decl)
 {
-    clang::LangOptions o;
-    clang::PrintingPolicy suppressTagKeyword(o);
-    suppressTagKeyword.SuppressTagKeyword = true;
-
-    std::cout << "Found Typedef '" << decl->getQualifiedNameAsString() << "'"
-              << " of '"
-              << decl->getUnderlyingType().getCanonicalType().getAsString(
-                     suppressTagKeyword) << "'\n";
-
     std::string typeDefName = cxxToTyplibName(decl);
     std::string forCanonicalType = cxxToTyplibName(decl->getUnderlyingType().getCanonicalType());
 
-    if(!Typelib::isValidTypename(typeDefName, true))
-    {
-        std::cout << "Warning, ignoring typedef for '" << typeDefName << "'" << std::endl;
+    if (!Typelib::isValidTypename(typeDefName, true)) {
+        std::cout << "Warning, ignoring typedef for '" << typeDefName
+                  << "' as it seems to be no valid Typelib name\n";
         return;
     }
+
+    if(registerType(forCanonicalType, decl->getUnderlyingType().getTypePtr(), decl->getASTContext())) {
+
+        std::cout << "Found Typedef '" << typeDefName << "'"
+                  << " of '"
+                  << forCanonicalType << "', created alias.\n";
     
-    if(registerType(forCanonicalType, decl->getUnderlyingType().getTypePtr(), decl->getASTContext()))
         registry.alias(forCanonicalType, typeDefName);    
+    }
 }
 
 void TypelibBuilder::setMetaDataSourceFileLine(const clang::Decl *decl,
