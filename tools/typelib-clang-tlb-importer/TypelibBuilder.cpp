@@ -132,7 +132,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
 /*             continue; */
 /*         } */
         
-        Typelib::Type const* argType = checkRegisterType(argTypelibName, typePtr, decl->getASTContext());
+        Typelib::Type const* argType = registerType(argTypelibName, typePtr, decl->getASTContext());
 
         if(!argType) {
             std::cout << "Creating new Container '" << containerName
@@ -307,6 +307,11 @@ TypelibBuilder::registerType(const std::string &canonicalTypeName,
                              const clang::Type *type,
                              clang::ASTContext &context) {
 
+    // shortcut: if the requested name is already present in the database, we
+    // don't have to do anything.
+    if (registry.has(canonicalTypeName))
+        return registry.get(canonicalTypeName);
+
     if(type->isReferenceType())
     {
         std::cout << "Ignoring type with reference '" << canonicalTypeName << "'\n";
@@ -362,36 +367,6 @@ TypelibBuilder::registerType(const std::string &canonicalTypeName,
     }
 }
 
-Typelib::Type const*
-TypelibBuilder::checkRegisterType(const std::string &canonicalTypeName,
-                                  const clang::Type *type,
-                                  clang::ASTContext &context) {
-
-    if(!registry.has(canonicalTypeName, false))
-    {
-        std::cout << "Trying to register Type '" << canonicalTypeName
-                  << "' which is unknown to the database" << std::endl;
-
-        // what is this? why return NULL? makes it more complicated
-        // downstream...
-        if(!registerType(canonicalTypeName, type, context)) {
-            return NULL;
-        }
-    }
-
-    Typelib::Type const* typelibType = registry.get(canonicalTypeName);
-
-    if(!typelibType)
-    {
-        std::cout << "Internal error : Just registed Type '"
-                  << canonicalTypeName << "' was not found in registry"
-                  << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    return typelibType;
-}
-
 Typelib::Type const *
 TypelibBuilder::addArray(const std::string &canonicalTypeName,
                          const clang::ConstantArrayType *arrayType,
@@ -403,7 +378,7 @@ TypelibBuilder::addArray(const std::string &canonicalTypeName,
     // typelib-name of the array elements...
     std::string arrayElementTypeName = cxxToTyplibName(arrayElementType);
     // ...then try to add it to the database
-    Typelib::Type const *typelibArrayElementType = checkRegisterType(
+    Typelib::Type const *typelibArrayElementType = registerType(
         arrayElementTypeName, arrayElementType.getTypePtr(), context);
 
     if (!typelibArrayElementType) {
@@ -568,7 +543,7 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
 
         std::string canonicalFieldTypeName = cxxToTyplibName(qualType);
 
-        const Typelib::Type *typelibFieldType = checkRegisterType(canonicalFieldTypeName, qualType.getTypePtr(), decl->getASTContext());
+        const Typelib::Type *typelibFieldType = registerType(canonicalFieldTypeName, qualType.getTypePtr(), decl->getASTContext());
         if(!typelibFieldType)
         {
             std::cout << "Not registering type '" << canonicalTypeName << "' as as field type '" << canonicalFieldTypeName << "' could not be registerd " << std::endl;
@@ -608,7 +583,7 @@ void TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl* decl)
         return;
     }
     
-    if(checkRegisterType(forCanonicalType, decl->getUnderlyingType().getTypePtr(), decl->getASTContext()))
+    if(registerType(forCanonicalType, decl->getUnderlyingType().getTypePtr(), decl->getASTContext()))
         registry.alias(forCanonicalType, typeDefName);    
 }
 

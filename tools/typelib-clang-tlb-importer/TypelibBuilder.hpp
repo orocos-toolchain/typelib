@@ -99,10 +99,6 @@ private:
                                   const clang::ConstantArrayType *type,
                                   clang::ASTContext &context);
 
-    Typelib::Type const *checkRegisterType(const std::string &canonicalTypeName,
-                                           clang::Type const *type,
-                                           clang::ASTContext &context);
-
     /** add entry to database if the given type is a "Typelib::Container"
      *
      * a "Typelib::Container" handle a small number of special records in typelib like
