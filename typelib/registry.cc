@@ -280,7 +280,7 @@ namespace Typelib
         NameMap::const_iterator it = m_current.find(name);
         if (it != m_current.end()) 
             return it->second.type;
-        return 0;
+        return NULL;
     }
 
     Type& Registry::get_(Type const& type)
@@ -296,7 +296,7 @@ namespace Typelib
         NameMap::const_iterator it = m_current.find(name);
         if (it != m_current.end()) 
             return it->second.type;
-        return 0;
+        return NULL;
     }
 
     RegistryIterator Registry::find(std::string const& name) const
@@ -612,7 +612,7 @@ namespace Typelib
         std::set<Type*> result;
 
         std::set<Type const*> const_result =
-            static_cast<Registry const*>(this)->reverseDepends(type);
+            const_cast<Registry const*>(this)->reverseDepends(type);
         std::set<Type const*>::const_iterator it, end;
         for (it = const_result.begin(); it != const_result.end(); ++it)
             result.insert(const_cast<Type*>(*it));
