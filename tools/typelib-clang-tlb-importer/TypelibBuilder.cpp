@@ -54,7 +54,7 @@ void TypelibBuilder::registerTypeDecl(const clang::TypeDecl* decl)
                  decl->getASTContext());
 }
 
-bool
+Typelib::Type const*
 TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
                                        const clang::CXXRecordDecl *decl) {
 
@@ -68,7 +68,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
     // this would have to be moved to the end. missing cases: typedefs
     if (!decl ||
         (decl->getKind() != clang::Decl::ClassTemplateSpecialization)) {
-        return false;
+        return NULL;
     }
 
     // the name of the Container -- basically we need a translation of the
@@ -91,7 +91,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
     if(contIt == containers.end()) {
         std::cout << "No Container named '" << containerName << "' for '"
                   << modifiedTypeName << "' known to typelib\n";
-        return false;
+        return NULL;
     }
 
     // hurray!
@@ -112,7 +112,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
         if(!typePtr)
         {
             std::cout << "Error, argument has not type" << std::endl;
-            return false;
+            return NULL;
         }
         
         std::string argTypelibName = cxxToTyplibName(arg.getAsType().getCanonicalType());
@@ -138,7 +138,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
             std::cout << "Creating new Container '" << containerName
                       << "' failed because arg '" << argTypelibName
                       << "' could not be registered\n";
-            return false;
+            return NULL;
         }
         
         // on parole... very very special handling
@@ -147,7 +147,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
             std::cout << "Warning: Ignoring string that is not of "
                          "character-type char but '" << argTypelibName << "'\n";
             delete argType;
-            return false;
+            return NULL;
         }
         
         std::cout << "Container '" << modifiedTypeName << "' has arg '"
@@ -175,7 +175,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
               << "' successfully registered as Container for '" << containerName
               << "'\n";
 
-    return true;
+    return &newContainer;
 }
 
 void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
@@ -185,8 +185,11 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
     std::string opaqueName = cxxToTyplibName(decl);
 
     // registry can be pre-filled with all the opaque-type names loaded from a
-    // tlb-databse given to the tool
-    Typelib::Type * opaqueType = registry.get_(opaqueName);
+    // tlb-databse given to the tool.
+    //
+    // need to use the "get_()" variant to receive a non-const version for
+    // changing of meta-data later...
+    Typelib::Type *opaqueType = registry.get_(opaqueName);
 
     if (!opaqueType) {
         std::cout << "Opaque '" << decl->getQualifiedNameAsString()
@@ -229,13 +232,14 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
     }
 }
 
-bool TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
-                                     const clang::BuiltinType *builtin,
-                                     clang::ASTContext &context) {
+Typelib::Type const *
+TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
+                                const clang::BuiltinType *builtin,
+                                clang::ASTContext &context) {
 
     // check if the to-be-registered type is already present
     if(registry.has(canonicalTypeName, false))
-        return true;
+        return registry.get(canonicalTypeName);
     
     // typelib expects sizes in bytes, while clang can return them in bits.
     // should be of no concern for us, but adding a check anyways for extra
@@ -245,7 +249,7 @@ bool TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
         std::cout << "Error, cannot register builtin '" << canonicalTypeName
                   << "' whose size " << typeSizeInBits
                   << " is not byte-aligned\n";
-        return false;
+        return NULL;
     }
     size_t typeSizeInBytes = typeSizeInBits / 8;
     
@@ -259,28 +263,28 @@ bool TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
 
     } else if (builtin->isSignedInteger()) {
 
-        // attention fold, here we rename "char" to "int8" automatically and
+        // attention folks, here we rename "char" to "int8" automatically and
         // create the appropriate...
         if (canonicalTypeName == "/char") {
             newNumeric = new Typelib::Numeric("/int8_t", typeSizeInBytes,
                                               Typelib::Numeric::SInt);
             registry.add(newNumeric);
             registry.alias(newNumeric->getName(), canonicalTypeName);
-            return true;
+            return registry.get(canonicalTypeName);
         } else
             newNumeric = new Typelib::Numeric(
                 canonicalTypeName, typeSizeInBytes, Typelib::Numeric::SInt);
 
     } else if (builtin->isUnsignedInteger()) {
 
-        // attention fold, here we rename "char" to "uint8" automatically and
+        // attention folks, here we rename "char" to "uint8" automatically and
         // create the appropriate...
         if (canonicalTypeName == "/char") {
             newNumeric = new Typelib::Numeric("/uint8_t", typeSizeInBytes,
                                               Typelib::Numeric::UInt);
             registry.add(newNumeric);
             registry.alias(newNumeric->getName(), canonicalTypeName);
-            return true;
+            return registry.get(canonicalTypeName);
         } else
             newNumeric = new Typelib::Numeric(
                 canonicalTypeName, typeSizeInBytes, Typelib::Numeric::UInt);
@@ -291,28 +295,31 @@ bool TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
     // the database
     if (newNumeric) {
         registry.add(newNumeric);
-        return true;
+        return newNumeric;
     }
 
     // otherwise smth went wrong...
-    return false;
+    return NULL;
 }
 
-bool TypelibBuilder::registerType(const std::string &canonicalTypeName,
-                                  const clang::Type *type,
-                                  clang::ASTContext &context) {
+Typelib::Type const *
+TypelibBuilder::registerType(const std::string &canonicalTypeName,
+                             const clang::Type *type,
+                             clang::ASTContext &context) {
 
     if(type->isReferenceType())
     {
         std::cout << "Ignoring type with reference '" << canonicalTypeName << "'\n";
-        return false;
+        return NULL;
     }
     
     if(type->isAnyPointerType())
     {
         std::cout << "Ignoring pointer type '" << canonicalTypeName << "'\n";
-        return false;
+        return NULL;
     }
+
+    // FIXME: handling of container-detection should be done here?
 
     switch(type->getTypeClass())
     {
@@ -351,14 +358,15 @@ bool TypelibBuilder::registerType(const std::string &canonicalTypeName,
             std::cout << "Cannot register '" << canonicalTypeName << "'"
                       << " with unhandled type '" << type->getTypeClassName()
                       << "'" << std::endl;
-            return false;
+            return NULL;
     }
 }
 
-const Typelib::Type *
+Typelib::Type const*
 TypelibBuilder::checkRegisterType(const std::string &canonicalTypeName,
                                   const clang::Type *type,
                                   clang::ASTContext &context) {
+
     if(!registry.has(canonicalTypeName, false))
     {
         std::cout << "Trying to register Type '" << canonicalTypeName
@@ -371,7 +379,7 @@ TypelibBuilder::checkRegisterType(const std::string &canonicalTypeName,
         }
     }
 
-    const Typelib::Type *typelibType = registry.get(canonicalTypeName);
+    Typelib::Type const* typelibType = registry.get(canonicalTypeName);
 
     if(!typelibType)
     {
@@ -384,9 +392,10 @@ TypelibBuilder::checkRegisterType(const std::string &canonicalTypeName,
     return typelibType;
 }
 
-bool TypelibBuilder::addArray(const std::string &canonicalTypeName,
-                              const clang::ConstantArrayType *arrayType,
-                              clang::ASTContext &context) {
+Typelib::Type const *
+TypelibBuilder::addArray(const std::string &canonicalTypeName,
+                         const clang::ConstantArrayType *arrayType,
+                         clang::ASTContext &context) {
 
     const clang::QualType arrayElementType = arrayType->getElementType();
     // before we can add the array in question we first have to check wether
@@ -394,14 +403,14 @@ bool TypelibBuilder::addArray(const std::string &canonicalTypeName,
     // typelib-name of the array elements...
     std::string arrayElementTypeName = cxxToTyplibName(arrayElementType);
     // ...then try to add it to the database
-    const Typelib::Type *typelibArrayElementType = checkRegisterType(
+    Typelib::Type const *typelibArrayElementType = checkRegisterType(
         arrayElementTypeName, arrayElementType.getTypePtr(), context);
 
     if (!typelibArrayElementType) {
         std::cout << "Not registering Array '" << canonicalTypeName
                   << "' as its elementary type '" << arrayElementTypeName
                   << "' could not be registered.\n";
-        return false;
+        return NULL;
     }
 
     // giving the number of elements as second argument. does "zero extension"
@@ -411,20 +420,21 @@ bool TypelibBuilder::addArray(const std::string &canonicalTypeName,
 
     registry.add(array);
 
-    return true;
+    return array;
 }
 
+Typelib::Type const *
+TypelibBuilder::addEnum(const std::string &canonicalTypeName,
+                        const clang::EnumDecl *decl) {
 
-bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::EnumDecl *decl)
-{
-    Typelib::Enum *enumVal =new Typelib::Enum(canonicalTypeName);
+    Typelib::Enum *enumVal = new Typelib::Enum(canonicalTypeName);
     setMetaDataSourceFileLine(decl, enumVal);
 
     if(!decl->getIdentifier())
     {
         std::cout << "Ignoring type '" << canonicalTypeName
                   << "' without proper identifier" << std::endl;
-        return false;
+        return NULL;
     }
     
     for(clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin(); it != decl->enumerator_end(); it++)
@@ -434,7 +444,7 @@ bool TypelibBuilder::addEnum(const std::string& canonicalTypeName, const clang::
     
     registry.add(enumVal);
     
-    return true;
+    return enumVal;
 }
 
 bool TypelibBuilder::addBaseClassToCompound(Typelib::Compound& compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
@@ -455,60 +465,59 @@ bool TypelibBuilder::addBaseClassToCompound(Typelib::Compound& compound, const s
 }
 
 
-bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
+Typelib::Type const* TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
 {
 
     // check if smth named like this is already there
     if (registry.get(canonicalTypeName)) {
         std::cout << "Can't register Record '" << canonicalTypeName << "', it is already known.\n";
-        return false;
+        return NULL;
     }
 
     if(!decl)
     {
         std::cout << "Warning, got NULL Type" << std::endl;
-        return false;
+        return NULL;
     }
 
     if(!decl->getIdentifier())
     {
         std::cout << "Ignoring type '" << canonicalTypeName
                   << "' without proper identifier" << std::endl;
-        return false;
+        return NULL;
     }
 
     if(!decl->hasDefinition())
     {
         std::cout << "Ignoring type '" << canonicalTypeName << "' as it has no definition " << std::endl;
-        return false;
+        return NULL;
     }
     
     if(decl->isInjectedClassName())
     {
         std::cout << "Ignoring Type '" << canonicalTypeName << "' as it is injected" << std::endl;
-        return false;
+        return NULL;
     }
     
+    // this check is on parole, because there might be "Typelib::Container" who
+    // can be added despite these features...?
     if(decl->isPolymorphic() || decl->isAbstract())
     {
         std::cout << "Ignoring Type '" << canonicalTypeName << "' as it is polymorphic" << std::endl;
-        return false;
+        return NULL;
     }
     
     if(decl->isDependentType() || decl->isInvalidDecl())
     {
-        std::cout << "Ignoring Type '" << canonicalTypeName << "' as it is dependents / Invalid " << std::endl;
         //ignore incomplete / forward declared types
-        return false;
+        std::cout << "Ignoring Type '" << canonicalTypeName << "' as it is dependents / Invalid " << std::endl;
+        return NULL;
     }
     
     const clang::ASTRecordLayout &typeLayout(decl->getASTContext().getASTRecordLayout(decl));
 
-    
-    //container are special record, who have a seperate handling.
-    if(checkRegisterContainer(canonicalTypeName, decl))
-    {
-        return true;
+    if(Typelib::Type const* type = checkRegisterContainer(canonicalTypeName, decl)) {
+        return type;
     }
     
     
@@ -521,24 +530,24 @@ bool TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang
     if(!addBaseClassToCompound(*compound, canonicalTypeName, decl))
     {
         delete compound;
-        return false;
+        return NULL;
     }
 
     if(!addFieldsToCompound(*compound, canonicalTypeName, decl))
     {
         delete compound;
-        return false;
+        return NULL;
     }
 
     if(compound->getFields().empty())
     {
         std::cout << "Ignoring Compound '" << canonicalTypeName << "' as it has no fields " << std::endl;
-        return false;
+        return NULL;
     }
     
     registry.add(compound);
     
-    return true;
+    return compound;
 }
 
 bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)

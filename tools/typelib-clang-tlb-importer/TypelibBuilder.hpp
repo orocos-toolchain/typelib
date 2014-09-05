@@ -65,7 +65,9 @@ public:
     }
     
 private:
-    bool registerType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
+    Typelib::Type const *registerType(const std::string &canonicalTypeName,
+                                    const clang::Type *type,
+                                    clang::ASTContext &context);
 
     /** add builtins to database: basically ints+floats as Typelib::Numeric
      *
@@ -75,27 +77,31 @@ private:
      * @param canonicalTypeName
      * @param builtin
      * @param context
-     * @return false if nothing was added
+     * @return NULL if nothing was added
      */
-    bool registerBuiltIn(const std::string &canonicalTypeName,
-                         const clang::BuiltinType *builtin,
-                         clang::ASTContext &context);
+    Typelib::Type const *registerBuiltIn(const std::string &canonicalTypeName,
+                                         const clang::BuiltinType *builtin,
+                                         clang::ASTContext &context);
 
     bool addFieldsToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
     bool addBaseClassToCompound( Typelib::Compound &compound, const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
-    bool addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl);
-    bool addEnum(const std::string& canonicalTypeName, const clang::EnumDecl* decl);
+
+    Typelib::Type const *addRecord(const std::string &canonicalTypeName,
+                                   const clang::CXXRecordDecl *decl);
+    Typelib::Type const *addEnum(const std::string &canonicalTypeName,
+                                 const clang::EnumDecl *decl);
 
     /** add array to database if the element-type can be added
      *
      * @return true if smth was added to database
      */
-    bool addArray(const std::string &canonicalTypeName,
-                  const clang::ConstantArrayType *type,
-                  clang::ASTContext &context);
+    Typelib::Type const *addArray(const std::string &canonicalTypeName,
+                                  const clang::ConstantArrayType *type,
+                                  clang::ASTContext &context);
 
-    const Typelib::Type *checkRegisterType(const std::string& canonicalTypeName, const clang::Type* type, clang::ASTContext& context);
-
+    Typelib::Type const *checkRegisterType(const std::string &canonicalTypeName,
+                                           clang::Type const *type,
+                                           clang::ASTContext &context);
 
     /** add entry to database if the given type is a "Typelib::Container"
      *
@@ -105,8 +111,9 @@ private:
      *
      * @return true if the given decl could be added as "Container"
      */
-    bool checkRegisterContainer(const std::string &canonicalTypeName,
-                                const clang::CXXRecordDecl *decl);
+    Typelib::Type const *
+    checkRegisterContainer(const std::string &canonicalTypeName,
+                           const clang::CXXRecordDecl *decl);
 
     // extract source-loc of given clang::Decl as "/path/to/file:lineNumber"
     // and store in into the meta-data system of the given Typelib::Type
