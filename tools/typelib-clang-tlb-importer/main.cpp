@@ -70,14 +70,6 @@ class TlbImportCallback : public MatchFinder::MatchCallback {
 
         if (const TypeDecl *tDecl = Result.Nodes.getNodeAs<TypeDecl>("namedDecl")) {
 
-            // this removes the bogus double-match of "nested_records::S2::S2"
-            // for "struct nested_records::S2". it it not needed by us.
-            if (const CXXRecordDecl *rDecl = dyn_cast<CXXRecordDecl>(tDecl)) {
-                if (rDecl->isInjectedClassName()) {
-                    return;
-                }
-            }
-
             // don't add system-header-stuff like "struct __locale_struct" to
             // the database just because it's a declaration. if it is used
             // later _inside_ an other registered struct, we'll add it later to
