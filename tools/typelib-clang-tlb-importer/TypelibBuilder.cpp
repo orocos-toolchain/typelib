@@ -136,7 +136,18 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
                       << argTypelibName << "' which is ignored.\n";
             continue;
         }
-        
+
+        // on parole... very very special handling
+        if ((containerName.find("/std/string") == 0) &&
+            argTypelibName != "/char") {
+            std::cout
+                << "Warning: Ignoring '" << containerName
+                << "' that is not of "
+                   "character-type '/char' but of '" << argTypelibName
+                << "' and cannot be handled by the typelib-string-container.\n";
+            return NULL;
+        }
+
         Typelib::Type const* argType = registerType(argTypelibName, typePtr, decl->getASTContext());
 
         if(!argType) {
@@ -145,16 +156,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
                       << "' could not be registered\n";
             return NULL;
         }
-        
-        // on parole... very very special handling
-        if(containerName == "/std/string" && argTypelibName != "/char")
-        {
-            std::cout << "Warning: Ignoring string that is not of "
-                         "character-type char but '" << argTypelibName << "'\n";
-            delete argType;
-            return NULL;
-        }
-        
+
         std::cout << "Container '" << canonicalTypeName << "' has arg '"
                   << argTypelibName << "'" << std::endl;
 
