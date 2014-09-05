@@ -58,7 +58,6 @@ Typelib::Type const*
 TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
                                        const clang::CXXRecordDecl *decl) {
 
-    std::string modifiedTypeName(canonicalTypeName);
 
     // skip non-template specializations... because... the two current
     // "Container" implementation are both based on template specializations...
@@ -90,13 +89,13 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
     Typelib::Container::AvailableContainers::const_iterator contIt = containers.find(containerName);
     if(contIt == containers.end()) {
         std::cout << "No Container named '" << containerName << "' for '"
-                  << modifiedTypeName << "' known to typelib\n";
+                  << canonicalTypeName << "' known to typelib\n";
         return NULL;
     }
 
     // hurray!
     std::cout << "Found Container '" << containerName
-              << "' for type '" << modifiedTypeName << "', trying to add Args to registry:\n";
+              << "' for type '" << canonicalTypeName << "', trying to add Args to registry:\n";
 
     // some shortcuts for later use
     const clang::ClassTemplateSpecializationDecl *sdecl =
@@ -118,19 +117,19 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
         std::string argTypelibName = cxxToTyplibName(arg.getAsType().getCanonicalType());
         
         //HACK ignore allocators
-#warning HACK: ignoring templateArguments named '/std/allocator' in Typelib::Container support
+#warning HACK: ignoring templateArgument whose name begins '/std/allocator' to support Typelib::Container
         if(argTypelibName.find("/std/allocator") == 0) {
-            std::cout << "Container '" << containerName << "' has Arg '"
-                      << argTypelibName << "' ignored \n";
+            std::cout << "Container '" << containerName << "' has TemplateArgument '"
+                      << argTypelibName << "' which is ignored.\n";
             continue;
         }
 
-/* #warning HACK: ignoring templateArguments named '/std/char_traits' in Typelib::Container support */
-/*         if(argTypelibName.find("/std/char_traits") == 0){ */
-/*             std::cout << "Container '" << containerName << "' has Arg '" */
-/*                       << argTypelibName << "' ignored \n"; */
-/*             continue; */
-/*         } */
+#warning HACK: ignoring templateArgument whose name begins '/std/char_traits' to support Typelib::Container
+        if(argTypelibName.find("/std/char_traits") == 0){
+            std::cout << "Container '" << containerName << "' has TemplateArgument '"
+                      << argTypelibName << "' which is ignored.\n";
+            continue;
+        }
         
         Typelib::Type const* argType = registerType(argTypelibName, typePtr, decl->getASTContext());
 
@@ -150,7 +149,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
             return NULL;
         }
         
-        std::cout << "Container '" << modifiedTypeName << "' has arg '"
+        std::cout << "Container '" << canonicalTypeName << "' has arg '"
                   << argTypelibName << "'" << std::endl;
 
         typelibArgList.push_back(argType);
@@ -160,18 +159,19 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
     Typelib::Container::ContainerFactory factory = contIt->second;
     Typelib::Container const& newContainer = factory(registry, typelibArgList);
     
-    // the new container _can_ have a different name as the modifiedTypeName,
-    // if "/std/allocator" for example is ignored
-    /* if(newContainer->getName() != modifiedTypeName) */
-    /* { */
-    /*     std::cerr << "Warning, this should not happen...? containerName '" */
-    /*               << newContainer->getName() */
-    /*               << "' is different from modifiedTypeName '" */
-    /*               << modifiedTypeName << "'\n"; */
-    /*     registry.alias(newContainer->getName(), modifiedTypeName); */
-    /* } */
+    // the new container _can_ have a different name as the canonicalTypeName,
+    // if "/std/allocator" for example is ignored. but do we need an alias for
+    // this case? no typelib-code should ever be able to "know" the correct
+    // cxx-name... anyhow...
+    if(newContainer.getName() != canonicalTypeName) {
 
-    std::cout << "Type '" << modifiedTypeName
+        std::cerr << "Name of Typelib::Container '" << newContainer.getName()
+                  << "' is different from canonicalTypeName '"
+                  << canonicalTypeName << "', adding alias\n";
+        registry.alias(newContainer.getName(), canonicalTypeName);
+    }
+
+    std::cout << "Type '" << canonicalTypeName
               << "' successfully registered as Container for '" << containerName
               << "'\n";
 
@@ -546,7 +546,7 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
         const Typelib::Type *typelibFieldType = registerType(canonicalFieldTypeName, qualType.getTypePtr(), decl->getASTContext());
         if(!typelibFieldType)
         {
-            std::cout << "Not registering type '" << canonicalTypeName << "' as as field type '" << canonicalFieldTypeName << "' could not be registerd " << std::endl;
+            std::cout << "Not registering type '" << canonicalTypeName << "' as as field type '" << canonicalFieldTypeName << "' could not be registered " << std::endl;
             return false;
         }
 
