@@ -58,7 +58,6 @@ Typelib::Type const*
 TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
                                        const clang::CXXRecordDecl *decl) {
 
-
     // skip non-template specializations... because... the two current
     // "Container" implementation are both based on template specializations...
     // and why not hardcode an assumption for all times which is valid today?
@@ -226,8 +225,13 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
 
         registry.alias(opaqueName, canonicalOpaqueName);
 
+        clang::LangOptions o;
+        clang::PrintingPolicy suppressTagKeyword(o);
+        suppressTagKeyword.SuppressTagKeyword = true;
+
         std::cout << "Opaque '" << decl->getQualifiedNameAsString()
-                  << "' is a typedef of '" << actualType.getAsString()
+                  << "' is a typedef of '"
+                  << actualType.getAsString(suppressTagKeyword)
                   << "', alias created to '" << canonicalOpaqueName << "'\n";
     }
 }
@@ -338,10 +342,7 @@ TypelibBuilder::registerType(const std::string &canonicalTypeName,
         }
         case clang::Type::Enum:
         {
-            const clang::EnumType *enumType = llvm::dyn_cast<clang::EnumType>(type);
-            const clang::EnumDecl *enumDecl = enumType->getDecl();
-            assert(enumDecl);
-            return addEnum(canonicalTypeName, enumDecl);
+            return addEnum(canonicalTypeName, llvm::dyn_cast<clang::EnumType>(type)->getDecl());
         }
         case clang::Type::ConstantArray:
         {            
@@ -407,7 +408,7 @@ TypelibBuilder::addEnum(const std::string &canonicalTypeName,
 
     if(!decl->getIdentifier())
     {
-        std::cout << "Ignoring type '" << canonicalTypeName
+        std::cout << "Ignoring enum '" << canonicalTypeName
                   << "' without proper identifier" << std::endl;
         return NULL;
     }
@@ -439,9 +440,9 @@ bool TypelibBuilder::addBaseClassToCompound(Typelib::Compound& compound, const s
     return true;
 }
 
-
-Typelib::Type const* TypelibBuilder::addRecord(const std::string& canonicalTypeName, const clang::CXXRecordDecl* decl)
-{
+Typelib::Type const *
+TypelibBuilder::addRecord(const std::string &canonicalTypeName,
+                          const clang::CXXRecordDecl *decl) {
 
     // check if smth named like this is already there
     if (registry.get(canonicalTypeName)) {
@@ -488,18 +489,16 @@ Typelib::Type const* TypelibBuilder::addRecord(const std::string& canonicalTypeN
         std::cout << "Ignoring Type '" << canonicalTypeName << "' as it is dependents / Invalid " << std::endl;
         return NULL;
     }
-    
-    const clang::ASTRecordLayout &typeLayout(decl->getASTContext().getASTRecordLayout(decl));
 
     if(Typelib::Type const* type = checkRegisterContainer(canonicalTypeName, decl)) {
         return type;
     }
     
-    
     Typelib::Compound *compound = new Typelib::Compound(canonicalTypeName);
 
-    size_t typeSize = typeLayout.getSize().getQuantity();
-    compound->setSize(typeSize);
+    const clang::ASTRecordLayout &typeLayout(decl->getASTContext().getASTRecordLayout(decl));
+    size_t typeSizeInBytes = typeLayout.getSize().getQuantity();
+    compound->setSize(typeSizeInBytes);
 
     setMetaDataSourceFileLine(decl, compound);
     if(!addBaseClassToCompound(*compound, canonicalTypeName, decl))
@@ -536,17 +535,22 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
 
         if (fit->isAnonymousStructOrUnion()) {
             std::cout
-                << "Warning, ignoring Record with Anonymous Struct or Union '"
-                << canonicalTypeName << "'" << std::endl;
+                << "Warning, cannot add field '" << cxxToTyplibName(qualType)
+                << "' to record '" << canonicalTypeName
+                << "' because the field is an Anonymous Struct or Union\n";
             return false;
         }
 
         std::string canonicalFieldTypeName = cxxToTyplibName(qualType);
 
-        const Typelib::Type *typelibFieldType = registerType(canonicalFieldTypeName, qualType.getTypePtr(), decl->getASTContext());
+        const Typelib::Type *typelibFieldType =
+            registerType(canonicalFieldTypeName, qualType.getTypePtr(),
+                         decl->getASTContext());
         if(!typelibFieldType)
         {
-            std::cout << "Not registering type '" << canonicalTypeName << "' as as field type '" << canonicalFieldTypeName << "' could not be registered " << std::endl;
+            std::cout << "Not registering type '" << canonicalTypeName
+                      << "' as as field type '" << canonicalFieldTypeName
+                      << "' could not be registered " << std::endl;
             return false;
         }
 
@@ -569,11 +573,15 @@ bool TypelibBuilder::addFieldsToCompound(Typelib::Compound& compound, const std:
 
 void TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl* decl)
 {
+    clang::LangOptions o;
+    clang::PrintingPolicy suppressTagKeyword(o);
+    suppressTagKeyword.SuppressTagKeyword = true;
+
     std::cout << "Found Typedef '" << decl->getQualifiedNameAsString() << "'"
-       << " of '"
-       << decl->getUnderlyingType().getCanonicalType().getAsString()
-       << "'\n";
-    
+              << " of '"
+              << decl->getUnderlyingType().getCanonicalType().getAsString(
+                     suppressTagKeyword) << "'\n";
+
     std::string typeDefName = cxxToTyplibName(decl);
     std::string forCanonicalType = cxxToTyplibName(decl->getUnderlyingType().getCanonicalType());
 
