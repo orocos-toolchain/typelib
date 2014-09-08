@@ -19,9 +19,12 @@ class Decl;
 class TypelibBuilder
 {
 public:
-    void registerTypedefNameDecl(const clang::TypedefNameDecl *decl);
-    void registerTypeDecl(const clang::TypeDecl *decl);
-    
+
+    Typelib::Type const *
+    registerTypedefNameDecl(const clang::TypedefNameDecl *decl);
+
+    Typelib::Type const *registerTypeDecl(const clang::TypeDecl *decl);
+
     /** fill properties of a decl into Opaque of registry
      *
      * if a type was found in the parsed headers which is to be added as a
