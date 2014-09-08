@@ -80,16 +80,14 @@ class TlbImportCallback : public MatchFinder::MatchCallback {
 
             builder.registerTypeDecl(tDecl);
 
-        } else if(const TypedefType *tType = Result.Nodes.getNodeAs<TypedefType>("typedefType")) {
+        } else if (const TypedefNameDecl *tDecl =
+                       Result.Nodes.getNodeAs<TypedefNameDecl>("typedefDecl")) {
 
-            if (!Result.SourceManager->isInMainFile(tType->getDecl()
-                                                        ->getTypeSourceInfo()
-                                                        ->getTypeLoc()
-                                                        .getLocStart())) {
+            if (!Result.SourceManager->isInMainFile(tDecl->getLocation())) {
                 return;
             }
 
-            builder.registerTypedefNameDecl(tType->getDecl());
+            builder.registerTypedefNameDecl(tDecl);
         }
     }
 
@@ -173,7 +171,7 @@ int main(int argc, const char **argv) {
 
     TlbImportCallback tlbImportCallback;
     Finder.addMatcher(namedDecl().bind("namedDecl"), &tlbImportCallback);
-    Finder.addMatcher(typedefType().bind("typedefType"), &tlbImportCallback);
+    Finder.addMatcher(typedefType(hasDeclaration(namedDecl().bind("typedefDecl"))), &tlbImportCallback);
     
     if (int retval = Tool.run(newFrontendActionFactory(&Finder))) {
         std::cout << "Parsing error in clang, cannot continue" << std::endl;
