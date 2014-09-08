@@ -15,50 +15,50 @@
 #include <clang/AST/Comment.h>
 #include <llvm/Support/Casting.h>
 
-void TypelibBuilder::registerTypeDecl(const clang::TypeDecl* decl)
-{
+Typelib::Type const *
+TypelibBuilder::registerTypeDecl(const clang::TypeDecl *decl) {
+
     // this removes the bogus double-match of "nested_records::S2::S2"
     // for "struct nested_records::S2". it it not needed by us.
     if (const clang::CXXRecordDecl *rDecl =
             llvm::dyn_cast<clang::CXXRecordDecl>(decl)) {
         if (rDecl->isInjectedClassName())
-            return;
+            return NULL;
     }
 
     if(decl->getKind() == clang::Decl::Typedef)
     {
-        registerTypedefNameDecl(llvm::dyn_cast<clang::TypedefDecl>(decl));
-        return;
+        return registerTypedefNameDecl(llvm::dyn_cast<clang::TypedefDecl>(decl));
     }
     
     const clang::Type *typeForDecl = decl->getTypeForDecl();
     if(!typeForDecl)
     {
         std::cout << "TypeDecl '" << decl->getQualifiedNameAsString() << "' has no type " << std::endl;
-        return;
+        return NULL;
     }
 
     //check for structs that are only defined inside of functions
     if(decl->getParentFunctionOrMethod())
     {
         std::cout << "Ignoring type '" << decl->getQualifiedNameAsString() << "' as it is defined inside a function" << std::endl;
-        return;
+        return NULL;
     }
     
     if(decl->isHidden())
     {
         std::cout << "Ignoring hidden type '" << decl->getQualifiedNameAsString() << "' because it is hidden" << std::endl;
-        return;
+        return NULL;
     }
     
     if(decl->isInAnonymousNamespace())
     {
         std::cout << "Ignoring '" << decl->getQualifiedNameAsString() << "' as it is in an anonymous namespace" << std::endl;
-        return;
+        return NULL;
     }
 
-    registerType(cxxToTyplibName(decl), typeForDecl,
-                 decl->getASTContext());
+    return registerType(cxxToTyplibName(decl), typeForDecl,
+                        decl->getASTContext());
 }
 
 Typelib::Type const*
@@ -601,25 +601,32 @@ bool TypelibBuilder::addMembersOfClassToCompound(
     return true;
 }
 
-void TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl* decl)
-{
+Typelib::Type const *
+TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl *decl) {
+
     std::string typeDefName = cxxToTyplibName(decl);
     std::string forCanonicalType = cxxToTyplibName(decl->getUnderlyingType().getCanonicalType());
 
     if (!Typelib::isValidTypename(typeDefName, true)) {
         std::cout << "Warning, ignoring typedef for '" << typeDefName
                   << "' as it seems to be no valid Typelib name\n";
-        return;
+        return NULL;
     }
 
-    if(registerType(forCanonicalType, decl->getUnderlyingType().getTypePtr(), decl->getASTContext())) {
+    if (Typelib::Type const *type = registerType(
+            forCanonicalType, decl->getUnderlyingType().getTypePtr(),
+            decl->getASTContext())) {
 
         std::cout << "Found Typedef '" << typeDefName << "'"
                   << " of '"
                   << forCanonicalType << "', created alias.\n";
     
         registry.alias(forCanonicalType, typeDefName);    
+
+        return type;
     }
+
+    return NULL;
 }
 
 void TypelibBuilder::setMetaDataSourceFileLine(const clang::Decl *decl,
