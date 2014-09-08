@@ -1,6 +1,9 @@
 #ifndef TEST_DATA_HEADER_ENUMS_H
 #define TEST_DATA_HEADER_ENUMS_H
 
+// to pull in enums not declared here we pull this header
+#include <limits>
+
 namespace enums {
 
     enum E1 {
@@ -29,6 +32,13 @@ namespace enums {
 
     class S3 {
         E2_t A;
+    };
+
+    // pulling in enum from system header. name-value map of the enum should be
+    // added to the database because it is used by a record declared in this
+    // file.
+    struct S4 {
+        enum std::float_round_style A;
     };
 }
 
