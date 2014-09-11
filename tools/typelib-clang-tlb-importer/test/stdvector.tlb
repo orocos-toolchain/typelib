@@ -6,17 +6,19 @@
   <numeric name="/float" category="float" size="4" >
   
   </numeric>
-  <numeric name="/int" category="sint" size="4" >
+  <numeric name="/int32_t" category="sint" size="4" >
   
   </numeric>
-  <numeric name="/long" category="sint" size="8" >
+  <numeric name="/int64_t" category="sint" size="8" >
   
   </numeric>
+  <alias name="/int" source="/int32_t"/>
+  <alias name="/long" source="/int64_t"/>
   <compound name="/timespec" size="16" >
-    <field name="tv_sec" type="/long" offset="0">
+    <field name="tv_sec" type="/int64_t" offset="0">
     
     </field>
-    <field name="tv_nsec" type="/long" offset="8">
+    <field name="tv_nsec" type="/int64_t" offset="8">
     
     </field>
   <metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
@@ -38,11 +40,11 @@
     <field name="v" type="/std/vector&lt;/double&gt;[2]" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.h:30]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.h:35]]></metadata>
 
   </compound>
   <compound name="/stdvector/S1" size="32" >
-    <field name="a" type="/int" offset="0">
+    <field name="a" type="/int32_t" offset="0">
     
     </field>
     <field name="v1" type="/std/vector&lt;/float&gt;" offset="8">

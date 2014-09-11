@@ -3,15 +3,16 @@
   <numeric name="/double" category="float" size="8" >
   
   </numeric>
-  <numeric name="/int" category="sint" size="4" >
+  <numeric name="/int32_t" category="sint" size="4" >
   
   </numeric>
   <numeric name="/int8_t" category="sint" size="1" >
   
   </numeric>
   <alias name="/char" source="/int8_t"/>
+  <alias name="/int" source="/int32_t"/>
   <compound name="/N1/N2/S1" size="24" >
-    <field name="A" type="/int" offset="0">
+    <field name="A" type="/int32_t" offset="0">
     
     </field>
     <field name="B" type="/double" offset="8">
