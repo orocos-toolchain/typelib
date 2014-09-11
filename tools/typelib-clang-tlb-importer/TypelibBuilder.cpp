@@ -276,32 +276,25 @@ TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
                                           Typelib::Numeric::Float);
 
     } else if (builtin->isSignedInteger()) {
+        // attention folks, here we change the given canonicalTypeName (like
+        // "char") to a name based on the size and signedness (like "uint8_t")
+        // automatically. for sizes like 16 or 64, the automatically generated
+        // string should be the same as the canonicalTypeName. later, there is
+        // an alias added to the registry
 
-        // attention folks, here we rename "char" to "int8" automatically and
-        // create the appropriate...
-        if (canonicalTypeName == "/char") {
-            newNumeric = new Typelib::Numeric("/int8_t", typeSizeInBytes,
-                                              Typelib::Numeric::SInt);
-            registry.add(newNumeric);
-            registry.alias(newNumeric->getName(), canonicalTypeName);
-            return registry.get(canonicalTypeName);
-        } else
-            newNumeric = new Typelib::Numeric(
-                canonicalTypeName, typeSizeInBytes, Typelib::Numeric::SInt);
+        std::string numericTypelibName =
+            "/int" + boost::lexical_cast<std::string>(typeSizeInBytes * 8) +
+            "_t";
+        newNumeric = new Typelib::Numeric(numericTypelibName, typeSizeInBytes,
+                                          Typelib::Numeric::SInt);
 
     } else if (builtin->isUnsignedInteger()) {
 
-        // attention folks, here we rename "char" to "uint8" automatically and
-        // create the appropriate...
-        if (canonicalTypeName == "/char") {
-            newNumeric = new Typelib::Numeric("/uint8_t", typeSizeInBytes,
-                                              Typelib::Numeric::UInt);
-            registry.add(newNumeric);
-            registry.alias(newNumeric->getName(), canonicalTypeName);
-            return registry.get(canonicalTypeName);
-        } else
-            newNumeric = new Typelib::Numeric(
-                canonicalTypeName, typeSizeInBytes, Typelib::Numeric::UInt);
+        std::string numericTypelibName =
+            "/uint" + boost::lexical_cast<std::string>(typeSizeInBytes * 8) +
+            "_t";
+        newNumeric = new Typelib::Numeric(numericTypelibName, typeSizeInBytes,
+                                          Typelib::Numeric::UInt);
 
     }
 
@@ -309,6 +302,9 @@ TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
     // the database
     if (newNumeric) {
         registry.add(newNumeric);
+        // needed if we added a "char" which was automatically added as
+        // "uint8_t", to still find the char. does not hurt if not needed.
+        registry.alias(newNumeric->getName(), canonicalTypeName);
         return newNumeric;
     }
 
