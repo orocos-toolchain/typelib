@@ -34,14 +34,6 @@ std::string cxxToTyplibName(const std::string& cxxName)
     if (typelibName.at(0) != '/')
         typelibName.insert(0, 1, '/');
 
-    // deliberately not check for the "/std/vector" case, so
-    if (typelibName == "/std/vector") {
-        typelibName = "/std/vector";
-    } else if (typelibName == "/std/basic_string") {
-#warning renaming '/std/basic_string' to '/std/string' -- need to add the other way around?
-        typelibName = "/std/string";
-    }
-
     return typelibName;
 }
 
