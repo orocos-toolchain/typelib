@@ -76,8 +76,7 @@ templateToTypelibName(const clang::ClassTemplateSpecializationDecl *tDecl) {
         case clang::TemplateArgument::Integral:
             /* std::cerr << " -- template arg integral: " */
             /*           << tmpArgs.get(idx).getAsIntegral().toString(10) << "\n"; */
-            retval +=
-                cxxToTyplibName(tmpArgs.get(idx).getAsIntegral().toString(10));
+            retval += tmpArgs.get(idx).getAsIntegral().toString(10);
             break;
         case clang::TemplateArgument::Template:
             std::cerr << " -- template arg template expansion... recursion? "
