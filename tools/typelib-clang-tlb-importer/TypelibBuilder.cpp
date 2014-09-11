@@ -88,6 +88,11 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
     // this is problematic...
     std::string containerName = cxxToTyplibName(decl->getQualifiedNameAsString());
 
+    if (containerName == "/std/basic_string") {
+#warning renaming '/std/basic_string' to '/std/string' -- need to add the other way around?
+        containerName = "/std/string";
+    }
+
     // needed to search for a specific container in all known ones.
     const Typelib::Container::AvailableContainers &containers =
         Typelib::Container::availableContainers();
