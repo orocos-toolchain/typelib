@@ -1,14 +1,15 @@
 <?xml version="1.0"?>
 <typelib>
-  <numeric name="/int" category="sint" size="4" >
+  <numeric name="/int32_t" category="sint" size="4" >
   
   </numeric>
+  <alias name="/int" source="/int32_t"/>
   <opaque name="/opaques/C1" >
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.h:14]]></metadata>
 
   </opaque>
   <compound name="/opaques/cruft" size="16" >
-    <field name="data" type="/int[4]" offset="0">
+    <field name="data" type="/int32_t[4]" offset="0">
     
     </field>
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.h:7]]></metadata>

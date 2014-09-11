@@ -1,21 +1,23 @@
 <?xml version="1.0"?>
 <typelib>
-  <numeric name="/int" category="sint" size="4" >
+  <numeric name="/int32_t" category="sint" size="4" >
   
   </numeric>
-  <numeric name="/unsigned char" category="uint" size="1" >
+  <alias name="/int" source="/int32_t"/>
+  <numeric name="/uint8_t" category="uint" size="1" >
   
   </numeric>
+  <alias name="/unsigned char" source="/uint8_t"/>
   <compound name="/ns/aClass" size="4" >
-    <field name="A" type="/int" offset="0">
+    <field name="A" type="/int32_t" offset="0">
     
     </field>
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:15]]></metadata>
 
   </compound>
-  <alias name="/ns/anotherIntTypedef" source="/int"/>
-  <alias name="/ns/intTypedef" source="/int"/>
-  <alias name="/ns/intTypedefTypedef" source="/int"/>
+  <alias name="/ns/anotherIntTypedef" source="/int32_t"/>
+  <alias name="/ns/intTypedef" source="/int32_t"/>
+  <alias name="/ns/intTypedefTypedef" source="/int32_t"/>
   <opaque name="/ns/myTestTypedef" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:41]]></metadata>
@@ -24,16 +26,16 @@
   <alias name="/ns/S1" source="/ns/myTestTypedef"/>
   <alias name="/ns/aClassTypedef" source="/ns/aClass"/>
   <compound name="/ns/test" size="16" >
-    <field name="C" type="/unsigned char" offset="0">
+    <field name="C" type="/uint8_t" offset="0">
     
     </field>
     <field name="A" type="/ns/aClass" offset="4">
     
     </field>
-    <field name="B" type="/int" offset="8">
+    <field name="B" type="/int32_t" offset="8">
     
     </field>
-    <field name="D" type="/int" offset="12">
+    <field name="D" type="/int32_t" offset="12">
     
     </field>
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:25]]></metadata>

@@ -7,26 +7,26 @@
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h:16]]></metadata>
 
   </enum>
-  <numeric name="/int" category="sint" size="4" >
+  <numeric name="/int16_t" category="sint" size="2" >
+  
+  </numeric>
+  <numeric name="/int32_t" category="sint" size="4" >
   
   </numeric>
   <numeric name="/int8_t" category="sint" size="1" >
   
   </numeric>
-  <numeric name="/short" category="sint" size="2" >
-  
-  </numeric>
   <compound name="/Compound" size="48" >
-    <field name="a" type="/int" offset="0">
+    <field name="a" type="/int32_t" offset="0">
     
     </field>
-    <field name="b" type="/short" offset="4">
+    <field name="b" type="/int16_t" offset="4">
     
     </field>
     <field name="c" type="/int8_t" offset="6">
     
     </field>
-    <field name="array" type="/int[10]" offset="8">
+    <field name="array" type="/int32_t[10]" offset="8">
     
     </field>
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h:4]]></metadata>
@@ -42,11 +42,13 @@
   </compound>
   <alias name="/OtherEnum" source="/TestEnum"/>
   <alias name="/char" source="/int8_t"/>
+  <alias name="/int" source="/int32_t"/>
+  <alias name="/short" source="/int16_t"/>
   <compound name="/NS1/NS1_1/Test" size="8" >
-    <field name="a" type="/int" offset="0">
+    <field name="a" type="/int32_t" offset="0">
     
     </field>
-    <field name="b" type="/short" offset="4">
+    <field name="b" type="/int16_t" offset="4">
     
     </field>
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.h:22]]></metadata>

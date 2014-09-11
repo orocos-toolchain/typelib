@@ -1,13 +1,15 @@
 <?xml version="1.0"?>
 <typelib>
-  <numeric name="/unsigned char" category="uint" size="1" >
+  <numeric name="/uint32_t" category="uint" size="4" >
   
   </numeric>
-  <numeric name="/unsigned int" category="uint" size="4" >
+  <numeric name="/uint8_t" category="uint" size="1" >
   
   </numeric>
+  <alias name="/unsigned char" source="/uint8_t"/>
+  <alias name="/unsigned int" source="/uint32_t"/>
   <compound name="/bitfield/S1" size="4" >
-    <field name="b" type="/unsigned int" offset="0">
+    <field name="b" type="/uint32_t" offset="0">
     
     </field>
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/bitfield.h:11]]></metadata>

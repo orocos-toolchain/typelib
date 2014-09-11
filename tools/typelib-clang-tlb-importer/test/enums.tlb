@@ -31,11 +31,12 @@
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.h:30]]></metadata>
 
   </compound>
-  <numeric name="/int" category="sint" size="4" >
+  <numeric name="/int32_t" category="sint" size="4" >
   
   </numeric>
+  <alias name="/int" source="/int32_t"/>
   <compound name="/enums/S1" size="8" >
-    <field name="A" type="/int" offset="0">
+    <field name="A" type="/int32_t" offset="0">
     
     </field>
     <field name="B" type="/enums/E1" offset="4">
