@@ -128,7 +128,7 @@ module Typelib
             setup_type_export_module(base_module)
             
             mod = namespace.inject(base_module) do |mod, ns|
-                template_basename, template_args = GCCXMLLoader.parse_template(ns)
+                template_basename, template_args = ClangLoader.parse_template(ns)
                 ns = template_basename.gsub(/\s+/, '_').camelcase(:upper)
 
                 if template_args.empty?
@@ -266,7 +266,7 @@ module Typelib
                     next
                 end
 
-                template_basename, template_args = GCCXMLLoader.parse_template(basename)
+                template_basename, template_args = ClangLoader.parse_template(basename)
                 if template_args.empty?
                     basename = basename.gsub(/\s+/, '_').camelcase(:upper)
 
