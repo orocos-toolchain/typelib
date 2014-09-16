@@ -306,11 +306,21 @@ TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
     // only if a numeric was detected and an object created, we can add smth to
     // the database
     if (newNumeric) {
-        registry.add(newNumeric);
-        // needed if we added a "char" which was automatically added as
-        // "uint8_t", to still find the char. does not hurt if not needed.
-        registry.alias(newNumeric->getName(), canonicalTypeName);
-        return newNumeric;
+        // if this numeric is not there already
+        if (!registry.get(newNumeric->getName())) {
+            registry.add(newNumeric);
+            // needed if we added a "char" which was automatically added as
+            // "uint8_t", to still find the char. does not hurt if not needed.
+            registry.alias(newNumeric->getName(), canonicalTypeName);
+            return newNumeric;
+            // otherwise we at least try to create an alias for the existing
+            // numeric using our canonicalTypeName
+        } else {
+            const Typelib::Type *existing_numeric =
+                registry.get(newNumeric->getName());
+            registry.alias(existing_numeric->getName(), canonicalTypeName);
+            return existing_numeric;
+        }
     }
 
     // otherwise smth went wrong...
