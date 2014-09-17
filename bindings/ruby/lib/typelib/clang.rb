@@ -31,9 +31,10 @@ module Typelib
 
             header_files = options[:required_files].join(" ") 
             
-            # FIXME: this should be the installed tool
-            finalCmd = "#{ENV["AUTOPROJ_CURRENT_ROOT"]}/tools/typelib/build/tools/typelib-clang-tlb-importer/typelib-clang-tlb-importer -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++"
-            
+            # calling the the installed töb-import-tool, found in the
+            # install-folder via PATH.
+            finalCmd = "typelib-clang-tlb-importer -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++"
+
             puts("clang.rb: Cmd is : #{finalCmd}")
             
             #call extractor
