@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<typelib>
+  <opaque name="/Eigen/Vector3d" size="0"/>
+</typelib>
