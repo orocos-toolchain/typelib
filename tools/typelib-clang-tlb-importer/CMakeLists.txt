@@ -106,3 +106,9 @@ target_link_libraries(typelib-clang-tlb-importer
     )
 
 add_subdirectory(test)
+
+# also install the created tool, so that the ruby-binding can execute it via
+# "system()" during tlb-creation time
+install(TARGETS typelib-clang-tlb-importer
+    RUNTIME DESTINATION bin
+    )
