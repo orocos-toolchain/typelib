@@ -22,7 +22,7 @@ std::string stringFromToReplace(const std::string &string,
 }
 
 // the actual string-conversion function converting single cxx-names:
-std::string cxxToTyplibName(const std::string& cxxName)
+std::string cxxToTypelibName(const std::string& cxxName)
 {
     std::string typelibName(cxxName);
 
@@ -57,13 +57,13 @@ templateToTypelibName(const clang::ClassTemplateSpecializationDecl *tDecl) {
             /*     << " -- template arg declaration: " */
             /*     << tmpArgs.get(idx).getAsDecl()->getQualifiedNameAsString() */
             /*     << "\n"; */
-            retval += cxxToTyplibName(
+            retval += cxxToTypelibName(
                 tmpArgs.get(idx).getAsDecl()->getQualifiedNameAsString());
             break;
         case clang::TemplateArgument::Type:
             /* std::cerr << " -- template arg type: " */
-            /*           << cxxToTyplibName(tmpArgs.get(idx).getAsType()) << "\n"; */
-            retval += cxxToTyplibName(tmpArgs.get(idx).getAsType());
+            /*           << cxxToTypelibName(tmpArgs.get(idx).getAsType()) << "\n"; */
+            retval += cxxToTypelibName(tmpArgs.get(idx).getAsType());
             break;
         case clang::TemplateArgument::Integral:
             /* std::cerr << " -- template arg integral: " */
@@ -89,10 +89,10 @@ templateToTypelibName(const clang::ClassTemplateSpecializationDecl *tDecl) {
     return retval;
 }
 
-std::string cxxToTyplibName(const clang::NamedDecl* decl)
+std::string cxxToTypelibName(const clang::NamedDecl* decl)
 {
     // just convert the name
-    std::string typelibName(cxxToTyplibName(decl->getQualifiedNameAsString()));
+    std::string typelibName(cxxToTypelibName(decl->getQualifiedNameAsString()));
 
     // note: template declarations as such and partial specializations are ignored here!
     if (const clang::ClassTemplateSpecializationDecl *tDecl =
@@ -104,14 +104,14 @@ std::string cxxToTyplibName(const clang::NamedDecl* decl)
     return typelibName;
 }
 
-std::string cxxToTyplibName(const clang::QualType &type) {
+std::string cxxToTypelibName(const clang::QualType &type) {
 
     // this will give special handling for "Records" (e.g. classes, structs,
     // templates and so on)
     if (const clang::CXXRecordDecl *rDecl =
             type.getTypePtr()->getAsCXXRecordDecl()) {
 
-        return cxxToTyplibName(rDecl);
+        return cxxToTypelibName(rDecl);
     }
 
     // everything else is simply handled as a "Type" whose complete name is
@@ -120,10 +120,10 @@ std::string cxxToTyplibName(const clang::QualType &type) {
     clang::PrintingPolicy suppressTagKeyword(o);
     suppressTagKeyword.SuppressTagKeyword = true;
 
-    return cxxToTyplibName(type.getAsString(suppressTagKeyword));
+    return cxxToTypelibName(type.getAsString(suppressTagKeyword));
 }
 
-std::string typlibtoCxxName(const std::string& typelibName)
+std::string typelibtoCxxName(const std::string& typelibName)
 {
     std::string cxxName = stringFromToReplace(typelibName, "/", "::");
 

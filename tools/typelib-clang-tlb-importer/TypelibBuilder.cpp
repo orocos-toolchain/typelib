@@ -57,7 +57,7 @@ TypelibBuilder::registerTypeDecl(const clang::TypeDecl *decl) {
         return NULL;
     }
 
-    return registerType(cxxToTyplibName(decl), typeForDecl,
+    return registerType(cxxToTypelibName(decl), typeForDecl,
                         decl->getASTContext());
 }
 
@@ -78,7 +78,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
 
     // the name of the Container -- basically we need a translation of the
     // "Namespace::Class" part of the record-name. If the decl would point to a
-    // template, the cxxToTyplibName() whould convert and append the template
+    // template, the cxxToTypelibName() whould convert and append the template
     // as well.
     if (decl->getDescribedClassTemplate()) {
         std::cout << "\n\n";
@@ -86,7 +86,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
         std::cout << "\n\n";
     }
     // this is problematic...
-    std::string containerName = cxxToTyplibName(decl->getQualifiedNameAsString());
+    std::string containerName = cxxToTypelibName(decl->getQualifiedNameAsString());
 
     if (containerName == "/std/basic_string") {
 #warning renaming '/std/basic_string' to '/std/string' -- need to add the other way around?
@@ -125,7 +125,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
             return NULL;
         }
         
-        std::string argTypelibName = cxxToTyplibName(arg.getAsType().getCanonicalType());
+        std::string argTypelibName = cxxToTypelibName(arg.getAsType().getCanonicalType());
         
         //HACK ignore allocators
 #warning HACK: ignoring templateArgument whose name begins '/std/allocator' to support Typelib::Container
@@ -195,7 +195,7 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
 {
 
     // get a typelib-name for the given opaque-decl
-    std::string opaqueName = cxxToTyplibName(decl);
+    std::string opaqueName = cxxToTypelibName(decl);
 
     // registry can be pre-filled with all the opaque-type names loaded from a
     // tlb-databse given to the tool.
@@ -232,7 +232,7 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
                 .getCanonicalType();
 
         // convert the type of the decl into a typelib-string
-        std::string canonicalOpaqueName = cxxToTyplibName(actualType);
+        std::string canonicalOpaqueName = cxxToTypelibName(actualType);
 
         // typedef-opaques are specially marked in the Typelib metadata
         opaqueType->getMetaData().add("opaque_is_typedef", "1");
@@ -399,7 +399,7 @@ TypelibBuilder::addArray(const std::string &canonicalTypeName,
     // before we can add the array in question we first have to check wether
     // the element type of the array is addable. so at first get the
     // typelib-name of the array elements...
-    std::string arrayElementTypeName = cxxToTyplibName(arrayElementType);
+    std::string arrayElementTypeName = cxxToTypelibName(arrayElementType);
     // ...then try to add it to the database
     Typelib::Type const *typelibArrayElementType = registerType(
         arrayElementTypeName, arrayElementType.getTypePtr(), context);
@@ -541,7 +541,7 @@ bool TypelibBuilder::addMembersOfClassToCompound(
 
         if (fit->isAnonymousStructOrUnion()) {
             std::cout
-                << "Warning, cannot add field '" << cxxToTyplibName(qualType)
+                << "Warning, cannot add field '" << cxxToTypelibName(qualType)
                 << "' to record '" << canonicalTypeName
                 << "' because the field is an Anonymous Struct or Union\n";
             return false;
@@ -549,7 +549,7 @@ bool TypelibBuilder::addMembersOfClassToCompound(
 
         // FIXME: what about testing for private-ness of inheritance of member-variable?
 
-        std::string canonicalFieldTypeName = cxxToTyplibName(qualType);
+        std::string canonicalFieldTypeName = cxxToTypelibName(qualType);
 
         // creating of getting the Typelib::Type
         const Typelib::Type *typelibFieldType =
@@ -604,8 +604,8 @@ bool TypelibBuilder::addMembersOfClassToCompound(
 Typelib::Type const *
 TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl *decl) {
 
-    std::string typeDefName = cxxToTyplibName(decl);
-    std::string forCanonicalType = cxxToTyplibName(decl->getUnderlyingType().getCanonicalType());
+    std::string typeDefName = cxxToTypelibName(decl);
+    std::string forCanonicalType = cxxToTypelibName(decl->getUnderlyingType().getCanonicalType());
 
     if (!Typelib::isValidTypename(typeDefName, true)) {
         std::cout << "Warning, ignoring typedef for '" << typeDefName
@@ -655,7 +655,7 @@ void TypelibBuilder::setMetaDataBaseClasses(const clang::Decl *decl,
              base++) {
             const clang::QualType &qualType = base->getType();
 
-            type->getMetaData().add("base_classes", cxxToTyplibName(qualType));
+            type->getMetaData().add("base_classes", cxxToTypelibName(qualType));
         }
     }
 }
