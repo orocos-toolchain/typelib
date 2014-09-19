@@ -44,6 +44,14 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
         )
     # add it to the target
     add_dependencies(create-test-header create-test-${HEADER_NAME}.tlb)
+    # for debugging, dumping the clang-ast is a common operation. provide this
+    set(DUMP_FILE "${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.dump")
+    add_custom_target(create-test-${HEADER_NAME}.dump
+        COMMAND clang
+            -Xclang -ast-dump -fsyntax-only -x c++ ${HEADER_FILE} ${ADDITIONAL_TEST_FLAGS} > ${DUMP_FILE}
+        COMMAND less -Sr ${DUMP_FILE}
+        COMMAND echo "ast-dump saved to '${DUMP_FILE}'"
+        )
     #
     # aaand compare the created tlb to the one stored in VCS. we assume that
     # the ones checked in are "good" so we just look if they are the same...
