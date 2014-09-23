@@ -1,4 +1,6 @@
 <?xml version="1.0"?>
 <typelib>
   <opaque name="/ns/myTestTypedef" size="0"/>
+  <opaque name="/ns/S2" size="0"/>
+  <opaque name="/ns/C2&lt;/float&gt;" size="0"/>
 </typelib>
