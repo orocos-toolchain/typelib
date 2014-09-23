@@ -22,11 +22,15 @@ namespace templates {
         };
     }
 
-    // just a testcase... is not detected, as there is not instantiation
+    // just a testcase... is not detected, as there is not instantiation. even
+    // if we name this type as "Opaque"!
     template<class T>
     class C1 {
         T A;
     };
+
+    // in able to find the template named in the opaque, we need an acutal instantiation
+    struct workaround {  templates::C1<double> foo; };
 
     namespace templateclasses {
 	class D1 {
