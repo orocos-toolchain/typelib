@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
 <typelib>
   <opaque name="/opaques/C1" size="0"/>
+  <opaque name="/opaques/typedef_of_C3" size="0"/>
 </typelib>
