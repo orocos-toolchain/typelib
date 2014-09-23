@@ -21,6 +21,13 @@ namespace opaques {
         struct cruft test;
     };
 
+    template<typename T>
+    class C3 {
+        T* another_float_pointer;
+    };
+
+    typedef C3<float> typedef_of_C3;
+
 }
 
 #endif /*TEST_HEADER_DATA_OPAQUES_H*/

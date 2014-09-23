@@ -17,4 +17,10 @@
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.h:7]]></metadata>
 
   </compound>
+  <opaque name="/opaques/typedef_of_C3" >
+  <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.h:29]]></metadata>
+
+  </opaque>
+  <alias name="/opaques/C3&lt;/float&gt;" source="/opaques/typedef_of_C3"/>
 </typelib>
