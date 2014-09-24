@@ -9,6 +9,9 @@
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.h:14]]></metadata>
 
   </opaque>
+  <opaque name="/opaques/C4&gt;float&lt;" >
+
+  </opaque>
   <compound name="/opaques/cruft" size="16" >
     <field name="data" type="/int32_t[4]" offset="0">
     
