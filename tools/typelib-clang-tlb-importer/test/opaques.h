@@ -21,12 +21,16 @@ namespace opaques {
         struct cruft test;
     };
 
+    // what works is giving the "typedef_of_C3" as opaque. what works _not_ is giving "C4<float" as opaque
     template<typename T>
     class C3 {
         T* another_float_pointer;
     };
-
     typedef C3<float> typedef_of_C3;
+    template<typename T>
+    class C4 {
+        T* another_float_pointer;
+    };
 
 }
 

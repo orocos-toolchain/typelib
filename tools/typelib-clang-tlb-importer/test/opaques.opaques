@@ -2,4 +2,14 @@
 <typelib>
   <opaque name="/opaques/C1" size="0"/>
   <opaque name="/opaques/typedef_of_C3" size="0"/>
+
+  <!-- HURRAY!!! finally I got the problematic case: Giving a _template_ as
+       opaque does not work. would have to use a typedefs version
+
+the line to reproduce:
+
+R mzenzes@mzenzes-u ~/TransTerrA/rock/base/orogen/types % clang -Xclang -ast-dump -fsyntax-only /home/mzenzes/TransTerrA/rock/install/include/base/geometry/Spline.hpp -I/home/mzenzes/TransTerrA/rock/install/include -I/usr/include/eigen3 | less -r
+
+ -->
+  <opaque name="/opaques/C4&gt;float&lt;" size="0"/>
 </typelib>
