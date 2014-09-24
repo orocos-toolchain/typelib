@@ -24,7 +24,8 @@
     <field name="tv_nsec" type="/int64_t" offset="8">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/usr/include/time.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
 
   </compound>
   <alias name="/unsigned int" source="/uint32_t"/>
@@ -36,7 +37,8 @@
     <field name="m1" type="/int32_t" offset="32">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.h:31]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.h:31]]></metadata>
 
   </compound>
   <compound name="/arrays/D1" size="2064" >
@@ -52,7 +54,8 @@
     <field name="a" type="/uint64_t" offset="2056">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.h:11]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.h:11]]></metadata>
 
   </compound>
 </typelib>

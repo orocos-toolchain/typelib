@@ -12,7 +12,8 @@
     <field name="A" type="/int32_t" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:15]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:15]]></metadata>
 
   </compound>
   <alias name="/ns/anotherIntTypedef" source="/int32_t"/>
@@ -20,6 +21,7 @@
   <alias name="/ns/intTypedefTypedef" source="/int32_t"/>
   <opaque name="/ns/myTestTypedef" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
+<metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:41]]></metadata>
 
   </opaque>
@@ -38,7 +40,8 @@
     <field name="D" type="/int32_t" offset="12">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:25]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.h:25]]></metadata>
 
   </compound>
 </typelib>
