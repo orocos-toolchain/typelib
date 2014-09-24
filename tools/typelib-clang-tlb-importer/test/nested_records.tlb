@@ -18,7 +18,8 @@
     <field name="tv_nsec" type="/int64_t" offset="8">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/usr/include/time.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
 
   </compound>
   <alias name="/unsigned int" source="/uint32_t"/>
@@ -29,14 +30,16 @@
     <field name="b" type="/uint32_t" offset="4">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h:9]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h:9]]></metadata>
 
   </compound>
   <compound name="/nested_records/S3" size="16" >
     <field name="t" type="/timespec" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h:21]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h:21]]></metadata>
 
   </compound>
   <compound name="/nested_records/S2" size="12" >
@@ -46,7 +49,8 @@
     <field name="n" type="/nested_records/S1" offset="4">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h:15]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.h:15]]></metadata>
 
   </compound>
 </typelib>

@@ -134,6 +134,9 @@ private:
     // and store in into the meta-data system of the given Typelib::Type
     void setMetaDataSourceFileLine(const clang::Decl *decl,
                                    Typelib::Type *type);
+    // add the chain of includes leading to this type as "orogen_include"
+    // entries to the metadatabase
+    void setMetaDataOrogenInclude(const clang::Decl *decl, Typelib::Type *type);
     // add all base-classes of the given clang::Decl into the meta-data of the
     // Typelib::Type
     void setMetaDataBaseClasses(const clang::Decl *decl, Typelib::Type *type);

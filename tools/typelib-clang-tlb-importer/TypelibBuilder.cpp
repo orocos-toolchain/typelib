@@ -219,9 +219,10 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
 
     // note the bases for inherited classes...
     setMetaDataBaseClasses(decl, opaqueType);
-
     // also note the filename for the decl in the metadata
     setMetaDataSourceFileLine(decl, opaqueType);
+    // and note if we have a non-trival include chain
+    setMetaDataOrogenInclude(decl, opaqueType);
 
     // and special care if this is a typedef: we have to note an alias from the
     // given opaque to the actual type.
@@ -443,6 +444,7 @@ TypelibBuilder::addEnum(const std::string &canonicalTypeName,
     }
 
     setMetaDataSourceFileLine(decl, enumVal);
+    setMetaDataOrogenInclude(decl, enumVal);
 
     registry.add(enumVal);
     
@@ -509,6 +511,7 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
     compound->setSize(typeSizeInBytes);
 
     setMetaDataSourceFileLine(decl, compound);
+    setMetaDataOrogenInclude(decl, compound);
     if(!addMembersOfClassToCompound(*compound, canonicalTypeName, decl))
     {
         delete compound;
@@ -634,8 +637,7 @@ TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl *decl) {
 void TypelibBuilder::setMetaDataSourceFileLine(const clang::Decl *decl,
                                                Typelib::Type *type) {
     const clang::SourceManager &sm = decl->getASTContext().getSourceManager();
-    const clang::SourceLocation &loc =
-        sm.getSpellingLoc(decl->getSourceRange().getBegin());
+    const clang::SourceLocation &loc = sm.getSpellingLoc(decl->getLocStart());
 
     // typelib needs the '/path/to/file:column' information
     std::ostringstream stream;
@@ -644,6 +646,29 @@ void TypelibBuilder::setMetaDataSourceFileLine(const clang::Decl *decl,
 
     type->getMetaData().add("source_file_line",
                             type->getPathToDefiningHeader());
+}
+
+void TypelibBuilder::setMetaDataOrogenInclude(const clang::Decl *decl,
+                                              Typelib::Type *type) {
+    const clang::SourceManager &sm = decl->getASTContext().getSourceManager();
+    const clang::SourceLocation &loc = sm.getSpellingLoc(decl->getLocStart());
+    // add a header from the include-chain as "orogen_include" entry to the
+    // metadata. this leads to possibly adding the main-header itself if the
+    // type is defined there, which would be mostly the same as
+    // "source_file_line". or it is the first non-main-header if the type is
+    // defined somewhere else.
+    clang::SourceLocation incLoc = loc;
+    clang::SourceLocation earliestLoc = loc;
+    while (incLoc.isValid() && !sm.isInMainFile(incLoc)) {
+        earliestLoc = incLoc;
+        incLoc = sm.getIncludeLoc(sm.getFileID(incLoc));
+    }
+    if (earliestLoc.isValid())
+        type->getMetaData().add("orogen_include",
+                                sm.getFilename(earliestLoc).str());
+    else
+        std::cout << "setMetaDataOrogenInclude() Warning: could not find "
+                     "suitable include-file for '" << type->getName() << "'\n";
 }
 
 void TypelibBuilder::setMetaDataBaseClasses(const clang::Decl *decl,

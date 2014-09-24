@@ -2,6 +2,7 @@
 <typelib>
   <opaque name="/Eigen/Vector3d" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
+<metadata key="orogen_include"><![CDATA[/usr/include/eigen3/Eigen/Core]]></metadata>
 <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:373]]></metadata>
 
   </opaque>
@@ -17,77 +18,88 @@
     <field name="array" type="/float[12]" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/DenseStorage.h:79]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/usr/include/eigen3/Eigen/Core]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/DenseStorage.h:79]]></metadata>
 
   </compound>
   <compound name="/Eigen/internal/plain_array&lt;/float,4,0,16&gt;" size="16" >
     <field name="array" type="/float[4]" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/DenseStorage.h:79]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/usr/include/eigen3/Eigen/Core]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/DenseStorage.h:79]]></metadata>
 
   </compound>
   <compound name="/Eigen/DenseStorage&lt;/float,12,3,4,0&gt;" size="48" >
     <field name="m_data" type="/Eigen/internal/plain_array&lt;/float,12,0,16&gt;" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/DenseStorage.h:121]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/usr/include/eigen3/Eigen/Core]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/DenseStorage.h:121]]></metadata>
 
   </compound>
   <compound name="/Eigen/DenseStorage&lt;/float,4,4,1,0&gt;" size="16" >
     <field name="m_data" type="/Eigen/internal/plain_array&lt;/float,4,0,16&gt;" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/DenseStorage.h:121]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/usr/include/eigen3/Eigen/Core]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/DenseStorage.h:121]]></metadata>
 
   </compound>
   <compound name="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;" size="48" >
     <field name="m_storage" type="/Eigen/DenseStorage&lt;/float,12,3,4,0&gt;" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:126]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/usr/include/eigen3/Eigen/Core]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:126]]></metadata>
 
   </compound>
   <compound name="/Eigen/Matrix&lt;/float,4,1,0,4,1&gt;" size="16" >
     <field name="m_storage" type="/Eigen/DenseStorage&lt;/float,4,4,1,0&gt;" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:126]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/usr/include/eigen3/Eigen/Core]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:126]]></metadata>
 
   </compound>
   <compound name="/Eigen/Quaternion&lt;/float,0&gt;" size="16" >
     <field name="m_coeffs" type="/Eigen/Matrix&lt;/float,4,1,0,4,1&gt;" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Geometry/Quaternion.h:225]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/usr/include/eigen3/Eigen/Geometry]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Geometry/Quaternion.h:225]]></metadata>
 
   </compound>
   <compound name="/templates/C1&lt;/float[4]&gt;" size="16" >
     <field name="A" type="/float[4]" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h:26]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h:26]]></metadata>
 
   </compound>
   <compound name="/templates/eigen/S1" size="48" >
     <field name="M" type="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h:12]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h:12]]></metadata>
 
   </compound>
   <compound name="/templates/eigen/S2" size="24" >
     <field name="V" type="/Eigen/Vector3d" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h:16]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h:16]]></metadata>
 
   </compound>
   <compound name="/templates/eigen/S3" size="16" >
     <field name="Q" type="/Eigen/Quaternion&lt;/float,0&gt;" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h:20]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h:20]]></metadata>
 
   </compound>
   <alias name="/templates/eigen/aMatrix" source="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;"/>
@@ -98,7 +110,8 @@
     <field name="m2" type="/int32_t" offset="16">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h:32]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.h:32]]></metadata>
 
   </compound>
 </typelib>
