@@ -31,7 +31,7 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
     # call the "typelib-clang-tlb-importer" tool, give it the header and pipe
     # stdout into the new tlb-file hardcoded hack for eigen ;-)
     if (${HEADER_NAME} STREQUAL "templates")
-        set(ADDITIONAL_TEST_FLAGS "-I/usr/include/eigen3")
+        set(ADDITIONAL_TEST_FLAGS "-isystem/usr/include/eigen3")
 
     endif (${HEADER_NAME} STREQUAL "templates")
     add_custom_target(create-test-${HEADER_NAME}.tlb
