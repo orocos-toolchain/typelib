@@ -42,8 +42,8 @@
     <field name="f" type="/uint16_t" offset="18">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/attribute_packed.h]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/attribute_packed.h:23]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/attribute_packed.hh]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/attribute_packed.hh:23]]></metadata>
 
   </compound>
   <compound name="/attribute_packed/S1" size="20" >
@@ -65,8 +65,8 @@
     <field name="f" type="/uint16_t" offset="18">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/attribute_packed.h]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/attribute_packed.h:13]]></metadata>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/attribute_packed.hh]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/attribute_packed.hh:13]]></metadata>
 
   </compound>
 </typelib>

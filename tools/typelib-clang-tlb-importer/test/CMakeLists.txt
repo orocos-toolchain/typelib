@@ -14,7 +14,7 @@ add_custom_target(check
     DEPENDS create-test-header)
 
 # now glob all test-headers
-file(GLOB TEST_HEADER_DATA "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+file(GLOB TEST_HEADER_DATA "${CMAKE_CURRENT_SOURCE_DIR}/*.hh")
 # and create a custom target for the corresponding tlb-file created from these headers
 foreach(HEADER_FILE ${TEST_HEADER_DATA})
     # we need the actual header-name
@@ -31,7 +31,8 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
     # call the "typelib-clang-tlb-importer" tool, give it the header and pipe
     # stdout into the new tlb-file hardcoded hack for eigen ;-)
     if (${HEADER_NAME} STREQUAL "templates")
-	set(ADDITIONAL_TEST_FLAGS "-I/usr/include/eigen3")
+        set(ADDITIONAL_TEST_FLAGS "-I/usr/include/eigen3")
+
     endif (${HEADER_NAME} STREQUAL "templates")
     add_custom_target(create-test-${HEADER_NAME}.tlb
         # if the "typelib-clang-tlb-importer" throws while parsing a header this is an error!
@@ -39,7 +40,7 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
             ${HEADER_FILE}
             ${OPAQUE_OPTION}
             ${TLB_OPTION}
-            -- -x c++ ${ADDITIONAL_TEST_FLAGS}
+            -- ${ADDITIONAL_TEST_FLAGS}
         DEPENDS typelib-clang-tlb-importer
         )
     # add it to the target
@@ -48,7 +49,7 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
     set(DUMP_FILE "${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.dump")
     add_custom_target(create-test-${HEADER_NAME}.dump
         COMMAND clang
-            -Xclang -ast-dump -fsyntax-only -x c++ ${HEADER_FILE} ${ADDITIONAL_TEST_FLAGS} > ${DUMP_FILE}
+            -Xclang -ast-dump -fsyntax-only ${HEADER_FILE} ${ADDITIONAL_TEST_FLAGS} > ${DUMP_FILE}
         COMMAND less -Sr ${DUMP_FILE}
         COMMAND echo "ast-dump saved to '${DUMP_FILE}'"
         )
