@@ -25,7 +25,6 @@ module Typelib
             # FIXME: see above
             tmpReg = File.open("#{ENV["AUTOPROJ_CURRENT_ROOT"]}/registry", "w+")
             
-            puts("clang.rb: Loading options are #{options}")
             include_dirs = options[:include_paths]
             include_path = include_dirs.map { |d| "-I #{d}" }.join(" ")
 
@@ -35,10 +34,11 @@ module Typelib
             # install-folder via PATH.
             finalCmd = "typelib-clang-tlb-importer -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++"
 
-            puts("clang.rb: Cmd is : #{finalCmd}")
-            
-            #call extractor
+            # call extractor tool
             retVal = system(finalCmd)
+            if retval != true
+                raise InternalError, "typelib-clang-tlb-importer failed!"
+            end
             
             result = Registry.from_xml(tmpReg.read())
             
