@@ -8,6 +8,7 @@ class TC_MetaData < Minitest::Test
         @type = registry.create_compound '/Test' do |c|
             c.add 'field', '/double'
         end
+        super
     end
     def test_it_supports_utf8_as_encoding
         metadata = Typelib::MetaData.new

@@ -187,19 +187,19 @@ class TC_Registry < Minitest::Test
 
     def test_create_enum
         reg = make_registry
-        t = reg.create_enum('/NewEnum') do |t|
-            t.VAL0
-            t.VAL1 = -1
-            t.VAL2
+        t = reg.create_enum('/NewEnum') do |enum_t|
+            enum_t.VAL0
+            enum_t.VAL1 = -1
+            enum_t.VAL2
         end
 
         assert_equal({'VAL0' => 0, 'VAL1' => -1, 'VAL2' => 0}, t.keys)
 
         assert_raises(ArgumentError) do
-            reg.create_enum('NewEnum') { |t| t.VAL0 }
+            reg.create_enum('NewEnum') { |enum_t| enum_t.VAL0 }
         end
         assert_raises(ArgumentError) do
-            reg.create_enum('/NewEnum') { |t| }
+            reg.create_enum('/NewEnum') { |enum_t| }
         end
     end
 
