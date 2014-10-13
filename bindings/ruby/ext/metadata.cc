@@ -37,17 +37,21 @@ static VALUE metadata_keys(VALUE self)
     return result;
 }
 
-static VALUE metadata_set(VALUE self, VALUE key, VALUE value)
+static VALUE metadata_add(int argc, VALUE* argv, VALUE self)
 {
-    MetaData& metadata = rb2cxx::object<MetaData>(self);
-    metadata.set(StringValuePtr(key), StringValuePtr(value));
-    return Qnil;
-}
+    VALUE key;
+    VALUE values;
+    rb_scan_args(argc, argv, "1*", &key, &values);
 
-static VALUE metadata_add(VALUE self, VALUE key, VALUE value)
-{
     MetaData& metadata = rb2cxx::object<MetaData>(self);
-    metadata.add(StringValuePtr(key), StringValuePtr(value));
+    std::string rb_key(StringValuePtr(key));
+
+    long length = RARRAY_LEN(values);
+    for (long i = 0; i < length; ++i)
+    {
+        VALUE val = rb_ary_entry(values, i);
+        metadata.add(rb_key, StringValuePtr(val));
+    }
     return Qnil;
 }
 
@@ -79,8 +83,7 @@ void typelib_ruby::Typelib_init_metadata()
     rb_define_alloc_func(cMetaData, metadata_alloc);
 
     rb_define_method(cMetaData, "get", RUBY_METHOD_FUNC(metadata_get), 1);
-    rb_define_method(cMetaData, "set", RUBY_METHOD_FUNC(metadata_set), 2);
-    rb_define_method(cMetaData, "add", RUBY_METHOD_FUNC(metadata_add), 2);
+    rb_define_method(cMetaData, "add", RUBY_METHOD_FUNC(metadata_add), -1);
     rb_define_method(cMetaData, "clear", RUBY_METHOD_FUNC(metadata_clear), -1);
     rb_define_method(cMetaData, "keys", RUBY_METHOD_FUNC(metadata_keys), 0);
     enc_utf8 = rb_enc_find("utf-8");

@@ -24,12 +24,23 @@ class TC_MetaData < Minitest::Test
         metadata.set('k', 'v')
         assert_equal ['v'], metadata.get('k')
     end
+    def test_it_can_set_multiple_values_for_a_key_if_called_with_multiple_arguments
+        metadata = Typelib::MetaData.new
+        metadata.set('k', 'v0', 'v1')
+        assert_equal ['v0', 'v1'], metadata.get('k')
+    end
     def test_it_can_add_values_to_a_key
         metadata = Typelib::MetaData.new
         metadata.add('k', 'v0')
         assert_equal ['v0'], metadata.get('k')
         metadata.add('k', 'v1')
         assert_equal ['v0', 'v1'], metadata.get('k')
+    end
+    def test_it_can_add_multiple_values_to_a_key_if_called_with_multiple_arguments
+        metadata = Typelib::MetaData.new
+        metadata.set('k', 'v')
+        metadata.add('k', 'v0', 'v1')
+        assert_equal ['v', 'v0', 'v1'], metadata.get('k')
     end
     def test_it_can_clear_values_for_a_key
         metadata = Typelib::MetaData.new
