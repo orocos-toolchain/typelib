@@ -108,7 +108,7 @@ module Typelib
 
         # @deprecated
         #
-        # Replaced by {recursive_dependencies}
+        # Replaced by {direct_dependencies}
         def self.dependencies
             direct_dependencies
         end
