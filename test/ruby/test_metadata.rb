@@ -29,6 +29,26 @@ class TC_MetaData < Minitest::Test
         metadata.set('k', 'v0', 'v1')
         assert_equal ['v0', 'v1'], metadata.get('k')
     end
+    def test_it_includes_the_key_of_a_key_set_with_an_empty_array
+        metadata = Typelib::MetaData.new
+        metadata.set('k')
+        assert metadata.include?('k')
+    end
+    def test_it_includes_the_key_of_a_set_key
+        metadata = Typelib::MetaData.new
+        metadata.set('k', 'a')
+        assert metadata.include?('k')
+    end
+    def test_it_does_not_include_a_key_that_was_never_set
+        metadata = Typelib::MetaData.new
+        assert !metadata.include?('k')
+    end
+    def test_it_does_not_include_a_cleared_key
+        metadata = Typelib::MetaData.new
+        metadata.set('k', 'a')
+        metadata.clear('k')
+        assert !metadata.include?('k')
+    end
     def test_it_can_add_values_to_a_key
         metadata = Typelib::MetaData.new
         metadata.add('k', 'v0')
