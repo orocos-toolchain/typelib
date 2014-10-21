@@ -47,7 +47,7 @@ describe Typelib::ArrayType do
         end
         it "returns the pack code as well as the packed data if :pack_simple_arrays is true and the array elements are numerics" do
             value = array.to_simple_value(pack_simple_arrays: true)
-            assert_equal ruby_array, value[:data].unpack("#{value[:pack_code]}*")
+            assert_equal ruby_array, Base64.strict_decode64(value[:data]).unpack("#{value[:pack_code]}*")
         end
     end
 end

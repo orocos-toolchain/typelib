@@ -370,7 +370,7 @@ module Typelib
             if options[:pack_simple_arrays] && element_t.respond_to?(:pack_code)
                 Hash[pack_code: element_t.pack_code,
                      size: size,
-                     data: to_byte_array[8..-1]]
+                     data: Base64.strict_encode64(to_byte_array[8..-1])]
             else
                 raw_each.map { |v| v.to_simple_value(options) }
             end
