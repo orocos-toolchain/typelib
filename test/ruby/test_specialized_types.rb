@@ -205,13 +205,13 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_compound_method_overloading
-        t = registry.create_compound '/CompoundWithOverloadingClashes' do |t|
+        t = registry.create_compound '/CompoundWithOverloadingClashes' do |compound_t|
             # should not be overloaded on the class, but OK on the instance
-            t.name = '/int'
+            compound_t.name = '/int'
             # should not be overloaded on the instance, but OK on the class
-            t.cast = '/int'
+            compound_t.cast = '/int'
             # should be overloaded in both cases
-            t.object_id = '/int'
+            compound_t.object_id = '/int'
         end
 
         v = t.new
@@ -552,7 +552,6 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_container_size
-        reg = make_registry
         type = CXXRegistry.new.create_container "/std/vector", '/double'
         value = type.new
         assert_equal 0, value.size
@@ -632,12 +631,6 @@ class TC_SpecializedTypes < Minitest::Test
 
         value.value = false
         assert_equal false, value.value
-    end
-
-    def test_char
-        reg = make_registry
-
-        type = reg.get "BoolHandling"
     end
 
     def test_vector_complex_get_returns_same_wrapper

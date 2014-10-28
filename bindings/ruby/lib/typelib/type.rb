@@ -108,7 +108,7 @@ module Typelib
 
         # @deprecated
         #
-        # Replaced by {recursive_dependencies}
+        # Replaced by {direct_dependencies}
         def self.dependencies
             direct_dependencies
         end
@@ -414,7 +414,7 @@ module Typelib
             #
             # will return the C++ name for the given type
 	    def full_name(separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
-		result = namespace(separator, remove_leading) + basename(separator)
+		namespace(separator, remove_leading) + basename(separator)
 	    end
 
 	    def to_s; "#<#{superclass.name}: #{name}>" end

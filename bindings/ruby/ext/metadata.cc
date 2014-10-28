@@ -15,6 +15,12 @@ VALUE cxx2rb::metadata_wrap(MetaData& metadata)
     return Data_Wrap_Struct(cMetaData, 0, 0, &metadata);
 }
 
+static VALUE metadata_include_p(VALUE self, VALUE key)
+{
+    MetaData& metadata = rb2cxx::object<MetaData>(self);
+    return metadata.include(StringValuePtr(key)) ? Qtrue : Qfalse;
+}
+
 static VALUE metadata_get(VALUE self, VALUE key)
 {
     MetaData& metadata = rb2cxx::object<MetaData>(self);
@@ -37,17 +43,23 @@ static VALUE metadata_keys(VALUE self)
     return result;
 }
 
-static VALUE metadata_set(VALUE self, VALUE key, VALUE value)
+static VALUE metadata_add(int argc, VALUE* argv, VALUE self)
 {
-    MetaData& metadata = rb2cxx::object<MetaData>(self);
-    metadata.set(StringValuePtr(key), StringValuePtr(value));
-    return Qnil;
-}
+    VALUE key;
+    VALUE values;
+    rb_scan_args(argc, argv, "1*", &key, &values);
 
-static VALUE metadata_add(VALUE self, VALUE key, VALUE value)
-{
     MetaData& metadata = rb2cxx::object<MetaData>(self);
-    metadata.add(StringValuePtr(key), StringValuePtr(value));
+    std::string rb_key(StringValuePtr(key));
+
+    MetaData::Values new_values;
+    long length = RARRAY_LEN(values);
+    for (long i = 0; i < length; ++i)
+    {
+        VALUE val = rb_ary_entry(values, i);
+        new_values.insert(StringValuePtr(val));
+    }
+    metadata.add(rb_key, new_values);
     return Qnil;
 }
 
@@ -78,9 +90,9 @@ void typelib_ruby::Typelib_init_metadata()
     cMetaData   = rb_define_class_under(mTypelib, "MetaData", rb_cObject);
     rb_define_alloc_func(cMetaData, metadata_alloc);
 
+    rb_define_method(cMetaData, "include?", RUBY_METHOD_FUNC(metadata_include_p), 1);
     rb_define_method(cMetaData, "get", RUBY_METHOD_FUNC(metadata_get), 1);
-    rb_define_method(cMetaData, "set", RUBY_METHOD_FUNC(metadata_set), 2);
-    rb_define_method(cMetaData, "add", RUBY_METHOD_FUNC(metadata_add), 2);
+    rb_define_method(cMetaData, "add", RUBY_METHOD_FUNC(metadata_add), -1);
     rb_define_method(cMetaData, "clear", RUBY_METHOD_FUNC(metadata_clear), -1);
     rb_define_method(cMetaData, "keys", RUBY_METHOD_FUNC(metadata_keys), 0);
     enc_utf8 = rb_enc_find("utf-8");

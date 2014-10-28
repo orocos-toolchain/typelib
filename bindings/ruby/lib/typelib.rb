@@ -239,10 +239,10 @@ module Typelib
             pp.text "type mismatch when trying to convert #{value} to #{type}"
             pp.breakable
             pp.text "the value's definition is "
-            value.class.pretty_print(pp)
+            value.class.pretty_print(pp, true)
             pp.breakable
             pp.text "the target type's definition is "
-            type.pretty_print(pp)
+            type.pretty_print(pp, true)
         end
     end
 

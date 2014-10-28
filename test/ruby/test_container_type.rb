@@ -34,7 +34,6 @@ describe Typelib::ArrayType do
         attr_reader :ruby_value, :value
         before do
             value_t = registry.create_container '/std/vector', '/int32_t'
-            element_t = value_t.deference
             @ruby_value = (1..10).to_a
             @value = Typelib.from_ruby(ruby_value, value_t)
         end
