@@ -618,10 +618,11 @@ static VALUE vector_contained_memory_id(VALUE self)
 static VALUE vector_raw_memcpy(VALUE self,VALUE _source,VALUE _size)
 {
     Value container_v = rb2cxx::object<Value>(self);
+    Container const& container_t = static_cast<Container const&>(container_v.getType());
     bool is_memcpy = false;
     try
     {
-        MemoryLayout ops = Typelib::layout_of(container_v.getType());
+        MemoryLayout ops = Typelib::layout_of(container_t.getIndirection());
         is_memcpy = (ops.size() == 2 && ops[0] == MemLayout::FLAG_MEMCPY);
     }
     catch(std::runtime_error) {/* No layout for this type.*/}
