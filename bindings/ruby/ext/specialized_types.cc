@@ -613,7 +613,10 @@ static VALUE vector_contained_memory_id(VALUE self)
 
 /*
  * call-seq:
- *  vector.raw_memcopy(source,size) => nil
+ *  vector.raw_memcpy(source,size) => nil
+ *
+ * @param [Integer] source the source raw address
+ * @param [Integer] size the number of bytes to be copied
  */
 static VALUE vector_raw_memcpy(VALUE self,VALUE _source,VALUE _size)
 {
