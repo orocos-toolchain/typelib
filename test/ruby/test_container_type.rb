@@ -30,6 +30,19 @@ describe Typelib::ArrayType do
         end
     end
 
+    describe "#<<" do
+        attr_reader :value_t
+        before do
+            @value_t = registry.create_container '/std/vector', '/int32_t'
+        end
+        it "should accept being chained" do
+            value = value_t.new
+            value << 0 << 1
+            assert_equal 2, value.size
+            assert_equal [0, 1], value.to_a
+        end
+    end
+
     describe "#to_simple_value" do
         attr_reader :ruby_value, :value
         before do
