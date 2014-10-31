@@ -628,9 +628,12 @@ static VALUE vector_raw_memcpy(VALUE self,VALUE _source,VALUE _size)
     catch(std::runtime_error) {/* No layout for this type.*/}
     if(!is_memcpy)
         rb_raise(rb_eTypeError, "memcpy is not supported for this type");
+    unsigned int element_size = container_t.getIndirection().getSize();
+    unsigned int size = NUM2UINT(_size);
+    if (size % element_size)
+        rb_raise(rb_eArgError, "provided size in bytes (%u) is not a round number of elements for vectors of type %s (each element is %u bytes in size)", size, container_t.getName().c_str(), element_size);
 
     std::vector<uint8_t> *vector = reinterpret_cast<std::vector<uint8_t>*>(container_v.getData());
-    size_t size = NUM2UINT(_size);
     const void *source = reinterpret_cast<const void*>(NUM2ULL(_source));
     vector->resize(size);
     memcpy(&(*vector)[0],source,size);

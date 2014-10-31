@@ -76,6 +76,12 @@ describe Typelib::ArrayType do
             assert_equal 0, v1[0]
             assert_equal 1, v1[1]
         end
+        it "should validate its size argument to be a fixed number of elements" do
+            v = value_t.new
+            assert_raises(ArgumentError) do
+                v.raw_memcpy(0, 7)
+            end
+        end
     end
 end
 
