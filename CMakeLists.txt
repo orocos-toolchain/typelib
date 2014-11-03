@@ -40,6 +40,7 @@ ENDIF(NOT LibXML_FOUND)
 
 CONFIGURE_FILE(typelib.pc.in typelib.pc @ONLY)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/typelib.pc DESTINATION lib/pkgconfig)
+INSTALL(FILES package.xml DESTINATION share/typelib)
 
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/typelib)
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_SOURCE_DIR})
@@ -71,3 +72,8 @@ ADD_SUBDIRECTORY(lang/tlb)
 ADD_SUBDIRECTORY(lang/idl)
 ADD_SUBDIRECTORY(typelib)
 
+# Install an env-hook if catkin is found
+find_package(catkin QUIET)
+if(catkin_FOUND)
+  catkin_add_env_hooks(00.typelib SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+endif()
