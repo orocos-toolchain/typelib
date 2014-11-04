@@ -5,6 +5,13 @@ module Typelib
     # See the Typelib module documentation for an overview about how types are
     # values are represented.
     class EnumType < Type
+        # (see Type#to_simple_value)
+        #
+        # Enums are returned as their symbolic representation (a string)
+        def to_simple_value(options = Hash.new)
+            to_ruby.to_s
+        end
+
         def self.from_ruby(value)
             v = new
             v.typelib_from_ruby(value)
@@ -12,8 +19,27 @@ module Typelib
         end
 
         class << self
-	    # A value => key hash for each enumeration values
-            attr_reader :values
+            # Returns the description of a type using only simple ruby objects
+            # (Hash, Array, Numeric and String).
+            # 
+            #    { 'name' => TypeName,
+            #      'class' => 'EnumType',
+            #      # The content of 'element' is controlled by the :recursive option
+            #      'values' => [{ 'name' => NameOfValue,
+            #                     'value' => ValueOfValue }],
+            #      # Only if :layout_info is true
+            #      'size' => SizeOfTypeInBytes 
+            #    }
+            #
+            # @option (see Type#to_h)
+            # @return (see Type#to_h)
+            def to_h(options = Hash.new)
+                info = super
+                info[:values] = keys.map do |n, v|
+                    Hash[name: n, value: v]
+                end
+                info
+            end
 
             def pretty_print(pp, verbose = false) # :nodoc:
                 super

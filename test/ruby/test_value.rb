@@ -1,5 +1,4 @@
 require 'typelib/test'
-require BUILDDIR + '/ruby/libtest_ruby'
 
 class TC_Value < Minitest::Test
     include Typelib

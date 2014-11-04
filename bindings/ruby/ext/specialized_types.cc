@@ -387,8 +387,9 @@ static VALUE numeric_type_unsigned_p(VALUE self)
 	case Numeric::UInt: return Qtrue;
 	case Numeric::Float:
 	    rb_raise(rb_eArgError, "not an integral type");
+        default:
+            return Qnil;
     }
-    return Qnil; // never reached
 }
 
 

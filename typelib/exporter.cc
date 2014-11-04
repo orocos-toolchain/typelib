@@ -117,15 +117,6 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
     end(stream, registry);
 }
 
-bool Exporter::save( std::ostream& stream, Registry const& registry )
-{
-    utilmm::config_set config;
-    try { save(stream, config, registry); }
-    catch(UnsupportedType) { return false; }
-    catch(ExportError) { return false; }
-    return true;
-}
-
 void Exporter::begin(std::ostream& stream, Registry const& registry) {}
 void Exporter::end  (std::ostream& stream, Registry const& registry) {}
 

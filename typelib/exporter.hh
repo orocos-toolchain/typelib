@@ -70,15 +70,6 @@ namespace Typelib
 	    , utilmm::config_set const& config
             , Registry const& registry );
 
-	/** \overload
-	 * This version of \c save is provided for backward-compatibility only
-	 *
-	 * @return true if the export has succeeded, false otherwise
-	 */
-        virtual bool save
-            ( std::ostream& stream
-            , Registry const& registry );
-
         /** Serialize one type in \c stream. It is called by Registry::save(ostream&, Registry const&) 
 	 * @arg stream	the stream to write to
 	 * @arg type	the type to be serialized

@@ -67,6 +67,8 @@ bool TypeDisplayVisitor::visit_(Numeric const& type)
     case Numeric::Float:
         name = "float";
         break;
+    default:
+        throw UnsupportedType(type, "unsupported numeric category");
     };
 
     m_stream

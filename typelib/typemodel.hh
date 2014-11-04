@@ -24,6 +24,8 @@ namespace Typelib
     private:
         Map m_values;
     public:
+        /** Tests whether there is at least one value for the given key */
+        bool include(std::string const& key) const;
 
         /** Returns the key => values map for all values stored in this metadata
          * object
@@ -34,6 +36,12 @@ namespace Typelib
          * removing all previously known value(s) for that key
          */
         void set(std::string const& key, std::string const& value);
+
+        /** Adds a set of metadata values for the given key, Existing values are
+         * retained. The set can be empty in which case include(key) will return
+         * true but get(key) will return an empty set.
+         */
+        void add(std::string const& key, Values const& value);
 
         /** Adds a metadata value for the given key, Existing values are
          * retained.
@@ -72,9 +80,9 @@ namespace Typelib
             Enum   ,
             Compound,
             Opaque,
-            Container
+            Container,
+            NumberOfValidCategories
         };
-        static const int ValidCategories = Compound + 1;
         
     private:
         std::string m_name;
@@ -271,12 +279,13 @@ namespace Typelib
     {
     public:
         enum NumericCategory
-        { 
-	    SInt = Type::ValidCategories, /// signed integer
-	    UInt,			  /// unsigned integer
-	    Float			  /// floating point
-	};
-        static const int ValidCategories = Float + 1;
+        {
+            SInt = Type::NumberOfValidCategories, /// signed integer
+            UInt,                                 /// unsigned integer
+            Float,                                /// floating point
+            NumberOfValidCategories /// overall number of valid categories,
+                                    /// including the ones in the base-class
+        };
 
 	/** The category of this numeric type */
         NumericCategory getNumericCategory() const;
@@ -648,7 +657,7 @@ namespace Typelib
         typedef Container const& (*ContainerFactory)(Registry& r, std::list<Type const*> const& base_type);
         typedef std::map<std::string, ContainerFactory> AvailableContainers;
 
-        static AvailableContainers availableContainers();
+        static const AvailableContainers& availableContainers();
         static void registerContainer(std::string const& name, ContainerFactory factory);
         static Container const& createContainer(Registry& r, std::string const& name, Type const& on);
         static Container const& createContainer(Registry& r, std::string const& name, std::list<Type const*> const& on);
