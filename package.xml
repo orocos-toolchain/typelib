@@ -14,29 +14,25 @@
   <license>CeCILL-B (BSD-like)</license>
 
   <buildtool_depend>cmake</buildtool_depend>
-  <export>
-    <build_type>
-      cmake
-    </build_type>
-  </export>
+  <run_depend>catkin</run_depend>
 
-  <build_depend>utilmm</build_depend>
   <build_depend>utilrb</build_depend>
   <build_depend>gccxml</build_depend>
   <build_depend>boost</build_depend>
   <build_depend>libxml2</build_depend>
   <build_depend>facets</build_depend>
-  <build_depend>nokogiri</build_depend>
-  <build_depend>libxslt</build_depend>
 
-  <run_depend>utilmm</run_depend>
   <run_depend>utilrb</run_depend>
   <run_depend>gccxml</run_depend>
   <run_depend>boost</run_depend>
   <run_depend>libxml2</run_depend>
   <run_depend>facets</run_depend>
-  <run_depend>nokogiri</run_depend>
-  <run_depend>libxslt</run_depend>
+
+  <export>
+    <build_type>
+      cmake
+    </build_type>
+  </export>
   
 </package>
 
