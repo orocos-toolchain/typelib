@@ -1,6 +1,6 @@
 require 'typelib/test'
 
-describe Typelib::ArrayType do
+describe Typelib::ContainerType do
     attr_reader :registry
     before do
         @registry = Typelib::CXXRegistry.new
@@ -27,6 +27,19 @@ describe Typelib::ArrayType do
                                 element: element_t.to_h(layout_info: false)]
                 assert_equal expected, container_t.to_h(layout_info: false, recursive: true)
             end
+        end
+    end
+
+    describe "#<<" do
+        attr_reader :value_t
+        before do
+            @value_t = registry.create_container '/std/vector', '/int32_t'
+        end
+        it "should accept being chained" do
+            value = value_t.new
+            value << 0 << 1
+            assert_equal 2, value.size
+            assert_equal [0, 1], value.to_a
         end
     end
 

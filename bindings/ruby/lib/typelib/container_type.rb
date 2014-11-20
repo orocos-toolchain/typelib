@@ -264,6 +264,7 @@ module Typelib
                     do_push(Typelib.from_ruby(v, element_t))
                 end
             end
+            self
         end
 
         def raw_each

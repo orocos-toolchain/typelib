@@ -613,23 +613,34 @@ static VALUE vector_contained_memory_id(VALUE self)
 
 /*
  * call-seq:
- *  vector.raw_memcopy(source,size) => nil
+ *  vector.raw_memcpy(source,size) => nil
+ *
+ * @param [Integer] source the source raw address
+ * @param [Integer] size the number of bytes to be copied
  */
 static VALUE vector_raw_memcpy(VALUE self,VALUE _source,VALUE _size)
 {
     Value container_v = rb2cxx::object<Value>(self);
+    Container const& container_t = static_cast<Container const&>(container_v.getType());
     bool is_memcpy = false;
+    bool no_layout = false;
     try
     {
-        MemoryLayout ops = Typelib::layout_of(container_v.getType());
+        MemoryLayout ops = Typelib::layout_of(container_t.getIndirection());
         is_memcpy = (ops.size() == 2 && ops[0] == MemLayout::FLAG_MEMCPY);
     }
-    catch(std::runtime_error) {/* No layout for this type.*/}
+    catch(std::runtime_error) { no_layout = true; }
+    if(no_layout)
+        rb_raise(rb_eTypeError, "no layout available for elements of %s", container_t.getName().c_str());
     if(!is_memcpy)
-        rb_raise(rb_eTypeError, "memcpy is not supported for this type");
+        rb_raise(rb_eTypeError, "raw_memcpy is not supported for vectors of type %s", container_t.getName().c_str());
+
+    unsigned int element_size = container_t.getIndirection().getSize();
+    unsigned int size = NUM2UINT(_size);
+    if (size % element_size)
+        rb_raise(rb_eArgError, "provided size in bytes (%u) is not a round number of elements for vectors of type %s (each element is %u bytes in size)", size, container_t.getName().c_str(), element_size);
 
     std::vector<uint8_t> *vector = reinterpret_cast<std::vector<uint8_t>*>(container_v.getData());
-    size_t size = NUM2UINT(_size);
     const void *source = reinterpret_cast<const void*>(NUM2ULL(_source));
     vector->resize(size);
     memcpy(&(*vector)[0],source,size);
