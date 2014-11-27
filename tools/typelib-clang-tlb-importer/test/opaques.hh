@@ -1,7 +1,7 @@
 #ifndef TEST_HEADER_DATA_OPAQUES_H
 #define TEST_HEADER_DATA_OPAQUES_H
 
-namespace opaques {
+namespace ns_opaques {
 
     // so that we have a database, no matter what
     struct cruft {

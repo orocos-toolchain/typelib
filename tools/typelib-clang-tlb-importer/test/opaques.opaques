@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <typelib>
-  <opaque name="/opaques/C1" size="0"/>
-  <opaque name="/opaques/typedef_of_C3" size="0"/>
+  <opaque name="/ns_opaques/C1" size="0"/>
+  <opaque name="/ns_opaques/typedef_of_C3" size="0"/>
 
   <!-- HURRAY!!! finally I got the problematic case: Giving a _template_ as
-       opaque does not work. would have to use a typedefs version
+       opaque does not work. would have to use a typedef'ed version
 
 the line to reproduce:
 
 R mzenzes@mzenzes-u ~/TransTerrA/rock/base/orogen/types % clang -Xclang -ast-dump -fsyntax-only /home/mzenzes/TransTerrA/rock/install/include/base/geometry/Spline.hpp -I/home/mzenzes/TransTerrA/rock/install/include -I/usr/include/eigen3 | less -r
 
  -->
-  <opaque name="/opaques/C4&gt;float&lt;" size="0"/>
+  <opaque name="/ns_opaques/C4&lt;/float&gt;" size="0"/>
 </typelib>
