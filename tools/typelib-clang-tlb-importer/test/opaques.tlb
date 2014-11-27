@@ -4,15 +4,15 @@
   
   </numeric>
   <alias name="/int" source="/int32_t"/>
-  <opaque name="/opaques/C1" >
+  <opaque name="/ns_opaques/C1" >
   <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:14]]></metadata>
 
   </opaque>
-  <opaque name="/opaques/C4&gt;float&lt;" >
+  <opaque name="/ns_opaques/C4&gt;float&lt;" >
 
   </opaque>
-  <compound name="/opaques/cruft" size="16" >
+  <compound name="/ns_opaques/cruft" size="16" >
     <field name="data" type="/int32_t[4]" offset="0">
     
     </field>
@@ -20,10 +20,10 @@
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:7]]></metadata>
 
   </compound>
-  <opaque name="/opaques/typedef_of_C3" >
+  <opaque name="/ns_opaques/typedef_of_C3" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:29]]></metadata>
 
   </opaque>
-  <alias name="/opaques/C3&lt;/float&gt;" source="/opaques/typedef_of_C3"/>
+  <alias name="/ns_opaques/C3&lt;/float&gt;" source="/ns_opaques/typedef_of_C3"/>
 </typelib>
