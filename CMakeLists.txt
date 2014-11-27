@@ -6,6 +6,8 @@ PROJECT(typelib)
 SET(PROJECT_VERSION 1.1)
 SET(API_VERSION 1)
 
+add_definitions(-g)
+
 IF(APPLE)
   set(CMAKE_SHARED_MODULE_SUFFIX ".bundle")
 ENDIF(APPLE)
