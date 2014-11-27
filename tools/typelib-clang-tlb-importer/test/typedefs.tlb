@@ -8,6 +8,14 @@
   
   </numeric>
   <alias name="/unsigned char" source="/uint8_t"/>
+  <opaque name="/ns/C2&lt;/float&gt;" >
+  
+  </opaque>
+  <opaque name="/ns/S2" >
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.hh]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.hh:47]]></metadata>
+
+  </opaque>
   <compound name="/ns/aClass" size="4" >
     <field name="A" type="/int32_t" offset="0">
     
@@ -22,7 +30,7 @@
   <opaque name="/ns/myTestTypedef" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
 <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.hh]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.hh:42]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.hh:43]]></metadata>
 
   </opaque>
   <alias name="/ns/S1" source="/ns/myTestTypedef"/>
