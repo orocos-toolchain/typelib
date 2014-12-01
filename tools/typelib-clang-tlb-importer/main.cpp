@@ -154,7 +154,7 @@ int main(int argc, const char **argv) {
              it != builder.getRegistry().end(); it++) {
             if (it->getCategory() == Typelib::Type::Opaque) {
                 OpaqueFinder.addMatcher(
-                    namedDecl(hasName(typelibtoCxxName(it->getName())))
+                    namedDecl(hasName(typelibToCxxName(it->getName())))
                         .bind("opaque"),
                     &opaqueCallback);
             }
