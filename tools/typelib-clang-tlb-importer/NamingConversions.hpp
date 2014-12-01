@@ -39,6 +39,6 @@ std::string cxxToTypelibName(const std::string& cxxName);
  * @param typelibName the name as used in the typelib-side of the portal
  * @return the string converted to c++ lingo
  */
-std::string typelibtoCxxName(const std::string& typelibName);
+std::string typelibToCxxName(const std::string& typelibName);
 
 #endif /*NAMINGCONVERSIONS_H*/

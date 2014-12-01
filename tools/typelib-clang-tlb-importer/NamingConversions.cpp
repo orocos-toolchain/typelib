@@ -123,7 +123,7 @@ std::string cxxToTypelibName(const clang::QualType &type) {
     return cxxToTypelibName(type.getAsString(suppressTagKeyword));
 }
 
-std::string typelibtoCxxName(const std::string& typelibName)
+std::string typelibToCxxName(const std::string& typelibName)
 {
     std::string cxxName = stringFromToReplace(typelibName, "/", "::");
 
