@@ -92,6 +92,7 @@ add_executable(typelib-clang-tlb-importer
     main.cpp
     TypelibBuilder.cpp
     NamingConversions.cpp
+    IgnoredOrRenamedTypes.cpp
     )
 
 

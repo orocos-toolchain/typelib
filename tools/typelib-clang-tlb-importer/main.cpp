@@ -29,6 +29,7 @@
 
 #include "TypelibBuilder.hpp"
 #include "NamingConversions.hpp"
+#include "IgnoredOrRenamedTypes.hpp"
 
 #include "typelib/registryiterator.hh"
 
@@ -113,6 +114,9 @@ static llvm::cl::opt<std::string> tlbSavePath(
 
 int main(int argc, const char **argv) {
     llvm::sys::PrintStackTraceOnErrorSignal();
+
+    IgnoredOrRenamedType::printTemplateArgsToBeIgnored();
+    IgnoredOrRenamedType::printTypeRenames();
 
     // optparsing {{{1
 
