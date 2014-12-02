@@ -11,7 +11,7 @@
   <container  name="/std/string" of="/int8_t" size="8" kind="/std/string" >
   
   </container>
-  <alias name="/std/basic_string&lt;/char,/std/char_traits&lt;/char&gt;,/std/allocator&lt;/char&gt;&gt;" source="/std/string"/>
+  <alias name="/std/basic_string&lt;/char&gt;" source="/std/string"/>
   <compound name="/strings/C3" size="12" >
     <field name="arr" type="/int32_t[3]" offset="0">
     
