@@ -159,10 +159,48 @@ int main(int argc, const char **argv) {
                 std::string cxxname(typelibToCxxName(it->getName()));
                 std::cout << "Registering Opaque '" << it->getName()
                           << "' with supposed c++ name '" << cxxname << "'\n";
-                OpaqueFinder.addMatcher(
-                    namedDecl(hasName(cxxname))
-                        .bind("opaque"),
-                    &opaqueCallback);
+
+                size_t pos = cxxname.find_first_of("<");
+                // if it is no template...
+                if (pos == std::string::npos) {
+                    OpaqueFinder.addMatcher(
+                        namedDecl(hasName(cxxname))
+                            .bind("opaque"),
+                        &opaqueCallback);
+
+                } else {
+                    // HACK: make it possible to give an opaque directly for a
+                    // template specialization in the form "/ns/type</int>" --
+                    // without an intermediary typedef.
+                    //
+                    // do this by looking for _all_ template specializations of
+                    // "/ns/type".
+                    //
+                    // will trigger too much hits in the matcher: for each opaque
+                    // which is a template specialization we will additionally look
+                    // for the name without template-parameters. inside the
+                    // opaqueCallback the matched decl of the template
+                    // specialization is castable into a "TypeDecl" and will be
+                    // given to the builder. there, the "cxxToTypelibName()" knows
+                    // how to handle the template-args of template specializations
+                    // and creates the correct full string to reflect the actual
+                    // matched template specialization at hand, with all the
+                    // parameters. the string in turn will be used in
+                    // "registry.get_(opaqueName)" to look if some opaque with this
+                    // signature was defined in the opaque-database...
+                    std::string cxxname_without_template =
+                        cxxname.substr(0, pos);
+                    std::cout << "Registering Opaque with supposed cxxname '"
+                              << cxxname_without_template
+                              << "' for template-specializations to "
+                                 "actually find Opaque '" << cxxname << "'\n";
+                    OpaqueFinder.addMatcher(
+                        // looking for "classTemplateDecl" won't help, as
+                        // we always need an instantiation of a template?
+                        classTemplateSpecializationDecl(
+                            hasName(cxxname_without_template)).bind("opaque"),
+                        &opaqueCallback);
+                }
             }
         }
 
