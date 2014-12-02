@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/uint64_t" category="uint" size="8" >
+  
+  </numeric>
+  <alias name="/const unsigned long" source="/uint64_t"/>
+  <compound name="/consts/C1" size="24" >
+    <field name="m1" type="/uint64_t" offset="0">
+    
+    </field>
+    <field name="m2" type="/uint64_t" offset="8">
+    
+    </field>
+    <field name="m3" type="/uint64_t" offset="16">
+    
+    </field>
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/consts.hh]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/consts.hh:12]]></metadata>
+
+  </compound>
+  <alias name="/consts/my_const_typedef" source="/uint64_t"/>
+  <alias name="/consts/my_other_const_typedef" source="/uint64_t"/>
+  <alias name="/consts/my_other_typedef" source="/uint64_t"/>
+  <alias name="/consts/my_typedef" source="/uint64_t"/>
+  <alias name="/unsigned long" source="/uint64_t"/>
+</typelib>
