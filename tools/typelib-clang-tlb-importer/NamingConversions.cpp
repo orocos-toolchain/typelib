@@ -31,8 +31,9 @@ std::string cxxToTypelibName(const std::string& cxxName)
     // hmprf: this "hack" is still needed:
     typelibName = stringFromToReplace(typelibName, " [", "[");
 
-    // reproducing the old gccxml behaviour
-    if (typelibName.at(0) != '/')
+    // reproducing the old gccxml behaviour. should not be needed as we do
+    // everything correct already. remove this once everything settled enough.
+    if (typelibName.at(0) != '/' && typelibName.length() > 1)
         typelibName.insert(0, 1, '/');
 
     return typelibName;
@@ -114,6 +115,7 @@ std::string cxxToTypelibName(const clang::NamedDecl* decl)
     return typelibName;
 }
 
+// underlying types like "int" or "float[4]"
 std::string cxxToTypelibName(const clang::QualType &type) {
 
     // this will give special handling for "Records" (e.g. classes, structs,

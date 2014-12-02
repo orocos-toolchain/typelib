@@ -138,7 +138,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
             continue;
         }
 
-        // on parole... very very special handling
+        // very very special handling... I cannot believe this is needed...
         if ((containerName.find("/std/string") == 0) &&
             argTypelibName != "/char") {
             std::cout
@@ -149,6 +149,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
             return NULL;
         }
 
+        // carefull: is this "ASTContext" correct?
         Typelib::Type const* argType = registerType(argTypelibName, typePtr, decl->getASTContext());
 
         if(!argType) {
@@ -158,8 +159,9 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
             return NULL;
         }
 
-        std::cout << "Container '" << canonicalTypeName << "' has arg '"
-                  << argTypelibName << "'" << std::endl;
+        std::cout << "Container '" << containerName
+                  << "' has template-argument '" << argTypelibName
+                  << "' which was successfully registered in database\n";
 
         typelibArgList.push_back(argType);
     }
@@ -174,14 +176,14 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
     // cxx-name... anyhow...
     if(newContainer.getName() != canonicalTypeName) {
 
-        std::cerr << "Name of Typelib::Container '" << newContainer.getName()
-                  << "' is different from canonicalTypeName '"
+        std::cerr << "Name of Container '" << newContainer.getName()
+                  << "' is different from its canonicalTypeName '"
                   << canonicalTypeName << "', adding alias\n";
         registry.alias(newContainer.getName(), canonicalTypeName);
     }
 
-    std::cout << "Type '" << canonicalTypeName
-              << "' successfully registered as Container for '" << containerName
+    std::cout << "Container '" << containerName
+              << "' successfully registered for Type '" << canonicalTypeName
               << "'\n";
 
     return &newContainer;
@@ -191,6 +193,10 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
 {
 
     // get a typelib-name for the given opaque-decl
+    //
+    // NOTE: there is special trickery in place inside cxxToTypelibName():
+    // given a template specialization, it will automagically add the
+    // template parameters from the decl to the returned typelib-name.
     std::string opaqueName = cxxToTypelibName(decl);
 
     // registry can be pre-filled with all the opaque-type names loaded from a
@@ -203,17 +209,18 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
     if (!opaqueType) {
         std::cout << "Opaque '" << decl->getQualifiedNameAsString()
                   << "' of kind '" << decl->getDeclKindName()
-                  << "' not found in registry\n";
+                  << "' with presumed opaque-name '" << opaqueName
+                  << "' is not found in registry\n";
         return;
     }
 
     std::cout << "Opaque '" << decl->getQualifiedNameAsString()
               << "' of kind '" << decl->getDeclKindName()
-              << "' is in database as '" << opaqueName << "'\n";
+              << "' found in registry as '" << opaqueName << "'\n";
 
-    // note the bases for inherited classes...
+    // add the bases for inherited classes...
     setMetaDataBaseClasses(decl, opaqueType);
-    // also note the filename for the decl in the metadata
+    // and the file-location for the decl in the metadata
     setMetaDataSourceFileLine(decl, opaqueType);
     // and note if we have a non-trival include chain
     setMetaDataOrogenInclude(decl, opaqueType);

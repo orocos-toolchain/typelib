@@ -9,6 +9,10 @@
 
 /** convert name of a c++ decl into typelib syntax
  *
+ * NOTE: if given the decl of a template-specialization the individual
+ * parameters will be converted and added to the returned string altough the
+ * name of the "CXXRecordDecl" does _not_ contain the template-parameters.
+ *
  * @param decl object whose name is to be resolved
  * @return the resolved name of the cxx-type in typelib lingo
  */
