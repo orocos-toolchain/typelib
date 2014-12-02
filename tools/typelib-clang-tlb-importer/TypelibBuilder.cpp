@@ -1,5 +1,6 @@
 #include "TypelibBuilder.hpp"
 #include "NamingConversions.hpp"
+#include "IgnoredOrRenamedTypes.hpp"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/RecordLayout.h"
 #include "clang/AST/DeclCXX.h"
@@ -88,11 +89,12 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
     // this is problematic...
     std::string containerName = cxxToTypelibName(decl->getQualifiedNameAsString());
 
-    // the "std::string" is actually a "std::basic_string", but mapped to
-    // "/std/string" in typelib
-    if (containerName == "/std/basic_string") {
-#warning renaming '/std/basic_string' to '/std/string' -- need to add the other way around?
-        containerName = "/std/string";
+    // the "std::string" is actually a typedef to "std::basic_string", but
+    // mapped to "/std/string" in typelib
+    std::pair<bool, std::string> retval = IgnoredOrRenamedType::isTypeRenamed(containerName);
+    if (retval.first) {
+        /* std::cout << "Renaming '" << containerName << "' to '" << retval.second << "'\n"; */
+        containerName = retval.second;
     }
 
     // needed to search for a specific container in all known ones.
@@ -129,16 +131,8 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
         
         std::string argTypelibName = cxxToTypelibName(arg.getAsType().getCanonicalType());
         
-        //HACK ignore allocators
-#warning HACK: ignoring templateArgument whose name begins '/std/allocator' to support Typelib::Container
-        if(argTypelibName.find("/std/allocator") == 0) {
-            std::cout << "Container '" << containerName << "' has TemplateArgument '"
-                      << argTypelibName << "' which is ignored.\n";
-            continue;
-        }
-
-#warning HACK: ignoring templateArgument whose name begins '/std/char_traits' to support Typelib::Container
-        if(argTypelibName.find("/std/char_traits") == 0){
+        // ignore certain types
+        if(IgnoredOrRenamedType::isTemplateArgumentIgnored(argTypelibName)) {
             std::cout << "Container '" << containerName << "' has TemplateArgument '"
                       << argTypelibName << "' which is ignored.\n";
             continue;
@@ -749,4 +743,3 @@ void TypelibBuilder::saveRegistry(const std::string& filename)
     TlbExport exporter;
     exporter.save(filename, utilmm::config_set(), registry);
 }
-
