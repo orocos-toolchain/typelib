@@ -12,4 +12,6 @@ R mzenzes@mzenzes-u ~/TransTerrA/rock/base/orogen/types % clang -Xclang -ast-dum
 
  -->
   <opaque name="/ns_opaques/C4&lt;/float&gt;" size="0"/>
+
+  <opaque name="/ns_opaques/C5&lt;/float,/int&gt;" size="0"/>
 </typelib>

@@ -9,7 +9,14 @@
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:14]]></metadata>
 
   </opaque>
-  <opaque name="/ns_opaques/C4&gt;float&lt;" >
+  <opaque name="/ns_opaques/C4&lt;/float&gt;" >
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:42]]></metadata>
+
+  </opaque>
+  <opaque name="/ns_opaques/C5&lt;/float,/int&gt;" >
+  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:49]]></metadata>
 
   </opaque>
   <compound name="/ns_opaques/cruft" size="16" >
@@ -22,7 +29,8 @@
   </compound>
   <opaque name="/ns_opaques/typedef_of_C3" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:29]]></metadata>
+<metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:34]]></metadata>
 
   </opaque>
   <alias name="/ns_opaques/C3&lt;/float&gt;" source="/ns_opaques/typedef_of_C3"/>
