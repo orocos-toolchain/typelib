@@ -1,4 +1,5 @@
 #include "NamingConversions.hpp"
+#include "IgnoredOrRenamedTypes.hpp"
 
 #include <iostream>
 
@@ -48,32 +49,30 @@ templateToTypelibName(const clang::ClassTemplateSpecializationDecl *tDecl) {
 
     const clang::TemplateArgumentList &tmpArgs(tDecl->getTemplateArgs());
     for (size_t idx = 0; idx < tmpArgs.size(); idx++) {
-        // we need commas as separator at certain places
-        if (idx != 0)
-            retval += ",";
+
+        std::string toBeAppended;
         switch (tmpArgs.get(idx).getKind()) {
         case clang::TemplateArgument::Declaration:
             /* std::cerr */
             /*     << " -- template arg declaration: " */
-            /*     << tmpArgs.get(idx).getAsDecl()->getQualifiedNameAsString() */
-            /*     << "\n"; */
-            retval += cxxToTypelibName(
+            /*     << tmpArgs.get(idx).getAsDecl()->getQualifiedNameAsString() << "\n"; */
+            toBeAppended = cxxToTypelibName(
                 tmpArgs.get(idx).getAsDecl()->getQualifiedNameAsString());
             break;
-        case clang::TemplateArgument::Type:
-            /* std::cerr << " -- template arg type: " */
-            /*           << cxxToTypelibName(tmpArgs.get(idx).getAsType()) << "\n"; */
-            retval += cxxToTypelibName(tmpArgs.get(idx).getAsType());
-            break;
+        case clang::TemplateArgument::Type: {
+            std::string typelibNameOfTemplateArg = cxxToTypelibName(tmpArgs.get(idx).getAsType());
+            /* std::cerr << " -- template arg type: " << typelibNameOfTemplateArg << "\n"; */
+            toBeAppended = typelibNameOfTemplateArg;
+        } break;
         case clang::TemplateArgument::Integral:
             /* std::cerr << " -- template arg integral: " */
             /*           << tmpArgs.get(idx).getAsIntegral().toString(10) << "\n"; */
-            retval += tmpArgs.get(idx).getAsIntegral().toString(10);
+            toBeAppended = tmpArgs.get(idx).getAsIntegral().toString(10);
             break;
         case clang::TemplateArgument::Template:
             std::cerr << " -- template arg template expansion... recursion? "
                          "not implemented yet... but should be easy\n";
-            // retval += templateToTypelibName(tmpArgs.get(idx).getAsDecl());
+            // toBeAppended = templateToTypelibName(tmpArgs.get(idx).getAsDecl());
             exit(EXIT_FAILURE);
             break;
         default:
@@ -81,6 +80,17 @@ templateToTypelibName(const clang::ClassTemplateSpecializationDecl *tDecl) {
                       << tmpArgs.get(idx).getKind() << "\n";
             exit(EXIT_FAILURE);
         }
+
+        // having a "static vector<string>" somewhere containing
+        // "to-be-skipped" template-arguments.
+        if (IgnoredOrRenamedType::isTemplateArgumentIgnored(toBeAppended))
+            continue;
+
+        // we need commas as separator at certain places
+        if (idx != 0)
+            retval += "," + toBeAppended;
+        else
+            retval += toBeAppended;
     }
 
     // and finally close everything
