@@ -22,7 +22,6 @@
 #include "clang/Tooling/CompilationDatabase.h"
 #include "clang/Tooling/Refactoring.h"
 #include "clang/Tooling/Tooling.h"
-#include "llvm/ADT/OwningPtr.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Signals.h"
@@ -157,8 +156,11 @@ int main(int argc, const char **argv) {
         for (Typelib::Registry::Iterator it = builder.getRegistry().begin();
              it != builder.getRegistry().end(); it++) {
             if (it->getCategory() == Typelib::Type::Opaque) {
+                std::string cxxname(typelibToCxxName(it->getName()));
+                std::cout << "Registering Opaque '" << it->getName()
+                          << "' with supposed c++ name '" << cxxname << "'\n";
                 OpaqueFinder.addMatcher(
-                    namedDecl(hasName(typelibToCxxName(it->getName())))
+                    namedDecl(hasName(cxxname))
                         .bind("opaque"),
                     &opaqueCallback);
             }
