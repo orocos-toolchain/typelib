@@ -45,4 +45,14 @@ std::string cxxToTypelibName(const std::string& cxxName);
  */
 std::string typelibToCxxName(const std::string& typelibName);
 
+/** convert a typelibname like "/ns/object</float,/int>" into
+ * someting like "std::pair('/ns/object',std::vector('/float','/int'))"
+ *
+ * NOTE: this is purely text-based by looking for "<", ">" and ","
+ *
+ * NOTE: no templates of templates allowed!
+ */
+std::pair<std::string, std::vector<std::string> >
+typelibNameSplitTemplate(const std::string &typelibName);
+
 #endif /*NAMINGCONVERSIONS_H*/

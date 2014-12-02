@@ -22,6 +22,65 @@ std::string stringFromToReplace(const std::string &string,
     return result;
 }
 
+std::pair<std::string, std::vector<std::string> >
+typelibNameSplitTemplate(const std::string &typelibName) {
+
+    // reject templates-of-templates, where more than one "opening angle
+    // bracket" can be found in the name-string
+    if (std::count(typelibName.begin(), typelibName.end(), '<') > 1) {
+        std::cerr << "typelibNameSplitTemplate() Templates-of-templates are "
+                     "not supported, but support can 'easily' be added.\n";
+        exit(-1);
+    }
+
+    // we'll return this later, need this now
+    std::pair<std::string,std::vector<std::string> > retval;
+
+    size_t firstOpeningAngleBracket = typelibName.find_first_of("<");
+    // this is the actual template-type
+    retval.first = typelibName.substr(0, firstOpeningAngleBracket);
+    // we might get a non-templated name. if so, return now. we are done
+    if (firstOpeningAngleBracket == std::string::npos) {
+        return retval;
+    }
+
+    // we have actually a template... look up some marks
+    size_t lastClosingAngleBracket =
+        typelibName.find_last_of(">", firstOpeningAngleBracket);
+    size_t firstCommaAfterFirstOpeningAngleBracket =
+        typelibName.find_first_of(",", firstOpeningAngleBracket);
+
+    // now we need top copy chunks of the given string into the vector of the
+    // return-value
+
+    // we need two marks for iterating the string: where we start copying
+    // characters and where we stop.
+    size_t startDelim = firstOpeningAngleBracket;
+    size_t stopDelim = firstCommaAfterFirstOpeningAngleBracket;
+    // if we got a template with only one argument there is no comma. we need
+    // to copy up to the closing ">".  if we got a comma, we need to stop
+    // there, and proceed afterwards. see "stopDelim" inside the do-while loop
+    //
+    // this is copying the single chunks into our return value
+    do {
+        // if we did not find a "," in the following part of the string this
+        // will be our last chunk to copy. we need to fall-back to using the
+        // "lastClosingAngleBracket" as stopDelim.
+        if (stopDelim == std::string::npos)
+            stopDelim = lastClosingAngleBracket;
+        // copy the chunk
+        retval.second.push_back(
+            typelibName.substr(startDelim + 1, stopDelim - startDelim - 1));
+        // set the new start-mark
+        startDelim = stopDelim;
+        // and look how far we have to copy -- looking for a ","
+        stopDelim = typelibName.find_first_of(",", startDelim + 1);
+        // only start a new round of chunk-copying if we have still room left
+    } while (startDelim < lastClosingAngleBracket);
+    // tadahh
+    return retval;
+}
+
 // the actual string-conversion function converting single cxx-names:
 std::string cxxToTypelibName(const std::string& cxxName)
 {
