@@ -21,8 +21,7 @@
     <field name="tv_nsec" type="/int64_t" offset="8">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/usr/include/time.h]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
 
   </compound>
   <container  name="/std/vector&lt;/double&gt;" of="/double" size="24" kind="/std/vector" >
@@ -41,8 +40,7 @@
     <field name="v" type="/std/vector&lt;/double&gt;[2]" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:35]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:35]]></metadata>
 
   </compound>
   <compound name="/stdvector/S1" size="32" >
@@ -52,24 +50,21 @@
     <field name="v1" type="/std/vector&lt;/float&gt;" offset="8">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:14]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:14]]></metadata>
 
   </compound>
   <compound name="/stdvector/S2" size="24" >
     <field name="v1" type="/std/vector&lt;/timespec&gt;" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:20]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:20]]></metadata>
 
   </compound>
   <compound name="/stdvector/S3" size="24" >
     <field name="v2" type="/std/vector&lt;/double&gt;" offset="0">
     
     </field>
-  <metadata key="orogen_include"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:25]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:25]]></metadata>
 
   </compound>
   <alias name="/stdvector/myvec" source="/std/vector&lt;/double&gt;"/>

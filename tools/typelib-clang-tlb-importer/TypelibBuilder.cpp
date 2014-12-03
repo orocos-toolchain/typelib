@@ -222,8 +222,6 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
     setMetaDataBaseClasses(decl, opaqueType);
     // and the file-location for the decl in the metadata
     setMetaDataSourceFileLine(decl, opaqueType);
-    // and note if we have a non-trival include chain
-    setMetaDataOrogenInclude(decl, opaqueType);
 
     // and special care if this is a typedef: we have to note an alias from the
     // given opaque to the actual type.
@@ -445,7 +443,6 @@ TypelibBuilder::addEnum(const std::string &canonicalTypeName,
     }
 
     setMetaDataSourceFileLine(decl, enumVal);
-    setMetaDataOrogenInclude(decl, enumVal);
 
     registry.add(enumVal);
     
@@ -512,7 +509,6 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
     compound->setSize(typeSizeInBytes);
 
     setMetaDataSourceFileLine(decl, compound);
-    setMetaDataOrogenInclude(decl, compound);
     if(!addMembersOfClassToCompound(*compound, canonicalTypeName, decl))
     {
         delete compound;
@@ -658,15 +654,22 @@ void TypelibBuilder::setMetaDataOrogenInclude(const clang::Decl *decl,
     // type is defined there, which would be mostly the same as
     // "source_file_line". or it is the first non-main-header if the type is
     // defined somewhere else.
+    /* std::cout << "-- the file '" << sm.getFilename(loc).str() << "' is " */
+    /*           << (sm.isInSystemHeader(loc) ? "a" : "no") << " system header\n"; */
     clang::SourceLocation incLoc = loc;
-    clang::SourceLocation earliestLoc = loc;
-    while (incLoc.isValid() && !sm.isInMainFile(incLoc)) {
-        earliestLoc = incLoc;
+    clang::SourceLocation lastValidLoc = loc;
+    while (incLoc.isValid() && sm.isInSystemHeader(incLoc)) {
+        lastValidLoc = incLoc;
         incLoc = sm.getIncludeLoc(sm.getFileID(incLoc));
+        /* std::cout << "-- the file '" << sm.getFilename(loc).str() */
+        /*           << "' includes '" << sm.getFilename(incLoc).str() */
+        /*           << "' which is " << (sm.isInSystemHeader(incLoc) ? "a" : "no") */
+        /*           << " system header\n"; */
     }
-    if (earliestLoc.isValid())
+
+    if (lastValidLoc.isValid())
         type->getMetaData().add("orogen_include",
-                                sm.getFilename(earliestLoc).str());
+                                sm.getFilename(lastValidLoc).str());
     else
         std::cout << "setMetaDataOrogenInclude() Warning: could not find "
                      "suitable include-file for '" << type->getName() << "'\n";
