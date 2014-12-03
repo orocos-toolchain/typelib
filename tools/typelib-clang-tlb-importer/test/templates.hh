@@ -32,6 +32,11 @@ namespace templates {
     // in able to find the template named in the opaque, we need an acutal instantiation
     struct workaround {  templates::C1<double> foo; };
 
+    // special trick: do an explicit template instantiation, and see if the
+    // source_file_line property is correct -- which seems to be the case in the moment
+    template<> class C1<float> { float B; };
+    C1<float> inst_C1;
+
     namespace templateclasses {
 	class D1 {
 	    // array as template parameter...? the actual array in C1 is
