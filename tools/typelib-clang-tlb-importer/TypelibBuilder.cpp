@@ -634,11 +634,11 @@ TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl *decl) {
 void TypelibBuilder::setMetaDataSourceFileLine(const clang::Decl *decl,
                                                Typelib::Type *type) {
     const clang::SourceManager &sm = decl->getASTContext().getSourceManager();
-    const clang::SourceLocation &loc = sm.getSpellingLoc(decl->getLocStart());
+    const clang::SourceLocation &loc = sm.getExpansionLoc(decl->getLocStart());
 
     // typelib needs the '/path/to/file:column' information
     std::ostringstream stream;
-    stream << sm.getFilename(loc).str() << ":" << sm.getSpellingLineNumber(loc);
+    stream << sm.getFilename(loc).str() << ":" << sm.getExpansionLineNumber(loc);
     type->setPathToDefiningHeader(stream.str());
 
     type->getMetaData().add("source_file_line",

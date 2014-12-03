@@ -10,7 +10,7 @@
   </opaque>
   <opaque name="/Eigen/Vector3d" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:373]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:395]]></metadata>
 
   </opaque>
   <alias name="/Eigen/Matrix&lt;/double,3,1,0,3,1&gt;" source="/Eigen/Vector3d"/>
