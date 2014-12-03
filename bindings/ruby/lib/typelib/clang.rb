@@ -35,7 +35,7 @@ module Typelib
             finalCmd = "typelib-clang-tlb-importer -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++"
 
             # call extractor tool
-            retVal = system(finalCmd)
+            retval = system(finalCmd)
             if retval != true
                 raise InternalError, "typelib-clang-tlb-importer failed!"
             end
