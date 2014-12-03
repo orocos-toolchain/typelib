@@ -18,6 +18,8 @@ class IgnoredOrRenamedType {
     IgnoredOrRenamedType();
     static IgnoredOrRenamedType *getInstance();
 
+    // carefully, this is a very sharp sword!!! will ignore template args that
+    // _begin_with_ the strings in this vector!
     std::vector<std::string> vTemplateArgsToBeIgnored;
     std::vector<std::pair<std::string, std::string> > vTypeRenames;
 

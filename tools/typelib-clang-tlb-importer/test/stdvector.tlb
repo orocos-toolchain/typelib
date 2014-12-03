@@ -33,9 +33,6 @@
   <container  name="/std/vector&lt;/timespec&gt;" of="/timespec" size="24" kind="/std/vector" >
   
   </container>
-  <alias name="/std/vector&lt;/double,/std/allocator&lt;/double&gt;&gt;" source="/std/vector&lt;/double&gt;"/>
-  <alias name="/std/vector&lt;/float,/std/allocator&lt;/float&gt;&gt;" source="/std/vector&lt;/float&gt;"/>
-  <alias name="/std/vector&lt;/timespec,/std/allocator&lt;/timespec&gt;&gt;" source="/std/vector&lt;/timespec&gt;"/>
   <compound name="/stdvector/C1" size="48" >
     <field name="v" type="/std/vector&lt;/double&gt;[2]" offset="0">
     
