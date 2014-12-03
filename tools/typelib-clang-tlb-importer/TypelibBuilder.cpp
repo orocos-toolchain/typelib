@@ -681,6 +681,20 @@ void TypelibBuilder::setMetaDataBaseClasses(const clang::Decl *decl,
     // metadata
     if (const clang::CXXRecordDecl *cxxRecord =
             llvm::dyn_cast<clang::CXXRecordDecl>(decl)) {
+
+        // TODO hm, there is something in the clang-api broken. need this
+        // additional test because some things don't have a definition, but
+        // still think they are able to access internal undefined pointers via
+        // "bases_begin()" for example -- which would segfault.
+        //
+        // maybe templates-declaration which have no definition...?
+        //
+        // only fails for "/base/geometry/Spline<1>" of base/orogen/types
+        // because there is no ostream-operator defined in
+        // "base/geometry/Spline.hpp" -- but one for Spline<3>
+        if (!cxxRecord->hasDefinition()) {
+            return;
+        }
         clang::CXXRecordDecl::base_class_const_iterator base;
         for (base = cxxRecord->bases_begin(); base != cxxRecord->bases_end();
              base++) {
