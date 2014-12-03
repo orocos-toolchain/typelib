@@ -33,10 +33,15 @@ void IgnoredOrRenamedType::printTypeRenames() {
 }
 
 bool IgnoredOrRenamedType::isTemplateArgumentIgnored(const std::string& typelibName) {
-    return std::find(getInstance()->vTemplateArgsToBeIgnored.begin(),
-                     getInstance()->vTemplateArgsToBeIgnored.end(),
-                     typelibName) !=
-           getInstance()->vTemplateArgsToBeIgnored.end();
+    for (std::vector<std::string>::const_iterator it =
+             getInstance()->vTemplateArgsToBeIgnored.begin();
+         it != getInstance()->vTemplateArgsToBeIgnored.end(); ++it) {
+        if (typelibName.find(*it) == 0) {
+            std::cout << "ignore '" << typelibName << "' because of '" << *it << "'\n";
+            return true;
+        }
+    }
+    return false;
 }
 
 std::pair<bool, std::string>
@@ -61,10 +66,8 @@ IgnoredOrRenamedType::IgnoredOrRenamedType() {
     };
     spInstance = this;
 
-    vTemplateArgsToBeIgnored.push_back("/std/allocator</wchar_t>");
-    vTemplateArgsToBeIgnored.push_back("/std/char_traits</wchar_t>");
-    vTemplateArgsToBeIgnored.push_back("/std/allocator</char>");
-    vTemplateArgsToBeIgnored.push_back("/std/char_traits</char>");
+    vTemplateArgsToBeIgnored.push_back("/std/allocator");
+    vTemplateArgsToBeIgnored.push_back("/std/char_traits");
 
     vTypeRenames.push_back(std::pair<std::string, std::string>(
         "/std/basic_string", "/std/string"));
