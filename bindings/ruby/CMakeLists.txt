@@ -24,7 +24,7 @@ CONFIGURE_FILE(typelib_ruby.pc.in ${CMAKE_CURRENT_BINARY_DIR}/typelib_ruby.pc @O
 
 INSTALL(TARGETS typelib_ruby
     LIBRARY DESTINATION ${RUBY_EXTENSIONS_INSTALL_DIR})
-INSTALL(FILES ext/typelib.hh ext/typelib_ruby.hh
+INSTALL(FILES ext/typelib_ruby.hh
     DESTINATION ${RUBY_EXTENSIONS_INSTALL_DIR})
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/typelib_ruby.pc DESTINATION lib/pkgconfig)
 INSTALL(FILES lib/typelib.rb
