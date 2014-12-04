@@ -228,6 +228,7 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
     setMetaDataBaseClasses(decl, opaqueType);
     // and the file-location for the decl in the metadata
     setMetaDataSourceFileLine(decl, opaqueType);
+    setMetaDataDoc(decl, opaqueType);
 
     // and special care if this is a typedef: we have to note an alias from the
     // given opaque to the actual type.
@@ -449,6 +450,7 @@ TypelibBuilder::addEnum(const std::string &canonicalTypeName,
     }
 
     setMetaDataSourceFileLine(decl, enumVal);
+    setMetaDataDoc(decl, enumVal);
 
     registry.add(enumVal);
     
@@ -514,7 +516,6 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
     size_t typeSizeInBytes = typeLayout.getSize().getQuantity();
     compound->setSize(typeSizeInBytes);
 
-    setMetaDataSourceFileLine(decl, compound);
     if(!addMembersOfClassToCompound(*compound, canonicalTypeName, decl))
     {
         delete compound;
@@ -527,6 +528,9 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
         delete compound;
         return NULL;
     }
+
+    setMetaDataSourceFileLine(decl, compound);
+    setMetaDataDoc(decl, compound);
     
     registry.add(compound);
     
