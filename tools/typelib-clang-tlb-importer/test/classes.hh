@@ -29,10 +29,12 @@ namespace classes {
 
     // and finally someone adding another int.
     class NextLevel : public classes::FirstLevel {
+      public:
         int b;
     };
 
     class NextWith_anonymous_InName : public NextLevel {
+      public:
         int spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam;
     };
 
@@ -41,23 +43,24 @@ namespace classes {
     };
 
     class StructWithAnonStruct {
+      public:
         int b;
         // this class is anonymous and not exported. also causes the
         // sorrounding class to be ignored
         class {
+          public:
             int c;
         } firstAnonVariant;
         // this is exported
-        struct secondAnonVariant{
+        struct secondAnonVariant {
             int e;
         };
     };
 
     // second: test the "base_classes" meta-data feature
-    class C1 { double a; };
-    class C2 : public C1 { double b; };
-    class C3 : public S1, private C1 { double c; };
-
+    class C1 { public: double a; };
+    class C2 : public C1 { public: double b; };
+    class C3 : public S1, private C1 { public: double c; };
 }
 
 #endif /*TEST_HEADER_DATA_CLASSES_H*/
