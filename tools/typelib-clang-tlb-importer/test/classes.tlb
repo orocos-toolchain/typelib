@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <typelib>
   <opaque name="/classes/C1" >
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:57]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:61]]></metadata>
 
   </opaque>
   <opaque name="/classes/C2" >
   <metadata key="base_classes"><![CDATA[/classes/C1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:58]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:62]]></metadata>
 
   </opaque>
   <opaque name="/classes/C3" >
   <metadata key="base_classes"><![CDATA[/S1]]></metadata>
 <metadata key="base_classes"><![CDATA[/classes/C1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:59]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:63]]></metadata>
 
   </opaque>
   <numeric name="/int32_t" category="sint" size="4" >
@@ -72,14 +72,14 @@
     <field name="e" type="/int32_t" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:51]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:55]]></metadata>
 
   </compound>
   <compound name="/classes/With_sizeof_InName" size="4" >
     <field name="holymolymotherfucker" type="/int32_t" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:39]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:41]]></metadata>
 
   </compound>
   <alias name="/int" source="/int32_t"/>
