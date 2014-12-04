@@ -29,6 +29,7 @@ namespace arrays {
     ///
     /// blalba. more text. the same wrapped inside a container -- detected and exported
     class C1 {
+      public:
         struct timespec A3[2];
         int m1;
     };
