@@ -39,7 +39,8 @@
     <field name="a" type="/int32_t" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:27]]></metadata>
+  <metadata key="base_classes"><![CDATA[/classes/BaseClass]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:27]]></metadata>
 
   </compound>
   <compound name="/classes/NextLevel" size="8" >
@@ -49,7 +50,8 @@
     <field name="a" type="/int32_t" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:31]]></metadata>
+  <metadata key="base_classes"><![CDATA[/classes/FirstLevel]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:31]]></metadata>
 
   </compound>
   <compound name="/classes/NextWith_anonymous_InName" size="12" >
@@ -62,7 +64,8 @@
     <field name="a" type="/int32_t" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:35]]></metadata>
+  <metadata key="base_classes"><![CDATA[/classes/NextLevel]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:36]]></metadata>
 
   </compound>
   <compound name="/classes/StructWithAnonStruct/secondAnonVariant" size="4" >

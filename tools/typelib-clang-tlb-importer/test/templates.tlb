@@ -40,7 +40,8 @@
     <field name="m_storage" type="/Eigen/DenseStorage&lt;/float,12,3,4,0&gt;" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:126]]></metadata>
+  <metadata key="base_classes"><![CDATA[/Eigen/PlainObjectBase</Eigen/Matrix</float,3,4,0,3,4>>]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:126]]></metadata>
 
   </compound>
   <opaque name="/templates/C1&lt;/double&gt;" >
