@@ -732,12 +732,23 @@ void TypelibBuilder::setMetaDataDoc(const clang::Decl *decl,
             const clang::comments::ParagraphComment *p =
                 llvm::dyn_cast<clang::comments::ParagraphComment>((*i));
 
-            clang::comments::ParagraphComment::child_iterator c;
+            // save us very empty comment blocks
+            if (p->isWhitespace())
+                break;
 
-            for (c = p->child_begin(); c != p->child_end(); c++) {
-                if (const clang::comments::TextComment *TC =
-                        llvm::dyn_cast<clang::comments::TextComment>(*c)) {
-                    stream << TC->getText().str() << "\n";
+            clang::comments::ParagraphComment::child_iterator c = p->child_begin();;
+            while (c != p->child_end()) {
+                const clang::comments::TextComment *TC =
+                    llvm::dyn_cast<clang::comments::TextComment>(*c);
+                if (TC) {
+
+                    stream << TC->getText().str();
+                }
+                c++;
+                // only do a new line if it is not the last TextComment in the
+                // block
+                if (c != p->child_end() && TC) {
+                    stream << "\n";
                 }
             }
             break;
