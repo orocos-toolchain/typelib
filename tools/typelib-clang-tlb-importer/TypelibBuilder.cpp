@@ -531,6 +531,7 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
 
     setMetaDataSourceFileLine(decl, compound);
     setMetaDataDoc(decl, compound);
+    setMetaDataBaseClasses(decl, compound);
     
     registry.add(compound);
     
