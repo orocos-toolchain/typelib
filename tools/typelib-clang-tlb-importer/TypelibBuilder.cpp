@@ -367,6 +367,7 @@ TypelibBuilder::registerType(const std::string &canonicalTypeName,
         {
             return registerBuiltIn(canonicalTypeName, llvm::dyn_cast<clang::BuiltinType>(type), context);
         }
+        case clang::Type::TemplateSpecialization:
         case clang::Type::Record:
         {
             return addRecord(canonicalTypeName, type->getAsCXXRecordDecl());
