@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/double" category="float" size="8" >
+  
+  </numeric>
+  <numeric name="/int8_t" category="sint" size="1" >
+  
+  </numeric>
+  <alias name="/char" source="/int8_t"/>
+  <container  name="/std/string" of="/int8_t" size="8" kind="/std/string" >
+  <metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/basic_string.tcc:1132]]></metadata>
+
+  </container>
+  <container  name="/std/vector&lt;/double&gt;" of="/double" size="24" kind="/std/vector" >
+  <metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/stl_vector.h:213]]></metadata>
+
+  </container>
+  <alias name="/std/basic_string&lt;/char&gt;" source="/std/string"/>
+  <container  name="/std/vector&lt;/std/string&gt;" of="/std/string" size="24" kind="/std/vector" >
+  <metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/stl_vector.h:213]]></metadata>
+
+  </container>
+  <compound name="/ns_namedVector/NamedVector&lt;/double&gt;" size="48" >
+    <field name="names" type="/std/vector&lt;/std/string&gt;" offset="0">
+    
+    </field>
+    <field name="elements" type="/std/vector&lt;/double&gt;" offset="24">
+    
+    </field>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/NamedVector.hh:9]]></metadata>
+
+  </compound>
+  <compound name="/ns_namedVector/samples/Joints" size="56" >
+    <field name="bla" type="/double" offset="48">
+    
+    </field>
+    <field name="names" type="/std/vector&lt;/std/string&gt;" offset="0">
+    
+    </field>
+    <field name="elements" type="/std/vector&lt;/double&gt;" offset="24">
+    
+    </field>
+  <metadata key="base_classes"><![CDATA[/ns_namedVector/NamedVector</double>]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/NamedVector.hh:18]]></metadata>
+
+  </compound>
+  <alias name="/ns_namedVector/commands/Joints" source="/ns_namedVector/samples/Joints"/>
+</typelib>
