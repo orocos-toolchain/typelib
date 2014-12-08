@@ -31,7 +31,7 @@ TypelibBuilder::registerTypeDecl(const clang::TypeDecl *decl) {
     {
         return registerTypedefNameDecl(llvm::dyn_cast<clang::TypedefDecl>(decl));
     }
-    
+
     const clang::Type *typeForDecl = decl->getTypeForDecl();
     if(!typeForDecl)
     {
@@ -45,13 +45,13 @@ TypelibBuilder::registerTypeDecl(const clang::TypeDecl *decl) {
         std::cout << "Ignoring type '" << decl->getQualifiedNameAsString() << "' as it is defined inside a function" << std::endl;
         return NULL;
     }
-    
+
     if(decl->isHidden())
     {
         std::cout << "Ignoring hidden type '" << decl->getQualifiedNameAsString() << "' because it is hidden" << std::endl;
         return NULL;
     }
-    
+
     if(decl->isInAnonymousNamespace())
     {
         std::cout << "Ignoring '" << decl->getQualifiedNameAsString() << "' as it is in an anonymous namespace" << std::endl;
@@ -128,9 +128,9 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
             std::cout << "Error, argument has not type" << std::endl;
             return NULL;
         }
-        
+
         std::string argTypelibName = cxxToTypelibName(arg.getAsType().getCanonicalType());
-        
+
         // ignore certain types
         if(IgnoredOrRenamedType::isTemplateArgumentIgnored(argTypelibName)) {
             std::cout << "Container '" << containerName << "' has TemplateArgument '"
@@ -165,18 +165,18 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
 
         typelibArgList.push_back(argType);
     }
-    
-    
+
+
     Typelib::Container::ContainerFactory factory = contIt->second;
     Typelib::Container const& newContainer = factory(registry, typelibArgList);
-    
+
     // the new container _can_ have a different name as the canonicalTypeName,
     // if "/std/allocator" for example is ignored. but do we need an alias for
     // this case? no typelib-code should ever be able to "know" the correct
     // cxx-name... anyhow...
     if(newContainer.getName() != canonicalTypeName) {
 
-        std::cerr << "Name of Container '" << newContainer.getName()
+        std::cout << "Name of Container '" << newContainer.getName()
                   << "' is different from its canonicalTypeName '"
                   << canonicalTypeName << "', adding alias\n";
         registry.alias(newContainer.getName(), canonicalTypeName);
@@ -268,7 +268,7 @@ TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
     if (Typelib::Type const* type = registry.get(canonicalTypeName)) {
         return type;
     }
-    
+
     // typelib expects sizes in bytes, while clang can return them in bits.
     // should be of no concern for us, but adding a check anyways for extra
     // portability.
@@ -280,7 +280,7 @@ TypelibBuilder::registerBuiltIn(const std::string &canonicalTypeName,
         return NULL;
     }
     size_t typeSizeInBytes = typeSizeInBits / 8;
-    
+
     // pointer to hold the new TypeLib::Type
     Typelib::Numeric *newNumeric = NULL;
 
@@ -352,7 +352,7 @@ TypelibBuilder::registerType(const std::string &canonicalTypeName,
         std::cout << "Ignoring type with reference '" << canonicalTypeName << "'\n";
         return NULL;
     }
-    
+
     if(type->isAnyPointerType())
     {
         std::cout << "Ignoring pointer type '" << canonicalTypeName << "'\n";
@@ -377,11 +377,11 @@ TypelibBuilder::registerType(const std::string &canonicalTypeName,
             return addEnum(canonicalTypeName, llvm::dyn_cast<clang::EnumType>(type)->getDecl());
         }
         case clang::Type::ConstantArray:
-        {            
+        {
             return addArray(canonicalTypeName, llvm::dyn_cast<clang::ConstantArrayType>(type), context);
         }
         case clang::Type::Elaborated:
-        {            
+        {
             const clang::ElaboratedType* etype = llvm::dyn_cast<clang::ElaboratedType>(type);
 
             // hm, this type is somehow strange, I have no idea, what it
@@ -441,7 +441,7 @@ TypelibBuilder::addEnum(const std::string &canonicalTypeName,
                   << "' without proper identifier" << std::endl;
         return NULL;
     }
-    
+
     Typelib::Enum *enumVal = new Typelib::Enum(canonicalTypeName);
 
     for (clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin();
@@ -454,7 +454,7 @@ TypelibBuilder::addEnum(const std::string &canonicalTypeName,
     setMetaDataDoc(decl, enumVal);
 
     registry.add(enumVal);
-    
+
     return enumVal;
 }
 
@@ -467,9 +467,9 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
         return type;
     }
 
-    if(!decl)
-    {
-        std::cout << "Warning, got NULL Type" << std::endl;
+    if (!decl) {
+        std::cout << "Warning: got 'NULL' as CXXRecordDecl-pointer for "
+                     "'" << canonicalTypeName << "'\n";
         return NULL;
     }
 
@@ -485,13 +485,13 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
         std::cout << "Ignoring type '" << canonicalTypeName << "' as it has no definition " << std::endl;
         return NULL;
     }
-    
+
     if(decl->isInjectedClassName())
     {
         std::cout << "Ignoring Type '" << canonicalTypeName << "' as it is injected" << std::endl;
         return NULL;
     }
-    
+
     // this check is on parole, because there might be "Typelib::Container" who
     // can be added despite these features...?
     if(decl->isPolymorphic() || decl->isAbstract())
@@ -499,7 +499,7 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
         std::cout << "Ignoring Type '" << canonicalTypeName << "' as it is polymorphic" << std::endl;
         return NULL;
     }
-    
+
     if(decl->isDependentType() || decl->isInvalidDecl())
     {
         //ignore incomplete / forward declared types
@@ -507,25 +507,27 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
         return NULL;
     }
 
+    // if there is a container for this record we'll fall back and return it
     if(Typelib::Type const* type = checkRegisterContainer(canonicalTypeName, decl)) {
         return type;
     }
-    
+
     Typelib::Compound *compound = new Typelib::Compound(canonicalTypeName);
 
     const clang::ASTRecordLayout &typeLayout(decl->getASTContext().getASTRecordLayout(decl));
     size_t typeSizeInBytes = typeLayout.getSize().getQuantity();
     compound->setSize(typeSizeInBytes);
 
-    if(!addMembersOfClassToCompound(*compound, canonicalTypeName, decl))
-    {
+    if (!addMembersOfClassToCompound(*compound, canonicalTypeName, decl)) {
+        std::cout << "Could not call 'addMembersOfClassToCompound()' for '"
+                  << canonicalTypeName << "' -- skipping compound.\n";
         delete compound;
         return NULL;
     }
 
-    if(compound->getFields().empty())
-    {
-        std::cout << "Ignoring Compound '" << canonicalTypeName << "' as it has no fields " << std::endl;
+    if (compound->getFields().empty()) {
+        std::cout << "Warning: Compound '" << canonicalTypeName
+                  << "' has no fields, will not add it to any database.\n";
         delete compound;
         return NULL;
     }
@@ -533,9 +535,16 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
     setMetaDataSourceFileLine(decl, compound);
     setMetaDataDoc(decl, compound);
     setMetaDataBaseClasses(decl, compound);
-    
+
+    std::cout << "Finally adding Compound '" << canonicalTypeName
+              << "' aka '"
+              << cxxToTypelibName(decl)
+              << "' of kind '"
+              << dynamic_cast<const clang::Decl *>(decl)->getDeclKindName()
+              << "' to registry\n";
+
     registry.add(compound);
-    
+
     return compound;
 }
 
@@ -595,7 +604,7 @@ bool TypelibBuilder::addMembersOfClassToCompound(
         compound.addField(fit->getNameAsString(), *typelibFieldType,
                           fieldOffset);
     }
-    
+
     // and then call this function here recursively add bases -- so that member
     // variables defined as part of a base-class are added to the compound as well
     for (clang::CXXRecordDecl::base_class_const_iterator it =
@@ -622,22 +631,26 @@ TypelibBuilder::registerTypedefNameDecl(const clang::TypedefNameDecl *decl) {
     std::string forCanonicalType = cxxToTypelibName(decl->getUnderlyingType().getCanonicalType());
 
     if (!Typelib::isValidTypename(typeDefName, true)) {
-        std::cout << "Warning, ignoring typedef for '" << typeDefName
+        std::cerr << "Error: ignoring typedef '" << typeDefName << "' for '"
+                  << decl->getQualifiedNameAsString()
                   << "' as it seems to be no valid Typelib name\n";
-        return NULL;
+        exit(EXIT_FAILURE);
     }
 
     if (Typelib::Type const *type = registerType(
             forCanonicalType, decl->getUnderlyingType().getTypePtr(),
             decl->getASTContext())) {
 
-        std::cout << "Found Typedef '" << typeDefName << "'"
-                  << " of '"
-                  << forCanonicalType << "', created alias.\n";
-    
-        registry.alias(forCanonicalType, typeDefName);    
+            registry.alias(forCanonicalType, typeDefName);
+
+            std::cout << "Found Typedef '" << typeDefName << "'"
+                      << " of '"
+                      << forCanonicalType << "', created alias.\n";
 
         return type;
+    } else {
+        std::cout << "Could not register typedef '" << typeDefName << "'"
+                  << " for '" << forCanonicalType << "' in database.\n";
     }
 
     return NULL;
