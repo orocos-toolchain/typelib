@@ -778,6 +778,29 @@ void TypelibBuilder::setMetaDataDoc(const clang::Decl *decl,
                           .str();
             break;
         }
+        case clang::comments::Comment::BlockCommandCommentKind: {
+            const clang::comments::BlockCommandComment *bp =
+                llvm::dyn_cast<clang::comments::BlockCommandComment>((*i));
+
+            const clang::comments::ParagraphComment *p = bp->getParagraph();
+
+            clang::comments::ParagraphComment::child_iterator c = p->child_begin();;
+            while (c != p->child_end()) {
+                const clang::comments::TextComment *TC =
+                    llvm::dyn_cast<clang::comments::TextComment>(*c);
+                if (TC) {
+                    stream << TC->getText().str();
+                }
+                c++;
+                // only do a new line if it is not the last TextComment in the
+                // block
+                if (c != p->child_end() && TC) {
+                    stream << "\n";
+                }
+            }
+
+            break;
+        }
         default: {
             std::cout << "Non-handled comment type '"
                       << (*i)->getCommentKindName() << "' for Type '"
