@@ -28,9 +28,10 @@ typelibNameSplitTemplate(const std::string &typelibName) {
     // reject templates-of-templates, where more than one "opening angle
     // bracket" can be found in the name-string
     if (std::count(typelibName.begin(), typelibName.end(), '<') > 1) {
-        std::cerr << "typelibNameSplitTemplate() Templates-of-templates are "
-                     "not supported, but support can 'easily' be added.\n";
-        exit(-1);
+        std::cerr
+            << "Error: typelibNameSplitTemplate() Templates-of-templates are "
+               "not supported, but support can 'easily' be added.\n";
+        exit(EXIT_FAILURE);
     }
 
     // we'll return this later, need this now
@@ -212,4 +213,3 @@ std::string typelibToCxxName(const std::string& typelibName)
     else
         return cxxName;
 }
-
