@@ -37,7 +37,7 @@ module Typelib
             # call extractor tool
             retval = system(finalCmd)
             if retval != true
-                raise InternalError, "typelib-clang-tlb-importer failed!"
+                raise RuntimeError, "typelib-clang-tlb-importer failed!"
             end
             
             result = Registry.from_xml(tmpReg.read())

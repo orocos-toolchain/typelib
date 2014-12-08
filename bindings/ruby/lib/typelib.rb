@@ -276,7 +276,7 @@ module Typelib
             converted = arg
         end
         if !(expected_type < NumericType) && !converted.kind_of?(expected_type)
-            raise InternalError, "invalid conversion of #{arg} to #{expected_type.name}"
+            raise RuntimeError, "invalid conversion of #{arg} to #{expected_type.name}"
         end
         converted.apply_changes_from_converted_types
         converted
