@@ -7,7 +7,10 @@
 
 namespace arrays {
 
-    // inspired from "laser.h"
+    /** inspired from "laser.h"
+     * 
+     * but, as a courtesy, with a BlockCommandComment
+     */
     struct D1 {
         int sec;
         unsigned int usec;
@@ -15,7 +18,14 @@ namespace arrays {
         MY_INT a;
     };
 
-    // simple array
+    /** \deprecated
+     *
+     * Synchronized set of adaptive commands for a set of actuators
+     *
+     * Since this type contains std::vector, one must preallocate it
+     * and resize the mode and target vectors accordingly before
+     * updateHook().
+     */
     double A1[3];
 
     // two-dimensional array -- not detected
