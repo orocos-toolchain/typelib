@@ -78,6 +78,16 @@ class TlbImportCallback : public MatchFinder::MatchCallback {
                 return;
             }
 
+            // I don't get why this is needed, and I did not do further
+            // research. it repeats behaviour from the gccxml importer. without
+            // this special handling, errors occur during compilation of the
+            // generated source-code. NOTE: This "hack" should not be needed...
+            // but it is.
+            if (tDecl->getQualifiedNameAsString().find("gccxml_workaround") !=
+                std::string::npos) {
+                return;
+            }
+
             builder.registerTypeDecl(tDecl);
 
         } else if (const TypedefNameDecl *tDecl =
