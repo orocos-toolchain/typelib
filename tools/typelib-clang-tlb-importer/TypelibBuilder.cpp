@@ -381,6 +381,11 @@ TypelibBuilder::registerType(const std::string &canonicalTypeName,
         {
             return addArray(canonicalTypeName, llvm::dyn_cast<clang::ConstantArrayType>(type), context);
         }
+        case clang::Type::Typedef:
+        {
+            return registerTypedefNameDecl(
+                type->getAs<clang::TypedefType>()->getDecl());
+        }
         case clang::Type::Elaborated:
         {
             const clang::ElaboratedType* etype = llvm::dyn_cast<clang::ElaboratedType>(type);
