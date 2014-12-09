@@ -87,7 +87,8 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
         std::cout << "\n\n";
     }
     // this is problematic...
-    std::string containerName = cxxToTypelibName(decl->getQualifiedNameAsString());
+    std::string containerName =
+        cxxToTypelibName(decl->getUnderlyingDecl()->getQualifiedNameAsString());
 
     // the "std::string" is actually a typedef to "std::basic_string", but
     // mapped to "/std/string" in typelib
@@ -530,6 +531,28 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
                   << "' has no fields, will not add it to any database.\n";
         delete compound;
         return NULL;
+    }
+
+    // also add base-records of types...
+    clang::CXXRecordDecl::base_class_const_iterator base;
+    for (base = decl->bases_begin(); base != decl->bases_end(); base++) {
+        // ...if they are cxx-records
+        if (const clang::CXXRecordDecl *rDecl =
+                base->getType().getTypePtr()->getAsCXXRecordDecl()) {
+            // and if this is not possible for some of them, delete this
+            // compound. this will keep too much base-classes in the registry
+            // in case something went wrong... but I hope we can life with
+            // that...?
+            std::cout << "Trying to add base-class '" << cxxToTypelibName(rDecl)
+                      << "' for '" << canonicalTypeName << "'\n";
+            const Typelib::Type *retval = registerType(
+                cxxToTypelibName(rDecl), base->getType().getTypePtr(),
+                rDecl->getASTContext());
+            if (!retval) {
+                std::cout << "Something went wrong during registerType for '"
+                          << canonicalTypeName << "', but will continue nevertheless.\n";
+            }
+        }
     }
 
     setMetaDataSourceFileLine(decl, compound);
