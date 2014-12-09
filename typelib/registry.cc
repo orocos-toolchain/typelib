@@ -280,7 +280,7 @@ namespace Typelib
         NameMap::const_iterator it = m_current.find(name);
         if (it != m_current.end()) 
             return it->second.type;
-        return 0;
+        return NULL;
     }
 
     Type& Registry::get_(Type const& type)
@@ -296,7 +296,7 @@ namespace Typelib
         NameMap::const_iterator it = m_current.find(name);
         if (it != m_current.end()) 
             return it->second.type;
-        return 0;
+        return NULL;
     }
 
     RegistryIterator Registry::find(std::string const& name) const
