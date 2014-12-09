@@ -612,7 +612,7 @@ namespace Typelib
         std::set<Type*> result;
 
         std::set<Type const*> const_result =
-            static_cast<Registry const*>(this)->reverseDepends(type);
+            const_cast<Registry const*>(this)->reverseDepends(type);
         std::set<Type const*>::const_iterator it, end;
         for (it = const_result.begin(); it != const_result.end(); ++it)
             result.insert(const_cast<Type*>(*it));
