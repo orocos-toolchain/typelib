@@ -643,9 +643,9 @@ namespace Typelib
     { return m_metadata->merge(field.getMetaData()); }
 
 
-    BadCategory::BadCategory(Type::Category found, int expected)
-        : TypeException("bad category: found " + lexical_cast<string>(found) + " expecting " + lexical_cast<string>(expected))
-        , found(found), expected(expected) {}
+    BadCategory::BadCategory(Type::Category _found, Type::Category _expected)
+        : TypeException("bad category: found " + lexical_cast<string>(_found) + " expecting " + lexical_cast<string>(_expected))
+        , found(_found), expected(_expected) {}
     NullTypeFound::NullTypeFound()
         : TypeException("null type found") { }
     NullTypeFound::NullTypeFound(Type const& type)

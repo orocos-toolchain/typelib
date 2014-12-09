@@ -676,9 +676,9 @@ namespace Typelib
     struct BadCategory : public TypeException
     {
         Type::Category const found;
-        int            const expected;
+        Type::Category const expected;
 
-        BadCategory(Type::Category found, int expected);
+        BadCategory(Type::Category found, Type::Category expected);
     };
 
     struct NullTypeFound : public TypeException
