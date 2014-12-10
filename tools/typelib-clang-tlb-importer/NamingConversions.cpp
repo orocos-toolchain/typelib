@@ -83,19 +83,49 @@ typelibNameSplitTemplate(const std::string &typelibName) {
 }
 
 // the actual string-conversion function converting single cxx-names:
-std::string cxxToTypelibName(const std::string& cxxName)
-{
+std::string cxxToTypelibName(const std::string &cxxName) {
     std::string typelibName(cxxName);
 
     typelibName = stringFromToReplace(typelibName, "::", "/");
     // hmprf: this "hack" is still needed:
     typelibName = stringFromToReplace(typelibName, " [", "[");
 
-    // reproducing the old gccxml behaviour. should not be needed as we do
-    // everything correct already. remove this once everything settled enough.
+    // in case we are called with the QualifiedNames member-variables of a
+    // template, the full template-name is in the string. so we have to handle
+    // all the peculiarities to put everything explicitly in the global
+    // namespace. also template-arguments.
+    //
+    // will fail for "templateName<2>", as numbers are _not_ prepended by a
+    // slash in typelib-lingo... have to rectify this later
+    typelibName = stringFromToReplace(typelibName, ", ", ",/");
+    typelibName = stringFromToReplace(typelibName, "<", "</");
+
+    // now go through the string and remove slashes in front of numbers (or in
+    // front of a minus)
+    size_t positionOfSlash = typelibName.find_first_of("/");
+    while (positionOfSlash != std::string::npos) {
+        // we wann actually access the character after the "/"
+        size_t positionAfterSlash = positionOfSlash + 1;
+        // guard against end-of-string
+        if (positionAfterSlash != typelibName.size()) {
+            break;
+        }
+        // check if one of our conditions is met
+        if (isdigit(typelibName.at(positionAfterSlash)) ||
+            ('-' == typelibName.at(positionAfterSlash))) {
+            typelibName.erase(positionOfSlash);
+        }
+        // prepare for next round. the iterator "positionAfterSlash" is
+        // actually not valid anymore, since we changed the string. but we know
+        // we only removed one character, and "//" is not allowed. so.
+        positionOfSlash = typelibName.find_first_of("/", positionAfterSlash);
+    }
+
+    // again: explicitly set the whole thing into the global namespace
     if (typelibName.at(0) != '/' && typelibName.length() > 1)
         typelibName.insert(0, 1, '/');
 
+    // woa, thats it.
     return typelibName;
 }
 
