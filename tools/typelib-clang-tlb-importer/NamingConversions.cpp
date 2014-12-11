@@ -99,26 +99,32 @@ std::string cxxToTypelibName(const std::string &cxxName) {
     // template, the full template-name is in the string. so we have to handle
     // all the peculiarities to put everything explicitly in the global
     // namespace. also template-arguments.
-    //
-    // will fail for "templateName<2>", as numbers are _not_ prepended by a
-    // slash in typelib-lingo... have to rectify this later
     typelibName = stringFromToReplace(typelibName, ", ", ",/");
-    typelibName = stringFromToReplace(typelibName, "<", "</");
 
-    // now go through the string and remove slashes in front of numbers (or in
-    // front of a minus)
+    // hardcoded shit... sorry...
+    size_t positionOfAngleBracket = typelibName.find_first_of("<");
+    while (positionOfAngleBracket != std::string::npos) {
+        if (typelibName.at(positionOfAngleBracket+1) != '/') {
+            typelibName.insert(positionOfAngleBracket+1, "/");
+        }
+        positionOfAngleBracket =
+            typelibName.find_first_of("<", positionOfAngleBracket+1);
+    }
+
+    // now go through the string and remove slashes in front of numbers (digits
+    // and minuses)
     size_t positionOfSlash = typelibName.find_first_of("/");
     while (positionOfSlash != std::string::npos) {
         // we wann actually access the character after the "/"
         size_t positionAfterSlash = positionOfSlash + 1;
         // guard against end-of-string
-        if (positionAfterSlash != typelibName.size()) {
+        if (positionAfterSlash >= typelibName.size()) {
             break;
         }
         // check if one of our conditions is met
         if (isdigit(typelibName.at(positionAfterSlash)) ||
             ('-' == typelibName.at(positionAfterSlash))) {
-            typelibName.erase(positionOfSlash);
+            typelibName.erase(positionOfSlash, 1);
         }
         // prepare for next round. the iterator "positionAfterSlash" is
         // actually not valid anymore, since we changed the string. but we know
@@ -134,7 +140,8 @@ std::string cxxToTypelibName(const std::string &cxxName) {
     return typelibName;
 }
 
-// helperfunction: convert a decl of a "template specialization" into a string in typelib-lingo
+// helperfunction: convert a decl of a "template specialization" into a string
+// in typelib-lingo
 std::string
 templateToTypelibName(const clang::ClassTemplateSpecializationDecl *tDecl) {
 
@@ -207,7 +214,7 @@ std::string cxxToTypelibName(const clang::NamedDecl* decl)
         typelibName += templateToTypelibName(tDecl);
     }
 
-    return typelibName;
+    return cxxToTypelibName(typelibName);
 }
 
 // underlying types like "int" or "float[4]"
