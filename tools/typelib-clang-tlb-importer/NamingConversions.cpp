@@ -86,6 +86,11 @@ typelibNameSplitTemplate(const std::string &typelibName) {
 std::string cxxToTypelibName(const std::string &cxxName) {
     std::string typelibName(cxxName);
 
+    if (typelibName.empty()) {
+        std::cerr << "Error: cxxToTypelibName() called with empty string?\n";
+        exit(EXIT_FAILURE);
+    }
+
     typelibName = stringFromToReplace(typelibName, "::", "/");
     // hmprf: this "hack" is still needed:
     typelibName = stringFromToReplace(typelibName, " [", "[");
