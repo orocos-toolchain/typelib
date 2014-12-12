@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <typelib>
-  <opaque name="/classes/C1" >
+  <opaque name="/classes/C1" size="0" >
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:61]]></metadata>
 
   </opaque>
-  <opaque name="/classes/C2" >
+  <opaque name="/classes/C2" size="0" >
   <metadata key="base_classes"><![CDATA[/classes/C1]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:62]]></metadata>
 
   </opaque>
-  <opaque name="/classes/C3" >
+  <opaque name="/classes/C3" size="0" >
   <metadata key="base_classes"><![CDATA[/S1]]></metadata>
 <metadata key="base_classes"><![CDATA[/classes/C1]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/classes.hh:63]]></metadata>
