@@ -416,6 +416,16 @@ TypelibBuilder::addArray(const std::string &canonicalTypeName,
                          clang::ASTContext &context) {
 
     const clang::QualType arrayElementType = arrayType->getElementType();
+
+    // arrays-of-arrays are not supported by typelib?
+    if (arrayType->getElementType().getTypePtr()->getTypeClass() ==
+        clang::Type::ConstantArray) {
+        std::cerr << "WARNING: ignoring '"
+                  << cxxToTypelibName(arrayType->desugar())
+                  << "' which is an array-of-an-array.\n";
+        return NULL;
+    }
+
     // before we can add the array in question we first have to check wether
     // the element type of the array is addable. so at first get the
     // typelib-name of the array elements...
