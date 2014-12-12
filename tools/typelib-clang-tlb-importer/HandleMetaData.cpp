@@ -173,3 +173,36 @@ void setMetaDataDoc(const clang::Decl *decl, Typelib::Type *type) {
 
     type->getMetaData().add("doc", stream.str());
 }
+
+void setMetaDataCxxname(const clang::NamedDecl *decl, Typelib::Type *type) {
+    clang::LangOptions o;
+    clang::PrintingPolicy p(o);
+
+    if (const clang::TypedefNameDecl *tDecl =
+            llvm::dyn_cast<clang::TypedefNameDecl>(decl)) {
+        // don't wanna have the tag-keyword here
+        p.SuppressTagKeyword = true;
+        // what the template-type itself is called
+        std::string typdefname = decl->getASTContext()
+                                     .getTypedefType(tDecl->getCanonicalDecl())
+                                     .getAsString(p);
+        // and to what type the typedef is pointing
+        std::string underlyingtypename = decl->getASTContext()
+                                             .getTypedefType(tDecl)
+                                             .getCanonicalType()
+                                             .getAsString(p);
+        // these are typedefs... not sure how to handle them here, depends on
+        // what we actually wanna do with the "cxxname" metadata... print for
+        // debugging I suppose... so we create a pseudo-cxx-statement showing
+        // the adept cxx-programmer what lead to this type... kinda...
+        type->getMetaData().add("cxxname", "typedef " + typdefname + " " +
+                                               underlyingtypename);
+    } else if (const clang::TypeDecl *tDecl =
+                   llvm::dyn_cast<clang::TypeDecl>(decl)) {
+        // adds the tage, like "class" or "union", to the printed type
+        p.SuppressTagKeyword = false;
+        type->getMetaData().add(
+            "cxxname",
+            decl->getASTContext().getTypeDeclType(tDecl).getAsString(p));
+    }
+}

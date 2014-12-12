@@ -6,6 +6,7 @@ class Type;
 }
 namespace clang {
 class Decl;
+class NamedDecl;
 }
 
 // extract source-loc of given clang::Decl as "/path/to/file:lineNumber"
@@ -20,5 +21,8 @@ void setMetaDataBaseClasses(const clang::Decl *decl, Typelib::Type *type);
 // extract comments attached given clang::Decl and add them as meta-data to
 // the Typelib::Type
 void setMetaDataDoc(const clang::Decl *decl, Typelib::Type *type);
+// for debugging and pretty-printing well add the actual qualified name as
+// additional metadata
+void setMetaDataCxxname(const clang::NamedDecl *decl, Typelib::Type *type);
 
 #endif /*HANDLEMETADATA_H*/
