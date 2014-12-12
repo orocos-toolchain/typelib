@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include <clang/AST/DeclTemplate.h>
-#include <clang/AST/PrettyPrinter.h>
+#include <clang/AST/ASTContext.h>
 
 // helperfunction: using the given string, looking up all instances of "from"
 // and replacing them with "to" and returning the new string
@@ -94,6 +94,8 @@ std::string cxxToTypelibName(const std::string &cxxName) {
     typelibName = stringFromToReplace(typelibName, "::", "/");
     // hmprf: this "hack" is still needed:
     typelibName = stringFromToReplace(typelibName, " [", "[");
+    typelibName = stringFromToReplace(typelibName, "> ", ">");
+    typelibName = stringFromToReplace(typelibName, "< ", "<");
 
     // in case we are called with the QualifiedNames member-variables of a
     // template, the full template-name is in the string. so we have to handle
@@ -140,81 +142,24 @@ std::string cxxToTypelibName(const std::string &cxxName) {
     return typelibName;
 }
 
-// helperfunction: convert a decl of a "template specialization" into a string
-// in typelib-lingo
-std::string
-templateToTypelibName(const clang::ClassTemplateSpecializationDecl *tDecl) {
-
-    if (!tDecl->getTemplateArgs().size())
-        return "";
-
-    std::string retval("<");
-
-    const clang::TemplateArgumentList &tmpArgs(tDecl->getTemplateArgs());
-    for (size_t idx = 0; idx < tmpArgs.size(); idx++) {
-
-        std::string toBeAppended;
-        switch (tmpArgs.get(idx).getKind()) {
-        case clang::TemplateArgument::Declaration:
-            /* std::cerr */
-            /*     << " -- template arg declaration: " */
-            /*     << tmpArgs.get(idx).getAsDecl()->getQualifiedNameAsString() << "\n"; */
-            toBeAppended = cxxToTypelibName(
-                tmpArgs.get(idx).getAsDecl()->getQualifiedNameAsString());
-            break;
-        case clang::TemplateArgument::Type: {
-            std::string typelibNameOfTemplateArg = cxxToTypelibName(tmpArgs.get(idx).getAsType());
-            /* std::cerr << " -- template arg type: " << typelibNameOfTemplateArg << "\n"; */
-            toBeAppended = typelibNameOfTemplateArg;
-        } break;
-        case clang::TemplateArgument::Integral:
-            /* std::cerr << " -- template arg integral: " */
-            /*           << tmpArgs.get(idx).getAsIntegral().toString(10) << "\n"; */
-            toBeAppended = tmpArgs.get(idx).getAsIntegral().toString(10);
-            break;
-        case clang::TemplateArgument::Template:
-            std::cerr << " -- template arg template expansion... recursion? "
-                         "not implemented yet... but should be easy\n";
-            // toBeAppended = templateToTypelibName(tmpArgs.get(idx).getAsDecl());
-            exit(EXIT_FAILURE);
-            break;
-        default:
-            std::cerr << " -- template arg unhandled case "
-                      << tmpArgs.get(idx).getKind() << "\n";
-            exit(EXIT_FAILURE);
-        }
-
-        // having a "static vector<string>" somewhere containing
-        // "to-be-skipped" template-arguments.
-        if (IgnoredOrRenamedType::isTemplateArgumentIgnored(toBeAppended))
-            continue;
-
-        // we need commas as separator at certain places
-        if (idx != 0)
-            retval += "," + toBeAppended;
-        else
-            retval += toBeAppended;
-    }
-
-    // and finally close everything
-    retval += ">";
-
-    return retval;
-}
-
 std::string cxxToTypelibName(const clang::NamedDecl* decl)
 {
+    clang::LangOptions o;
+    clang::PrintingPolicy p(o);
+    p.SuppressTagKeyword = true;
+
     // just convert the name
-    std::string typelibName(cxxToTypelibName(decl->getQualifiedNameAsString()));
-
-    // note: template declarations as such and partial specializations are ignored here!
-    if (const clang::ClassTemplateSpecializationDecl *tDecl =
-            llvm::dyn_cast<clang::ClassTemplateSpecializationDecl>(decl)) {
-
-        typelibName += templateToTypelibName(tDecl);
+    if (const clang::TypedefNameDecl *tDecl = llvm::dyn_cast<clang::TypedefNameDecl>(decl)) {
+        return cxxToTypelibName(tDecl->getQualifiedNameAsString());
+    }else if (const clang::TypeDecl *tDecl = llvm::dyn_cast<clang::TypeDecl>(decl)) {
+        return cxxToTypelibName(decl->getASTContext()
+                                    .getTypeDeclType(tDecl)
+                                    .getCanonicalType()
+                                    .getAsString(p));
+    } else {
+        std::cerr << "woooha\n";
+        exit(-1);
     }
-
-    return cxxToTypelibName(typelibName);
 }
 
 // underlying types like "int" or "float[4]"
