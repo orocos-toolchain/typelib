@@ -194,6 +194,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
     // registry to get the type-pointer of the actual type... meh...
     setMetaDataDoc(decl, registry.get_(canonicalTypeName));
     setMetaDataSourceFileLine(decl, registry.get_(canonicalTypeName));
+    setMetaDataCxxname(decl, registry.get_(canonicalTypeName));
 
     return &newContainer;
 }
@@ -232,6 +233,7 @@ void TypelibBuilder::registerOpaque(const clang::TypeDecl* decl)
     // and the file-location for the decl in the metadata
     setMetaDataSourceFileLine(decl, opaqueType);
     setMetaDataDoc(decl, opaqueType);
+    setMetaDataCxxname(decl, opaqueType);
 
     // and special care if this is a typedef: we have to note an alias from the
     // given opaque to the actual type.
@@ -460,6 +462,7 @@ TypelibBuilder::addEnum(const std::string &canonicalTypeName,
 
     setMetaDataSourceFileLine(decl, enumVal);
     setMetaDataDoc(decl, enumVal);
+    setMetaDataCxxname(decl, enumVal);
 
     registry.add(enumVal);
 
@@ -565,6 +568,7 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
     setMetaDataSourceFileLine(decl, compound);
     setMetaDataDoc(decl, compound);
     setMetaDataBaseClasses(decl, compound);
+    setMetaDataCxxname(decl, compound);
 
     std::cout << "Finally adding Compound '" << canonicalTypeName
               << "' aka '"

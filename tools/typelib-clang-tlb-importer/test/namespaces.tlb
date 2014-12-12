@@ -21,7 +21,8 @@
     <field name="C" type="/int8_t" offset="16">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/namespaces.hh:16]]></metadata>
+  <metadata key="cxxname"><![CDATA[struct N1::N2::S1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/namespaces.hh:16]]></metadata>
 
   </compound>
 </typelib>
