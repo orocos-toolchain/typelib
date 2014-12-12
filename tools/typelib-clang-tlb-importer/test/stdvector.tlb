@@ -25,13 +25,16 @@
 
   </compound>
   <container  name="/std/vector&lt;/double&gt;" of="/double" size="24" kind="/std/vector" >
-  
+  <metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/stl_vector.h:213]]></metadata>
+
   </container>
   <container  name="/std/vector&lt;/float&gt;" of="/float" size="24" kind="/std/vector" >
-  
+  <metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/stl_vector.h:213]]></metadata>
+
   </container>
   <container  name="/std/vector&lt;/timespec&gt;" of="/timespec" size="24" kind="/std/vector" >
-  
+  <metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/stl_vector.h:213]]></metadata>
+
   </container>
   <compound name="/stdvector/C1" size="48" >
     <field name="v" type="/std/vector&lt;/double&gt;[2]" offset="0">

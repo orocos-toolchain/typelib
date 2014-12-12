@@ -9,7 +9,8 @@
   <alias name="/char" source="/int8_t"/>
   <alias name="/wchar_t" source="/int32_t"/>
   <container  name="/std/string" of="/int8_t" size="8" kind="/std/string" >
-  
+  <metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/basic_string.tcc:1132]]></metadata>
+
   </container>
   <alias name="/std/basic_string&lt;/char&gt;" source="/std/string"/>
   <compound name="/strings/C3" size="12" >
