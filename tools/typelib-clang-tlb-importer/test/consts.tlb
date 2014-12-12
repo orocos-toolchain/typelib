@@ -14,7 +14,8 @@
     <field name="m3" type="/uint64_t" offset="16">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/consts.hh:17]]></metadata>
+  <metadata key="cxxname"><![CDATA[struct consts::C1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/consts.hh:17]]></metadata>
 
   </compound>
   <alias name="/consts/my_const_typedef" source="/uint64_t"/>

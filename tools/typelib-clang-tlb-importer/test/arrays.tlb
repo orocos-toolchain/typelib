@@ -24,7 +24,8 @@
     <field name="tv_nsec" type="/int64_t" offset="8">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
+  <metadata key="cxxname"><![CDATA[struct timespec]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
 
   </compound>
   <alias name="/unsigned int" source="/uint32_t"/>
@@ -36,7 +37,8 @@
     <field name="m1" type="/int32_t" offset="32">
     
     </field>
-  <metadata key="doc"><![CDATA[ more text, formatted to be able to be extracted as a
+  <metadata key="cxxname"><![CDATA[class arrays::C1]]></metadata>
+<metadata key="doc"><![CDATA[ more text, formatted to be able to be extracted as a
  "clang::comments::FullComment". blalba. more text. the same wrapped inside a container -- detected and exported]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.hh:41]]></metadata>
 
@@ -54,7 +56,8 @@
     <field name="a" type="/uint64_t" offset="2056">
     
     </field>
-  <metadata key="doc"><![CDATA[ inspired from "laser.h" but, as a courtesy, with a BlockCommandComment]]></metadata>
+  <metadata key="cxxname"><![CDATA[struct arrays::D1]]></metadata>
+<metadata key="doc"><![CDATA[ inspired from "laser.h" but, as a courtesy, with a BlockCommandComment]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.hh:14]]></metadata>
 
   </compound>
