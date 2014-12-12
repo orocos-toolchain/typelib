@@ -362,10 +362,16 @@ Container::ContainerFactory Vector::getFactory() const { return factory; }
 
 Type const& String::getElementType(Typelib::Registry const& registry)
 {
+    std::string element_type_name;
     if (std::numeric_limits<char>::is_signed)
-        return *registry.get("/int8_t");
+        element_type_name = "/int8_t";
     else
-        return *registry.get("/uint8_t");
+        element_type_name = "/uint8_t";
+
+    Type const* element_type = registry.get(element_type_name);
+    if (!element_type)
+        throw std::runtime_error("cannot find string element " + element_type_name + " in registry");
+    return *element_type;
 }
 String::String(Typelib::Registry const& registry)
     : Container("/std/string", "/std/string", getNaturalSize(), String::getElementType(registry)) {}

@@ -31,6 +31,16 @@ static VALUE kernel_is_numeric(VALUE klass, VALUE object)
 }
 
 
+
+static VALUE typelib_is_big_endian(VALUE mod)
+{
+#if defined(BOOST_BIG_ENDIAN)
+    return Qtrue;
+#elif defined(BOOST_LITTLE_ENDIAN)
+    return Qfalse;
+#endif
+}
+
 extern "C" void Init_typelib_ruby()
 {
     mTypelib  = rb_define_module("Typelib");
@@ -40,6 +50,8 @@ extern "C" void Init_typelib_ruby()
     Typelib_init_memory();
     Typelib_init_metadata();
     
+    rb_define_singleton_method(mTypelib, "big_endian?", RUBY_METHOD_FUNC(typelib_is_big_endian), 0);
+
     rb_define_singleton_method(rb_mKernel, "immediate?", RUBY_METHOD_FUNC(kernel_is_immediate), 1);
     rb_define_singleton_method(rb_mKernel, "numeric?", RUBY_METHOD_FUNC(kernel_is_numeric), 1);
 }

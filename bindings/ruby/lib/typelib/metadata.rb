@@ -15,6 +15,10 @@ module Typelib
         def []=(index,value)
             set(index,value)
         end
+        def set(key, *values)
+            clear(key)
+            add(key, *values)
+        end
     end
 end
 

@@ -24,6 +24,8 @@ namespace Typelib
     private:
         Map m_values;
     public:
+        /** Tests whether there is at least one value for the given key */
+        bool include(std::string const& key) const;
 
         /** Returns the key => values map for all values stored in this metadata
          * object
@@ -34,6 +36,12 @@ namespace Typelib
          * removing all previously known value(s) for that key
          */
         void set(std::string const& key, std::string const& value);
+
+        /** Adds a set of metadata values for the given key, Existing values are
+         * retained. The set can be empty in which case include(key) will return
+         * true but get(key) will return an empty set.
+         */
+        void add(std::string const& key, Values const& value);
 
         /** Adds a metadata value for the given key, Existing values are
          * retained.
@@ -277,12 +285,13 @@ namespace Typelib
     {
     public:
         enum NumericCategory
-        { 
-	    SInt = Type::NumberOfValidCategories, /// signed integer
-	    UInt,			  /// unsigned integer
-	    Float,			  /// floating point
-	    NumberOfValidCategories
-	};
+        {
+            SInt = Type::NumberOfValidCategories, /// signed integer
+            UInt,                                 /// unsigned integer
+            Float,                                /// floating point
+            NumberOfValidCategories /// overall number of valid categories,
+                                    /// including the ones in the base-class
+        };
 
 	/** The category of this numeric type */
         NumericCategory getNumericCategory() const;

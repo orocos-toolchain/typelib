@@ -193,6 +193,11 @@ namespace Typelib
         m_metadata->merge(other.getMetaData());
     }
 
+    bool MetaData::include(std::string const& key) const
+    {
+        return m_values.find(key) != m_values.end();
+    }
+
     MetaData::Map const& MetaData::get() const
     {
         return m_values;
@@ -215,6 +220,15 @@ namespace Typelib
     void MetaData::add(std::string const& key, std::string const& value)
     {
         m_values[key].insert(value);
+    }
+
+    void MetaData::add(std::string const& key, Values const& values)
+    {
+        // This ensures that m_values[key] is at least initialized with an empty
+        // Values object
+        Values& key_values = m_values[key];
+        for (Values::const_iterator it = values.begin(); it != values.end(); ++it)
+            key_values.insert(*it);
     }
 
     void MetaData::clear(std::string const& key)
