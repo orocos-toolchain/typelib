@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <typelib>
-  <opaque name="/Eigen/Quaternion&lt;/double&gt;" >
+  <opaque name="/Eigen/Quaternion&lt;/double&gt;" size="0" >
   
   </opaque>
-  <opaque name="/Eigen/Quaternionf" >
+  <opaque name="/Eigen/Quaternionf" size="0" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
 <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Geometry/Quaternion.h:295]]></metadata>
 
   </opaque>
-  <opaque name="/Eigen/Vector3d" >
+  <opaque name="/Eigen/Vector3d" size="0" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
 <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:395]]></metadata>
 
@@ -44,12 +44,20 @@
 <metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:126]]></metadata>
 
   </compound>
-  <opaque name="/templates/C1&lt;/double&gt;" >
+  <compound name="/Eigen/PlainObjectBase&lt;/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;&gt;" size="48" >
+    <field name="m_storage" type="/Eigen/DenseStorage&lt;/float,12,3,4,0&gt;" offset="0">
+    
+    </field>
+  <metadata key="base_classes"><![CDATA[/Eigen/MatrixBase</Eigen/Matrix</float,3,4,0,3,4>>]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/PlainObjectBase.h:87]]></metadata>
+
+  </compound>
+  <opaque name="/templates/C1&lt;/double&gt;" size="0" >
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:27]]></metadata>
 
   </opaque>
-  <opaque name="/templates/C1&lt;/float&gt;" >
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:37]]></metadata>
+  <opaque name="/templates/C1&lt;/float&gt;" size="0" >
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:38]]></metadata>
 
   </opaque>
   <compound name="/templates/C1&lt;/float[4]&gt;" size="16" >
@@ -63,7 +71,7 @@
     <field name="foo" type="/templates/C1&lt;/double&gt;" offset="0">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:33]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:34]]></metadata>
 
   </compound>
   <compound name="/templates/eigen/S1" size="48" >
@@ -95,7 +103,7 @@
     <field name="m2" type="/int32_t" offset="16">
     
     </field>
-  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:41]]></metadata>
+  <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:45]]></metadata>
 
   </compound>
 </typelib>

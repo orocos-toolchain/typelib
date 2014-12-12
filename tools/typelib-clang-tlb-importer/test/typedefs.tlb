@@ -8,10 +8,10 @@
   
   </numeric>
   <alias name="/unsigned char" source="/uint8_t"/>
-  <opaque name="/ns/C2&lt;/float&gt;" >
+  <opaque name="/ns/C2&lt;/float&gt;" size="0" >
   
   </opaque>
-  <opaque name="/ns/S2" >
+  <opaque name="/ns/S2" size="0" >
   <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.hh:47]]></metadata>
 
   </opaque>
@@ -25,7 +25,7 @@
   <alias name="/ns/anotherIntTypedef" source="/int32_t"/>
   <alias name="/ns/intTypedef" source="/int32_t"/>
   <alias name="/ns/intTypedefTypedef" source="/int32_t"/>
-  <opaque name="/ns/myTestTypedef" >
+  <opaque name="/ns/myTestTypedef" size="0" >
   <metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/typedefs.hh:43]]></metadata>
 
