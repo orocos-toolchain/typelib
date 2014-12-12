@@ -18,18 +18,16 @@ namespace arrays {
         MY_INT a;
     };
 
-    /** \deprecated
-     *
-     * Synchronized set of adaptive commands for a set of actuators
-     *
-     * Since this type contains std::vector, one must preallocate it
-     * and resize the mode and target vectors accordingly before
-     * updateHook().
-     */
+    // not detected because?
     double A1[3];
 
-    // two-dimensional array -- not detected
+    // two-dimensional array -- not detected as it is not record?
     double A2[3][5];
+    // two-dimensional fields in records...
+    class U1 {
+      public:
+        int unsupported_array_shoul_not_crash[1][2];
+    };
 
     // array of records -- also not detected
     struct timespec A3[2];
@@ -43,7 +41,6 @@ namespace arrays {
         struct timespec A3[2];
         int m1;
     };
-
 }
 
 #endif /*TEST_HEADER_DATA_ARRAYS_H*/
