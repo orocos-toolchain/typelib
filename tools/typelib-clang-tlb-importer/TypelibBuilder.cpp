@@ -541,14 +541,14 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
 
     if (!addMembersOfClassToCompound(*compound, canonicalTypeName, decl)) {
         std::cout << "Could not call 'addMembersOfClassToCompound()' for '"
-                  << canonicalTypeName << "' -- skipping compound.\n";
+                  << canonicalTypeName << "', skipping compound.\n";
         delete compound;
         return NULL;
     }
 
     if (compound->getFields().empty()) {
         std::cout << "Warning: Compound '" << canonicalTypeName
-                  << "' has no fields, will not add it to any database.\n";
+                  << "' has no fields, skipping compound.\n";
         delete compound;
         return NULL;
     }
