@@ -9,19 +9,19 @@
   <alias name="/char" source="/int8_t"/>
   <container  name="/std/string" of="/int8_t" size="8" kind="/std/string" >
   <metadata key="cxxname"><![CDATA[class std::basic_string<char>]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/basic_string.tcc:1132]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/bits/basic_string.tcc:1132]]></metadata>
 
   </container>
   <container  name="/std/vector&lt;/double&gt;" of="/double" size="24" kind="/std/vector" >
   <metadata key="cxxname"><![CDATA[class std::vector<double, class std::allocator<double> >]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/stl_vector.h:213]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/bits/stl_vector.h:213]]></metadata>
 
   </container>
   <alias name="/std/basic_string&lt;/char&gt;" source="/std/string"/>
   <alias name="/std/vector&lt;/double,/std/allocator&lt;/double&gt;&gt;" source="/std/vector&lt;/double&gt;"/>
   <container  name="/std/vector&lt;/std/string&gt;" of="/std/string" size="24" kind="/std/vector" >
   <metadata key="cxxname"><![CDATA[class std::vector<class std::basic_string<char>, class std::allocator<class std::basic_string<char> > >]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/stl_vector.h:213]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/bits/stl_vector.h:213]]></metadata>
 
   </container>
   <alias name="/std/vector&lt;/std/basic_string&lt;/char&gt;,/std/allocator&lt;/std/basic_string&lt;/char&gt;&gt;&gt;" source="/std/vector&lt;/std/string&gt;"/>

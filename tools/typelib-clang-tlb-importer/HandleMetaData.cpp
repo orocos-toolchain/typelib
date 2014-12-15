@@ -12,13 +12,52 @@
 
 #include "typelib/typemodel.hh"
 
+#include <unistd.h>
+
+// see http://stackoverflow.com/a/5525712/3520187
+std::string do_readlink(std::string const &path) {
+    char buff[PATH_MAX];
+    ssize_t len = ::readlink(path.c_str(), buff, sizeof(buff) - 1);
+    if (len != -1) {
+        buff[len] = '\0';
+        return std::string(buff);
+    } else {
+        return path;
+    }
+}
+
 void setMetaDataSourceFileLine(const clang::Decl *decl, Typelib::Type *type) {
     const clang::SourceManager &sm = decl->getASTContext().getSourceManager();
     const clang::SourceLocation &loc = sm.getExpansionLoc(decl->getLocStart());
 
+    // uses "readlink(3)" to normalize symlinks from system-header path. for
+    // example
+    //     "/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/$file"
+    // would be turned into
+    //     "/usr/include/c++/4.9/bits/$file"
+    // this was done by the gccxml-importer before. this is needed because the
+    // "preprocess" stage of clang++, run later to retrieve the "orogen_include",
+    // can output smth like
+    //     "/usr/bin/../lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/$file"
+    // which cannot be string-compared... so there, is would have to be flattend as well
+       clang::FileManager &fm = sm.getFileManager();
+    const clang::FileEntry *fileEntry = sm.getFileEntryForID(sm.getFileID(loc));
+    std::string dirName = fm.getCanonicalName(fileEntry->getDir()).str();
+    std::string fullFileName(fileEntry->getName());
+    std::string fileName = fullFileName.substr(fullFileName.find_last_of("/") + 1);
+    if (fileName.empty()) {
+        std::cerr << "ERROR: invalid filename '" << fileEntry->getDir()
+                  << "', no forward slash?\n";
+        exit(-1);
+    }
+    // some headers can be reached via two ways: actual filepath and symlink
+    // inside the ".orogen" folder -- a hack of really bad taste... anyhow,
+    // guard against this...
+    std::string filePath  = do_readlink(dirName+"/"+fileName);
+
     // typelib needs the '/path/to/file:column' information
     std::ostringstream stream;
-    stream << sm.getFilename(loc).str() << ":"
+    stream << filePath << ":"
            << sm.getExpansionLineNumber(loc);
     type->setPathToDefiningHeader(stream.str());
 
@@ -49,12 +88,30 @@ void setMetaDataOrogenInclude(const clang::Decl *decl, Typelib::Type *type) {
         /*           << " system header\n"; */
     }
 
-    if (lastValidLoc.isValid())
-        type->getMetaData().add("orogen_include",
-                                sm.getFilename(lastValidLoc).str());
-    else
+    // uses the FileManager together with the FileEntry to normalize symlinks
+    // from system-header path. for example
+    //     "/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/bits/stl_vector.h"
+    // into
+    //     "/usr/include/c++/4.9/bits"
+    clang::FileManager &fm = sm.getFileManager();
+    const clang::FileEntry *fileEntry = sm.getFileEntryForID(sm.getFileID(lastValidLoc));
+    std::string dirName = fm.getCanonicalName(fileEntry->getDir()).str();
+    std::string fileName(fileEntry->getName());
+    fileName = fileName.substr(fileName.find_last_of("/") + 1);
+    if (fileName.empty()) {
+        std::cerr << "ERROR: invalid filename '" << fileEntry->getDir()
+                  << "', no forward slash?\n";
+        exit(-1);
+    }
+
+    if (lastValidLoc.isValid()) {
+        type->getMetaData().add(
+            "orogen_include_x",
+            do_readlink(sm.getFilename(lastValidLoc).str()));
+    } else {
         std::cout << "setMetaDataOrogenInclude() Warning: could not find "
                      "suitable include-file for '" << type->getName() << "'\n";
+    }
 }
 
 void setMetaDataBaseClasses(const clang::Decl *decl, Typelib::Type *type) {
