@@ -57,7 +57,7 @@
     <value symbol="round_toward_neg_infinity" value="3"/>
     <value symbol="round_toward_zero" value="0"/>
   <metadata key="cxxname"><![CDATA[enum std::float_round_style]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/lib/gcc/x86_64-linux-gnu/4.9/../../../../include/c++/4.9/limits:156]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/limits:156]]></metadata>
 
   </enum>
   <compound name="/enums/S4" size="4" >
