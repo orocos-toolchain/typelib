@@ -21,6 +21,7 @@ namespace attribute_packed {
 
     // same member structure, but a class...
     class C1 {
+      public:
         uint8_t a;
         int b;
         int64_t c;
@@ -28,6 +29,7 @@ namespace attribute_packed {
         float e;
         uint16_t f;
     } __attribute__((packed));
+
 }
 
 #endif /*TEST_HEADER_DATA_ATTRIBUTE_PACKED_H*/

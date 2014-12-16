@@ -13,8 +13,9 @@ namespace classes {
 
     // we have a base-class with a member
     class BaseClass {
+      public:
         int a;
-
+        // some garbage:
         double thisIsSomeFancyFunction(struct timespec* input) {
             a = -10;
             float local_variable = 10000.0f;
@@ -61,6 +62,14 @@ namespace classes {
     class C1 { public: double a; };
     class C2 : public C1 { public: double b; };
     class C3 : public S1, private C1 { public: double c; };
+
+    class P1 {
+      public:
+        int a;
+      private:
+        int b;
+    };
+
 }
 
 #endif /*TEST_HEADER_DATA_CLASSES_H*/

@@ -462,6 +462,12 @@ TypelibBuilder::addEnum(const std::string &canonicalTypeName,
         return NULL;
     }
 
+    if (decl->getAccess() == clang::AS_private) {
+        std::cout << "Ignoring enum '" << canonicalTypeName
+                  << "' because the access is private\n";
+        return NULL;
+    }
+
     Typelib::Enum *enumVal = new Typelib::Enum(canonicalTypeName);
 
     for (clang::EnumDecl::enumerator_iterator it = decl->enumerator_begin();
@@ -556,9 +562,21 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
     // also add base-records of types...
     clang::CXXRecordDecl::base_class_const_iterator base;
     for (base = decl->bases_begin(); base != decl->bases_end(); base++) {
+
         // ...if they are cxx-records
         if (const clang::CXXRecordDecl *rDecl =
                 base->getType().getTypePtr()->getAsCXXRecordDecl()) {
+
+            // if we inherited a base-class privately: skip the base-classes
+            // and the whole compound
+            if (base->getAccessSpecifier() == clang::AS_private) {
+                std::cout << "Base-Class '" << base->getType().getAsString()
+                          << "' for '" << canonicalTypeName
+                          << "' is private, skipping compound.\n";
+                delete compound;
+                return NULL;
+            }
+
             // and if this is not possible for some of them, delete this
             // compound. this will keep too much base-classes in the registry
             // in case something went wrong... but I hope we can life with
@@ -571,6 +589,9 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
             if (!retval) {
                 std::cout << "Something went wrong during registerType for '"
                           << canonicalTypeName << "', but will continue nevertheless.\n";
+                // In retroperspective I'm not very sure why this case
+                // (non-addable baseclass) is not a reason to skip the whole
+                // compound...?
             }
         }
     }
@@ -611,6 +632,14 @@ bool TypelibBuilder::addMembersOfClassToCompound(
                 << "Warning, cannot add field '" << cxxToTypelibName(qualType)
                 << "' to record '" << canonicalTypeName
                 << "' because the field is an Anonymous Struct or Union\n";
+            return false;
+        }
+
+        if (fit->getAccess() == clang::AS_private) {
+            std::cout << "Warning, cannot add field '"
+                      << cxxToTypelibName(qualType) << "' to record '"
+                      << canonicalTypeName
+                      << "' because the access is private\n";
             return false;
         }
 

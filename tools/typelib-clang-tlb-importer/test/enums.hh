@@ -31,6 +31,7 @@ namespace enums {
     };
 
     class S3 {
+      public:
         E2_t A;
     };
 
