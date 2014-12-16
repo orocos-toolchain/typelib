@@ -33,9 +33,9 @@ namespace stdvector {
 
     // very fancy: array of vectors? who knows...
     class C1 {
+      public:
         myvec v[2];
     };
-
 }
 
 #endif /*TEST_HEADER_DATA_STDVECTOR_H*/
