@@ -35,6 +35,11 @@
 <metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/bits/stl_vector.h:213]]></metadata>
 
   </container>
+  <container  name="/std/vector&lt;/int32_t&gt;" of="/int32_t" size="24" kind="/std/vector" >
+  <metadata key="cxxname"><![CDATA[class std::vector<int, class std::allocator<int> >]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/bits/stl_vector.h:213]]></metadata>
+
+  </container>
   <container  name="/std/vector&lt;/timespec&gt;" of="/timespec" size="24" kind="/std/vector" >
   <metadata key="cxxname"><![CDATA[class std::vector<struct timespec, class std::allocator<struct timespec> >]]></metadata>
 <metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/bits/stl_vector.h:213]]></metadata>
@@ -42,7 +47,14 @@
   </container>
   <alias name="/std/vector&lt;/double,/std/allocator&lt;/double&gt;&gt;" source="/std/vector&lt;/double&gt;"/>
   <alias name="/std/vector&lt;/float,/std/allocator&lt;/float&gt;&gt;" source="/std/vector&lt;/float&gt;"/>
+  <alias name="/std/vector&lt;/int,/std/allocator&lt;/int&gt;&gt;" source="/std/vector&lt;/int32_t&gt;"/>
+  <container  name="/std/vector&lt;/std/vector&lt;/int32_t&gt;&gt;" of="/std/vector&lt;/int32_t&gt;" size="24" kind="/std/vector" >
+  <metadata key="cxxname"><![CDATA[class std::vector<class std::vector<int, class std::allocator<int> >, class std::allocator<class std::vector<int, class std::allocator<int> > > >]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/bits/stl_vector.h:213]]></metadata>
+
+  </container>
   <alias name="/std/vector&lt;/timespec,/std/allocator&lt;/timespec&gt;&gt;" source="/std/vector&lt;/timespec&gt;"/>
+  <alias name="/std/vector&lt;/std/vector&lt;/int,/std/allocator&lt;/int&gt;&gt;,/std/allocator&lt;/std/vector&lt;/int,/std/allocator&lt;/int&gt;&gt;&gt;&gt;" source="/std/vector&lt;/std/vector&lt;/int32_t&gt;&gt;"/>
   <compound name="/stdvector/C1" size="48" >
     <field name="v" type="/std/vector&lt;/double&gt;[2]" offset="0">
     
@@ -76,6 +88,14 @@
     </field>
   <metadata key="cxxname"><![CDATA[struct stdvector::S3]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:25]]></metadata>
+
+  </compound>
+  <compound name="/stdvector/S4" size="24" >
+    <field name="vecOfVec" type="/std/vector&lt;/std/vector&lt;/int32_t&gt;&gt;" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct stdvector::S4]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:30]]></metadata>
 
   </compound>
   <alias name="/stdvector/myvec" source="/std/vector&lt;/double&gt;"/>

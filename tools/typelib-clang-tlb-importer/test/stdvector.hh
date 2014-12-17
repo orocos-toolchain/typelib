@@ -26,7 +26,7 @@ namespace stdvector {
         myvec v2;
     };
 
-    // currently missing: vector of vector of builtin!
+    // vector of vector
     struct S4 {
         std::vector<std::vector<int> > vecOfVec;
     };

@@ -498,23 +498,9 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
         return NULL;
     }
 
-    if(!decl->hasDefinition())
-    {
-        std::cout << "Ignoring type '" << canonicalTypeName << "' as it has no definition " << std::endl;
-        return NULL;
-    }
-
     if(decl->isInjectedClassName())
     {
         std::cout << "Ignoring Type '" << canonicalTypeName << "' as it is injected" << std::endl;
-        return NULL;
-    }
-
-    // this check is on parole, because there might be "Typelib::Container" who
-    // can be added despite these features...?
-    if(decl->isPolymorphic() || decl->isAbstract())
-    {
-        std::cout << "Ignoring Type '" << canonicalTypeName << "' as it is polymorphic" << std::endl;
         return NULL;
     }
 
@@ -528,6 +514,20 @@ TypelibBuilder::addRecord(const std::string &canonicalTypeName,
     // if there is a container for this record we'll fall back and return it
     if(Typelib::Type const* type = checkRegisterContainer(canonicalTypeName, decl)) {
         return type;
+    }
+
+    if(!decl->hasDefinition())
+    {
+        std::cout << "Ignoring type '" << canonicalTypeName << "' as it has no definition " << std::endl;
+        return NULL;
+    }
+
+    // this check is on parole, because there might be "Typelib::Container" who
+    // can be added despite these features...?
+    if(decl->isPolymorphic() || decl->isAbstract())
+    {
+        std::cout << "Ignoring Type '" << canonicalTypeName << "' as it is polymorphic" << std::endl;
+        return NULL;
     }
 
     Typelib::Compound *compound = new Typelib::Compound(canonicalTypeName);
