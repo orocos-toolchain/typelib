@@ -42,7 +42,14 @@ module Typelib
             
             # calling the the installed tlb-import-tool, hopefully found in the
             # install-folder via PATH.
-            finalCmd = "typelib-clang-tlb-importer -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- #{include_path} -x c++"
+            #
+            # NOTE: the added 'isystem' flag to point clang (3.4) to its own correct
+            # header path. this is needed on ubuntu 14.04 (debian jessie works
+            # without but does not seem to break). to see whats going wrong
+            # compare the output of "echo '#include <stdarg.h>'|clang -xc -v -"
+            # and read here:
+            #   https://github.com/Valloric/YouCompleteMe/issues/303#issuecomment-17656962
+            finalCmd = "typelib-clang-tlb-importer -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- -isystem/usr/bin/../lib/clang/3.4/include #{include_path} -x c++"
 
             # and finally call importer-tool
             retval = system(finalCmd)
