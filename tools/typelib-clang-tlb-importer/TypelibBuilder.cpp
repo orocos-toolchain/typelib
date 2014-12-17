@@ -79,15 +79,6 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
         return NULL;
     }
 
-    // the name of the Container -- basically we need a translation of the
-    // "Namespace::Class" part of the record-name. If the decl would point to a
-    // template, the cxxToTypelibName() whould convert and append the template
-    // as well.
-    if (decl->getDescribedClassTemplate()) {
-        std::cout << "\n\n";
-        decl->getDescribedClassTemplate()->dump();
-        std::cout << "\n\n";
-    }
     // this is problematic...
     std::string containerName =
         cxxToTypelibName(decl->getUnderlyingDecl()->getQualifiedNameAsString());
