@@ -747,12 +747,24 @@ module Typelib
             registry
         end
 
+        class << self
+            # Set of options that should be passed to the gccxml binary
+            #
+            # it is usually a set of options required to workaround the
+            # limitations of gccxml, as e.g. passing -DEIGEN_DONT_VECTORIZE when
+            # importing the Eigen headers
+            #
+            # @return [Array]
+            attr_reader :gccxml_default_options
+        end
+        @gccxml_default_options = Shellwords.split(ENV['TYPELIB_GCCXML_DEFAULT_OPTIONS'] || '')
+
         # Runs gccxml on the provided file and with the given options, and
         # return the Nokogiri::XML object representing the result
         #
         # Raises RuntimeError if gccxml failed to run
         def self.gccxml(file, options)
-            cmdline = ["gccxml"]
+            cmdline = ["gccxml", *gccxml_default_options]
             if raw = options[:rawflags]
                 cmdline.concat(raw)
             end
@@ -814,7 +826,7 @@ module Typelib
                     io.puts "#include <#{path}>"
                 end
                 io.flush
-                result = IO.popen(["gccxml", "--preprocess", *includes, *defines, io.path]) do |gccxml_io|
+                result = IO.popen(["gccxml", "--preprocess", *includes, *defines, *gccxml_default_options, io.path]) do |gccxml_io|
                     gccxml_io.read
                 end
                 if !$?.success?
