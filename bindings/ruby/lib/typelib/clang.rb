@@ -2,11 +2,9 @@ require 'set'
 require 'tempfile'
 
 module Typelib
-
-    class Registry
+    module CLangLoader
         # Imports the given C++ file into the registry using CLANG
-        def self.load_from_clang(registry, file, kind, options)
-
+        def self.load(registry, file, kind, options)
             # FIXME: the second argument "file" contains the preprocessed
             # output created in an earlier stage. it is not used here, but the
             # list of actual header-files in the "options" hash. not having to
@@ -67,82 +65,34 @@ module Typelib
                 end
             end
         end
-        TYPE_HANDLERS['c'] = method(:load_from_clang)
-    end
 
-    # some functions copied fs-is rom the original implementation of
-    # "gccxml.rb" for reusing. they do string-manipulation and convenience
-    # stuff on cxx-names.
-    class ClangLoader
-        def self.parse_template(name)
-            tokens = template_tokenizer(name)
+        def self.preprocess(files, kind, options)
+            includes = options[:include].map { |v| "-I#{v}" }
+            defines  = options[:define].map { |v| "-D#{v}" }
 
-            type_name = tokens.shift
-            arguments = collect_template_arguments(tokens)
-            arguments.map! do |arg|
-                arg.join("")
-            end
-            return type_name, arguments
-        end
-
-        def self.collect_template_arguments(tokens)
-            level = 0
-            arguments = []
-            current = []
-            while !tokens.empty?
-                case tk = tokens.shift
-                when "<"
-                    level += 1
-                    if level > 1
-                        current << "<" << tokens.shift
-                    else
-                        current = []
-                    end
-                when ">"
-                    level -= 1
-                    if level == 0
-                        arguments << current
-                        current = []
-                        break
-                    else
-                        current << ">"
-                    end
-                when ","
-                    if level == 1
-                        arguments << current
-                        current = []
-                    else
-                        current << "," << tokens.shift
-                    end
-                else
-                    current << tk
+            # create a tempfile where all files used in the typekit are
+            # just "dummy-included" to create one big compile unit. this is
+            # supposed to trick the compiler into beeing faster...
+            Tempfile.open('clang_preprocess_') do |io|
+                files.each do |path|
+                    io.puts "#include <#{path}>"
                 end
-            end
-            if !current.empty?
-                arguments << current
-            end
+                io.flush
 
-            return arguments
-        end
-
-        def self.template_tokenizer(name)
-            suffix = name
-            result = []
-            while !suffix.empty?
-                suffix =~ /^([^<,>]*)/
-                match = $1.strip
-                if !match.empty?
-                    result << match
+                # note that we have to specify the language for a modern
+                # compiler so that it is not confused by the Tempfile --
+                # which has no ending.
+                #
+                # just to be sure to have exactly the same compiler as the
+                # importer we enforce "clang-3.4"
+                result = IO.popen(["clang-3.4", "-xc++", "-E", *includes, *defines, io.path]) do |clang_io|
+                    clang_io.read
                 end
-                char   = $'[0, 1]
-                suffix = $'[1..-1]
-
-                break if !suffix
-
-                result << char
+                if !$?.success?
+                    raise ArgumentError, "resolve_toplevel_include_mapping(): Failed to preprocess one of #{files.join(", ")}"
+                end
+                result
             end
-            result
         end
-
     end
 end

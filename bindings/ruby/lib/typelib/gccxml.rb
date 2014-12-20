@@ -1,5 +1,6 @@
 require 'set'
 require 'tempfile'
+require 'shellwords'
 
 module Typelib
     # Intermediate representation of a parsed GCCXML output, containing only
@@ -177,75 +178,17 @@ module Typelib
         end
 
         def self.template_tokenizer(name)
-            suffix = name
-            result = []
-            while !suffix.empty?
-                suffix =~ /^([^<,>]*)/
-                match = $1.strip
-                if !match.empty?
-                    result << match
-                end
-                char   = $'[0, 1]
-                suffix = $'[1..-1]
-
-                break if !suffix
-
-                result << char
-            end
-            result
+            CXX.template_tokenizer(name)
         end
 
         # Parses the Typelib or C++ type name +name+ and returns basename,
         # template_arguments
         def self.parse_template(name)
-            tokens = template_tokenizer(name)
-
-            type_name = tokens.shift
-            arguments = collect_template_arguments(tokens)
-            arguments.map! do |arg|
-                arg.join("")
-            end
-            return type_name, arguments
+            CXX.parse_template(name)
         end
 
         def self.collect_template_arguments(tokens)
-            level = 0
-            arguments = []
-            current = []
-            while !tokens.empty?
-                case tk = tokens.shift
-                when "<"
-                    level += 1
-                    if level > 1
-                        current << "<" << tokens.shift
-                    else
-                        current = []
-                    end
-                when ">"
-                    level -= 1
-                    if level == 0
-                        arguments << current
-                        current = []
-                        break
-                    else
-                        current << ">"
-                    end
-                when ","
-                    if level == 1
-                        arguments << current
-                        current = []
-                    else
-                        current << "," << tokens.shift
-                    end
-                else
-                    current << tk
-                end
-            end
-            if !current.empty?
-                arguments << current
-            end
-
-            return arguments
+            CXX.collect_template_arguments(tokens)
         end
 
         def typelib_to_cxx(name)
@@ -838,11 +781,8 @@ module Typelib
                 return io.read
             end
         end
-    end
 
-    class Registry
-        # Imports the given C++ file into the registry using GCC-XML
-        def self.load_from_gccxml(registry, file, kind, options)
+        def self.load(registry, file, kind, options)
             required_files = (options[:required_files] || [file]).
                 map { |f| File.expand_path(f) }
 
@@ -856,7 +796,7 @@ module Typelib
             # Add the standard C++ types (such as /std/string)
             Registry.add_standard_cxx_types(registry)
 
-            xml = GCCXMLLoader.gccxml(file, options)
+            xml = gccxml(file, options)
             converter = GCCXMLLoader.new
             converter.opaques = opaques
             if opaques = options[:opaques]
@@ -866,13 +806,37 @@ module Typelib
             registry.merge(gccxml_registry)
         end
 
+        def self.preprocess(files, kind, options)
+            includes = options[:include].map { |v| "-I#{v}" }
+            defines  = options[:define].map { |v| "-D#{v}" }
+
+            Tempfile.open('orogen_gccxml_input') do |io|
+                files.each do |path|
+                    io.puts "#include <#{path}>"
+                end
+                io.flush
+                result = IO.popen(["gccxml", "--preprocess", *includes, *defines, io.path]) do |gccxml_io|
+                    gccxml_io.read
+                end
+                if !$?.success?
+                    raise ArgumentError, "failed to preprocess #{files.join(" ")}"
+                end
+                result
+            end
+        end
+    end
+
+    class Registry
+        # @deprecated use {GCCXMLLoader.load} and {CXX.load}
+        def self.load_from_gccxml(registry, file, kind, options)
+            GCCXMLLoader.load(registry, file, kind, options)
+        end
+
         # Returns true if Registry#import will use GCCXML to load the given
         # file
         def self.uses_gccxml?(path, kind = 'auto')
             (handler_for(path, kind) == method(:load_from_gccxml))
         end
-
-        TYPE_HANDLERS['c'] = method(:load_from_gccxml)
     end
 end
 

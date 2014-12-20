@@ -320,10 +320,9 @@ module Typelib
     end
 end
 
-if ENV['TYPELIB_USE_GCCXML'] != '0'
-    require 'typelib/gccxml'
-    require 'typelib/clang'
-end
+require 'typelib/gccxml'
+require 'typelib/clang'
+require 'typelib/cxx'
 
 # Finally, set guard types on the root classes
 module Typelib
