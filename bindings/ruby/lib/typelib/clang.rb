@@ -13,54 +13,59 @@ module Typelib
             # pass 100k likes of text might improve performance?
             
             # this gives us an array of opaques
-            opaques = options[:opaques]
-            
-            # create a registry from the given opaques, so that the importer can
-            # load the informations to use it sduring processing.
-            #
-            # FIXME: reuse some code for creating a "opaque.tlb"
-            opaqueReg = Tempfile.open("tlb-import-opaques-")
-            opaqueReg << "<typelib>"
-            opaques.each do |opaque|
-                opaqueReg << "<opaque name=\"#{opaque.gsub('<', '&lt;').gsub('>', '&gt;')}\" size=\"0\" />"
+            opaque_registry = new
+            options[:opaques].each do |opaque_t|
+                opaque_registry.create_opaque(opaque_t, 0)
             end
-            opaqueReg << "</typelib>"
-            opaqueReg.flush
-            
-            # a file where the importer can store its results for merging into
-            # our database
-            tmpReg = Tempfile.open("tlb-save-registry-")
             
             include_dirs = options[:include_paths]
-            include_path = include_dirs.map { |d| "-I#{d}" }.join(" ")
+            include_path = include_dirs.map { |d| "-I#{d}" }
 
             # which files actually to operate on
             #
             # FIXME: calling the importer on this list of files can be
             # parallelized?
-            header_files = options[:required_files].join(" ") 
+            header_files = options[:required_files]
             
-            # calling the the installed tlb-import-tool, hopefully found in the
-            # install-folder via PATH.
+            # create a registry from the given opaques, so that the importer can
+            # load the informations to use it sduring processing.
             #
-            # NOTE: the added 'isystem' flag to point clang (3.4) to its own correct
-            # header path. this is needed on ubuntu 14.04 (debian jessie works
-            # without but does not seem to break). to see whats going wrong
-            # compare the output of "echo '#include <stdarg.h>'|clang -xc -v -"
-            # and read here:
-            #   https://github.com/Valloric/YouCompleteMe/issues/303#issuecomment-17656962
-            finalCmd = "typelib-clang-tlb-importer -opaquePath=\"#{opaqueReg.path}\" -tlbSavePath=\"#{tmpReg.path}\" #{header_files} -- -isystem/usr/bin/../lib/clang/3.4/include #{include_path} -x c++"
-
-            # and finally call importer-tool
-            retval = system(finalCmd)
-            if retval != true
-                raise RuntimeError, "typelib-clang-tlb-importer failed!"
-            end
+            # FIXME: reuse some code for creating a "opaque.tlb"
+            Tempfile.open('tlb-clang-opaques-') do |opaque_registry_io|
+                opaque_registry_io.write opaque_registry.to_xml
+                opaque_registry_io.flush
             
-            # read the registry created by the tool back into this ruby process
-            result = Registry.from_xml(tmpReg.read())
-            # and merge it into our registry
-            registry.merge(result)
+                Tempfile.open('tlb-clang-output-') do |clang_output_io|
+                    # calling the the installed tlb-import-tool, hopefully found in the
+                    # install-folder via PATH.
+                    #
+                    # NOTE: the added 'isystem' flag to point clang (3.4) to its own correct
+                    # header path. this is needed on ubuntu 14.04 (debian jessie works
+                    # without but does not seem to break). to see whats going wrong
+                    # compare the output of "echo '#include <stdarg.h>'|clang -xc -v -"
+                    # and read here:
+                    #   https://github.com/Valloric/YouCompleteMe/issues/303#issuecomment-17656962
+                    command_line =
+                        ['typelib-clang-tlb-importer',
+                         "-opaquePath=#{opaque_registry_io.path}",
+                         "-tlbSavePath=#{clang_output_io.path}",
+                         *header_files,
+                         '--',
+                         '-isystem/usr/bin/../lib/clang/3.4/include',
+                         *include_path,
+                         "-x", "c++"]
+
+                    # and finally call importer-tool
+                    if !system(*command_line)
+                        raise RuntimeError, "typelib-clang-tlb-importer failed!"
+                    end
+
+                    # read the registry created by the tool back into this ruby process
+                    result = Registry.from_xml(clang_output_io.read)
+                    # and merge it into our registry
+                    registry.merge(result)
+                end
+            end
         end
         TYPE_HANDLERS['c'] = method(:load_from_clang)
     end
