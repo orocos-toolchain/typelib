@@ -352,7 +352,11 @@ module Typelib
         end
 
         def source_file_for(xmlnode)
-            info.id_to_node[xmlnode['file']]['name']
+            if file = info.id_to_node[xmlnode['file']]['name']
+                File.realpath(file)
+            end
+        rescue Errno::ENOENT
+            File.expand_path(file)
         end
 
         def source_file_content(file)
