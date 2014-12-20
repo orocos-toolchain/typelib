@@ -349,8 +349,13 @@ Container const& Vector::factory(Registry& registry, std::list<Type const*> cons
         registry.add(new_type);
         return *new_type;
     }
-    else
-        return dynamic_cast<Container const&>(*registry.get(full_name));
+
+    const Type *type = registry.get(full_name);
+    if (type->getCategory() != Type::Container) {
+        throw BadCategory(type->getCategory(), Type::Container);
+    } else {
+        return dynamic_cast<Container const &>(*type);
+    }
 }
 Container::ContainerFactory Vector::getFactory() const { return factory; }
 

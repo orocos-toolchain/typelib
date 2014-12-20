@@ -123,7 +123,7 @@ namespace Typelib
 	    else
 		throw DefinitionMismatch(getName());
 	}
-        return 0;
+        return NULL;
     }
     Type const& Type::merge(Registry& registry, RecursionStack& stack) const
     {
@@ -303,7 +303,7 @@ namespace Typelib
             if (it -> getName() == name)
                 return &(*it);
         }
-        return 0;
+        return NULL;
     }
     unsigned int Compound::getTrailingPadding() const
     {
