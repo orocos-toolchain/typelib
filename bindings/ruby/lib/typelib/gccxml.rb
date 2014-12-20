@@ -771,7 +771,6 @@ module Typelib
 
             cmdline << file
 
-            tlb = nil
             Tempfile.open('typelib_gccxml') do |io|
                 cmdline << "-fxml=#{io.path}"
                 if !system(*cmdline)
