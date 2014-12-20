@@ -451,6 +451,8 @@ Container::MarshalOps::const_iterator String::load(
     std::string* string_ptr =
         reinterpret_cast< std::string* >(container_ptr);
 
+    string_ptr->clear();
+        
     std::vector<uint8_t> buffer;
     buffer.resize(element_count);
     stream.read(&buffer[0], element_count);
