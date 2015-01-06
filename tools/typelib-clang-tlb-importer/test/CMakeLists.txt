@@ -50,7 +50,7 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
     add_custom_target(create-test-${HEADER_NAME}.dump
         COMMAND clang-3.4
             -Xclang -ast-dump -fsyntax-only ${HEADER_FILE} ${ADDITIONAL_TEST_FLAGS} > ${DUMP_FILE}
-        COMMAND less -Sr ${DUMP_FILE}
+        COMMAND less -SR ${DUMP_FILE}
         COMMAND echo "ast-dump saved to '${DUMP_FILE}'"
         )
     #
