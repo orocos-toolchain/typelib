@@ -119,5 +119,33 @@ describe Typelib::NumericType do
             end
         end
     end
+
+    describe "the bool type" do
+        attr_reader :bool_t
+        before do
+            registry = Typelib::CXXRegistry.new
+            @bool_t = registry.get '/bool'
+        end
+
+        it "is converted to ruby false if zero" do
+            v = bool_t.new
+            v.zero!
+            assert_same false, Typelib.to_ruby(v)
+        end
+        it "is converted to ruby true if non-zero" do
+            v = Typelib.from_ruby(rand(100) + 1, bool_t)
+            assert_same true, Typelib.to_ruby(v)
+        end
+        it "can be set from a Ruby true value" do
+            v = Typelib.from_ruby(true, bool_t)
+            expected = Typelib.from_ruby(1, bool_t)
+            assert_equal expected, v
+        end
+        it "can be set from a Ruby false value" do
+            v = Typelib.from_ruby(false, bool_t)
+            expected = Typelib.from_ruby(0, bool_t)
+            assert_equal expected, v
+        end
+    end
 end
 
