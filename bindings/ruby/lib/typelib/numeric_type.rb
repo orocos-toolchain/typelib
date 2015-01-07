@@ -2,14 +2,14 @@ module Typelib
     # Base class for numeric types
     class NumericType < Type
         def self.subclass_initialize
-            super if defined? super
+            super
 
             if integer?
                 # This is only a hint for the rest of Typelib. The actual
                 # convertion is done internally by Typelib
-                self.convertion_to_ruby = [Numeric, { :recursive => false }]
+                convert_to_ruby(Numeric, recursive: false, builtin: true)
             else
-                self.convertion_to_ruby = [Float, { :recursive => false }]
+                convert_to_ruby(Float, recursive: false, builtin: true)
             end
         end
 
