@@ -324,7 +324,7 @@ module Typelib
             # NOTE: no need to care about convertions to ruby here, as -- when
             # the elements require a convertion to ruby -- we convert the whole
             # container to Array
-            handle_container_invalidation do
+            handle_invalidation do
                 do_erase(__element_from_ruby(el))
             end
         end
@@ -334,7 +334,7 @@ module Typelib
             # NOTE: no need to care about convertions to ruby here, as -- when
             # the elements require a convertion to ruby -- we convert the whole
             # container to Array
-            handle_container_invalidation do
+            handle_invalidation do
                 do_delete_if do |el|
                     yield(__element_to_ruby(el))
                 end
