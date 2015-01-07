@@ -305,14 +305,14 @@ module Typelib
             end
         end
 
-        # Computes the paths that will allow to enumerate all containers
-        # contained in values of this type
+        # Computes the paths that will enumerate all cached containers contained
+        # in values of this type
         #
         # It is mostly useful in Type#handle_invalidation
         # 
         # @return [Accessor]
         def self.containers_accessor
-            @containers ||= Accessor.find_in_type(self) do |t|
+            @containers ||= Accessor.find_in_type(self, :raw_get_cached, :raw_each_cached) do |t|
                 t <= Typelib::ContainerType
             end
         end

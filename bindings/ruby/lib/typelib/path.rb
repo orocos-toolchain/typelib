@@ -63,8 +63,10 @@ module Typelib
         # Performs a call operation and recursively calls {resolve} on the
         # method's return value
         def call(spec, value, elements)
-            value = value.send(*spec)
-            resolve(value, elements)
+            if value = value.send(*spec)
+                resolve(value, elements)
+            else []
+            end
         end
 
         # Performs an iteration operation and recursively calls {resolve} on the

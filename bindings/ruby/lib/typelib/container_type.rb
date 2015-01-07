@@ -108,6 +108,10 @@ module Typelib
                 raw_get_no_boundary_check(index)
             end
 
+            def raw_get_cached(index)
+                @elements[index]
+            end
+
             # Returns the value at the given index
             def [](index, chunk_size = nil)
                 if chunk_size
@@ -291,6 +295,10 @@ module Typelib
                 end
             end
             self
+        end
+
+        def raw_each_cached(&block)
+            @elements.compact.each(&block)
         end
 
         def raw_each
