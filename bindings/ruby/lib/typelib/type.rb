@@ -556,9 +556,6 @@ module Typelib
                     Typelib.from_ruby(init, self)
                 else
                     new_value = value_new
-                    if size = new_value.marshalling_size
-                        Typelib.add_allocated_memory(size)
-                    end
                     new_value.send(:initialize)
                     new_value
                 end
