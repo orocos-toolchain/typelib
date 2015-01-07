@@ -112,6 +112,7 @@ memory_zone_unref(MemoryZone* ptr)
     // ptr->ptr is NULL if the zone has been invalidated
     if (ptr->ptr)
         memory_unref(ptr->ptr);
+    delete ptr;
 }
 
 void
