@@ -1,6 +1,8 @@
 require 'typelib/test'
 
 class TC_SpecializedTypes < Minitest::Test
+    SRCDIR = File.expand_path('..', File.dirname(__FILE__))
+
     include Typelib
     def setup
         super
@@ -45,7 +47,7 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_compound_type_definition
-	t = compound_t
+        t = compound_t
         assert(t < Typelib::CompoundType)
 
         fields = [['plain', registry.get('/int8_t')],
@@ -203,13 +205,13 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_compound_method_overloading
-        t = registry.create_compound '/CompoundWithOverloadingClashes' do |t|
+        t = registry.create_compound '/CompoundWithOverloadingClashes' do |compound_t|
             # should not be overloaded on the class, but OK on the instance
-            t.name = '/int'
+            compound_t.name = '/int'
             # should not be overloaded on the instance, but OK on the class
-            t.cast = '/int'
+            compound_t.cast = '/int'
             # should be overloaded in both cases
-            t.object_id = '/int'
+            compound_t.object_id = '/int'
         end
 
         v = t.new
@@ -249,7 +251,7 @@ class TC_SpecializedTypes < Minitest::Test
             array[i] = Float(i)/10.0
         end
         (0..(array.size - 1)).each do |i|
-	    assert_in_delta(Float(i) / 10.0, array[i], 0.01)
+            assert_in_delta(Float(i) / 10.0, array[i], 0.01)
         end
     end
 
@@ -401,30 +403,30 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_numeric
-	long = make_registry.get("/int")
-	assert(long < NumericType)
-	assert(long.integer?)
-	assert(!long.unsigned?)
-	assert_equal(4, long.size)
+        long = make_registry.get("/int")
+        assert(long < NumericType)
+        assert(long.integer?)
+        assert(!long.unsigned?)
+        assert_equal(4, long.size)
 
         long_v = long.from_ruby(10)
         assert_equal 10, long_v.to_ruby
 
-	ulong = make_registry.get("/unsigned int")
-	assert(ulong < NumericType)
-	assert_equal(4, ulong.size)
-	assert(ulong.integer?)
-	assert(ulong.unsigned?)
+        ulong = make_registry.get("/unsigned int")
+        assert(ulong < NumericType)
+        assert_equal(4, ulong.size)
+        assert(ulong.integer?)
+        assert(ulong.unsigned?)
 
-	double = make_registry.get("/double")
-	assert(double < NumericType)
-	assert_equal(8, double.size)
-	assert(!double.integer?)
-	assert_raises(ArgumentError) { double.unsigned? }
+        double = make_registry.get("/double")
+        assert(double < NumericType)
+        assert_equal(8, double.size)
+        assert(!double.integer?)
+        assert_raises(ArgumentError) { double.unsigned? }
     end
 
     def test_numeric_to_ruby
-	long = make_registry.get("/int")
+        long = make_registry.get("/int")
         v = long.new
         v.zero!
         zero = Typelib.to_ruby(v)
@@ -433,21 +435,21 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_numeric_from_ruby
-	long = make_registry.get("/int")
+        long = make_registry.get("/int")
         zero = Typelib.from_ruby(0, long)
         assert_kind_of Typelib::NumericType, zero
         assert_equal 0, Typelib.to_ruby(zero)
     end
 
     def test_numeric_from_ruby_raises_UnknownConversionRequested_when_converting_a_non_numeric
-	long = make_registry.get("/int")
+        long = make_registry.get("/int")
         assert_raises(UnknownConversionRequested) { long.from_ruby('10') }
     end
 
     def test_string_handling
-	char_pointer  = make_registry.build("char*").new
-	assert(char_pointer.string_handler?)
-	assert(char_pointer.respond_to?(:to_str))
+        char_pointer  = make_registry.build("char*").new
+        assert(char_pointer.string_handler?)
+        assert(char_pointer.respond_to?(:to_str))
     end
 
     def test_null
@@ -550,7 +552,6 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_container_size
-        reg = make_registry
         type = CXXRegistry.new.create_container "/std/vector", '/double'
         value = type.new
         assert_equal 0, value.size
@@ -630,12 +631,6 @@ class TC_SpecializedTypes < Minitest::Test
 
         value.value = false
         assert_equal false, value.value
-    end
-
-    def test_char
-        reg = make_registry
-
-        type = reg.get "BoolHandling"
     end
 
     def test_vector_complex_get_returns_same_wrapper
@@ -765,6 +760,14 @@ class TC_SpecializedTypes < Minitest::Test
         assert !c_of_c.invalidated?
         assert c.invalidated?
         assert element.invalidated?
+    end
+
+    def test_std_string_to_simple_value_returns_the_string
+        reg = Typelib::CXXRegistry.new
+        value = Typelib.from_ruby("test string", reg.get('/std/string'))
+        # We have to check for the type explicitely
+        assert_kind_of String, value.to_simple_value
+        assert_equal 'test string', value.to_simple_value
     end
 end
 

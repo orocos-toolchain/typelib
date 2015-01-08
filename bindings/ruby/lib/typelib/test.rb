@@ -71,9 +71,6 @@ if defined?(FlexMock) && !FlexMock::TestUnitFrameworkAdapter.method_defined?(:as
 end
 
 module Minitest
-    class Spec
-        include Typelib::SelfTest
-    end
     class Test
         include Typelib::SelfTest
     end

@@ -9,6 +9,7 @@ require 'pp'
 require 'facets/string/camelcase'
 require 'set'
 require 'utilrb/value_set'
+require 'base64'
 
 if !defined?(Infinity)
     Infinity = Float::INFINITY
@@ -238,10 +239,10 @@ module Typelib
             pp.text "type mismatch when trying to convert #{value} to #{type}"
             pp.breakable
             pp.text "the value's definition is "
-            value.class.pretty_print(pp)
+            value.class.pretty_print(pp, true)
             pp.breakable
             pp.text "the target type's definition is "
-            type.pretty_print(pp)
+            type.pretty_print(pp, true)
         end
     end
 
@@ -276,7 +277,7 @@ module Typelib
             converted = arg
         end
         if !(expected_type < NumericType) && !converted.kind_of?(expected_type)
-            raise InternalError, "invalid conversion of #{arg} to #{expected_type.name}"
+            raise RuntimeError, "invalid conversion of #{arg} to #{expected_type.name}"
         end
         converted.apply_changes_from_converted_types
         converted

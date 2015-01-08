@@ -8,6 +8,7 @@ class TC_MetaData < Minitest::Test
         @type = registry.create_compound '/Test' do |c|
             c.add 'field', '/double'
         end
+        super
     end
     def test_it_supports_utf8_as_encoding
         metadata = Typelib::MetaData.new
@@ -23,12 +24,43 @@ class TC_MetaData < Minitest::Test
         metadata.set('k', 'v')
         assert_equal ['v'], metadata.get('k')
     end
+    def test_it_can_set_multiple_values_for_a_key_if_called_with_multiple_arguments
+        metadata = Typelib::MetaData.new
+        metadata.set('k', 'v0', 'v1')
+        assert_equal ['v0', 'v1'], metadata.get('k')
+    end
+    def test_it_includes_the_key_of_a_key_set_with_an_empty_array
+        metadata = Typelib::MetaData.new
+        metadata.set('k')
+        assert metadata.include?('k')
+    end
+    def test_it_includes_the_key_of_a_set_key
+        metadata = Typelib::MetaData.new
+        metadata.set('k', 'a')
+        assert metadata.include?('k')
+    end
+    def test_it_does_not_include_a_key_that_was_never_set
+        metadata = Typelib::MetaData.new
+        assert !metadata.include?('k')
+    end
+    def test_it_does_not_include_a_cleared_key
+        metadata = Typelib::MetaData.new
+        metadata.set('k', 'a')
+        metadata.clear('k')
+        assert !metadata.include?('k')
+    end
     def test_it_can_add_values_to_a_key
         metadata = Typelib::MetaData.new
         metadata.add('k', 'v0')
         assert_equal ['v0'], metadata.get('k')
         metadata.add('k', 'v1')
         assert_equal ['v0', 'v1'], metadata.get('k')
+    end
+    def test_it_can_add_multiple_values_to_a_key_if_called_with_multiple_arguments
+        metadata = Typelib::MetaData.new
+        metadata.set('k', 'v')
+        metadata.add('k', 'v0', 'v1')
+        assert_equal ['v', 'v0', 'v1'], metadata.get('k')
     end
     def test_it_can_clear_values_for_a_key
         metadata = Typelib::MetaData.new

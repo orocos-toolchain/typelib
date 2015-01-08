@@ -7,6 +7,7 @@ class TC_TypelibGCCXML < Minitest::Test
 
     def setup
         @cxx_test_dir = File.expand_path('cxx_import_tests', File.dirname(__FILE__))
+        super
     end
 
     def test_tokenize_template

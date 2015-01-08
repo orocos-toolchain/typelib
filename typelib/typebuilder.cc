@@ -155,7 +155,7 @@ namespace Typelib
     {
         TypeSpec spec;
         try { spec = parse(registry, full_name); }
-        catch(Undefined) { return 0; }
+        catch(Undefined) { return NULL; }
 
         return &build(registry, spec, size);
     }
@@ -164,7 +164,7 @@ namespace Typelib
     {
         TypeSpec spec;
         try { spec = parse(registry, full_name); }
-        catch(Undefined) { return 0; }
+        catch(Undefined) { return NULL; }
         return spec.first;
     }
 

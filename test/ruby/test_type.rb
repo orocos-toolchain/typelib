@@ -131,8 +131,8 @@ class TC_Type < Minitest::Test
         v.b = 20
         marshalled = v.to_byte_array(:merge_skip_copy => false)
         unmarshalled = type1.from_buffer(marshalled, :merge_skip_copy => false)
-        assert_equal 10, v.a
-        assert_in_delta 20, v.b, 0.001
+        assert_equal 10, unmarshalled.a
+        assert_in_delta 20, unmarshalled.b, 0.001
     end
 end
 

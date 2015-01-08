@@ -24,6 +24,8 @@ namespace Typelib
     private:
         Map m_values;
     public:
+        /** Tests whether there is at least one value for the given key */
+        bool include(std::string const& key) const;
 
         /** Returns the key => values map for all values stored in this metadata
          * object
@@ -34,6 +36,12 @@ namespace Typelib
          * removing all previously known value(s) for that key
          */
         void set(std::string const& key, std::string const& value);
+
+        /** Adds a set of metadata values for the given key, Existing values are
+         * retained. The set can be empty in which case include(key) will return
+         * true but get(key) will return an empty set.
+         */
+        void add(std::string const& key, Values const& value);
 
         /** Adds a metadata value for the given key, Existing values are
          * retained.
@@ -72,9 +80,9 @@ namespace Typelib
             Enum   ,
             Compound,
             Opaque,
-            Container
+            Container,
+            NumberOfValidCategories
         };
-        static const int ValidCategories = Compound + 1;
         
     private:
         std::string m_name;
@@ -277,12 +285,13 @@ namespace Typelib
     {
     public:
         enum NumericCategory
-        { 
-	    SInt = Type::ValidCategories, /// signed integer
-	    UInt,			  /// unsigned integer
-	    Float			  /// floating point
-	};
-        static const int ValidCategories = Float + 1;
+        {
+            SInt = Type::NumberOfValidCategories, /// signed integer
+            UInt,                                 /// unsigned integer
+            Float,                                /// floating point
+            NumberOfValidCategories /// overall number of valid categories,
+                                    /// including the ones in the base-class
+        };
 
 	/** The category of this numeric type */
         NumericCategory getNumericCategory() const;
@@ -398,7 +407,7 @@ namespace Typelib
 	/** The list of all fields */
         FieldList const&  getFields() const;
 	/** Get a field by its name
-	 * @return 0 if there is no @name field, or the Field object */
+	 * @return NULL if there is no @name field, or the Field object */
         Field const*      getField(const std::string& name) const;
 	/** Add a new field */
         Field const&      addField(const Field& field, size_t offset);
@@ -676,9 +685,9 @@ namespace Typelib
     struct BadCategory : public TypeException
     {
         Type::Category const found;
-        int            const expected;
+        Type::Category const expected;
 
-        BadCategory(Type::Category found, int expected);
+        BadCategory(Type::Category found, Type::Category expected);
     };
 
     struct NullTypeFound : public TypeException
