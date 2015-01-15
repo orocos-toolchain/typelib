@@ -243,10 +243,10 @@ module Typelib
             if invalidated? 
                 # All children have been invalidated already by #invalidate
             elsif memory_id && (memory_id != self.contained_memory_id)
-                Typelib.debug { "invalidating all elements in #{self}" }
+                Typelib.debug { "invalidating all elements in #{raw_to_s}" }
                 invalidate_children
             elsif @elements.size > self.size
-                Typelib.debug { "invalidating #{@elements.size - self.size} trailing elements in #{self}" }
+                Typelib.debug { "invalidating #{@elements.size - self.size} trailing elements in #{raw_to_s}" }
                 while @elements.size > self.size
                     if el = @elements.pop
                         el.invalidate
