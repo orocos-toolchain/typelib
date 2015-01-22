@@ -28,7 +28,40 @@ namespace Typelib
     // pointer on a Container instance
     BOOST_STATIC_ASSERT((sizeof(size_t) == sizeof(void*)));
 
-    typedef std::vector<size_t> MemoryLayout;
+    struct MemoryLayout
+    {
+        typedef std::vector<size_t> Ops;
+
+        std::vector<size_t> ops;
+        typedef std::vector<size_t>::const_iterator const_iterator;
+        typedef std::vector<size_t>::iterator iterator;
+        const_iterator begin() const { return ops.begin(); }
+        const_iterator end() const { return ops.end(); }
+
+        void removeTrailingSkips();
+        void pushMemcpy(size_t size);
+        void pushSkip(size_t size);
+        void pushArray(Array const& type, MemoryLayout const& array_ops);
+        void pushContainer(Container const& type, MemoryLayout const& container_ops);
+        void pushGenericOp(size_t op, size_t size);
+        void pushEnd();
+        bool isMemcpy() const;
+        MemoryLayout simplify(bool merge_skip_copy) const;
+        void display(std::ostream& out) const;
+
+        /** Skips the block starting at \c begin. \c end is the end of the
+         * complete layout (to avoid invalid memory accesses if the layout is
+         * incorrect)
+         *
+         * It returns the position of the block's FLAG_END
+         */
+        static const_iterator skipBlock(
+                const_iterator begin,
+                const_iterator end);
+
+    private:
+        bool simplifyArray(size_t& memcpy_size, MemoryLayout& merged_ops) const;
+    };
 
     /** Namespace used to define basic constants describing the memory layout
      * of a type. The goal is to have a compact representation, in a buffer, of
@@ -65,16 +98,8 @@ namespace Typelib
             MemoryLayout& ops;
             bool   accept_pointers;
             bool   accept_opaques;
-            size_t current_op;
-            size_t current_op_count;
-            bool merge_skip_copy;
 
         protected:
-            void push_current_op();
-            void skip(size_t count);
-            void memcpy(size_t count);
-            void add_generic_op(size_t op, size_t count);
-            bool generic_visit(Type const& value);
             bool visit_ (Numeric const& type);
             bool visit_ (Enum    const& type);
             bool visit_ (Array   const& type);
@@ -83,23 +108,9 @@ namespace Typelib
             bool visit_ (Pointer const& type);
             bool visit_ (OpaqueType const& type);
 
-            void merge_skips_and_copies();
-
         public:
             Visitor(MemoryLayout& ops, bool accept_pointers = false, bool accept_opaques = false);
-
-            void apply(Type const& type, bool merge_skip_copy = true, bool remove_trailing_skips = true);
         };
-
-        /** Skips the block starting at \c begin. \c end is the end of the
-         * complete layout (to avoid invalid memory accesses if the layout is
-         * incorrect)
-         *
-         * It returns the position of the block's FLAG_END
-         */
-        MemoryLayout::const_iterator skip_block(
-                MemoryLayout::const_iterator begin,
-                MemoryLayout::const_iterator end);
     }
 
     /** Returns the memory layout of the given type
@@ -123,8 +134,10 @@ namespace Typelib
     {
         MemoryLayout ret;
         MemLayout::Visitor visitor(ret, accept_pointers, accept_opaques);
-        visitor.apply(t, merge_skip_copy, remove_trailing_skips);
-        return ret;
+        visitor.apply(t);
+        if (remove_trailing_skips)
+            ret.removeTrailingSkips();
+        return ret.simplify(merge_skip_copy);
     }
 }
 
