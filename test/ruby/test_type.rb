@@ -98,7 +98,7 @@ class TC_Type < Minitest::Test
         off_v8 = std.offset_of("v8")
         off_v_of_v = std.offset_of("v_of_v")
 
-        layout = std.memory_layout
+        layout, init_layout = std.memory_layout
         expected = [:FLAG_MEMCPY, off_dlb_vector,
             :FLAG_CONTAINER, reg.get("/std/vector</double>"),
                 :FLAG_MEMCPY, 8,
