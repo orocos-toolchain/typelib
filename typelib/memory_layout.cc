@@ -17,14 +17,32 @@ bool MemoryLayout::isMemcpy() const
 {
     return (ops.size() == 2 && ops[0] == MemLayout::FLAG_MEMCPY);
 }
-void MemoryLayout::pushMemcpy(size_t size)
+void MemoryLayout::pushMemcpy(size_t size, std::vector<uint8_t> const& init_data)
 {
-    pushGenericOp(FLAG_MEMCPY, size);
+    ops.push_back(FLAG_MEMCPY);
+    ops.push_back(size);
+
+    if (init_data.empty())
+    {
+        init_ops.push_back(FLAG_INIT_SKIP);
+        init_ops.push_back(size);
+    }
+    else
+    {
+        if (size != init_data.size())
+            throw std::runtime_error("not enough or too many bytes provided as initialization data");
+
+        init_ops.push_back(FLAG_INIT);
+        init_ops.insert(init_ops.begin(), init_data.begin(), init_data.end());
+    }
 }
 
 void MemoryLayout::pushSkip(size_t size)
 {
-    pushGenericOp(FLAG_SKIP, size);
+    ops.push_back(FLAG_SKIP);
+    ops.push_back(size);
+    init_ops.push_back(FLAG_INIT_SKIP);
+    init_ops.push_back(size);
 }
 
 void MemoryLayout::pushEnd()
@@ -32,10 +50,10 @@ void MemoryLayout::pushEnd()
     ops.push_back(FLAG_END);
 }
 
-void MemoryLayout::pushGenericOp(size_t op, size_t size)
+void MemoryLayout::pushGenericOp(size_t op, size_t element)
 {
     ops.push_back(op);
-    ops.push_back(size);
+    ops.push_back(element);
 }
 
 void MemoryLayout::pushArray(Array const& type, MemoryLayout const& array_ops)
@@ -44,6 +62,11 @@ void MemoryLayout::pushArray(Array const& type, MemoryLayout const& array_ops)
     ops.push_back(type.getDimension());
     ops.insert(ops.end(), array_ops.begin(), array_ops.end());
     ops.push_back(FLAG_END);
+    
+    init_ops.push_back(FLAG_INIT_REPEAT);
+    init_ops.push_back(type.getDimension());
+    init_ops.insert(init_ops.end(), array_ops.init_begin(), array_ops.init_end());
+    init_ops.push_back(FLAG_END);
 }
 
 void MemoryLayout::pushContainer(Container const& type, MemoryLayout const& container_ops)
@@ -52,6 +75,9 @@ void MemoryLayout::pushContainer(Container const& type, MemoryLayout const& cont
     ops.push_back(reinterpret_cast<size_t>(&type));
     ops.insert(ops.end(), container_ops.begin(), container_ops.end());
     ops.push_back(FLAG_END);
+
+    init_ops.push_back(FLAG_INIT_CONTAINER);
+    init_ops.push_back(reinterpret_cast<size_t>(&type));
 }
 
 bool MemoryLayout::simplifyArray(size_t& memcpy_size, MemoryLayout& merged) const
@@ -82,6 +108,91 @@ bool MemoryLayout::simplifyArray(size_t& memcpy_size, MemoryLayout& merged) cons
     }
 
     return true;
+}
+
+bool MemoryLayout::simplifyInitRepeat(size_t& size, Ops& result) const
+{
+    if (*(result.rbegin() + 1) != FLAG_INIT_REPEAT)
+        return false;
+
+    size *= result.back();
+    result.pop_back();
+    result.pop_back();
+
+    if (!result.empty() && *(result.rbegin() + 1) == FLAG_INIT_SKIP)
+    {
+        size *= result.back();
+        result.pop_back();
+        result.pop_back();
+    }
+
+    return true;
+}
+
+MemoryLayout::Ops MemoryLayout::simplifyInit() const
+{
+    MemoryLayout::Ops result;
+
+    size_t current_op = FLAG_MEMCPY, current_op_count = 0;
+    std::vector<uint8_t> current_init_data;
+
+    Ops::const_iterator it = init_ops.begin();
+    Ops::const_iterator const end = init_ops.end();
+    for (; it != end; ++it)
+    {
+        size_t op   = *it;
+        if (op == FLAG_INIT_END && (current_op_count && current_op == FLAG_INIT_SKIP))
+        {
+            if (simplifyInitRepeat(current_op_count, result))
+                continue;
+
+        }
+
+        if (current_op_count && (op != current_op || op == FLAG_INIT_CONTAINER || op == FLAG_INIT_REPEAT))
+        {
+            result.push_back(current_op);
+            result.push_back(current_op_count);
+            result.insert(result.end(), current_init_data.begin(), current_init_data.end());
+            current_op_count = 0;
+            current_init_data.clear();
+        }
+
+        if (op == FLAG_INIT_END)
+        {
+            result.push_back(FLAG_INIT_END);
+        }
+        if (op == FLAG_INIT_CONTAINER || op == FLAG_INIT_REPEAT)
+        {
+            result.push_back(op);
+            result.push_back(*(++it));
+        }
+        else if (op == FLAG_INIT_SKIP)
+        {
+            current_op = FLAG_INIT_SKIP;
+            current_op_count += *(++it);
+        }
+        else if (op == FLAG_INIT)
+        {
+            current_op = FLAG_INIT;
+            size_t init_size = *(++it);
+            current_op_count += init_size;
+            ++it;
+            current_init_data.insert(current_init_data.end(),
+                    it, it + init_size);
+            it += init_size - 1;
+        }
+    }
+
+    if (current_op_count)
+    {
+        result.push_back(current_op);
+        result.push_back(current_op_count);
+        result.insert(result.end(), current_init_data.begin(), current_init_data.end());
+    }
+    
+    if (result.size() == 2 && result[0] == FLAG_INIT_SKIP)
+        result.clear();
+    return result;
 }
 
 MemoryLayout MemoryLayout::simplify(bool merge_skip_copy) const
@@ -143,6 +254,7 @@ MemoryLayout MemoryLayout::simplify(bool merge_skip_copy) const
     if (current_op_count)
         merged.pushGenericOp(current_op, current_op_count);
 
+    merged.init_ops = simplifyInit();
     return merged;
 }
 
@@ -170,6 +282,37 @@ void MemoryLayout::display(std::ostream& out) const
             case FLAG_END:
                 indent = indent.substr(0, indent.size() - 2);
                 out << indent << "FLAG_END" << "\n";
+                break;
+
+        }
+    }
+
+    for (const_iterator it = init_ops.begin(); it != init_ops.end(); ++it)
+    {
+        switch(*it)
+        {
+            case FLAG_INIT_SKIP:
+                out << indent << "FLAG_INIT_SKIP " << *(++it) << "\n";
+                break;
+            case FLAG_INIT:
+            {
+                size_t size = *(++it);
+                out << indent << "FLAG_INIT " << size;
+                for (size_t i = 0; i < size; ++i)
+                    out << " " << hex << "0x" << *(++it);
+                out << "\n";
+                break;
+            }
+            case FLAG_INIT_REPEAT:
+                out << indent << "FLAG_INIT_REPEAT " << *(++it) << "\n";
+                indent += "  ";
+                break;
+            case FLAG_INIT_CONTAINER:
+                out << indent << "FLAG_INIT_CONTAINER " << reinterpret_cast<Type const*>(*(++it))->getName() << "\n";
+                break;
+            case FLAG_INIT_END:
+                indent = indent.substr(0, indent.size() - 2);
+                out << indent << "FLAG_INIT_END" << "\n";
                 break;
 
         }
@@ -215,7 +358,22 @@ bool MemLayout::Visitor::visit_ (Numeric const& type)
 
 bool MemLayout::Visitor::visit_ (Enum    const& type)
 {
-    ops.pushMemcpy(type.getSize());
+    if (type.getSize() > 8)
+        throw std::runtime_error("cannot handle enum types bigger than 8 bytes");
+
+    if (type.values().empty())
+        ops.pushMemcpy(type.getSize());
+    else
+    {
+        uint64_t init_value = type.values().begin()->second;
+        std::vector<uint8_t> init_data;
+        for (size_t i = 0; i < type.getSize(); ++i)
+        {
+            init_data.push_back(init_value & 0xFF);
+            init_value >>= 8;
+        }
+    }
+
     return true;
 }
 bool MemLayout::Visitor::visit_ (Array   const& type)

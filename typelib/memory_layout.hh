@@ -31,15 +31,18 @@ namespace Typelib
     struct MemoryLayout
     {
         typedef std::vector<size_t> Ops;
-
-        std::vector<size_t> ops;
-        typedef std::vector<size_t>::const_iterator const_iterator;
-        typedef std::vector<size_t>::iterator iterator;
+        typedef Ops::const_iterator const_iterator;
+        Ops ops;
         const_iterator begin() const { return ops.begin(); }
-        const_iterator end() const { return ops.end(); }
+        const_iterator end() const   { return ops.end(); }
+
+        Ops init_ops;
+        const_iterator init_begin() const { return init_ops.begin(); }
+        const_iterator init_end() const   { return init_ops.end(); }
 
         void removeTrailingSkips();
-        void pushMemcpy(size_t size);
+        void pushMemcpy(size_t size,
+                std::vector<uint8_t> const& init_data = std::vector<uint8_t>());
         void pushSkip(size_t size);
         void pushArray(Array const& type, MemoryLayout const& array_ops);
         void pushContainer(Container const& type, MemoryLayout const& container_ops);
@@ -48,6 +51,11 @@ namespace Typelib
         bool isMemcpy() const;
         MemoryLayout simplify(bool merge_skip_copy) const;
         void display(std::ostream& out) const;
+
+        void pushInitSkip(size_t size);
+        void pushInitRepeat(size_t count, Ops const& ops);
+        void pushInitContainer(Container const& type);
+        void pushInit(std::vector<uint8_t> const& data);
 
         /** Skips the block starting at \c begin. \c end is the end of the
          * complete layout (to avoid invalid memory accesses if the layout is
@@ -60,7 +68,10 @@ namespace Typelib
                 const_iterator end);
 
     private:
+        size_t m_offset;
         bool simplifyArray(size_t& memcpy_size, MemoryLayout& merged_ops) const;
+        bool simplifyInitRepeat(size_t& size, Ops& result) const;
+        MemoryLayout::Ops simplifyInit() const;
     };
 
     /** Namespace used to define basic constants describing the memory layout
@@ -84,6 +95,14 @@ namespace Typelib
             FLAG_CONTAINER,
             FLAG_SKIP,
             FLAG_END
+        };
+
+        enum InitOperations {
+            FLAG_INIT,
+            FLAG_INIT_REPEAT,
+            FLAG_INIT_CONTAINER = FLAG_CONTAINER,
+            FLAG_INIT_SKIP = FLAG_SKIP,
+            FLAG_INIT_END  = FLAG_END
         };
 
         /** This visitor computes the memory layout for a given type. This memory

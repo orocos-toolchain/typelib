@@ -25,6 +25,18 @@ void REQUIRE_LAYOUT_EQUALS(size_t* begin, size_t* end, MemoryLayout const& layou
         BOOST_REQUIRE_EQUAL(*it, layout.ops[it - begin]);
 }
 
+void REQUIRE_INIT_EQUALS(size_t* begin, size_t* end, MemoryLayout const& layout)
+{
+    BOOST_REQUIRE_EQUAL(end - begin, layout.init_ops.size());
+    for (size_t* it = begin; it != end; ++it)
+        BOOST_REQUIRE_EQUAL(*it, layout.init_ops[it - begin]);
+}
+
+void REQUIRE_INIT_EMPTY(MemoryLayout const& layout)
+{
+    BOOST_REQUIRE( layout.init_ops.empty() );
+}
+
 static Registry& getRegistry()
 {
     static Registry registry;
@@ -43,6 +55,7 @@ BOOST_AUTO_TEST_CASE( test_it_generates_the_layout_of_a_simple_structure )
     A data;
     size_t expected[] = { FLAG_MEMCPY, offsetof(A, d) + sizeof(data.d) };
     REQUIRE_LAYOUT_EQUALS(expected, expected + 2, ops);
+    REQUIRE_INIT_EMPTY(ops);
 }
 
 BOOST_AUTO_TEST_CASE( test_it_generates_the_layout_of_simple_arrays )
@@ -51,6 +64,7 @@ BOOST_AUTO_TEST_CASE( test_it_generates_the_layout_of_simple_arrays )
     MemoryLayout ops = Typelib::layout_of(type);
     size_t expected[] = { FLAG_MEMCPY, 100 };
     REQUIRE_LAYOUT_EQUALS(expected, expected + 2, ops);
+    REQUIRE_INIT_EMPTY(ops);
 }
 
 BOOST_AUTO_TEST_CASE( test_it_generates_the_layout_of_arrays_of_structures )
@@ -59,6 +73,7 @@ BOOST_AUTO_TEST_CASE( test_it_generates_the_layout_of_arrays_of_structures )
     MemoryLayout ops = Typelib::layout_of(type);
     size_t expected[] = { FLAG_MEMCPY, sizeof(B) * 100 };
     REQUIRE_LAYOUT_EQUALS(expected, expected + 2, ops);
+    REQUIRE_INIT_EMPTY(ops);
 }
 
 BOOST_AUTO_TEST_CASE( test_it_generates_the_layout_of_simple_multidimensional_arrays )
@@ -68,6 +83,7 @@ BOOST_AUTO_TEST_CASE( test_it_generates_the_layout_of_simple_multidimensional_ar
 
     size_t expected[] = { FLAG_MEMCPY, type.getSize() };
     REQUIRE_LAYOUT_EQUALS(expected, expected + 2, ops);
+    REQUIRE_INIT_EMPTY(ops);
 }
 
 BOOST_AUTO_TEST_CASE( test_it_rejects_creating_layouts_for_structures_with_pointers_by_default )
@@ -83,6 +99,7 @@ BOOST_AUTO_TEST_CASE( test_it_generates_layout_for_structures_with_pointers_if_a
     C data;
     size_t expected[] = { FLAG_MEMCPY, offsetof(C, z) + sizeof(data.z) };
     REQUIRE_LAYOUT_EQUALS(expected, expected + 2, ops);
+    REQUIRE_INIT_EMPTY(ops);
 }
 
 BOOST_AUTO_TEST_CASE( test_it_rejects_creating_layouts_for_opaques )
