@@ -349,8 +349,13 @@ Container const& Vector::factory(Registry& registry, std::list<Type const*> cons
         registry.add(new_type);
         return *new_type;
     }
-    else
-        return dynamic_cast<Container const&>(*registry.get(full_name));
+
+    const Type *type = registry.get(full_name);
+    if (type->getCategory() != Type::Container) {
+        throw BadCategory(type->getCategory(), Type::Container);
+    } else {
+        return dynamic_cast<Container const &>(*type);
+    }
 }
 Container::ContainerFactory Vector::getFactory() const { return factory; }
 
@@ -457,6 +462,8 @@ Container::MarshalOps::const_iterator String::load(
     std::string* string_ptr =
         reinterpret_cast< std::string* >(container_ptr);
 
+    string_ptr->clear();
+        
     std::vector<uint8_t> buffer;
     buffer.resize(element_count);
     stream.read(&buffer[0], element_count);

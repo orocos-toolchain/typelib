@@ -695,9 +695,13 @@ module Typelib
 	    elsif ! (ruby_value = to_ruby).eql?(self)
 		ruby_value.to_s
 	    else
-		"#<#{self.class.name}: 0x#{address.to_s(16)} ptr=0x#{@ptr.zone_address.to_s(16)}>"
+                raw_to_s
 	    end
 	end
+
+        def raw_to_s
+            "#<#{self.class.name}: 0x#{address.to_s(16)} ptr=0x#{@ptr.zone_address.to_s(16)}>"
+        end
 
 	def pretty_print(pp) # :nodoc:
 	    pp.text to_s

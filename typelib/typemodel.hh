@@ -401,7 +401,7 @@ namespace Typelib
 	/** The list of all fields */
         FieldList const&  getFields() const;
 	/** Get a field by its name
-	 * @return 0 if there is no @name field, or the Field object */
+	 * @return NULL if there is no @name field, or the Field object */
         Field const*      getField(const std::string& name) const;
 	/** Add a new field */
         Field const&      addField(const Field& field, size_t offset);
@@ -679,9 +679,9 @@ namespace Typelib
     struct BadCategory : public TypeException
     {
         Type::Category const found;
-        int            const expected;
+        Type::Category const expected;
 
-        BadCategory(Type::Category found, int expected);
+        BadCategory(Type::Category found, Type::Category expected);
     };
 
     struct NullTypeFound : public TypeException
