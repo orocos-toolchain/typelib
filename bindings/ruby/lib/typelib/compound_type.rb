@@ -28,6 +28,9 @@ module Typelib
             def raw_get(*args)
                 raise TypeError, "invalidated object"
             end
+            def raw_get_cached(*args)
+                raise TypeError, "invalidated object"
+            end
             def raw_set(*args)
                 raise TypeError, "invalidated object"
             end
@@ -453,6 +456,10 @@ module Typelib
 
         def raw_get(name)
             @fields[name] ||= typelib_get_field(name, true)
+        end
+
+        def raw_get_cached(name)
+            @fields[name]
         end
 
         def raw_set_field(name, value)
