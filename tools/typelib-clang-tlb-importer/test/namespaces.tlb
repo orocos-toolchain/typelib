@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/double" category="float" size="8" >
+  
+  </numeric>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <numeric name="/int8_t" category="sint" size="1" >
+  
+  </numeric>
+  <alias name="/char" source="/int8_t"/>
+  <alias name="/int" source="/int32_t"/>
+  <compound name="/N1/N2/S1" size="24" >
+    <field name="A" type="/int32_t" offset="0">
+    
+    </field>
+    <field name="B" type="/double" offset="8">
+    
+    </field>
+    <field name="C" type="/int8_t" offset="16">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct N1::N2::S1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/namespaces.hh:16]]></metadata>
+
+  </compound>
+</typelib>

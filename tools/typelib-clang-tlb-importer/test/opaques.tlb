@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <alias name="/int" source="/int32_t"/>
+  <opaque name="/ns_opaques/C1" size="0" >
+  <metadata key="cxxname"><![CDATA[class ns_opaques::C1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:14]]></metadata>
+
+  </opaque>
+  <opaque name="/ns_opaques/C4&lt;/float&gt;" size="0" >
+  <metadata key="cxxname"><![CDATA[class ns_opaques::C4<float>]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:42]]></metadata>
+
+  </opaque>
+  <opaque name="/ns_opaques/C5&lt;/float,/int&gt;" size="0" >
+  <metadata key="cxxname"><![CDATA[class ns_opaques::C5<float, int>]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:51]]></metadata>
+
+  </opaque>
+  <compound name="/ns_opaques/cruft" size="16" >
+    <field name="data" type="/int32_t[4]" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct ns_opaques::cruft]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:7]]></metadata>
+
+  </compound>
+  <opaque name="/ns_opaques/typedef_of_C3" size="0" >
+  <metadata key="cxxname"><![CDATA[typedef typedef_of_C3 ns_opaques::C3<float>]]></metadata>
+<metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/opaques.hh:34]]></metadata>
+
+  </opaque>
+  <alias name="/ns_opaques/C3&lt;/float&gt;" source="/ns_opaques/typedef_of_C3"/>
+</typelib>

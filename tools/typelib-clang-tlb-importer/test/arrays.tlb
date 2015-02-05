@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/double" category="float" size="8" >
+  
+  </numeric>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <numeric name="/int64_t" category="sint" size="8" >
+  
+  </numeric>
+  <numeric name="/uint32_t" category="uint" size="4" >
+  
+  </numeric>
+  <numeric name="/uint64_t" category="uint" size="8" >
+  
+  </numeric>
+  <alias name="/int" source="/int32_t"/>
+  <alias name="/long" source="/int64_t"/>
+  <compound name="/timespec" size="16" >
+    <field name="tv_sec" type="/int64_t" offset="0">
+    
+    </field>
+    <field name="tv_nsec" type="/int64_t" offset="8">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct timespec]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
+
+  </compound>
+  <alias name="/unsigned int" source="/uint32_t"/>
+  <alias name="/unsigned long long" source="/uint64_t"/>
+  <compound name="/arrays/C1" size="40" >
+    <field name="A3" type="/timespec[2]" offset="0">
+    
+    </field>
+    <field name="m1" type="/int32_t" offset="32">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[class arrays::C1]]></metadata>
+<metadata key="doc"><![CDATA[ more text, formatted to be able to be extracted as a
+ "clang::comments::FullComment". blalba. more text. the same wrapped inside a container -- detected and exported]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.hh:39]]></metadata>
+
+  </compound>
+  <compound name="/arrays/D1" size="2064" >
+    <field name="sec" type="/int32_t" offset="0">
+    
+    </field>
+    <field name="usec" type="/uint32_t" offset="4">
+    
+    </field>
+    <field name="ranges" type="/double[256]" offset="8">
+    
+    </field>
+    <field name="a" type="/uint64_t" offset="2056">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct arrays::D1]]></metadata>
+<metadata key="doc"><![CDATA[ inspired from "laser.h" but, as a courtesy, with a BlockCommandComment]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.hh:14]]></metadata>
+
+  </compound>
+</typelib>
