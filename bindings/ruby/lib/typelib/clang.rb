@@ -73,19 +73,18 @@ module Typelib
             # create a tempfile where all files used in the typekit are
             # just "dummy-included" to create one big compile unit. this is
             # supposed to trick the compiler into beeing faster...
-            Tempfile.open('clang_preprocess_') do |io|
+            #
+            # note that we force the ending of the tempfile to be ".hpp" so that
+            # the clang-based tool detects the content as c++ source-code
+            Tempfile.open(['clang_preprocess_', '.hpp']) do |io|
                 files.each do |path|
                     io.puts "#include <#{path}>"
                 end
                 io.flush
 
-                # note that we have to specify the language for a modern
-                # compiler so that it is not confused by the Tempfile --
-                # which has no ending.
-                #
                 # just to be sure to have exactly the same compiler as the
                 # importer we enforce "clang-3.4"
-                result = IO.popen(["clang-3.4", "-xc++", "-E", *includes, *defines, io.path]) do |clang_io|
+                result = IO.popen(["clang-3.4", "-E", *includes, *defines, io.path]) do |clang_io|
                     clang_io.read
                 end
                 if !$?.success?
