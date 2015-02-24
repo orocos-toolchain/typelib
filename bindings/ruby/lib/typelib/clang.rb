@@ -70,9 +70,11 @@ module Typelib
             includes = options[:include].map { |v| "-I#{v}" }
             defines  = options[:define].map { |v| "-D#{v}" }
 
-            # create a tempfile where all files used in the typekit are
-            # just "dummy-included" to create one big compile unit. this is
-            # supposed to trick the compiler into beeing faster...
+            # create a tempfile where all files used in the typekit are just
+            # "dummy-included" to create one big compile unit. this stems from
+            # the gccxml era and was supposed to trick the compiler into beeing
+            # faster... but doing that prevents parallel batch-analyzing in the
+            # case of many headers on a multi-core system.
             #
             # note that we force the ending of the tempfile to be ".hpp" so that
             # the clang-based tool detects the content as c++ source-code
