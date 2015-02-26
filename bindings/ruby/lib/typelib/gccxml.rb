@@ -761,7 +761,7 @@ module Typelib
             # @return [Array]
             attr_reader :gccxml_default_options
         end
-        @gccxml_default_options = Shellwords.split(ENV['TYPELIB_GCCXML_DEFAULT_OPTIONS'] || '')
+        @gccxml_default_options = Shellwords.split(ENV['TYPELIB_GCCXML_DEFAULT_OPTIONS'] || '-DEIGEN_DONT_VECTORIZE')
 
         # Runs gccxml on the provided file and with the given options, and
         # return the Nokogiri::XML object representing the result
