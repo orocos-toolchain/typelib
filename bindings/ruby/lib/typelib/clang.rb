@@ -11,7 +11,7 @@ module Typelib
             # pass 100k likes of text might improve performance?
             
             # this gives us an array of opaques
-            opaque_registry = new
+            opaque_registry = Registry.new
             options[:opaques].each do |opaque_t|
                 opaque_registry.create_opaque(opaque_t, 0)
             end
