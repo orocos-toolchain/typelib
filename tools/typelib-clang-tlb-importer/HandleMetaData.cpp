@@ -26,7 +26,7 @@ std::string do_readlink(std::string const &path) {
     }
 }
 
-void setMetaDataSourceFileLine(const clang::Decl *decl, Typelib::Type *type) {
+void setMetaDataSourceFileLine(const clang::Decl *decl, const Typelib::Type *type) {
     const clang::SourceManager &sm = decl->getASTContext().getSourceManager();
     const clang::SourceLocation &loc = sm.getExpansionLoc(decl->getLocStart());
 
@@ -59,13 +59,11 @@ void setMetaDataSourceFileLine(const clang::Decl *decl, Typelib::Type *type) {
     std::ostringstream stream;
     stream << filePath << ":"
            << sm.getExpansionLineNumber(loc);
-    type->setPathToDefiningHeader(stream.str());
 
-    type->getMetaData().add("source_file_line",
-                            type->getPathToDefiningHeader());
+    type->getMetaData().add("source_file_line", stream.str());
 }
 
-void setMetaDataOrogenInclude(const clang::Decl *decl, Typelib::Type *type) {
+void setMetaDataOrogenInclude(const clang::Decl *decl, const Typelib::Type *type) {
     const clang::SourceManager &sm = decl->getASTContext().getSourceManager();
     const clang::SourceLocation &loc = sm.getSpellingLoc(decl->getLocStart());
     // add a header from the include-chain as "orogen_include" entry to the
@@ -114,7 +112,7 @@ void setMetaDataOrogenInclude(const clang::Decl *decl, Typelib::Type *type) {
     }
 }
 
-void setMetaDataBaseClasses(const clang::Decl *decl, Typelib::Type *type) {
+void setMetaDataBaseClasses(const clang::Decl *decl, const Typelib::Type *type) {
     // we are also required to note all base-classes of the decl in the
     // metadata
     if (const clang::CXXRecordDecl *cxxRecord =
@@ -143,7 +141,7 @@ void setMetaDataBaseClasses(const clang::Decl *decl, Typelib::Type *type) {
     }
 }
 
-void setMetaDataDoc(const clang::Decl *decl, Typelib::Type *type) {
+void setMetaDataDoc(const clang::Decl *decl, const Typelib::Type *type) {
 
     clang::comments::FullComment *comment =
         decl->getASTContext().getCommentForDecl(decl, NULL);
@@ -231,7 +229,7 @@ void setMetaDataDoc(const clang::Decl *decl, Typelib::Type *type) {
     type->getMetaData().add("doc", stream.str());
 }
 
-void setMetaDataCxxname(const clang::NamedDecl *decl, Typelib::Type *type) {
+void setMetaDataCxxname(const clang::NamedDecl *decl, const Typelib::Type *type) {
     clang::LangOptions o;
     clang::PrintingPolicy p(o);
 

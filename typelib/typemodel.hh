@@ -93,9 +93,6 @@ namespace Typelib
         //! This is kept as pointer so that it can be modified even if the Type
         // object is const
         MetaData*   m_metadata;
-
-        ///Path to header, were this type was defined
-        std::string m_definitionHeaderPath;
         
 	/** Checks that @c identifier is a valid type name */
         static bool isValidIdentifier(const std::string& identifier);
@@ -131,9 +128,6 @@ namespace Typelib
         Category      getCategory() const;
 	/** true if this type is null */
         bool          isNull() const;
-
-        const std::string &getPathToDefiningHeader() const;
-        void setPathToDefiningHeader(const std::string &path);
         
 	/** The set of types this type depends upon
          *
