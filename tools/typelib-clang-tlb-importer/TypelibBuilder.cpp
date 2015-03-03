@@ -180,9 +180,7 @@ TypelibBuilder::checkRegisterContainer(const std::string &canonicalTypeName,
               << "' successfully registered for Type '" << canonicalTypeName
               << "'\n";
 
-    // FIXME: and, as usual: all the metadata should not be missing? but we
-    // only get a const-reference from the container-factory... so ask the
-    // registry to get the type-pointer of the actual type... meh...
+    // setting the metadata
     setMetaDataDoc(decl, &newContainer);
     setMetaDataSourceFileLine(decl, &newContainer);
     setMetaDataCxxname(decl, &newContainer);
