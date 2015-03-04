@@ -66,6 +66,10 @@ module Typelib
             end
         end
 
+        # NOTE: preprocessing of a group of header-files by the actual compiler
+        # is needed by orogen to get the resolved top-level include-files. once
+        # this is done by the clang-based importer the preprocessing can be
+        # removed.
         def self.preprocess(files, kind, options)
             includes = options[:include].map { |v| "-I#{v}" }
             defines  = options[:define].map { |v| "-D#{v}" }
