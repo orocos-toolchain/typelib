@@ -24,40 +24,6 @@
   
   </numeric>
   <alias name="/int" source="/int32_t"/>
-  <compound name="/Eigen/internal/plain_array&lt;/float,12,0,16&gt;" size="48" >
-    <field name="array" type="/float[12]" offset="0">
-    
-    </field>
-  <metadata key="cxxname"><![CDATA[struct Eigen::internal::plain_array<float, 12, 0, 16>]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/DenseStorage.h:79]]></metadata>
-
-  </compound>
-  <compound name="/Eigen/DenseStorage&lt;/float,12,3,4,0&gt;" size="48" >
-    <field name="m_data" type="/Eigen/internal/plain_array&lt;/float,12,0,16&gt;" offset="0">
-    
-    </field>
-  <metadata key="cxxname"><![CDATA[class Eigen::DenseStorage<float, 12, 3, 4, 0>]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/DenseStorage.h:121]]></metadata>
-
-  </compound>
-  <compound name="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;" size="48" >
-    <field name="m_storage" type="/Eigen/DenseStorage&lt;/float,12,3,4,0&gt;" offset="0">
-    
-    </field>
-  <metadata key="base_classes"><![CDATA[/Eigen/PlainObjectBase</Eigen/Matrix</float,3,4,0,3,4>>]]></metadata>
-<metadata key="cxxname"><![CDATA[class Eigen::Matrix<float, 3, 4, 0, 3, 4>]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:126]]></metadata>
-
-  </compound>
-  <compound name="/Eigen/PlainObjectBase&lt;/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;&gt;" size="48" >
-    <field name="m_storage" type="/Eigen/DenseStorage&lt;/float,12,3,4,0&gt;" offset="0">
-    
-    </field>
-  <metadata key="base_classes"><![CDATA[/Eigen/MatrixBase</Eigen/Matrix</float,3,4,0,3,4>>]]></metadata>
-<metadata key="cxxname"><![CDATA[class Eigen::PlainObjectBase<class Eigen::Matrix<float, 3, 4, 0, 3, 4> >]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/PlainObjectBase.h:87]]></metadata>
-
-  </compound>
   <opaque name="/templates/C1&lt;/double&gt;" size="0" >
   <metadata key="cxxname"><![CDATA[class templates::C1<double>]]></metadata>
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:27]]></metadata>
@@ -84,14 +50,6 @@
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:34]]></metadata>
 
   </compound>
-  <compound name="/templates/eigen/S1" size="48" >
-    <field name="M" type="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;" offset="0">
-    
-    </field>
-  <metadata key="cxxname"><![CDATA[struct templates::eigen::S1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:12]]></metadata>
-
-  </compound>
   <compound name="/templates/eigen/S2" size="24" >
     <field name="V" type="/Eigen/Vector3d" offset="0">
     
@@ -108,7 +66,6 @@
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:20]]></metadata>
 
   </compound>
-  <alias name="/templates/eigen/aMatrix" source="/Eigen/Matrix&lt;/float,3,4,0,3,4&gt;"/>
   <compound name="/templates/templateclasses/D1" size="20" >
     <field name="m1" type="/templates/C1&lt;/float[4]&gt;" offset="0">
     
