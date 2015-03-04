@@ -63,6 +63,8 @@ void setMetaDataSourceFileLine(const clang::Decl *decl, const Typelib::Type *typ
     type->getMetaData().add("source_file_line", stream.str());
 }
 
+// TODO: what we actually want to access is the string returned by
+// "clang::InclusionDirective()"
 void setMetaDataOrogenInclude(const clang::Decl *decl, const Typelib::Type *type) {
     const clang::SourceManager &sm = decl->getASTContext().getSourceManager();
     const clang::SourceLocation &loc = sm.getSpellingLoc(decl->getLocStart());
@@ -101,11 +103,13 @@ void setMetaDataOrogenInclude(const clang::Decl *decl, const Typelib::Type *type
                   << "', no forward slash?\n";
         exit(-1);
     }
+    // some headers can be reached via two ways: actual filepath and symlink
+    // inside the ".orogen" folder -- a hack of really bad taste... anyhow,
+    // guard against this...
+    std::string filePath  = do_readlink(dirName+"/"+fileName);
 
     if (lastValidLoc.isValid()) {
-        type->getMetaData().add(
-            "orogen_include_x",
-            do_readlink(sm.getFilename(lastValidLoc).str()));
+        type->getMetaData().add("orogen_include_x", filePath);
     } else {
         std::cout << "setMetaDataOrogenInclude() Warning: could not find "
                      "suitable include-file for '" << type->getName() << "'\n";
