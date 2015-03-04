@@ -320,8 +320,6 @@ module Typelib
     end
 end
 
-require 'typelib/gccxml'
-require 'typelib/clang'
 require 'typelib/cxx'
 
 # Finally, set guard types on the root classes

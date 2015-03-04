@@ -1,3 +1,6 @@
+require 'typelib/gccxml'
+require 'typelib/clang'
+
 module Typelib
     module CXX
         def self.parse_template(name)
