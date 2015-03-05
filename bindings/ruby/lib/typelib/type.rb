@@ -35,6 +35,22 @@ module Typelib
 
             attr_predicate :contains_converted_types?, true
 
+            # Returns whether one needs to call Typelib.to_ruby to convert this
+            # type to the type expected by the caller
+            #
+            # @return [Boolean]
+            def needs_convertion_to_ruby?
+                convertion_to_ruby && !convertion_to_ruby[1][:builtin]
+            end
+
+            # Returns whether one needs to call Typelib.from_ruby to convert a
+            # value given to the API to something this type can understand
+            #
+            # @return [Boolean]
+            def needs_convertion_from_ruby?
+                !convertions_from_ruby.empty?
+            end
+
             def compatible_with_memcpy?
                 layout = begin memory_layout
                          rescue
@@ -145,15 +161,21 @@ module Typelib
         # given block on C++/Ruby bondary
         def self.convert_to_ruby(to = nil, options = Hash.new, &block)
             options = Kernel.validate_options options,
-                :recursive => true
+                recursive: true,
+                builtin: false
 
-            block = lambda(&block)
-            m = Module.new do
-		define_method(:to_ruby, &block)
+            if !options[:builtin] && !block
+                raise ArgumentError, "not a builtin conversion and no block given"
             end
-            extend(m)
 
-            options[:block] = block
+            if block
+                block = lambda(&block)
+                m = Module.new do
+                    define_method(:to_ruby, &block)
+                end
+                extend(m)
+                options[:block] = block
+            end
 
             self.contains_converted_types = options[:recursive]
             self.convertion_to_ruby = [to, options]
@@ -283,14 +305,14 @@ module Typelib
             end
         end
 
-        # Computes the paths that will allow to enumerate all containers
-        # contained in values of this type
+        # Computes the paths that will enumerate all cached containers contained
+        # in values of this type
         #
         # It is mostly useful in Type#handle_invalidation
         # 
         # @return [Accessor]
         def self.containers_accessor
-            @containers ||= Accessor.find_in_type(self) do |t|
+            @containers ||= Accessor.find_in_type(self, :raw_get_cached, :raw_each_cached) do |t|
                 t <= Typelib::ContainerType
             end
         end
@@ -556,9 +578,6 @@ module Typelib
                     Typelib.from_ruby(init, self)
                 else
                     new_value = value_new
-                    if size = new_value.marshalling_size
-                        Typelib.add_allocated_memory(size)
-                    end
                     new_value.send(:initialize)
                     new_value
                 end
@@ -701,9 +720,13 @@ module Typelib
 	    elsif ! (ruby_value = to_ruby).eql?(self)
 		ruby_value.to_s
 	    else
-		"#<#{self.class.name}: 0x#{address.to_s(16)} ptr=0x#{@ptr.zone_address.to_s(16)}>"
+                raw_to_s
 	    end
 	end
+
+        def raw_to_s
+            "#<#{self.class.name}: 0x#{address.to_s(16)} ptr=0x#{@ptr.zone_address.to_s(16)}>"
+        end
 
 	def pretty_print(pp) # :nodoc:
 	    pp.text to_s

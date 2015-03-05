@@ -31,7 +31,7 @@ void* value_root_ptr(VALUE value)
         Value v = rb2cxx::object<Value>(parent);
         return v.getData();
     }
-    else return 0;
+    else return NULL;
 }
 
 /* There are constraints when creating a Ruby wrapper for a Type, mainly

@@ -23,59 +23,61 @@ class TC_TypeAccessor < Minitest::Test
     end
 
     def test_it_resolves_all_accessible_paths
-        accessor = Typelib::Accessor.find_in_type type do |t|
+        accessor = Typelib::Accessor.find_in_type type, :the_getter, :the_iterator do |t|
             t.name == "/float"
         end
         assert_equal 12, accessor.paths.size
         path_set = accessor.paths.map { |p| p.elements.dup }
 
-        assert path_set.delete([[:call, [:raw_get, 'fl_direct']]])
-        assert path_set.delete([[:call, [:raw_get, 'fl_array']],
-                                [:iterate, [:raw_each]]])
-        assert path_set.delete([[:call, [:raw_get, 'fl_vector']],
-                                [:iterate, [:raw_each]]])
-        assert path_set.delete([[:call, [:raw_get, 'direct']],
-                                [:call, [:raw_get, 'direct']]])
-        assert path_set.delete([[:call, [:raw_get, 'direct']],
-                                [:call, [:raw_get, 'array']],
-                                [:iterate, [:raw_each]]])
-        assert path_set.delete([[:call, [:raw_get, 'direct']],
-                                [:call, [:raw_get, 'vector']],
-                                [:iterate, [:raw_each]]])
-        assert path_set.delete([[:call, [:raw_get, 'array']],
-                                [:iterate, [:raw_each]],
-                                [:call, [:raw_get, 'direct']]])
-        assert path_set.delete([[:call, [:raw_get, 'array']],
-                                [:iterate, [:raw_each]],
-                                [:call, [:raw_get, 'array']],
-                                [:iterate, [:raw_each]]])
-        assert path_set.delete([[:call, [:raw_get, 'array']],
-                                [:iterate, [:raw_each]],
-                                [:call, [:raw_get, 'vector']],
-                                [:iterate, [:raw_each]]])
-        assert path_set.delete([[:call, [:raw_get, 'vector']],
-                                [:iterate, [:raw_each]],
-                                [:call, [:raw_get, 'direct']]])
-        assert path_set.delete([[:call, [:raw_get, 'vector']],
-                                [:iterate, [:raw_each]],
-                                [:call, [:raw_get, 'array']],
-                                [:iterate, [:raw_each]]])
-        assert path_set.delete([[:call, [:raw_get, 'vector']],
-                                [:iterate, [:raw_each]],
-                                [:call, [:raw_get, 'vector']],
-                                [:iterate, [:raw_each]]])
+        assert path_set.delete([[:call, [:the_getter, 'fl_direct']]])
+        assert path_set.delete([[:call, [:the_getter, 'fl_array']],
+                                [:iterate, [:the_iterator]]])
+        assert path_set.delete([[:call, [:the_getter, 'fl_vector']],
+                                [:iterate, [:the_iterator]]])
+        assert path_set.delete([[:call, [:the_getter, 'direct']],
+                                [:call, [:the_getter, 'direct']]])
+        assert path_set.delete([[:call, [:the_getter, 'direct']],
+                                [:call, [:the_getter, 'array']],
+                                [:iterate, [:the_iterator]]])
+        assert path_set.delete([[:call, [:the_getter, 'direct']],
+                                [:call, [:the_getter, 'vector']],
+                                [:iterate, [:the_iterator]]])
+        assert path_set.delete([[:call, [:the_getter, 'array']],
+                                [:iterate, [:the_iterator]],
+                                [:call, [:the_getter, 'direct']]])
+        assert path_set.delete([[:call, [:the_getter, 'array']],
+                                [:iterate, [:the_iterator]],
+                                [:call, [:the_getter, 'array']],
+                                [:iterate, [:the_iterator]]])
+        assert path_set.delete([[:call, [:the_getter, 'array']],
+                                [:iterate, [:the_iterator]],
+                                [:call, [:the_getter, 'vector']],
+                                [:iterate, [:the_iterator]]])
+        assert path_set.delete([[:call, [:the_getter, 'vector']],
+                                [:iterate, [:the_iterator]],
+                                [:call, [:the_getter, 'direct']]])
+        assert path_set.delete([[:call, [:the_getter, 'vector']],
+                                [:iterate, [:the_iterator]],
+                                [:call, [:the_getter, 'array']],
+                                [:iterate, [:the_iterator]]])
+        assert path_set.delete([[:call, [:the_getter, 'vector']],
+                                [:iterate, [:the_iterator]],
+                                [:call, [:the_getter, 'vector']],
+                                [:iterate, [:the_iterator]]])
         assert path_set.empty?
     end
 
     def test_it_resolves_matching_containers_recursively
         type = registry.create_container '/std/vector', '/std/vector</float>'
-        accessor = Typelib::Accessor.find_in_type(type) { |t| t <= Typelib::ContainerType }
+        accessor = Typelib::Accessor.find_in_type(type, :the_getter, :the_iterator) do |t|
+            t <= Typelib::ContainerType
+        end
 
         path_set = accessor.paths.map { |p| p.elements.dup }
         assert_equal 2, path_set.size
 
         assert path_set.include?([])
-        assert path_set.include?([[:iterate, [:raw_each]]])
+        assert path_set.include?([[:iterate, [:the_iterator]]])
     end
 end
 

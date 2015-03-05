@@ -143,6 +143,14 @@ module Typelib
             super if defined? super
         end
 
+        def raw_get_cached(index)
+            @elements[index]
+        end
+
+        def raw_each_cached(&block)
+            @elements.compact.each(&block)
+        end
+
         def raw_get(index)
             @elements[index] ||= do_get(index)
         end
