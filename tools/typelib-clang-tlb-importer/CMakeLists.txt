@@ -9,17 +9,12 @@ llvm_get_config(LLVM_CXXFLAGS "--cxxflags")
 string(REGEX REPLACE "-I[^ ]+" "" LLVM_CXXFLAGS ${LLVM_CXXFLAGS})
 
 llvm_get_config(LLVM_LIBRARY_DIRS "--libdir")
-llvm_get_config(LLVM_RAW_LIBRARIES "--libs"
-    core option analysis support bitreader mcparser transformutils)
 
 # tell cmake where to look for includes
 llvm_get_config(LLVM_INCLUDE_DIRS "--includedir")
 
-# Convert the library as reported by llvm-config into a cmake list
-string(REPLACE "-l" "" LLVM_RAW_LIBRARIES "${LLVM_RAW_LIBRARIES}")
-string(REPLACE " " ";" LLVM_RAW_LIBRARIES "${LLVM_RAW_LIBRARIES}")
-
 # The set of clang libraries we need ... no clang-config for us
+unset(LLVM_RAW_LIBRARIES CACHE)
 list(APPEND LLVM_RAW_LIBRARIES
     clangEdit clangTooling clangDriver
     clangFrontend clangLex clangParse
@@ -27,10 +22,19 @@ list(APPEND LLVM_RAW_LIBRARIES
     clangSerialization clangEdit clangAST
     clangASTMatchers clangBasic clang)
 
+llvm_get_config(llvm_config_libs "--libs"
+    core option analysis support bitreader mcparser transformutils)
+# Convert the library as reported by llvm-config into a cmake list
+string(REPLACE "-l" "" llvm_config_libs "${llvm_config_libs}")
+string(REPLACE " " ";" llvm_config_libs "${llvm_config_libs}")
+# and add it to LLVM_RAW_LIBRARIES
+list(APPEND LLVM_RAW_LIBRARIES ${llvm_config_libs})
+
 foreach(llvm_lib ${LLVM_RAW_LIBRARIES})
     unset(llvm_lib_path CACHE)
     find_library(llvm_lib_path ${llvm_lib} PATHS ${LLVM_LIBRARY_DIRS})
     if (NOT llvm_lib_path)
+        message(STATUS "${llvm_lib} not found in ${LLVM_LIBRARY_DIRS}")
         set(LLVM_LIBRARIES FALSE)
         break()
     else()
