@@ -10,9 +10,23 @@
 using namespace Typelib;
 using namespace std;
 
-void Exporter::save(std::string const& file_name, utilmm::config_set const& config, Registry const& registry)
-{
+void Exporter::save(std::string const &file_name,
+                    utilmm::config_set const &config,
+                    Registry const &registry) {
+    // create a new 'ofstream' where we can write our data to. truncate
+    // (delete) a existing file.
     std::ofstream file(file_name.c_str(), std::ofstream::trunc);
+    // do some preleminary checking on our own, so we are able to report a
+    // proper error message, which contains the intended filename
+    if (!file.good())
+        throw std::runtime_error(
+            "typelib::Exporter::save() cannot export into filename '" +
+            file_name + "'");
+    // afterwards we activate excaptions, so that we still abort if something
+    // bad happens (instead of silently continuing)
+    file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    // and then call the internal "save()" function giving it the prepared
+    // 'ofstream' object
     save(file, config, registry);
 }
 

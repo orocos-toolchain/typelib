@@ -44,11 +44,11 @@ namespace Typelib
     public:
         virtual ~Exporter() {}
 
-	/** Serialize a whole registry in a file */
-	virtual void save
-	    ( std::string const& file_name
-	    , utilmm::config_set const& config
-	    , Registry const& registry );
+        /** Serialize a whole registry into a file, overwriting an existing
+         * file. will throw on any errors. */
+        virtual void save(std::string const &file_name,
+                          utilmm::config_set const &config,
+                          Registry const &registry);
 
         /** Serialize a whole registry using this exporter
          * 
