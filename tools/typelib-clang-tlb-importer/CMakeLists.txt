@@ -89,6 +89,6 @@ if (LLVM_LIBRARIES)
         RUNTIME DESTINATION bin
         )
 else()
-    message(STATUS "clang not found, the typelib-clang importer will not be built")
+    message(STATUS "llvm-config was found, but parts of clang not. The typelib-clang importer will not be built")
 endif()
 
