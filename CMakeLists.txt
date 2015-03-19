@@ -6,6 +6,9 @@ PROJECT(typelib)
 SET(PROJECT_VERSION 1.1)
 SET(API_VERSION 1)
 
+# This changes the behaviour of list() w.r.t. empty elements. Typelib'cmake code
+# is compatible with the NEW policy, so just set it to avoid getting a cmake
+# warning
 cmake_policy(SET CMP0007 NEW)
 
 IF(APPLE)
