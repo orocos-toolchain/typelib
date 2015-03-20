@@ -40,7 +40,7 @@ namespace Typelib
     /** Casts a Value object to a given simple type T 
      * @throws BadValueCast */
     template<typename T>
-    T& value_cast(Value v)
+    T value_cast(Value v)
     {
         CastingVisitor<T> caster;
         return caster.apply(v);
@@ -49,7 +49,7 @@ namespace Typelib
     /** Casts a pointer to a given simple type T using \c type as the type for \c *ptr 
      * @throws BadValueCast */
     template<typename T>
-    T& value_cast(void* ptr, Type const& type)
+    T value_cast(void* ptr, Type const& type)
     { return value_cast<T>(Value(ptr, type)); }
 }
 
