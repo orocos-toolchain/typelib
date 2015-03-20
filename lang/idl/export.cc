@@ -87,18 +87,6 @@ namespace
         }
     };
 
-    static bool isIDLBuiltinType(Type const& type)
-    {
-        if (type.getCategory() == Type::Numeric || type.getName() == "/std/string")
-            return true;
-        else if (type.getCategory() == Type::Array)
-        {
-            Type const& element_type = static_cast<Array const&>(type).getIndirection();
-            return isIDLBuiltinType(element_type);
-        }
-        return false;
-    }
-
     /** Returns the IDL identifier for the given type, without the type's own
      * namespace prepended
      */
