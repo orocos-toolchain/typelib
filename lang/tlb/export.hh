@@ -15,6 +15,8 @@ public:
     virtual bool save
         ( std::ostream& stream
         , Typelib::RegistryIterator const& type);
+
+    using Typelib::Exporter::save;
 };
 
 #endif

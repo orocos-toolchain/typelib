@@ -93,7 +93,7 @@ namespace Typelib
         //! This is kept as pointer so that it can be modified even if the Type
         // object is const
         MetaData*   m_metadata;
-
+        
 	/** Checks that @c identifier is a valid type name */
         static bool isValidIdentifier(const std::string& identifier);
 
@@ -128,7 +128,7 @@ namespace Typelib
         Category      getCategory() const;
 	/** true if this type is null */
         bool          isNull() const;
-
+        
 	/** The set of types this type depends upon
          *
          * This method returns the set of types that are directly depended-upon

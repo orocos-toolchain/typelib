@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<typelib>
+  <enum name="/enums/E1" >
+    <value symbol="E1_VAL1" value="42"/>
+    <value symbol="E1_VAL2" value="43"/>
+    <value symbol="E1_VAL3" value="44"/>
+    <value symbol="E1_VAL4" value="45"/>
+  <metadata key="cxxname"><![CDATA[enum enums::E1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.hh:9]]></metadata>
+
+  </enum>
+  <enum name="/enums/E2" >
+    <value symbol="E2_VAL1" value="0"/>
+    <value symbol="E2_VAL2" value="1"/>
+    <value symbol="E2_VAL3" value="2"/>
+    <value symbol="E2_VAL4" value="3"/>
+  <metadata key="cxxname"><![CDATA[enum enums::E2]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.hh:16]]></metadata>
+
+  </enum>
+  <alias name="/enums/E2_t" source="/enums/E2"/>
+  <compound name="/enums/S2" size="4" >
+    <field name="A" type="/enums/E2" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct enums::S2]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.hh:29]]></metadata>
+
+  </compound>
+  <compound name="/enums/S3" size="4" >
+    <field name="A" type="/enums/E2" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[class enums::S3]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.hh:33]]></metadata>
+
+  </compound>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <alias name="/int" source="/int32_t"/>
+  <compound name="/enums/S1" size="8" >
+    <field name="A" type="/int32_t" offset="0">
+    
+    </field>
+    <field name="B" type="/enums/E1" offset="4">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct enums::S1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.hh:24]]></metadata>
+
+  </compound>
+  <enum name="/std/float_round_style" >
+    <value symbol="round_indeterminate" value="-1"/>
+    <value symbol="round_to_nearest" value="1"/>
+    <value symbol="round_toward_infinity" value="2"/>
+    <value symbol="round_toward_neg_infinity" value="3"/>
+    <value symbol="round_toward_zero" value="0"/>
+  <metadata key="cxxname"><![CDATA[enum std::float_round_style]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/limits:156]]></metadata>
+
+  </enum>
+  <compound name="/enums/S4" size="4" >
+    <field name="A" type="/std/float_round_style" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct enums::S4]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/enums.hh:41]]></metadata>
+
+  </compound>
+</typelib>

@@ -57,7 +57,7 @@ void Typelib::display(std::ostream& io, MemoryLayout::const_iterator const begin
 }
 
 
-tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
+boost::tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
         boost::uint8_t const* data, size_t in_offset,
         OutputStream& stream, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
 {
@@ -120,10 +120,10 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
         }
     }
 
-    return make_tuple(in_offset, it);
+    return boost::make_tuple(in_offset, it);
 }
 
-tuple<size_t, MemoryLayout::const_iterator> ValueOps::load(
+boost::tuple<size_t, MemoryLayout::const_iterator> ValueOps::load(
         boost::uint8_t* data, size_t out_offset,
         InputStream& stream, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
 {
@@ -188,7 +188,7 @@ tuple<size_t, MemoryLayout::const_iterator> ValueOps::load(
         }
     }
 
-    return make_tuple(out_offset, it);
+    return boost::make_tuple(out_offset, it);
 }
 
 
@@ -288,7 +288,7 @@ bool Typelib::compare(void* dst, void* src, Type const& type)
     return is_equal;
 }
 
-tuple< boost::uint8_t*, MemoryLayout::const_iterator>
+boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
     Typelib::ValueOps::zero(boost::uint8_t* buffer,
         MemoryLayout::const_iterator begin,
         MemoryLayout::const_iterator end)
@@ -334,9 +334,10 @@ tuple< boost::uint8_t*, MemoryLayout::const_iterator>
         }
     }
 
-    return make_tuple(buffer, it);
+    return boost::make_tuple(buffer, it);
 }
-tuple< boost::uint8_t*, MemoryLayout::const_iterator>
+
+boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
     Typelib::ValueOps::init(uint8_t* buffer,
         MemoryLayout::const_iterator begin,
         MemoryLayout::const_iterator end)
@@ -380,10 +381,10 @@ tuple< boost::uint8_t*, MemoryLayout::const_iterator>
         }
     }
 
-    return make_tuple(buffer, it);
+    return boost::make_tuple(buffer, it);
 }
 
-tuple< boost::uint8_t*, MemoryLayout::const_iterator>
+boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
     Typelib::ValueOps::destroy(boost::uint8_t* buffer,
         MemoryLayout::const_iterator begin,
         MemoryLayout::const_iterator end)
@@ -426,10 +427,10 @@ tuple< boost::uint8_t*, MemoryLayout::const_iterator>
         }
     }
 
-    return make_tuple(buffer, it);
+    return boost::make_tuple(buffer, it);
 }
 
-tuple< boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
+boost::tuple< boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
     Typelib::ValueOps::copy(boost::uint8_t* out_buffer, boost::uint8_t* in_buffer,
         MemoryLayout::const_iterator begin,
         MemoryLayout::const_iterator end)
@@ -481,10 +482,10 @@ tuple< boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
         }
     }
 
-    return make_tuple(out_buffer, in_buffer, it);
+    return boost::make_tuple(out_buffer, in_buffer, it);
 }
 
-tuple<bool, boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
+boost::tuple<bool, boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
     Typelib::ValueOps::compare(boost::uint8_t* out_buffer, boost::uint8_t* in_buffer,
         MemoryLayout::const_iterator begin,
         MemoryLayout::const_iterator end)
@@ -499,7 +500,7 @@ tuple<bool, boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
             {
                 size_t size = *(++it);
                 if (memcmp(out_buffer, in_buffer, size))
-                    return make_tuple(false, (boost::uint8_t*)0, (boost::uint8_t*)0, end);
+                    return boost::make_tuple(false, (boost::uint8_t*)0, (boost::uint8_t*)0, end);
 
                 out_buffer += size;
                 in_buffer  += size;
@@ -522,7 +523,7 @@ tuple<bool, boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
                     tie(is_equal, out_buffer, in_buffer, it) =
                         compare(out_buffer, in_buffer, element_it, end);
                     if (!is_equal)
-                        return make_tuple(false, (boost::uint8_t*)0, (boost::uint8_t*)0, end);
+                        return boost::make_tuple(false, (boost::uint8_t*)0, (boost::uint8_t*)0, end);
                 }
 
                 if (it == end || *it != MemLayout::FLAG_END)
@@ -533,7 +534,7 @@ tuple<bool, boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
             {
                 Container const* type = reinterpret_cast<Container const*>(*(++it));
                 if (!type->compare(out_buffer, in_buffer))
-                    return make_tuple(false, (boost::uint8_t*)0, (boost::uint8_t*)0, end);
+                    return boost::make_tuple(false, (boost::uint8_t*)0, (boost::uint8_t*)0, end);
 
                 it = MemLayout::skip_block(it, end);
                 out_buffer += type->getSize();
@@ -544,7 +545,7 @@ tuple<bool, boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
                 throw std::runtime_error("in compare(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
         }
     }
-    return make_tuple(true, out_buffer, in_buffer, it);
+    return boost::make_tuple(true, out_buffer, in_buffer, it);
 }
 
 

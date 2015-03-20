@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<typelib>
+  <opaque name="/Eigen/Quaternion&lt;/double&gt;" size="0" >
+  
+  </opaque>
+  <opaque name="/Eigen/Quaternionf" size="0" >
+  <metadata key="cxxname"><![CDATA[typedef Quaternionf Eigen::Quaternion<float, 0>]]></metadata>
+<metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Geometry/Quaternion.h:295]]></metadata>
+
+  </opaque>
+  <opaque name="/Eigen/Vector3d" size="0" >
+  <metadata key="cxxname"><![CDATA[typedef Vector3d Eigen::Matrix<double, 3, 1, 0, 3, 1>]]></metadata>
+<metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:395]]></metadata>
+
+  </opaque>
+  <alias name="/Eigen/Matrix&lt;/double,3,1,0,3,1&gt;" source="/Eigen/Vector3d"/>
+  <alias name="/Eigen/Quaternion&lt;/float,0&gt;" source="/Eigen/Quaternionf"/>
+  <numeric name="/float" category="float" size="4" >
+  
+  </numeric>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <alias name="/int" source="/int32_t"/>
+  <opaque name="/templates/C1&lt;/double&gt;" size="0" >
+  <metadata key="cxxname"><![CDATA[class templates::C1<double>]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:27]]></metadata>
+
+  </opaque>
+  <opaque name="/templates/C1&lt;/float&gt;" size="0" >
+  <metadata key="cxxname"><![CDATA[class templates::C1<float>]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:38]]></metadata>
+
+  </opaque>
+  <compound name="/templates/C1&lt;/float[4]&gt;" size="16" >
+    <field name="A" type="/float[4]" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[class templates::C1<float [4]>]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:27]]></metadata>
+
+  </compound>
+  <compound name="/templates/workaround" size="8" >
+    <field name="foo" type="/templates/C1&lt;/double&gt;" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct templates::workaround]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:34]]></metadata>
+
+  </compound>
+  <compound name="/templates/eigen/S2" size="24" >
+    <field name="V" type="/Eigen/Vector3d" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct templates::eigen::S2]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:16]]></metadata>
+
+  </compound>
+  <compound name="/templates/eigen/S3" size="16" >
+    <field name="Q" type="/Eigen/Quaternionf" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct templates::eigen::S3]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:20]]></metadata>
+
+  </compound>
+  <compound name="/templates/templateclasses/D1" size="20" >
+    <field name="m1" type="/templates/C1&lt;/float[4]&gt;" offset="0">
+    
+    </field>
+    <field name="m2" type="/int32_t" offset="16">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[class templates::templateclasses::D1]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:45]]></metadata>
+
+  </compound>
+</typelib>
