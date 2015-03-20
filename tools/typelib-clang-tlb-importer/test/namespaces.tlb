@@ -25,4 +25,12 @@
 <metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/namespaces.hh:16]]></metadata>
 
   </compound>
+  <compound name="/standard/__1/StandardClass" size="4" >
+    <field name="standardMember" type="/int32_t" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[class standard::__1::StandardClass]]></metadata>
+<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/namespaces.hh:34]]></metadata>
+
+  </compound>
 </typelib>
