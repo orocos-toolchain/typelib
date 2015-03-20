@@ -45,6 +45,7 @@ module Typelib
                     #   https://github.com/Valloric/YouCompleteMe/issues/303#issuecomment-17656962
                     command_line =
                         ['typelib-clang-tlb-importer',
+                         "-silent",
                          "-opaquePath=#{opaque_registry_io.path}",
                          "-tlbSavePath=#{clang_output_io.path}",
                          *header_files,

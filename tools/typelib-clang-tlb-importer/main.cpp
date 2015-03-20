@@ -119,13 +119,16 @@ static llvm::cl::opt<std::string> tlbSavePath(
         llvm::cl::desc("where to save tlb-database"),
         llvm::cl::Required,
         llvm::cl::cat(ToolCategory));
+
+static llvm::cl::opt<bool>
+    optionSilent("silent",
+                 llvm::cl::desc("disable output which would go to STDOUT"),
+                 cl::init(false), llvm::cl::cat(ToolCategory));
 // }}}
 
 int main(int argc, const char **argv) {
-    llvm::sys::PrintStackTraceOnErrorSignal();
 
-    IgnoredOrRenamedType::printTemplateArgsToBeIgnored();
-    IgnoredOrRenamedType::printTypeRenames();
+    llvm::sys::PrintStackTraceOnErrorSignal();
 
     // optparsing {{{1
 
@@ -152,6 +155,20 @@ int main(int argc, const char **argv) {
     ClangTool Tool(OptionsParser.getCompilations(),
                     OptionsParser.getSourcePathList());
     // }}}
+
+    // if we are asked to output nothing, be silent by disabling cout.  note
+    // that no backup pointers (retval of the rdbuf() for example) are saved,
+    // restoring cout is not possible but can easily added.
+    //
+    // see http://stackoverflow.com/a/6211644/4658481
+    if (optionSilent) {
+        std::cout.rdbuf(NULL);
+    }
+
+    // there are some hard-coded "hacks" in place, which we should tell the
+    // outside world
+    IgnoredOrRenamedType::printTemplateArgsToBeIgnored();
+    IgnoredOrRenamedType::printTypeRenames();
 
     //load opaque registry
     if(!opaquePath.empty())
