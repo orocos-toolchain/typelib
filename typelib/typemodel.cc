@@ -49,7 +49,6 @@ namespace Typelib
     void   Type::setSize(size_t size) { m_size = size; }
     size_t Type::getSize() const { return m_size; }
     bool   Type::isNull() const { return m_category == NullType; }
-    
     bool   Type::operator != (Type const& with) const { return (this != &with); }
     bool   Type::operator == (Type const& with) const { return (this == &with); }
     bool   Type::isSame(Type const& with) const
@@ -647,9 +646,9 @@ namespace Typelib
     { return m_metadata->merge(field.getMetaData()); }
 
 
-    BadCategory::BadCategory(Type::Category _found, Type::Category _expected)
-        : TypeException("bad category: found " + lexical_cast<string>(_found) + " expecting " + lexical_cast<string>(_expected))
-        , found(_found), expected(_expected) {}
+    BadCategory::BadCategory(Type::Category found, Type::Category expected)
+        : TypeException("bad category: found " + lexical_cast<string>(found) + " expecting " + lexical_cast<string>(expected))
+        , found(found), expected(expected) {}
     NullTypeFound::NullTypeFound()
         : TypeException("null type found") { }
     NullTypeFound::NullTypeFound(Type const& type)
