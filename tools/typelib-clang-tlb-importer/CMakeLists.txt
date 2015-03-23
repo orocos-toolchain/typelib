@@ -3,46 +3,45 @@ include(LLVMTools)
 # we tested and developed _only_ against llvm-3.4
 llvm_find_config(3.4)
 
-# note that "cxxflags" additionally returns the "-I" flags... which might not
-# be what you want!
-llvm_get_config(LLVM_CXXFLAGS "--cxxflags")
-string(REGEX REPLACE "-I[^ ]+" "" LLVM_CXXFLAGS ${LLVM_CXXFLAGS})
+if (NOT LLVM_CONFIG_EXECUTABLE)
+    message(STATUS "typelib-clang-tlb-importer: llvm-config was not found, skipping clang-based importer")
+else()
+    message(STATUS "typelib-clang-tlb-importer: configuring with ${LLVM_CONFIG_EXECUTABLE}")
 
-llvm_get_config(LLVM_LIBRARY_DIRS "--libdir")
+    # note that "cxxflags" additionally returns the "-I" flags... which might not
+    # be what you want!
+    llvm_get_config(LLVM_CXXFLAGS "--cxxflags")
+    string(REGEX REPLACE "-I[^ ]+" "" LLVM_CXXFLAGS ${LLVM_CXXFLAGS})
 
-# tell cmake where to look for includes
-llvm_get_config(LLVM_INCLUDE_DIRS "--includedir")
+    llvm_get_config(LLVM_LIBRARY_DIRS "--libdir")
 
-# The set of clang libraries we need ... no clang-config for us
-unset(LLVM_RAW_LIBRARIES CACHE)
-list(APPEND LLVM_RAW_LIBRARIES
-    clangEdit clangTooling clangDriver
-    clangFrontend clangLex clangParse
-    clangAnalysis clangSema clangRewriteCore
-    clangSerialization clangEdit clangAST
-    clangASTMatchers clangBasic clang)
+    # tell cmake where to look for includes
+    llvm_get_config(LLVM_INCLUDE_DIRS "--includedir")
 
-llvm_get_config(llvm_config_libs "--libs"
-    core option analysis support bitreader mcparser transformutils)
-# Convert the library as reported by llvm-config into a cmake list
-string(REPLACE "-l" "" llvm_config_libs "${llvm_config_libs}")
-string(REPLACE " " ";" llvm_config_libs "${llvm_config_libs}")
-# and add it to LLVM_RAW_LIBRARIES
-list(APPEND LLVM_RAW_LIBRARIES ${llvm_config_libs})
+    llvm_get_config(llvm_config_libs "--libs"
+        core option analysis support bitreader mcparser transformutils)
+    # Convert the library as reported by llvm-config into a cmake list
+    string(REPLACE "-l" "" llvm_config_libs "${llvm_config_libs}")
+    string(REPLACE " " ";" llvm_config_libs "${llvm_config_libs}")
+    # and add it to LLVM_RAW_LIBRARIES
+    list(APPEND LLVM_RAW_LIBRARIES ${llvm_config_libs})
 
-foreach(llvm_lib ${LLVM_RAW_LIBRARIES})
-    unset(llvm_lib_path CACHE)
-    find_library(llvm_lib_path ${llvm_lib} PATHS ${LLVM_LIBRARY_DIRS})
-    if (NOT llvm_lib_path)
-        message(STATUS "${llvm_lib} not found in ${LLVM_LIBRARY_DIRS}")
-        set(LLVM_LIBRARIES FALSE)
-        break()
-    else()
-        list(APPEND LLVM_LIBRARIES ${llvm_lib_path})
+    foreach(llvm_lib ${LLVM_RAW_LIBRARIES})
+        unset(llvm_lib_path CACHE)
+        find_library(llvm_lib_path ${llvm_lib} PATHS ${LLVM_LIBRARY_DIRS})
+        if (NOT llvm_lib_path)
+            message(STATUS "${llvm_lib} not found in ${LLVM_LIBRARY_DIRS}")
+            set(LLVM_LIBRARIES FALSE)
+            break()
+        else()
+            list(APPEND LLVM_LIBRARIES ${llvm_lib_path})
+        endif()
+    endforeach()
+
+    if (NOT LLVM_LIBRARIES)
+        message(FATAL_ERROR "typelib-clang-tlb-importer: some libraries cannot be found, cannot continue.")
     endif()
-endforeach()
 
-if (LLVM_LIBRARIES)
     add_definitions(${LLVM_CXXFLAGS})
     include_directories(${LLVM_INCLUDE_DIRS})
 
@@ -88,7 +87,6 @@ if (LLVM_LIBRARIES)
     install(TARGETS typelib-clang-tlb-importer
         RUNTIME DESTINATION bin
         )
-else()
-    message(STATUS "llvm-config was found, but parts of clang not. The typelib-clang importer will not be built")
+
 endif()
 
