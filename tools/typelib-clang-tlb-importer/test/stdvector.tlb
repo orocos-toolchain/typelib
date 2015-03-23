@@ -60,7 +60,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[class stdvector::C1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:35]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/stdvector.hh:35]]></metadata>
 
   </compound>
   <compound name="/stdvector/S1" size="32" >
@@ -71,7 +71,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct stdvector::S1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:14]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/stdvector.hh:14]]></metadata>
 
   </compound>
   <compound name="/stdvector/S2" size="24" >
@@ -79,7 +79,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct stdvector::S2]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:20]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/stdvector.hh:20]]></metadata>
 
   </compound>
   <compound name="/stdvector/S3" size="24" >
@@ -87,7 +87,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct stdvector::S3]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:25]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/stdvector.hh:25]]></metadata>
 
   </compound>
   <compound name="/stdvector/S4" size="24" >
@@ -95,7 +95,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct stdvector::S4]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/stdvector.hh:30]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/stdvector.hh:30]]></metadata>
 
   </compound>
   <alias name="/stdvector/myvec" source="/std/vector&lt;/double&gt;"/>

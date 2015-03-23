@@ -40,7 +40,7 @@
   <metadata key="cxxname"><![CDATA[class arrays::C1]]></metadata>
 <metadata key="doc"><![CDATA[ more text, formatted to be able to be extracted as a
  "clang::comments::FullComment". blalba. more text. the same wrapped inside a container -- detected and exported]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.hh:39]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/arrays.hh:39]]></metadata>
 
   </compound>
   <compound name="/arrays/D1" size="2064" >
@@ -58,7 +58,7 @@
     </field>
   <metadata key="cxxname"><![CDATA[struct arrays::D1]]></metadata>
 <metadata key="doc"><![CDATA[ inspired from "laser.h" but, as a courtesy, with a BlockCommandComment]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/arrays.hh:14]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/arrays.hh:14]]></metadata>
 
   </compound>
 </typelib>

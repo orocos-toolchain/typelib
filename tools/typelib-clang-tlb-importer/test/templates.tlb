@@ -26,12 +26,12 @@
   <alias name="/int" source="/int32_t"/>
   <opaque name="/templates/C1&lt;/double&gt;" size="0" >
   <metadata key="cxxname"><![CDATA[class templates::C1<double>]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:27]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/templates.hh:27]]></metadata>
 
   </opaque>
   <opaque name="/templates/C1&lt;/float&gt;" size="0" >
   <metadata key="cxxname"><![CDATA[class templates::C1<float>]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:38]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/templates.hh:38]]></metadata>
 
   </opaque>
   <compound name="/templates/C1&lt;/float[4]&gt;" size="16" >
@@ -39,7 +39,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[class templates::C1<float [4]>]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:27]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/templates.hh:27]]></metadata>
 
   </compound>
   <compound name="/templates/workaround" size="8" >
@@ -47,7 +47,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct templates::workaround]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:34]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/templates.hh:34]]></metadata>
 
   </compound>
   <compound name="/templates/eigen/S2" size="24" >
@@ -55,7 +55,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct templates::eigen::S2]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:16]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/templates.hh:16]]></metadata>
 
   </compound>
   <compound name="/templates/eigen/S3" size="16" >
@@ -63,7 +63,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct templates::eigen::S3]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:20]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/templates.hh:20]]></metadata>
 
   </compound>
   <compound name="/templates/templateclasses/D1" size="20" >
@@ -74,7 +74,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[class templates::templateclasses::D1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/templates.hh:45]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/templates.hh:45]]></metadata>
 
   </compound>
 </typelib>

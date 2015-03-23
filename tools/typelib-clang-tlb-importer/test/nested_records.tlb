@@ -31,7 +31,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct nested_records::S1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.hh:9]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/nested_records.hh:9]]></metadata>
 
   </compound>
   <compound name="/nested_records/S3" size="16" >
@@ -39,7 +39,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct nested_records::S3]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.hh:21]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/nested_records.hh:21]]></metadata>
 
   </compound>
   <compound name="/nested_records/S2" size="12" >
@@ -50,7 +50,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct nested_records::S2]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/nested_records.hh:15]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/nested_records.hh:15]]></metadata>
 
   </compound>
 </typelib>

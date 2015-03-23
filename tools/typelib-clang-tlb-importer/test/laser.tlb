@@ -20,7 +20,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct Laser::Data]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/laser.hh:7]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/laser.hh:7]]></metadata>
 
   </compound>
   <alias name="/Laser/array_typedef" source="/int32_t[256]"/>

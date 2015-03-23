@@ -33,7 +33,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct ns_namedVector::NamedVector<double>]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/NamedVector.hh:9]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/NamedVector.hh:9]]></metadata>
 
   </compound>
   <compound name="/ns_namedVector/samples/Joints" size="56" >
@@ -48,7 +48,7 @@
     </field>
   <metadata key="base_classes"><![CDATA[/ns_namedVector/NamedVector</double>]]></metadata>
 <metadata key="cxxname"><![CDATA[struct ns_namedVector::samples::Joints]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/NamedVector.hh:18]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/NamedVector.hh:18]]></metadata>
 
   </compound>
   <alias name="/ns_namedVector/commands/Joints" source="/ns_namedVector/samples/Joints"/>

@@ -19,7 +19,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[class ns_compound_with_pairs::TestClass]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/compound_with_pair.hh:9]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/compound_with_pair.hh:9]]></metadata>
 
   </compound>
 </typelib>

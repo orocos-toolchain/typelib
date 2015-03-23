@@ -12,7 +12,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct ns::ForwardDeclaration]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/forward_declaration.hh:8]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/forward_declaration.hh:8]]></metadata>
 
   </compound>
 </typelib>

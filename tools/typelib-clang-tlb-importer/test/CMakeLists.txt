@@ -41,6 +41,13 @@ foreach(HEADER_FILE ${TEST_HEADER_DATA})
             ${OPAQUE_OPTION}
             ${TLB_OPTION}
             -- ${ADDITIONAL_TEST_FLAGS}
+        # strip personal directory information from the path-informations in
+        # the generated tlb-file.  this modifies the generated result, but
+        # allows easier comparison between different systems. strips everything
+        # up to the location of the main-CMakeLists from the "source_file_line"
+        # metadata.
+        COMMAND sed -i \"s|${CMAKE_SOURCE_DIR}|...|g\"
+            ${CMAKE_CURRENT_BINARY_DIR}/${HEADER_NAME}.tlb
         DEPENDS typelib-clang-tlb-importer
         )
     # add it to the target
