@@ -18,6 +18,15 @@ else()
     # tell cmake where to look for includes
     llvm_get_config(LLVM_INCLUDE_DIRS "--includedir")
 
+    # The set of clang libraries we need ... no clang-config for us
+    unset(LLVM_RAW_LIBRARIES CACHE)
+    list(APPEND LLVM_RAW_LIBRARIES
+        clangEdit clangTooling clangDriver
+        clangFrontend clangLex clangParse
+        clangAnalysis clangSema clangRewriteCore
+        clangSerialization clangEdit clangAST
+        clangASTMatchers clangBasic clang)
+
     llvm_get_config(llvm_config_libs "--libs"
         core option analysis support bitreader mcparser transformutils)
     # Convert the library as reported by llvm-config into a cmake list
