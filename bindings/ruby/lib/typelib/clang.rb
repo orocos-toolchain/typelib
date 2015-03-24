@@ -1,5 +1,6 @@
 require 'set'
 require 'tempfile'
+require 'open3'
 
 module Typelib
     module CLangLoader
@@ -54,9 +55,12 @@ module Typelib
                          *include_path,
                          "-x", "c++"]
 
+                    _, stderr, status = Open3.capture3(*command_line)
+
                     # and finally call importer-tool
-                    if !system(*command_line)
-                        raise RuntimeError, "typelib-clang-tlb-importer failed!"
+                    if !status.success?
+                        STDERR.puts stderr
+                        raise RuntimeError, "typelib-clang-tlb-importer failed"
                     end
 
                     # read the registry created by the tool back into this ruby process
