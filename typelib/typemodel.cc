@@ -366,14 +366,14 @@ namespace Typelib
     Type* Compound::do_merge(Registry& registry, RecursionStack& stack) const
     {
 	auto_ptr<Compound> result(new Compound(getName()));
-        RecursionStack::iterator it = stack.insert(make_pair(this, result.get())).first;
+        RecursionStack::iterator onStackIter = stack.insert(make_pair(this, result.get())).first;
 
         try  {
             for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
                 result->addField(it->getName(), it->getType().merge(registry, stack), it->getOffset());
         }
         catch(...) {
-            stack.erase(it);
+            stack.erase(onStackIter);
             throw;
         }
 
