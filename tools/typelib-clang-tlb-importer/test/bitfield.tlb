@@ -13,7 +13,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct bitfield::S1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/bitfield.hh:11]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/bitfield.hh:11]]></metadata>
 
   </compound>
 </typelib>

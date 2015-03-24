@@ -5,7 +5,7 @@
     <value symbol="B" value="1"/>
     <value symbol="C" value="2"/>
   <metadata key="cxxname"><![CDATA[enum TestEnum]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.hh:16]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/test_idl.hh:16]]></metadata>
 
   </enum>
   <numeric name="/int16_t" category="sint" size="2" >
@@ -31,7 +31,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct Compound]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.hh:4]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/test_idl.hh:4]]></metadata>
 
   </compound>
   <alias name="/EnumAlias" source="/TestEnum"/>
@@ -40,7 +40,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct CompoundInCompound]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.hh:12]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/test_idl.hh:12]]></metadata>
 
   </compound>
   <alias name="/OtherEnum" source="/TestEnum"/>
@@ -55,7 +55,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct NS1::NS1_1::Test]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.hh:22]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/test_idl.hh:22]]></metadata>
 
   </compound>
   <alias name="/NS1/NS1_2/Test" source="/NS1/NS1_1/Test"/>
@@ -64,7 +64,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct NS1::Test]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/test_idl.hh:32]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/test_idl.hh:32]]></metadata>
 
   </compound>
 </typelib>

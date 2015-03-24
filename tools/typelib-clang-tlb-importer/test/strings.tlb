@@ -19,7 +19,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct strings::C3]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/strings.hh:19]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/strings.hh:19]]></metadata>
 
   </compound>
   <compound name="/strings/S1" size="8" >
@@ -27,7 +27,7 @@
     
     </field>
   <metadata key="cxxname"><![CDATA[struct strings::S1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/home/mzenzes/TransTerrA/rock/tools/typelib/tools/typelib-clang-tlb-importer/test/strings.hh:8]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/strings.hh:8]]></metadata>
 
   </compound>
 </typelib>
