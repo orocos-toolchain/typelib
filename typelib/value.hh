@@ -19,15 +19,23 @@ namespace Typelib
      */
     class Value
     {
-        void*       m_data;
+        void *m_data;
+        size_t  m_dataSize;
         boost::reference_wrapper<Type const> m_type;
         
     public:
         Value()
-            : m_data(0), m_type(Registry::null()) {}
+            : m_data(0), m_dataSize(0), m_type(Registry::null()) {}
 
         Value(void* data, Type const& type)
-            : m_data(data), m_type(type) {}
+            : m_data(data), m_dataSize(0), m_type(type) {}
+
+        Value(void* data, size_t dataSize, Type const& type)
+            : m_data(data), m_dataSize(dataSize), m_type(type) 
+            {
+                if(m_dataSize != type.getSize())
+                    throw std::runtime_error("Error, given data pointer has different size than expected");
+            }
 
 	/** The raw data pointer */
         void* getData() const { return m_data; }
