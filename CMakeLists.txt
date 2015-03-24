@@ -11,6 +11,12 @@ SET(API_VERSION 1)
 # warning
 cmake_policy(SET CMP0007 NEW)
 
+# make the clang-based importer optional for now. the option is planned to be
+# removed in the future, after using the new importer as default.
+option(OPTION_BUILD_CLANG_TLB_IMPORTER
+    "set to ON to enable compiling of the llvm/clang based importer"
+    OFF)
+
 IF(APPLE)
   set(CMAKE_SHARED_MODULE_SUFFIX ".bundle")
 ENDIF(APPLE)

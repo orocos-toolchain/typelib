@@ -4,7 +4,7 @@ include(LLVMTools)
 llvm_find_config(3.4)
 
 if (NOT LLVM_CONFIG_EXECUTABLE)
-    message(STATUS "typelib-clang-tlb-importer: llvm-config was not found, skipping clang-based importer")
+    message(FATAL_ERROR "typelib-clang-tlb-importer: llvm-config was not found, cannot continue.")
 else()
     message(STATUS "typelib-clang-tlb-importer: configuring with ${LLVM_CONFIG_EXECUTABLE}")
 
