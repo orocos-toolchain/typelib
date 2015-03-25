@@ -5,10 +5,9 @@
 #include <iostream>
 #include "value_ops_details.hh"
 #include <cstdio>
+#include <cstring>
 
 using namespace Typelib;
-using std::memcmp;
-using std::memcpy;
 
 void Typelib::display(std::ostream& io, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
 {
