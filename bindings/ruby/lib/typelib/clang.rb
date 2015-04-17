@@ -16,7 +16,7 @@ module Typelib
                 opaque_registry.create_opaque(opaque_t, 0)
             end
             
-            include_dirs = options[:include_paths]
+            include_dirs = options[:include_paths] || []
             include_path = include_dirs.map { |d| "-I#{d}" }
 
             # which files actually to operate on
