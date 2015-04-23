@@ -31,23 +31,37 @@ namespace Typelib
     struct MemoryLayout
     {
         typedef std::vector<size_t> Ops;
-
-        std::vector<size_t> ops;
-        typedef std::vector<size_t>::const_iterator const_iterator;
-        typedef std::vector<size_t>::iterator iterator;
+        typedef Ops::const_iterator const_iterator;
+        Ops ops;
         const_iterator begin() const { return ops.begin(); }
-        const_iterator end() const { return ops.end(); }
+        const_iterator end() const   { return ops.end(); }
+        size_t size() const { return ops.size(); }
+
+        Ops init_ops;
+        const_iterator init_begin() const { return init_ops.begin(); }
+        const_iterator init_end() const   { return init_ops.end(); }
+        size_t init_size() const { return init_ops.size(); }
 
         void removeTrailingSkips();
-        void pushMemcpy(size_t size);
+        void pushMemcpy(size_t size,
+                std::vector<uint8_t> const& init_data = std::vector<uint8_t>());
         void pushSkip(size_t size);
+        void pushArray(size_t dimension, MemoryLayout const& array_ops);
         void pushArray(Array const& type, MemoryLayout const& array_ops);
         void pushContainer(Container const& type, MemoryLayout const& container_ops);
         void pushGenericOp(size_t op, size_t size);
         void pushEnd();
         bool isMemcpy() const;
         MemoryLayout simplify(bool merge_skip_copy) const;
+        void validate() const;
         void display(std::ostream& out) const;
+
+        void pushInit(std::vector<uint8_t> const& data);
+        void pushInitSkip(size_t size);
+        void pushInitGenericOp(size_t op, size_t size);
+        void pushInitRepeat(size_t dimension, MemoryLayout const& array_ops);
+        void pushInitContainer(Container const& container);
+        void pushInitEnd();
 
         /** Skips the block starting at \c begin. \c end is the end of the
          * complete layout (to avoid invalid memory accesses if the layout is
@@ -60,7 +74,14 @@ namespace Typelib
                 const_iterator end);
 
     private:
+        const_iterator simplify(bool merge_skip_copy, const_iterator it, const_iterator end, MemoryLayout& simplified) const;
+        const_iterator simplifyBlock(bool merge_skip_copy, const_iterator it, const_iterator end, MemoryLayout& simplified) const;
+        const_iterator simplifyInit(const_iterator it, const_iterator end, MemoryLayout& result, bool shave_last_skip = false) const;
+        const_iterator simplifyInitBlock(const_iterator it, const_iterator end, MemoryLayout& result) const;
+        size_t m_offset;
         bool simplifyArray(size_t& memcpy_size, MemoryLayout& merged_ops) const;
+        bool simplifyInitRepeat(size_t& size, Ops& result) const;
+        MemoryLayout::Ops simplifyInit() const;
     };
 
     /** Namespace used to define basic constants describing the memory layout
@@ -84,6 +105,14 @@ namespace Typelib
             FLAG_CONTAINER,
             FLAG_SKIP,
             FLAG_END
+        };
+
+        enum InitOperations {
+            FLAG_INIT,
+            FLAG_INIT_REPEAT,
+            FLAG_INIT_CONTAINER = FLAG_CONTAINER,
+            FLAG_INIT_SKIP = FLAG_SKIP,
+            FLAG_INIT_END  = FLAG_END
         };
 
         /** This visitor computes the memory layout for a given type. This memory
@@ -113,6 +142,14 @@ namespace Typelib
         };
     }
 
+    inline MemoryLayout raw_layout_of(Type const& t, bool accept_pointers = false, bool accept_opaques = false)
+    {
+        MemoryLayout ret;
+        MemLayout::Visitor visitor(ret, accept_pointers, accept_opaques);
+        visitor.apply(t);
+        return ret;
+    }
+
     /** Returns the memory layout of the given type
      *
      * @param accept_pointers if false (the default), will throw a NoLayout
@@ -132,9 +169,7 @@ namespace Typelib
      */
     inline MemoryLayout layout_of(Type const& t, bool accept_pointers = false, bool accept_opaques = false, bool merge_skip_copy = true, bool remove_trailing_skips = true)
     {
-        MemoryLayout ret;
-        MemLayout::Visitor visitor(ret, accept_pointers, accept_opaques);
-        visitor.apply(t);
+        MemoryLayout ret = raw_layout_of(t, accept_pointers, accept_opaques);
         if (remove_trailing_skips)
             ret.removeTrailingSkips();
         return ret.simplify(merge_skip_copy);

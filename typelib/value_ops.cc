@@ -205,7 +205,7 @@ void Typelib::init(Value v, MemoryLayout const& ops)
 
 void Typelib::init(boost::uint8_t* data, MemoryLayout const& ops)
 {
-    ValueOps::init(data, ops.begin(), ops.end());
+    ValueOps::init(data, ops.init_begin(), ops.init_end());
 }
 
 void Typelib::zero(Value v)
@@ -347,14 +347,23 @@ boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
     {
         switch(*it)
         {
-            case MemLayout::FLAG_MEMCPY:
-            case MemLayout::FLAG_SKIP:
+            case MemLayout::FLAG_INIT:
+            {
+                size_t size = *(++it);
+                ++it;
+                std::copy(it, it + size, buffer);
+                buffer += size;
+                it += size - 1;
+                break;
+            }
+
+            case MemLayout::FLAG_INIT_SKIP:
             {
                 buffer += *(++it);
                 break;
             }
 
-            case MemLayout::FLAG_ARRAY:
+            case MemLayout::FLAG_INIT_REPEAT:
             {
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
@@ -366,11 +375,10 @@ boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
                 break;
             }
 
-            case MemLayout::FLAG_CONTAINER:
+            case MemLayout::FLAG_INIT_CONTAINER:
             {
                 Container const* type = reinterpret_cast<Container const*>(*(++it));
                 type->init(buffer);
-                it = MemoryLayout::skipBlock(++it, end);
                 buffer += type->getSize();
                 break;
             }
