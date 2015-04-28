@@ -112,6 +112,10 @@ module Typelib
                 @elements[index]
             end
 
+            def get(index)
+                self[index]
+            end
+
             # Returns the value at the given index
             def [](index, chunk_size = nil)
                 if chunk_size
@@ -142,6 +146,10 @@ module Typelib
                 end
 
                 do_set(index, value)
+            end
+
+            def set(index, value)
+                self[index] = value
             end
 
             def []=(index, value)

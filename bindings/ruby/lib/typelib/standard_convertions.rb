@@ -15,6 +15,16 @@ module Typelib
         Typelib.to_ruby(value, INT_BOOL_T) != 0
     end
 
+    %w{uint8_t uint16_t uint32_t uint64_t
+       int8_t int16_t int32_t int64_t
+       float double}.each do |numeric_type|
+        specialize "/std/vector</#{numeric_type}>" do
+            def __element_to_ruby(element)
+                element.to_ruby
+            end
+        end
+    end
+
     convert_from_ruby String, '/std/string' do |value, typelib_type|
         typelib_type.wrap([value.length, value].pack("QA#{value.length}"))
     end
