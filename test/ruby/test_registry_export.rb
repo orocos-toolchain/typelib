@@ -64,7 +64,42 @@ describe Typelib::RegistryExport do
             type = reg.create_compound '/NS/Template<-1,/TEST>/Child'
             assert_equal type, root.NS.Template(-1,'/TEST').Child
         end
+        it "returns the type as converted to ruby" do
+            type = reg.create_compound '/CustomType'
+            type.convert_to_ruby(Array) { Array.new }
+            assert_same Array, root.CustomType
+        end
+    end
+
+    describe "the filter block" do
+        attr_reader :type
+        before do
+            @type = reg.create_compound '/CustomType'
+            type.convert_to_ruby(Array) { Array.new }
+        end
+
+        it "gets passed the type as well as the type as converted to ruby" do
+            recorder = flexmock
+            recorder.should_receive(:call).with(type, Array).once
+            root.reset_registry_export(reg, ->(type, ruby_type) { recorder.call(type, ruby_type); type })
+            root.CustomType
+        end
+        it "returns the type as returned by the block" do
+            root.reset_registry_export(reg, ->(type, ruby_type) { Hash })
+            assert_same Hash, root.CustomType
+        end
+        it "performs the conversion-to-ruby for the returned type" do
+            target_t = reg.create_compound '/WrapperType'
+            target_t.convert_to_ruby(Hash) { Hash.new }
+            root.reset_registry_export(reg, ->(type, ruby_type) { target_t })
+            assert_same Hash, root.CustomType
+        end
+        it "will consider that types for which the block returned nil do not exist" do
+            root.reset_registry_export(reg, ->(type, ruby_type) { })
+            assert_raises(Typelib::RegistryExport::NotFound) do
+                root.CustomType
+            end
+        end
     end
 end
-
 

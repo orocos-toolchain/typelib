@@ -119,11 +119,17 @@ module Typelib
                     else
                         type
                     end
+
                 if filter_block
                     exported_type = filter_block.call(type, exported_type)
                 end
+                exported_type = @__typelib_cache[[m, args]] =
+                    if exported_type.respond_to?(:convertion_to_ruby) && exported_type.convertion_to_ruby
+                        exported_type.convertion_to_ruby[0] || exported_type
+                    else exported_type
+                    end
                 RegistryExport.setup_subnamespace(self, exported_type, type.basename)
-                @__typelib_cache[[m, args]] = type
+                exported_type
             elsif basename = RegistryExport.find_namespace(relaxed_naming, typename_prefix, registry, m, *args)
                 ns = Namespace.new
                 RegistryExport.setup_subnamespace(self, ns, basename)
