@@ -41,7 +41,7 @@ module Typelib
         end
 
         def pretty_print(pp)
-            to_str
+            pp.text to_str
         end
 
         def to_simple_value(options = Hash.new)
