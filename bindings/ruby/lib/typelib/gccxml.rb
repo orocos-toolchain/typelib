@@ -825,6 +825,8 @@ module Typelib
                     cmdline << "-I#{str}"
                 end
             end
+            
+            cmdline <<"-m64"
 
             cmdline << file
 
