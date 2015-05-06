@@ -5,6 +5,11 @@ module Typelib
     module CLangLoader
         # Imports the given C++ file into the registry using CLANG
         def self.load(registry, file, kind, options)
+            #Checking if the clang importer is installed and can be found on the system
+            if !system("which typelib-clang-tlb-importer > /dev/null 2>&1")
+                raise RuntimeError, "typelib-clang-tlb-importer is not installed in PATH"
+            end
+
             # FIXME: the second argument "file" contains the preprocessed
             # output created in an earlier stage. it is not used here, but the
             # list of actual header-files in the "options" hash. not having to
@@ -32,11 +37,8 @@ module Typelib
             Tempfile.open('tlb-clang-opaques-') do |opaque_registry_io|
                 opaque_registry_io.write opaque_registry.to_xml
                 opaque_registry_io.flush
-            
+
                 Tempfile.open('tlb-clang-output-') do |clang_output_io|
-                    # calling the the installed tlb-import-tool, hopefully found in the
-                    # install-folder via PATH.
-                    #
                     # NOTE: the added 'isystem' flag to point clang (3.4) to its own correct
                     # header path. this is needed on ubuntu 14.04 (debian jessie works
                     # without but does not seem to break). to see whats going wrong
