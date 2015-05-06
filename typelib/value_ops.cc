@@ -1,14 +1,13 @@
 #include <boost/cstdint.hpp>
 #include <typelib/value_ops.hh>
-#include <string.h>
+#include <string>
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 #include "value_ops_details.hh"
 #include <cstdio>
+#include <cstring>
 
 using namespace Typelib;
-using namespace boost;
-using namespace std;
 
 void Typelib::display(std::ostream& io, MemoryLayout::const_iterator const begin, MemoryLayout::const_iterator const end)
 {
@@ -82,7 +81,7 @@ boost::tuple<size_t, MemoryLayout::const_iterator> ValueOps::dump(
                 else
                 {
                     for (size_t i = 0; i < element_count; ++i)
-                        tie(in_offset, it) = dump(data, in_offset, stream, element_it, end);
+                        boost::tie(in_offset, it) = dump(data, in_offset, stream, element_it, end);
                 }
 
                 if (it == end || *it != MemLayout::FLAG_END)
@@ -149,7 +148,7 @@ boost::tuple<size_t, MemoryLayout::const_iterator> ValueOps::load(
                 else
                 {
                     for (size_t i = 0; i < element_count; ++i)
-                        tie(out_offset, it) =
+                        boost::tie(out_offset, it) =
                             load(data, out_offset, stream, element_it, end);
                 }
 
@@ -283,7 +282,7 @@ bool Typelib::compare(void* dst, void* src, Type const& type)
     visitor.apply(type, false);
 
     bool is_equal;
-    tie(is_equal, tuples::ignore, tuples::ignore, tuples::ignore) =
+    boost::tie(is_equal, boost::tuples::ignore, boost::tuples::ignore, boost::tuples::ignore) =
         ValueOps::compare(out_buffer, in_buffer, ret.begin(), ret.end());
     return is_equal;
 }
@@ -313,7 +312,7 @@ boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
                 for (size_t i = 0; i < element_count; ++i)
-                    tie(buffer, it) = zero(buffer, element_it, end);
+                    boost::tie(buffer, it) = zero(buffer, element_it, end);
 
                 if (it == end || *it != MemLayout::FLAG_END)
                     throw std::runtime_error("error in the marshalling bytecode at array end");
@@ -330,7 +329,9 @@ boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
             }
 
             default:
-                throw std::runtime_error("in zero(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
+                throw std::runtime_error(
+                    "in zero(): unrecognized marshalling bytecode " +
+                    boost::lexical_cast<std::string>(*it));
         }
     }
 
@@ -360,7 +361,7 @@ boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
                 for (size_t i = 0; i < element_count; ++i)
-                    tie(buffer, it) = init(buffer, element_it, end);
+                    boost::tie(buffer, it) = init(buffer, element_it, end);
 
                 if (it == end || *it != MemLayout::FLAG_END)
                     throw std::runtime_error("error in the marshalling bytecode at array end");
@@ -377,7 +378,9 @@ boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
             }
 
             default:
-                throw std::runtime_error("in init(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
+                throw std::runtime_error(
+                    "in init(): unrecognized marshalling bytecode " +
+                    boost::lexical_cast<std::string>(*it));
         }
     }
 
@@ -406,7 +409,7 @@ boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
                 for (size_t i = 0; i < element_count; ++i)
-                    tie(buffer, it) = destroy(buffer, element_it, end);
+                    boost::tie(buffer, it) = destroy(buffer, element_it, end);
 
                 if (it == end || *it != MemLayout::FLAG_END)
                     throw std::runtime_error("error in the marshalling bytecode at array end");
@@ -423,7 +426,9 @@ boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
             }
 
             default:
-                throw std::runtime_error("in destroy(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
+                throw std::runtime_error(
+                    "in destroy(): unrecognized marshalling bytecode " +
+                    boost::lexical_cast<std::string>(*it));
         }
     }
 
@@ -461,7 +466,7 @@ boost::tuple< boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
                 size_t element_count = *(++it);
                 MemoryLayout::const_iterator element_it = ++it;
                 for (size_t i = 0; i < element_count; ++i)
-                    tie(out_buffer, in_buffer, it) =
+                    boost::tie(out_buffer, in_buffer, it) =
                         copy(out_buffer, in_buffer, element_it, end);
 
                 if (it == end || *it != MemLayout::FLAG_END)
@@ -478,7 +483,9 @@ boost::tuple< boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterator>
                 break;
             }
             default:
-                throw std::runtime_error("in copy(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
+                throw std::runtime_error(
+                    "in copy(): unrecognized marshalling bytecode " +
+                    boost::lexical_cast<std::string>(*it));
         }
     }
 
@@ -500,7 +507,8 @@ boost::tuple<bool, boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterato
             {
                 size_t size = *(++it);
                 if (memcmp(out_buffer, in_buffer, size))
-                    return boost::make_tuple(false, (boost::uint8_t*)0, (boost::uint8_t*)0, end);
+                    return boost::make_tuple(false, (boost::uint8_t *)NULL,
+                                             (boost::uint8_t *)NULL, end);
 
                 out_buffer += size;
                 in_buffer  += size;
@@ -520,10 +528,11 @@ boost::tuple<bool, boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterato
                 for (size_t i = 0; i < element_count; ++i)
                 {
                     bool is_equal;
-                    tie(is_equal, out_buffer, in_buffer, it) =
+                    boost::tie(is_equal, out_buffer, in_buffer, it) =
                         compare(out_buffer, in_buffer, element_it, end);
                     if (!is_equal)
-                        return boost::make_tuple(false, (boost::uint8_t*)0, (boost::uint8_t*)0, end);
+                        return boost::make_tuple(false, (boost::uint8_t *)NULL,
+                                                 (boost::uint8_t *)NULL, end);
                 }
 
                 if (it == end || *it != MemLayout::FLAG_END)
@@ -534,7 +543,8 @@ boost::tuple<bool, boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterato
             {
                 Container const* type = reinterpret_cast<Container const*>(*(++it));
                 if (!type->compare(out_buffer, in_buffer))
-                    return boost::make_tuple(false, (boost::uint8_t*)0, (boost::uint8_t*)0, end);
+                    return boost::make_tuple(false, (boost::uint8_t *)NULL,
+                                             (boost::uint8_t *)NULL, end);
 
                 it = MemLayout::skip_block(it, end);
                 out_buffer += type->getSize();
@@ -542,7 +552,9 @@ boost::tuple<bool, boost::uint8_t*, boost::uint8_t*, MemoryLayout::const_iterato
                 break;
             }
             default:
-                throw std::runtime_error("in compare(): unrecognized marshalling bytecode " + boost::lexical_cast<std::string>(*it));
+                throw std::runtime_error(
+                    "in compare(): unrecognized marshalling bytecode " +
+                    boost::lexical_cast<std::string>(*it));
         }
     }
     return boost::make_tuple(true, out_buffer, in_buffer, it);
@@ -805,7 +817,7 @@ void Typelib::load(boost::uint8_t* v, Type const& type, InputStream& stream, Mem
 {
     MemoryLayout::const_iterator it;
     size_t out_offset;
-    tie(out_offset, it) =
+    boost::tie(out_offset, it) =
         ValueOps::load(v, 0, stream, ops.begin(), ops.end());
     if (it != ops.end())
         throw std::runtime_error("internal error in the memory layout");
@@ -825,7 +837,12 @@ struct VectorInputStream : public InputStream
     void read(boost::uint8_t* out_buffer, size_t size)
     {
         if (size + in_index > buffer.size())
-            throw std::runtime_error("error in load(): not enough data as input, expected at least " + lexical_cast<string>(size + in_index) + " bytes but got " + lexical_cast<string>(buffer.size()));
+            throw std::runtime_error(
+                "error in load(): not enough data as input, expected at "
+                "least " +
+                boost::lexical_cast<std::string>(size + in_index) +
+                " bytes but got " +
+                boost::lexical_cast<std::string>(buffer.size()));
 
         memcpy(&out_buffer[0], &buffer[in_index], size);
         in_index += size;
@@ -844,13 +861,16 @@ void Typelib::load(boost::uint8_t* v, Type const& type, std::vector< boost::uint
     VectorInputStream stream(buffer);
 
     size_t out_offset;
-    tie(out_offset, it) =
+    boost::tie(out_offset, it) =
         ValueOps::load(v, 0, stream, ops.begin(), ops.end());
     if (it != ops.end())
         throw std::runtime_error("internal error in the memory layout");
-    if (stream.in_index != buffer.size() && stream.in_index + type.getTrailingPadding() != buffer.size())
-        throw std::runtime_error("parts of the provided buffer has not been used (used " + 
-                lexical_cast<string>(stream.in_index) + " bytes, got " + lexical_cast<string>(buffer.size()) + "as input)");
+    if (stream.in_index != buffer.size() &&
+        stream.in_index + type.getTrailingPadding() != buffer.size())
+        throw std::runtime_error(
+            "parts of the provided buffer has not been used (used " +
+            boost::lexical_cast<std::string>(stream.in_index) + " bytes, got " +
+            boost::lexical_cast<std::string>(buffer.size()) + "as input)");
 }
 
 
@@ -871,7 +891,12 @@ struct ByteArrayInputStream : public InputStream
     void read(boost::uint8_t* out_buffer, size_t size)
     {
         if (size + in_index > buffer_size)
-            throw std::runtime_error("error in load(): not enough data as input, expected at least " + lexical_cast<string>(size + in_index) + " bytes but got " + lexical_cast<string>(buffer_size));
+            throw std::runtime_error(
+                "error in load(): not enough data as input, expected at "
+                "least " +
+                boost::lexical_cast<std::string>(size + in_index) +
+                " bytes but got " +
+                boost::lexical_cast<std::string>(buffer_size));
 
         memcpy(&out_buffer[0], &buffer[in_index], size);
         in_index += size;
@@ -890,13 +915,14 @@ void Typelib::load(boost::uint8_t* v, Type const& type, boost::uint8_t const* bu
     ByteArrayInputStream stream(buffer, buffer_size);
 
     size_t out_offset;
-    tie(out_offset, it) =
+    boost::tie(out_offset, it) =
         ValueOps::load(v, 0, stream, ops.begin(), ops.end());
     if (it != ops.end())
         throw std::runtime_error("internal error in the memory layout");
-    if (stream.in_index != buffer_size && stream.in_index + type.getTrailingPadding() != buffer_size)
-        throw std::runtime_error("parts of the provided buffer has not been used (used " + 
-                lexical_cast<string>(stream.in_index) + " bytes, got " + lexical_cast<string>(buffer_size) + "as input)");
+    if (stream.in_index != buffer_size &&
+        stream.in_index + type.getTrailingPadding() != buffer_size)
+        throw std::runtime_error(
+            "parts of the provided buffer has not been used (used " +
+            boost::lexical_cast<std::string>(stream.in_index) + " bytes, got " +
+            boost::lexical_cast<std::string>(buffer_size) + " as input)");
 }
-
-
