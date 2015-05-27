@@ -596,9 +596,15 @@ module Typelib
 		end
 	    end
 
+            # @return [Registry] a registry that contains only the types needed
+            #   to define this type
+            def minimal_registry
+                registry.minimal(name, true)
+            end
+
             # @return [String] a XML representation of this type
             def to_xml
-                registry.minimal(name, true).to_xml
+                minimal_registry.to_xml
             end
 
             def initialize_base_class

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/double" category="float" size="8" >
+  
+  </numeric>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <numeric name="/uint32_t" category="uint" size="4" >
+  
+  </numeric>
+  <compound name="/Laser/Data" size="2056" >
+    <field name="sec" type="/int32_t" offset="0">
+    
+    </field>
+    <field name="usec" type="/uint32_t" offset="4">
+    
+    </field>
+    <field name="ranges" type="/double[256]" offset="8">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct Laser::Data]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/laser.hh:7]]></metadata>
+
+  </compound>
+  <alias name="/Laser/array_typedef" source="/int32_t[256]"/>
+  <alias name="/int" source="/int32_t"/>
+  <alias name="/unsigned int" source="/uint32_t"/>
+</typelib>

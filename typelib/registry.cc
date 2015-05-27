@@ -583,16 +583,16 @@ namespace Typelib
         while (!queue.empty())
         {
             RegistryIterator const end = this->end();
-            for (RegistryIterator it = this->begin(); it != end; ++it)
+            for (RegistryIterator regIt = this->begin(); regIt != end; ++regIt)
             {
-                Type const& t = *it;
-                if (it.isAlias()) continue;
+                Type const& t = *regIt;
+                if (regIt.isAlias()) continue;
                 if (result.count(&t) || queue.count(&t)) continue;
 
                 std::set<Type const*> dependencies = t.dependsOn();
-                for (TypeSet::const_iterator it = queue.begin(); it != queue.end(); ++it)
+                for (TypeSet::const_iterator typeIt = queue.begin(); typeIt != queue.end(); ++typeIt)
                 {
-                    if (dependencies.count(*it))
+                    if (dependencies.count(*typeIt))
                     {
                         new_queue.insert(&t);
                         break;

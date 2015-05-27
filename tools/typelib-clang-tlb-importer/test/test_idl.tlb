@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<typelib>
+  <enum name="/TestEnum" >
+    <value symbol="A" value="0"/>
+    <value symbol="B" value="1"/>
+    <value symbol="C" value="2"/>
+  <metadata key="cxxname"><![CDATA[enum TestEnum]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/test_idl.hh:16]]></metadata>
+
+  </enum>
+  <numeric name="/int16_t" category="sint" size="2" >
+  
+  </numeric>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <numeric name="/int8_t" category="sint" size="1" >
+  
+  </numeric>
+  <compound name="/Compound" size="48" >
+    <field name="a" type="/int32_t" offset="0">
+    
+    </field>
+    <field name="b" type="/int16_t" offset="4">
+    
+    </field>
+    <field name="c" type="/int8_t" offset="6">
+    
+    </field>
+    <field name="array" type="/int32_t[10]" offset="8">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct Compound]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/test_idl.hh:4]]></metadata>
+
+  </compound>
+  <alias name="/EnumAlias" source="/TestEnum"/>
+  <compound name="/CompoundInCompound" size="480" >
+    <field name="test" type="/Compound[10]" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct CompoundInCompound]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/test_idl.hh:12]]></metadata>
+
+  </compound>
+  <alias name="/OtherEnum" source="/TestEnum"/>
+  <alias name="/char" source="/int8_t"/>
+  <alias name="/int" source="/int32_t"/>
+  <alias name="/short" source="/int16_t"/>
+  <compound name="/NS1/NS1_1/Test" size="8" >
+    <field name="a" type="/int32_t" offset="0">
+    
+    </field>
+    <field name="b" type="/int16_t" offset="4">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct NS1::NS1_1::Test]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/test_idl.hh:22]]></metadata>
+
+  </compound>
+  <alias name="/NS1/NS1_2/Test" source="/NS1/NS1_1/Test"/>
+  <compound name="/NS1/Test" size="8" >
+    <field name="test2" type="/NS1/NS1_1/Test" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct NS1::Test]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/test_idl.hh:32]]></metadata>
+
+  </compound>
+</typelib>

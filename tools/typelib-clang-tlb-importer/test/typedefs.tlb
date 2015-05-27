@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <alias name="/int" source="/int32_t"/>
+  <numeric name="/uint8_t" category="uint" size="1" >
+  
+  </numeric>
+  <alias name="/unsigned char" source="/uint8_t"/>
+  <opaque name="/ns/C2&lt;/float&gt;" size="0" >
+  
+  </opaque>
+  <opaque name="/ns/S2" size="0" >
+  <metadata key="cxxname"><![CDATA[struct ns::S2]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/typedefs.hh:47]]></metadata>
+
+  </opaque>
+  <compound name="/ns/aClass" size="4" >
+    <field name="A" type="/int32_t" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[class ns::aClass]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/typedefs.hh:15]]></metadata>
+
+  </compound>
+  <alias name="/ns/anotherIntTypedef" source="/int32_t"/>
+  <alias name="/ns/intTypedef" source="/int32_t"/>
+  <alias name="/ns/intTypedefTypedef" source="/int32_t"/>
+  <opaque name="/ns/myTestTypedef" size="0" >
+  <metadata key="cxxname"><![CDATA[typedef myTestTypedef ns::S1]]></metadata>
+<metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/typedefs.hh:43]]></metadata>
+
+  </opaque>
+  <alias name="/ns/S1" source="/ns/myTestTypedef"/>
+  <alias name="/ns/aClassTypedef" source="/ns/aClass"/>
+  <compound name="/ns/test" size="16" >
+    <field name="C" type="/uint8_t" offset="0">
+    
+    </field>
+    <field name="A" type="/ns/aClass" offset="4">
+    
+    </field>
+    <field name="B" type="/int32_t" offset="8">
+    
+    </field>
+    <field name="D" type="/int32_t" offset="12">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct ns::test]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/typedefs.hh:25]]></metadata>
+
+  </compound>
+</typelib>

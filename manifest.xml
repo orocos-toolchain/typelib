@@ -16,6 +16,7 @@
   <license>CeCILL-B (BSD-like)</license>
 
   <depend package="utilrb" />
+  <depend_optional package="clang-3.4" />
   <rosdep name="gccxml" />
   <rosdep name="boost" />
   <rosdep name="facets" />

@@ -337,6 +337,7 @@ boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
 
     return boost::make_tuple(buffer, it);
 }
+
 boost::tuple< boost::uint8_t*, MemoryLayout::const_iterator>
     Typelib::ValueOps::init(uint8_t* buffer,
         MemoryLayout::const_iterator begin,

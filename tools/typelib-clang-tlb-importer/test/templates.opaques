@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<typelib>
+  <opaque name="/Eigen/Vector3d" size="0"/>
+
+  <!--
+naming "Quaternionf" without using it in the acual main-header already works,
+because it has a "TypedefDecl" in some eigen-header associated with it. this
+eigen-header is loaded among the main-header and parsed accordingly
+-->
+  <opaque name="/Eigen/Quaternionf" size="0"/>
+
+  <!--
+naming the template-specialization "Quaternion<float>" as Opaque will not work.
+
+there is no specialization for this template? same goes for our own test-case
+of "C1", no instantiation there.
+  -->
+  <opaque name="/Eigen/Quaternion&lt;/double&gt;" size="0"/>
+  <opaque name="/templates/C1&lt;/double&gt;" size="0"/>
+<!--
+wanna test if the explicit template instantiation for the float-variant is
+found with the correct source_file_line property
+-->
+  <opaque name="/templates/C1&lt;/float&gt;" size="0"/>
+
+</typelib>

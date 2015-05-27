@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<typelib>
+  <enum name="/H2_ENDIANNESS" >
+    <value symbol="H2_BIG_ENDIAN" value="0"/>
+    <value symbol="H2_LITTLE_ENDIAN" value="1"/>
+  <metadata key="cxxname"><![CDATA[enum H2_ENDIANNESS]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/posterLib.hh:6]]></metadata>
+
+  </enum>
+</typelib>

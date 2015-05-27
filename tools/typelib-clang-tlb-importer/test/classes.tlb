@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<typelib>
+  <opaque name="/classes/C1" size="0" >
+  <metadata key="cxxname"><![CDATA[class classes::C1]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/classes.hh:62]]></metadata>
+
+  </opaque>
+  <opaque name="/classes/C2" size="0" >
+  <metadata key="base_classes"><![CDATA[/classes/C1]]></metadata>
+<metadata key="cxxname"><![CDATA[class classes::C2]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/classes.hh:63]]></metadata>
+
+  </opaque>
+  <opaque name="/classes/C3" size="0" >
+  <metadata key="base_classes"><![CDATA[/S1]]></metadata>
+<metadata key="base_classes"><![CDATA[/classes/C1]]></metadata>
+<metadata key="cxxname"><![CDATA[class classes::C3]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/classes.hh:64]]></metadata>
+
+  </opaque>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <numeric name="/int64_t" category="sint" size="8" >
+  
+  </numeric>
+  <compound name="/S1" size="16" >
+    <field name="l" type="/int64_t[2]" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct S1]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/classes.hh:10]]></metadata>
+
+  </compound>
+  <compound name="/classes/BaseClass" size="4" >
+    <field name="a" type="/int32_t" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[class classes::BaseClass]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/classes.hh:15]]></metadata>
+
+  </compound>
+  <compound name="/classes/FirstLevel" size="4" >
+    <field name="a" type="/int32_t" offset="0">
+    
+    </field>
+  <metadata key="base_classes"><![CDATA[/classes/BaseClass]]></metadata>
+<metadata key="cxxname"><![CDATA[class classes::FirstLevel]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/classes.hh:28]]></metadata>
+
+  </compound>
+  <compound name="/classes/NextLevel" size="8" >
+    <field name="b" type="/int32_t" offset="4">
+    
+    </field>
+    <field name="a" type="/int32_t" offset="0">
+    
+    </field>
+  <metadata key="base_classes"><![CDATA[/classes/FirstLevel]]></metadata>
+<metadata key="cxxname"><![CDATA[class classes::NextLevel]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/classes.hh:32]]></metadata>
+
+  </compound>
+  <compound name="/classes/NextWith_anonymous_InName" size="12" >
+    <field name="spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam" type="/int32_t" offset="8">
+    
+    </field>
+    <field name="b" type="/int32_t" offset="4">
+    
+    </field>
+    <field name="a" type="/int32_t" offset="0">
+    
+    </field>
+  <metadata key="base_classes"><![CDATA[/classes/NextLevel]]></metadata>
+<metadata key="cxxname"><![CDATA[class classes::NextWith_anonymous_InName]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/classes.hh:37]]></metadata>
+
+  </compound>
+  <compound name="/classes/StructWithAnonStruct/secondAnonVariant" size="4" >
+    <field name="e" type="/int32_t" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct classes::StructWithAnonStruct::secondAnonVariant]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/classes.hh:56]]></metadata>
+
+  </compound>
+  <compound name="/classes/With_sizeof_InName" size="4" >
+    <field name="holymolymotherfucker" type="/int32_t" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[struct classes::With_sizeof_InName]]></metadata>
+<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/classes.hh:42]]></metadata>
+
+  </compound>
+  <alias name="/int" source="/int32_t"/>
+  <alias name="/long" source="/int64_t"/>
+</typelib>
