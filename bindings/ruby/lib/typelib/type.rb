@@ -440,6 +440,7 @@ module Typelib
 	    end
 
 	    def to_s; "#<#{superclass.name}: #{name}>" end
+            def inspect; to_s end
 
 	    # are we a null type ?
 	    def null?; @null end
@@ -740,7 +741,7 @@ module Typelib
 	def is_a?(typename); self.class.is_a?(typename) end
 
         def inspect
-            sprintf("#<%s:%s @%s>", self.class.superclass.name, self.class.name, to_memory_ptr.inspect)
+            raw_to_s + ": " + to_simple_value.inspect
         end
 
         # Returns a representation of this type only into simple Ruby values,

@@ -174,6 +174,7 @@ require 'typelib/container_type'
 require 'typelib/metadata'
 
 require 'typelib/registry'
+require 'typelib/registry_export'
 require 'typelib/cxx_registry'
 require 'typelib/specializations'
 require 'typelib_ruby'
