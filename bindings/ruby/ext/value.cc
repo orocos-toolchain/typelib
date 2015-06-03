@@ -604,7 +604,7 @@ static VALUE typelib_do_copy(VALUE, VALUE to, VALUE from)
 }
 
 /* call-seq:
- *  Typelib.compare(to, from) => true or false
+ *  Typelib.do_compare(to, from) => true or false
  *
  * Proper comparison of two values. +to+ and +from+'s types do not have to be of
  * the same registries, as long as the types can be cast'ed into each other.
@@ -635,7 +635,7 @@ void typelib_ruby::Typelib_init_values()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     rb_define_singleton_method(mTypelib, "do_copy", RUBY_METHOD_FUNC(typelib_do_copy), 2);
-    rb_define_singleton_method(mTypelib, "compare", RUBY_METHOD_FUNC(typelib_compare), 2);
+    rb_define_singleton_method(mTypelib, "do_compare", RUBY_METHOD_FUNC(typelib_compare), 2);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
     rb_define_alloc_func(cType, value_alloc);

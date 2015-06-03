@@ -220,6 +220,16 @@ module Typelib
         end
     end
 
+    def self.compare(a, b)
+        if a.respond_to?(:apply_changes_from_converted_types)
+            a.apply_changes_from_converted_types
+        end
+        if b.respond_to?(:apply_changes_from_converted_types)
+            b.apply_changes_from_converted_types
+        end
+        do_compare(a, b)
+    end
+
     # Exception raised when Typelib.from_ruby is called but the value cannot be
     # converted to the requested type
     class UnknownConversionRequested < ArgumentError
