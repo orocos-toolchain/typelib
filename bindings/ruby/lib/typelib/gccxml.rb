@@ -813,6 +813,11 @@ module Typelib
             if raw = options[:rawflags]
                 cmdline.concat(raw)
             end
+            if 1.size == 4
+                cmdline << "-m32"
+            else
+                cmdline << "-m64"
+            end
 
             if defs = options[:define]
                 defs.each do |str|
@@ -826,8 +831,6 @@ module Typelib
                 end
             end
             
-            cmdline <<"-m64"
-
             cmdline << file
 
             tlb = nil
