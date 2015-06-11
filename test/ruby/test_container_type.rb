@@ -6,6 +6,9 @@ describe Typelib::ContainerType do
         @registry = Typelib::CXXRegistry.new
     end
 
+    let(:element_t) { registry.get('/int32_t') }
+    let(:value_t) { registry.create_container '/std/vector', element_t }
+
     describe "the type model" do
         describe "#to_h" do
             attr_reader :container_t, :element_t
@@ -30,11 +33,22 @@ describe Typelib::ContainerType do
         end
     end
 
-    describe "#<<" do
-        attr_reader :value_t
-        before do
-            @value_t = registry.create_container '/std/vector', '/int32_t'
+    describe "__element_from_ruby" do
+        it "does not unnecessarily converts numeric values from ruby" do
+            flexmock(Typelib).should_receive(:from_ruby).never
+            value = value_t.new
+            value.__element_from_ruby(0)
         end
+        it "converts values from ruby if needed" do
+            ruby_t = Class.new
+            el = element_t.new
+            element_t.convert_from_ruby(ruby_t) { |v, t| el }
+            value = value_t.new
+            assert_same el, value.__element_from_ruby(ruby_t.new)
+        end
+    end
+
+    describe "#<<" do
         it "should accept being chained" do
             value = value_t.new
             value << 0 << 1

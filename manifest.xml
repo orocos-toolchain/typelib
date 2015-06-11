@@ -7,7 +7,7 @@
       A Ruby binding is included, which gives a fast and transparent
       modification of C/C++ in-memory types from Ruby.
   </description>
-  <author>Sylvain Joyeux/sylvain.joyeux@m4x.org</author>
+  <maintainer>Sylvain Joyeux/sylvain.joyeux@m4x.org</maintainer>
   <copyright>
       LAAS-CNRS/openrobots@laas.fr
       DFKI/robotik@dfki.de
