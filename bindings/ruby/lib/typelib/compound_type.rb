@@ -142,12 +142,14 @@ module Typelib
         end
 
         def raw_each_field
+            return enum_for(__method__) if !block_given?
             self.class.each_field do |field_name, _|
                 yield(field_name, raw_get(field_name))
             end
         end
 
         def each_field
+            return enum_for(__method__) if !block_given?
             self.class.each_field do |field_name, _|
                 yield(field_name, get(field_name))
             end
