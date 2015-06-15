@@ -14,7 +14,8 @@ describe Typelib::RegistryExport do
             assert_same type, root::CustomType
         end
         it "raises NameError if the type does not exist" do
-            assert_raises(Typelib::RegistryExport::NotFound) { root::DoesNotExist }
+            error = assert_raises(Typelib::RegistryExport::NotFound) { root::DoesNotExist }
+            assert((error.message =~ /DoesNotExist/), "expected the NotFound message to include the name of the type (DoesNotExist), but the message was #{error.message}")
         end
         it "handles types mixed case if needed" do
             type = reg.create_compound '/CustomTypeWith_camelCase'

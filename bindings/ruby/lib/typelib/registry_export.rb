@@ -150,8 +150,7 @@ module Typelib
             if type = resolve_call_from_exported_registry(true, name.to_s)
                 return type
             else
-                template_args = RegistryExport.template_args_to_typelib(args)
-                raise NotFound, "cannot find a type named #{typename_prefix}#{name}#{template_args}, or a type named like that after a CamelCase or snake_case conversion, in registry"
+                raise NotFound, "cannot find a type named #{typename_prefix}#{name}, or a type named like that after a CamelCase or snake_case conversion, in registry"
             end
         end
     end
