@@ -348,7 +348,9 @@ module Typelib
 
         class << self
 	    # The Typelib::Registry this type belongs to
-            attr_reader :registry
+            def registry
+                @__typelib_registry
+            end
 
 	    # The type's full name (i.e. name and namespace). In typelib,
 	    # namespace components are separated by '/'

@@ -117,7 +117,7 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
     VALUE base  = class_of(type);
     VALUE klass = rb_funcall(rb_cClass, rb_intern("new"), 1, base);
     VALUE rb_type = Data_Wrap_Struct(rb_cObject, 0, 0, const_cast<Type*>(&type));
-    rb_iv_set(klass, "@registry", registry);
+    rb_iv_set(klass, "@__typelib_registry", registry);
     rb_iv_set(klass, "@type", rb_type);
     rb_iv_set(klass, "@name", rb_str_new2(type.getName().c_str()));
     rb_iv_set(klass, "@null", (type.getCategory() == Type::NullType) ? Qtrue : Qfalse);
@@ -323,7 +323,7 @@ static VALUE type_memory_layout(VALUE self, VALUE pointers, VALUE opaques, VALUE
 
 VALUE typelib_ruby::type_get_registry(VALUE self)
 {
-    return rb_iv_get(self, "@registry");
+    return rb_iv_get(self, "@__typelib_registry");
 }
 
 
@@ -489,7 +489,7 @@ VALUE value_do_cast(VALUE self, VALUE target_type)
     if (value.getType() == to_type)
         return self;
 
-    VALUE registry = rb_iv_get(target_type, "@registry");
+    VALUE registry = type_get_registry(target_type);
     Value casted(value.getData(), to_type);
 #   ifdef VERBOSE
     fprintf(stderr, "wrapping casted value\n");
@@ -555,7 +555,7 @@ VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)
 VALUE typelib_ruby::value_get_registry(VALUE self)
 {
     VALUE type = rb_funcall(self, rb_intern("class"), 0);
-    return rb_iv_get(type, "@registry");
+    return type_get_registry(type);
 }
 
 /** 
