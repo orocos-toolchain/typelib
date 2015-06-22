@@ -679,6 +679,11 @@ module Typelib
                 options[:remove_trailing_skips])
         end
 
+        # Method called by typelib for internal initialization.
+        #
+        # Do not override unless you know what you are doing
+        #
+        # Initialization of default values should be done in {#initialize}
         def typelib_initialize
         end
 
