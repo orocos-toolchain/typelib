@@ -3,44 +3,56 @@ require 'facets/string/camelcase'
 module Typelib
     module RegistryExport
         class Namespace < Module
+            attr_reader :registry
+
             include RegistryExport
+
+            def reset_registry_export(registry, filter_block, typename_prefix = '/')
+                @registry = registry
+                super
+            end
+
+            def to_s
+                "#{@__typelib_registry_export_typename_prefix}*"
+            end
+
+            def pretty_print(pp)
+                pp.text to_s
+            end
+
+            def method_missing(m, *args, &block)
+                if type = resolve_call_from_exported_registry(false, m.to_s, *args)
+                    return type
+                else
+                    super
+                end
+            rescue NoMethodError
+                template_args = RegistryExport.template_args_to_typelib(args)
+                raise NotFound, "cannot find a type named #{__typelib_registry_export_typename_prefix}#{m}#{template_args} in registry"
+            end
         end
 
         class NotFound < RuntimeError; end
 
-        attr_reader :registry
-        attr_reader :typename_prefix
-        attr_reader :filter_block
+        attr_reader :__typelib_registry_export_typename_prefix
+        attr_reader :__typelib_registry_export_filter_block
 
-        def reset_registry_export(registry = self.registry, filter_block = self.filter_block)
-            @registry = registry
-            @filter_block = filter_block
-            @typename_prefix = '/'
-            @__typelib_cache ||= Hash.new
-            @__typelib_cache.clear
+        def reset_registry_export(registry, filter_block, typename_prefix = '/')
+            if registry && (self.registry != registry)
+                raise RuntimeError, "setting up #{self} to be an export type from #{registry}, but it is a type from #{self.registry}"
+            end
+
+            @__typelib_registry_export_filter_block = filter_block
+            @__typelib_registry_export_typename_prefix = typename_prefix
+            @__typelib_registry_export_cache = Hash.new
+        end
+
+        def initialize_registry_export(mod, name)
+            reset_registry_export(mod.registry, mod.__typelib_registry_export_filter_block, "#{mod.__typelib_registry_export_typename_prefix}#{name}/")
         end
 
         def disable_registry_export
-            reset_registry_export(Typelib::Registry.new, nil)
-        end
-
-        def initialize_registry_export_namespace(mod, name)
-            @registry = mod.registry
-            @typename_prefix = "#{mod.typename_prefix}#{name}/"
-            @filter_block = mod.filter_block
-        end
-
-        def to_s
-            "#{typename_prefix}*"
-        end
-
-        def pretty_print(pp)
-            pp.text to_s
-        end
-
-        def self.setup_subnamespace(parent, mod, name)
-            mod.extend RegistryExport
-            mod.initialize_registry_export_namespace(parent, name)
+            reset_registry_export(nil, nil)
         end
 
         def self.template_args_to_typelib(args)
@@ -108,11 +120,37 @@ module Typelib
             nil
         end
 
+        def RegistryExportDelegate(ruby_class)
+            klass = DelegateClass(ruby_class.singleton_class).new(ruby_class)
+            m = Module.new do
+                include RegistryExport
+
+                attr_reader :registry
+
+                def reset_registry_export(registry, filter_block, typename_prefix = '/')
+                    @registry = registry
+                    super
+                end
+            end
+            klass.extend m
+            klass
+        end
+
+        def setup_export_type(type, basename)
+            if type <= Type
+                type.extend RegistryExport
+            else
+                type = RegistryExportDelegate(type)
+            end
+            type.initialize_registry_export(self, basename)
+            type
+        end
+
         def resolve_call_from_exported_registry(relaxed_naming, m, *args)
-            @__typelib_cache ||= Hash.new
-            if type = @__typelib_cache[[m, args]]
+            @__typelib_registry_export_cache ||= Hash.new
+            if type = @__typelib_registry_export_cache[[m, args]]
                 return type
-            elsif type = RegistryExport.find_type(relaxed_naming, typename_prefix, registry, m, *args)
+            elsif type = RegistryExport.find_type(relaxed_naming, @__typelib_registry_export_typename_prefix, registry, m, *args)
                 exported_type =
                     if type.convertion_to_ruby
                         type.convertion_to_ruby[0] || type
@@ -120,20 +158,24 @@ module Typelib
                         type
                     end
 
-                if filter_block
-                    exported_type = filter_block.call(type, exported_type)
-                end
-                exported_type = @__typelib_cache[[m, args]] =
-                    if exported_type.respond_to?(:convertion_to_ruby) && exported_type.convertion_to_ruby
-                        exported_type.convertion_to_ruby[0] || exported_type
-                    else exported_type
+                if filter_block = @__typelib_registry_export_filter_block
+                    filtered_type = filter_block.call(type, exported_type)
+                    if filtered_type.respond_to?(:registry) && filtered_type.registry != registry
+                        raise RuntimeError, "filter block #{filter_block} returned #{filtered_type} which is a type from #{filtered_type.registry} but I was expecting #{registry}"
                     end
-                RegistryExport.setup_subnamespace(self, exported_type, type.basename)
-                exported_type
-            elsif basename = RegistryExport.find_namespace(relaxed_naming, typename_prefix, registry, m, *args)
+                    if filtered_type != exported_type
+                        exported_type =
+                            if filtered_type.respond_to?(:convertion_to_ruby) && filtered_type.convertion_to_ruby
+                                filtered_type.convertion_to_ruby[0] || filtered_type
+                            else filtered_type
+                            end
+                    end
+                end
+                @__typelib_registry_export_cache[[m, args]] = setup_export_type(exported_type, type.basename)
+            elsif basename = RegistryExport.find_namespace(relaxed_naming, @__typelib_registry_export_typename_prefix, registry, m, *args)
                 ns = Namespace.new
-                RegistryExport.setup_subnamespace(self, ns, basename)
-                @__typelib_cache[[name, []]] = ns
+                ns.initialize_registry_export(self, basename)
+                @__typelib_registry_export_cache[[name, []]] = ns
             end
         end
 
@@ -141,8 +183,7 @@ module Typelib
             if type = resolve_call_from_exported_registry(false, m.to_s, *args)
                 return type
             else
-                template_args = RegistryExport.template_args_to_typelib(args)
-                raise NotFound, "cannot find a type named #{typename_prefix}#{m}#{template_args} in registry"
+                super
             end
         end
 
@@ -150,7 +191,7 @@ module Typelib
             if type = resolve_call_from_exported_registry(true, name.to_s)
                 return type
             else
-                raise NotFound, "cannot find a type named #{typename_prefix}#{name}, or a type named like that after a CamelCase or snake_case conversion, in registry"
+                raise NotFound, "cannot find a type named #{@__typelib_registry_export_typename_prefix}#{name}, or a type named like that after a CamelCase or snake_case conversion, in registry"
             end
         end
     end
