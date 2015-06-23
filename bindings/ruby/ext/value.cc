@@ -321,23 +321,6 @@ static VALUE type_memory_layout(VALUE self, VALUE pointers, VALUE opaques, VALUE
     return result;
 }
 
-/* PODs are assignable, pointers are dereferenced */
-static VALUE type_is_assignable(Type const& type)
-{
-    switch(type.getCategory())
-    {
-    case Type::Numeric:
-        return INT2FIX(1);
-    case Type::Pointer:
-        return type_is_assignable( dynamic_cast<Pointer const&>(type).getIndirection());
-    case Type::Enum:
-        return INT2FIX(1);
-    default:
-        return INT2FIX(0);
-    }
-    // never reached
-}
-
 VALUE typelib_ruby::type_get_registry(VALUE self)
 {
     return rb_iv_get(self, "@registry");
