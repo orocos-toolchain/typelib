@@ -68,7 +68,7 @@ describe Typelib::RegistryExport do
         it "returns the type as converted to ruby" do
             type = reg.create_compound '/CustomType'
             type.convert_to_ruby(Array) { Array.new }
-            assert_same Array, root.CustomType
+            assert_equal Array.new, root.CustomType.new
         end
     end
 
@@ -87,13 +87,13 @@ describe Typelib::RegistryExport do
         end
         it "returns the type as returned by the block" do
             root.reset_registry_export(reg, ->(type, ruby_type) { Hash })
-            assert_same Hash, root.CustomType
+            assert_kind_of Hash, root.CustomType.new
         end
         it "performs the conversion-to-ruby for the returned type" do
             target_t = reg.create_compound '/WrapperType'
             target_t.convert_to_ruby(Hash) { Hash.new }
-            root.reset_registry_export(reg, ->(type, ruby_type) { target_t })
-            assert_same Hash, root.CustomType
+            root.reset_registry_export(reg, ->(type, ruby_type) { ruby_type })
+            assert_kind_of Hash, root.WrapperType.new
         end
         it "will consider that types for which the block returned nil do not exist" do
             root.reset_registry_export(reg, ->(type, ruby_type) { })
