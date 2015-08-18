@@ -734,7 +734,8 @@ module Typelib
         #
         # Raises RuntimeError if casrxml failed to run
         def self.castxml(file, options)
-            cmdline = [use_castxml, *castxml_default_options]
+            cmdline = [use_castxml, *castxml_default_options, "--castxml-gccxml", '-x', 'c++', '-std=c++11']
+            required_files = (options[:required_files] || [file])
             if raw = options[:rawflags]
                 cmdline.concat(raw)
             end
@@ -745,33 +746,28 @@ module Typelib
                 end
             end
 
-            if inc = options[:include]
+            if inc = (options[:include] || options[:include_paths])
                 inc.each do |str|
                     cmdline << "-I#{str}"
                 end
             end
 
-            cmdline << file
-            
-            Tempfile.open('typelib_gccxml') do |io|
-                cmdline << "--castxml-gccxml" 
-                cmdline << "-o #{io.path}"
-            
-                STDOUT.puts "2 -----  "
-                STDOUT.puts "with call #{cmdline.join(' ')} "
-                STDOUT.puts "2 -----  "
+            required_files.map do |file|
+                Tempfile.open('typelib_gccxml') do |io|
+                    STDOUT.puts "2 -----  "
+                    STDOUT.puts "with call #{cmdline.join(' ')} "
+                    STDOUT.puts "2 -----  "
 
-
-                #if !system(cmdline.join(" "))
-                if !system(cmdline.join(" "))
-                    raise ArgumentError, "gccxml returned an error while parsing #{file} with call #{cmdline.join(' ')} "
+                    IO.popen([*cmdline, "-o", io.path, file]).read
+                    if !$?.success?
+                        raise ArgumentError, "gccxml returned an error while parsing #{file} with call #{cmdline.join(' ')} "
+                    end
+                    puts "CASTXML: #{cmdline.join(" ")} -o #{io.path} #{file}"
+                    
+                    FileUtils.copy_file(io.path, "/tmp/debug2.castxml-#{file.gsub(/[^\w]+/, '_')}")
+                    io.open
+                    io.read
                 end
-                
-                FileUtils.copy_file(io.path, "/tmp/debug2.castxml")
-                return ""
-                
-                io.open
-                return io.read
             end
         end
         # Runs gccxml on the provided file and with the given options, and
@@ -790,7 +786,7 @@ module Typelib
                 end
             end
 
-            if inc = options[:include]
+            if inc = (options[:include] || options[:include_paths])
                 inc.each do |str|
                     cmdline << "-I#{str}"
                 end
@@ -805,8 +801,7 @@ module Typelib
                 end
                  
                 FileUtils.copy_file(io.path, "/tmp/debug2.gccxml")
-
-                return io.read
+                [io.read]
             end
         end
 
@@ -814,25 +809,27 @@ module Typelib
             required_files = (options[:required_files] || [file]).
                 map { |f| File.expand_path(f) }
 
-            opaques = Set.new
+            registry_opaques = Set.new
             registry.each do |type|
                 if type.opaque?
-                    opaques << type.name
+                    registry_opaques << type.name
                 end
             end
 
             # Add the standard C++ types (such as /std/string)
             Registry.add_standard_cxx_types(registry)
 
-            castxml(file, options)
-            xml = gccxml(file, options)
-            converter = GCCXMLLoader.new
-            converter.opaques = opaques
-            if opaques = options[:opaques]
-                converter.opaques |= opaques.to_set
+            raw_xml = castxml(file, options)
+            #xml = gccxml(file, options)
+            raw_xml.each do |xml|
+                converter = GCCXMLLoader.new
+                converter.opaques = registry_opaques.dup
+                if options_opaques = options[:opaques]
+                    converter.opaques |= options_opaques.to_set
+                end
+                gccxml_registry = converter.load(required_files, xml)
+                registry.merge(gccxml_registry)
             end
-            gccxml_registry = converter.load(required_files, xml)
-            registry.merge(gccxml_registry)
         end
 
         def self.preprocess(files, kind, options)
@@ -845,7 +842,7 @@ module Typelib
                 end
                 io.flush
                 call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
-                if true #debug
+                if false #debug
                     call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
                     File.open("/tmp/debug1.gccxml","w+"){|f| f.write `#{call.join(' ')}`}
                 end
@@ -855,7 +852,7 @@ module Typelib
                     File.open("/tmp/debug1.castxml","w+"){|f| f.write `#{call.join(' ')}`}
                 end
                 
-                call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
+                # call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
                 result = IO.popen(call) do |gccxml_io|
                     gccxml_io.read
                 end
