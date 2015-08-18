@@ -277,40 +277,35 @@ module Typelib
             return name, context
         end
 
-        def resolve_namespace(id)
-            ns = info.id_to_node[id]
-            if !ns
+        def resolve_node_name_parts(id_or_node)
+            node = if id_or_node.respond_to?(:to_str)
+                       info.id_to_node[id_or_node]
+                   else
+                       id_or_node
+                   end
+
+            if !node
                 return []
-            end
-
-            name = ns['name']
-
-            if name == "::"
-                return []
-            end
-
-            (resolve_namespace(ns['context']) << ns['name'])
-        end
-
-        def resolve_context_name(id)
-            if id_to_name.has_key?(id)
-                return id_to_name[id]
-            end
-
-            definition = node_from_id(id)
-            if definition.name == "Namespace"
-                result = "/" + resolve_namespace(id).join("/")
-                id_to_name[id] = result
-                result
+            elsif name = id_to_name[node['id']]
+                return name
             else
-                cxx_typename = (definition['demangled'] || definition['name'])
-                cxx_to_typelib(cxx_typename)
+                name = cxx_to_typelib(node['name'])
+                if name == "::"
+                    return []
+                end
+                # Remove the leading slash
+                id_to_name[node['id']] = (resolve_node_name_parts(node['context']) + [name[1..-1]])
             end
+
         end
-        
+
+        def resolve_node_typelib_name(id_or_node)
+            resolve_node_name_parts(id_or_node).join("/")
+        end
+
         def resolve_type_id(id)
-            if id_to_name.has_key?(id)
-                id_to_name[id]
+            if id_to_name.has_key?(id.to_str)
+                id_to_name[id.to_str]
             elsif typedef = node_from_id(id)
                 resolve_type_definition(typedef)
             end
@@ -430,12 +425,7 @@ module Typelib
                 return ignore(xmlnode, "#{name}: cannot represent qualified types")
             end
 
-            cxx_typename = (xmlnode['demangled'] || xmlnode['name'])
-            if !cxx_typename
-                raise "Internal error: #{xmlnode} has neither a demangled nor a name field"
-            end
-
-            name = cxx_to_typelib(cxx_typename)
+            name = resolve_node_typelib_name(xmlnode)
             if name =~ /gccxml_workaround/
                 return
             end
@@ -557,44 +547,32 @@ module Typelib
                     return ignore(xmlnode)
                 end
             elsif kind == "Typedef"
-                if !(namespace = resolve_context_name(xmlnode['context']))
-                    return ignore(xmlnode, "ignoring typedef #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
-                end
-
-                full_name =
-                    if namespace != "/"
-                        "#{namespace}#{name}"
-                    else name
-                    end
-
-                type_names[id] = full_name
-                id_to_name[id] = full_name
-                if opaque?(full_name)
-                    type = registry.get(full_name)
-                    if type.name == full_name
+                type_names[id] = name
+                id_to_name[id] = name
+                if opaque?(name)
+                    type = registry.get(name)
+                    if type.name == name
                         # Nothing to do ...
                         set_source_file(type, xmlnode)
                     end
-                    return full_name
+                    return name
                 end
 
                 if !(pointed_to_type = resolve_type_id(xmlnode['type']))
-                    return ignore(xmlnode, "cannot create the #{full_name} typedef, as it points to #{type_names[xmlnode['type']]} which is ignored")
+                    return ignore(xmlnode, "cannot create the #{name} typedef, as it points to #{type_names[xmlnode['type']]} which is ignored")
                 end
 
-                if full_name != registry.get(pointed_to_type).name
-                    registry.alias(full_name, registry.get(pointed_to_type).name)
+                if name != registry.get(pointed_to_type).name
+                    registry.alias(name, registry.get(pointed_to_type).name)
 
                     # And always resolve the typedef as the type it is pointing to
                     name = id_to_name[id] = pointed_to_type
-                else
-                    name = full_name
                 end
 
             elsif kind == "Enumeration"
                 if xmlnode['name'] =~ /^\._(\d+)$/ # this represents anonymous enums
                     return ignore(xmlnode, "ignoring anonymous enumeration, as they can't be represented in Typelib")
-                elsif !(namespace = resolve_context_name(xmlnode['context']))
+                elsif !(namespace = resolve_node_typelib_name(xmlnode['context']))
                     return ignore(xmlnode, "ignoring enumeration #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
                 end
 
@@ -637,9 +615,7 @@ module Typelib
                 info.name_to_nodes[name].find_all { |n| n.name == "Typedef" }.each do |typedef|
                     next if context && typedef["context"].to_s != context
                     type_node = node_from_id(typedef["type"].to_s)
-                    namespace = resolve_context_name(type_node['context'])
-                    base = cxx_to_typelib(type_node["name"])
-                    full_name = "#{namespace}#{base}"
+                    full_name = resolve_node_typelib_name(type_node)
 
                     opaques << full_name
                     opaque_t = registry.get(opaque_name)
