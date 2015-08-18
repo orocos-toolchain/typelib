@@ -233,9 +233,6 @@ module Typelib
                         tk = "/#{tk}"
                     end
                     result << "#{tk}<#{arg}>"
-                elsif tk =~ /^\/?std\/basic_string/
-                    collect_template_arguments(tokens)
-                    result << "/std/string"
                 elsif tk =~ /^[-\d<>,]+/
                     result << tk.gsub(/[-x]/, "0")
                 elsif tk[0, 1] != "/"
@@ -428,6 +425,9 @@ module Typelib
             name = resolve_node_typelib_name(xmlnode)
             if name =~ /gccxml_workaround/
                 return
+            elsif name =~ /^\/std\/basic_string/
+                registry.alias(name, '/std/string')
+                name = "/std/string"
             end
 
             if kind != "Typedef" && name =~ /\/__\w+$/
@@ -470,6 +470,8 @@ module Typelib
                     if resolve_type_id(contained_node["id"])
                         type = registry.create_container type_name, template_args[0]
                         set_source_file(type, xmlnode)
+                        registry.alias(name, type.name)
+                        name = type.name
                     else return ignore("ignoring #{name} as its element type #{contained_type} is ignored as well")
                     end
                 else
