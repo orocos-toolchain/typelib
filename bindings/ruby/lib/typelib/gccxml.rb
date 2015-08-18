@@ -763,12 +763,20 @@ module Typelib
         end
         @gccxml_default_options = Shellwords.split(ENV['TYPELIB_GCCXML_DEFAULT_OPTIONS'] || '-DEIGEN_DONT_VECTORIZE')
 
+        #figure out the correct gccxml binary name, debian has changed this name 
+        #to gccxml.real
+        def self.gcc_binary_name
+            if !`which gccxml.real`.empty?
+                return "gccxml.real"
+            end
+            return "gccxml"
+        end
         # Runs gccxml on the provided file and with the given options, and
         # return the Nokogiri::XML object representing the result
         #
         # Raises RuntimeError if gccxml failed to run
         def self.gccxml(file, options)
-            cmdline = ["gccxml", *gccxml_default_options]
+            cmdline = [gcc_binary_name, *gccxml_default_options]
             if raw = options[:rawflags]
                 cmdline.concat(raw)
             end
@@ -830,21 +838,11 @@ module Typelib
                     io.puts "#include <#{path}>"
                 end
                 io.flush
-                Tempfile.open('gccxml_err') do |err|
-                    command = ["gccxml", "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
-                    result = IO.popen(command, err: err.path) do |gccxml_io|
-                        gccxml_io.read
-                    end
-                    if !$?.success?
-                        Typelib.debug do
-                            FileUtils.copy_file(io.path, "/tmp/gcc-debug")
-                            Typelib.debug "Command was '#{command.join(' ')}."
-                            Typelib.debug "Debug file created at '/tmp/gccxml-debug'."
-                        end
-                        raise ArgumentError, "gccxml failed to preprocess #{files.join(' ')} error is:
-#{err.read}"
-                    end
-                    result
+                result = IO.popen([gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]) do |gccxml_io|
+                    gccxml_io.read
+                end
+                if !$?.success?
+                    raise ArgumentError, "failed to preprocess #{files.join(" ")}"
                 end
             end
         end
