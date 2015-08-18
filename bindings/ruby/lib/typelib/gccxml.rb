@@ -18,9 +18,6 @@ module Typelib
         # @return [{String=>Array<Node>}] a mapping from a mangled type name to the XML
         #   nodes that store its definition
         attr_reader :name_to_nodes
-        # @return [{String=>Node}] a mapping from a demangled type name to the XML
-        #   node that store its definition
-        attr_reader :demangled_to_node
         # @return [{String=>String}] a mapping from all
         #   virtual methods/destructors/operators that have been found. It is
         #   used during resolution to reject the compounds that use them
@@ -53,7 +50,6 @@ module Typelib
             end
             @id_to_node = Hash.new
             @name_to_nodes = Hash.new { |h, k| h[k] = Array.new }
-            @demangled_to_node = Hash.new
             @virtual_members = Set.new
 
             @bases = Hash.new { |h, k| h[k] = Array.new }
@@ -90,12 +86,7 @@ module Typelib
             id_to_node[child_node['id']] = child_node
             @current_node = child_node
             if (child_node_name = child_node['name'])
-                STDOUT.puts "name #{child_node_name}"
                 name_to_nodes[GCCXMLLoader.cxx_to_typelib(child_node_name)] << child_node
-            end
-            if (child_node_name = child_node['demangled'])
-                STDOUT.puts "Got demangeled #{child_node_name}"
-                demangled_to_node[GCCXMLLoader.cxx_to_typelib(child_node_name)] = child_node
             end
 
             if name == "Typedef"
@@ -145,6 +136,9 @@ module Typelib
         # The set of types that should be considered as opaques by the engine
         attr_accessor :opaques
 
+        # A mapping from the type ID to the parts that form its full type name
+        attr_reader :id_to_name_parts
+
         # A mapping from the type ID to the corresponding typelib type name
         #
         # If the type name is nil, it means that the type should not be
@@ -159,12 +153,6 @@ module Typelib
         # The registry that is being filled by parsing GCCXML output
         attr_reader :registry
 
-        # A mapping from the type ID to the type names
-        #
-        # Unlike id_to_name, the stored value is not dependent of the fact that
-        # the type has to be exported by typelib.
-        attr_reader :type_names
-
         # Cached file contents (used to parse documentation)
         attr_reader :source_file_contents
 
@@ -174,8 +162,8 @@ module Typelib
 
         def initialize
             @opaques      = Set.new
+            @id_to_name_parts   = Hash.new
             @id_to_name   = Hash.new
-            @type_names   = Hash.new
             @ignore_message = Hash.new
             @source_file_contents = Hash.new
         end
@@ -283,7 +271,7 @@ module Typelib
 
             if !node
                 return []
-            elsif name = id_to_name[node['id']]
+            elsif name = id_to_name_parts[node['id']]
                 return name
             else
                 name = cxx_to_typelib(node['name'])
@@ -291,7 +279,7 @@ module Typelib
                     return []
                 end
                 # Remove the leading slash
-                id_to_name[node['id']] = (resolve_node_name_parts(node['context']) + [name[1..-1]])
+                id_to_name_parts[node['id']] = (resolve_node_name_parts(node['context']) + [name[1..-1]])
             end
 
         end
@@ -301,8 +289,11 @@ module Typelib
         end
 
         def resolve_type_id(id)
-            if id_to_name.has_key?(id.to_str)
-                id_to_name[id.to_str]
+            id = id.to_str
+            if ignored?(id.to_str)
+                nil
+            elsif name = id_to_name[id]
+                name
             elsif typedef = node_from_id(id)
                 resolve_type_definition(typedef)
             end
@@ -318,6 +309,10 @@ module Typelib
             end
         end
 
+        def ignored?(id)
+            ignore_message.has_key?(id.to_str)
+        end
+
         def ignore(xmlnode, msg = nil)
             if msg
                 if file = file_context(xmlnode)
@@ -327,7 +322,6 @@ module Typelib
                 end
             end
             ignore_message[xmlnode['id']] = msg
-            id_to_name[xmlnode["id"]] = nil
         end
 
         # Returns if +name+ has been declared as an opaque
@@ -343,7 +337,7 @@ module Typelib
             if xmlnode['volatile'] == "1"
                 spec << 'volatile'
             end
-            type_names[xmlnode['id']] = "#{spec.join(" ")} #{resolve_type_id(xmlnode['type'])}"
+            id_to_name[xmlnode['id']] = "#{spec.join(" ")} #{resolve_type_id(xmlnode['type'])}"
         end
 
         def source_file_for(xmlnode)
@@ -393,8 +387,8 @@ module Typelib
         def resolve_type_definition(xmlnode)
             kind = xmlnode.name
             id   = xmlnode['id']
-            if id_to_name.has_key?(id)
-                return id_to_name[id]
+            if name = id_to_name[id]
+                return name
             end
 
             if kind == "PointerType"
@@ -425,9 +419,10 @@ module Typelib
             name = resolve_node_typelib_name(xmlnode)
             if name =~ /gccxml_workaround/
                 return
-            elsif name =~ /^\/std\/basic_string/
-                registry.alias(name, '/std/string')
-                name = "/std/string"
+            end
+            if registry.include?(name)
+                name = id_to_name[id] = registry.get(name).name
+                return name
             end
 
             if kind != "Typedef" && name =~ /\/__\w+$/
@@ -436,7 +431,6 @@ module Typelib
                 return ignore(xmlnode)
             end
 
-            type_names[id] = name
             id_to_name[id] = name
             if opaque?(name)
                 # Nothing to do ...
@@ -454,26 +448,26 @@ module Typelib
                 elsif Typelib::Registry.available_containers.include?(type_name)
                     # This is known to Typelib as a container
                     contained_type = template_args[0]
-                    contained_node = info.demangled_to_node[contained_type]
-                    if !contained_node
+                    if !registry.include?(contained_type)
                         contained_node = info.name_to_nodes[contained_type].first
-                    end
-                    if !contained_node
-                        contained_basename, contained_context = resolve_namespace_of(template_args[0])
-                        contained_node = info.name_to_nodes[contained_basename].
-                            find { |node| node['context'].to_s == contained_context }
-                    end
-                    if !contained_node
-                        raise "Internal error: cannot find definition for #{contained_type}"
+                        if !contained_node
+                            contained_basename, contained_context = resolve_namespace_of(template_args[0])
+                            binding.pry
+                            contained_node = info.name_to_nodes[contained_basename].
+                                find { |node| node['context'].to_s == contained_context }
+                        end
+                        if !contained_node
+                            raise "Internal error: cannot find definition for #{contained_type}"
+                        end
+                        if ignored?(contained_node["id"])
+                            return ignore(xmlnode, "ignoring #{name} as its element type #{contained_type} is ignored as well")
+                        end
                     end
 
-                    if resolve_type_id(contained_node["id"])
-                        type = registry.create_container type_name, template_args[0]
-                        set_source_file(type, xmlnode)
-                        registry.alias(name, type.name)
-                        name = type.name
-                    else return ignore("ignoring #{name} as its element type #{contained_type} is ignored as well")
-                    end
+                    type = registry.create_container type_name, template_args[0]
+                    set_source_file(type, xmlnode)
+                    registry.alias(name, type.name)
+                    name = type.name
                 else
                     # Make sure that we can digest it. Forbidden are: non-public members
                     base_classes = info.bases[xmlnode['id']].map do |child_node|
@@ -514,7 +508,7 @@ module Typelib
                         elsif field_type_name = resolve_type_id(field['type'])
                             [field['name'], field_type_name, Integer(field['offset']) / 8, field['line']]
                         else
-                            return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is of the ignored type #{type_names[field['type']]}")
+                            return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is of the ignored type #{id_to_name[field['type']]}")
                         end
                     end
                     type = registry.create_compound(name, Integer(xmlnode['size']) / 8) do |c|
@@ -549,45 +543,18 @@ module Typelib
                     return ignore(xmlnode)
                 end
             elsif kind == "Typedef"
-                type_names[id] = name
-                id_to_name[id] = name
-                if opaque?(name)
-                    type = registry.get(name)
-                    if type.name == name
-                        # Nothing to do ...
-                        set_source_file(type, xmlnode)
-                    end
-                    return name
-                end
-
                 if !(pointed_to_type = resolve_type_id(xmlnode['type']))
-                    return ignore(xmlnode, "cannot create the #{name} typedef, as it points to #{type_names[xmlnode['type']]} which is ignored")
+                    return ignore(xmlnode, "cannot create the #{name} typedef, as it points to #{id_to_name[xmlnode['type']]} which is ignored")
                 end
 
                 if name != registry.get(pointed_to_type).name
                     registry.alias(name, registry.get(pointed_to_type).name)
-
                     # And always resolve the typedef as the type it is pointing to
-                    name = id_to_name[id] = pointed_to_type
+                    id_to_name[id] = pointed_to_type
                 end
 
             elsif kind == "Enumeration"
-                if xmlnode['name'] =~ /^\._(\d+)$/ # this represents anonymous enums
-                    return ignore(xmlnode, "ignoring anonymous enumeration, as they can't be represented in Typelib")
-                elsif !(namespace = resolve_node_typelib_name(xmlnode['context']))
-                    return ignore(xmlnode, "ignoring enumeration #{name} as it is part of #{type_names[xmlnode['context']]} which is ignored")
-                end
-
-                full_name =
-                    if namespace != "/"
-                        "#{namespace}#{name}"
-                    else name
-                    end
-
-                name = id_to_name[id] = full_name
-
-
-                type = registry.create_enum full_name do |e|
+                type = registry.create_enum(name) do |e|
                     info.enum_values[id].each do |enum_value|
                         e.add(enum_value["name"], Integer(enum_value['init']))
                     end
@@ -597,7 +564,6 @@ module Typelib
                 return ignore(xmlnode, "ignoring #{name} as it is of the unsupported GCCXML type #{kind}, XML node is #{xmlnode}")
             end
 
-            type_names[id] = name
             name
         end
 
@@ -676,6 +642,7 @@ module Typelib
         def load(required_files, xml)
             @registry = Typelib::Registry.new
             Typelib::Registry.add_standard_cxx_types(registry)
+            registry.alias('/std/basic_string</char>', '/std/string')
             @info = GCCXMLInfo.new(required_files)
             info.parse(xml)
 
