@@ -214,7 +214,7 @@ module Typelib
             end
         end
 
-        def self.cxx_to_typelib(name, absolute = true)
+        def self.cxx_to_typelib(name)
             name = name.gsub('::', '/')
             name = name.gsub('> >', '>>')
 
@@ -222,13 +222,13 @@ module Typelib
             tokenized_cxx_to_typelib(tokens)
         end
 
-        def self.tokenized_cxx_to_typelib(tokens, absolute = true)
+        def self.tokenized_cxx_to_typelib(tokens)
             result = []
             while !tokens.empty?
                 tk = tokens.shift
                 if tk =~ /^\/?std\/vector/
                     template_arguments = collect_template_arguments(tokens)
-                    arg = tokenized_cxx_to_typelib(template_arguments.first, absolute)
+                    arg = tokenized_cxx_to_typelib(template_arguments.first)
                     if tk[0, 1] != "/"
                         tk = "/#{tk}"
                     end
@@ -245,14 +245,14 @@ module Typelib
                 end
             end
             result = result.join("")
-            if absolute && result[0, 1] != "/"
+            if result[0, 1] != "/"
                 result = "/#{result}"
             end
             result
         end
 
-        def cxx_to_typelib(name, absolute = true)
-            self.class.cxx_to_typelib(name, absolute)
+        def cxx_to_typelib(name)
+            self.class.cxx_to_typelib(name)
         end
 
         # Given a full Typelib type name, returns a [name, id] pair where +name+
