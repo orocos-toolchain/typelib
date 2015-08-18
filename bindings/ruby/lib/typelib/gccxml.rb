@@ -108,8 +108,9 @@ module Typelib
         def parse(xml)
             lines = xml.split("\n")
             lines.shift
-            if lines.shift !~ /<GCC_XML/
-                raise ParseError, "the provided XML input does not look like a GCCXML output (no GCC_XML tag)"
+            root_tag = lines.shift
+            if root_tag !~ /<GCC_XML/
+                raise RuntimeError, "the provided XML input does not look like a GCCXML output (expected a root GCC_XML tag but got #{root_tag.chomp})"
             end
 
             lines.each do |l|
