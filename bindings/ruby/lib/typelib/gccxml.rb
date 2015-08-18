@@ -90,9 +90,11 @@ module Typelib
             id_to_node[child_node['id']] = child_node
             @current_node = child_node
             if (child_node_name = child_node['name'])
+                STDOUT.puts "name #{child_node_name}"
                 name_to_nodes[GCCXMLLoader.cxx_to_typelib(child_node_name)] << child_node
             end
             if (child_node_name = child_node['demangled'])
+                STDOUT.puts "Got demangeled #{child_node_name}"
                 demangled_to_node[GCCXMLLoader.cxx_to_typelib(child_node_name)] = child_node
             end
 
@@ -760,8 +762,10 @@ module Typelib
             #
             # @return [Array]
             attr_reader :gccxml_default_options
+            attr_reader :castxml_default_options
         end
         @gccxml_default_options = Shellwords.split(ENV['TYPELIB_GCCXML_DEFAULT_OPTIONS'] || '-DEIGEN_DONT_VECTORIZE')
+        @castxml_default_options = Shellwords.split(ENV['TYPELIB_CASTXML_DEFAULT_OPTIONS'] || '-DEIGEN_DONT_VECTORIZE')
 
         #figure out the correct gccxml binary name, debian has changed this name 
         #to gccxml.real
@@ -770,6 +774,59 @@ module Typelib
                 return "gccxml.real"
             end
             return "gccxml"
+        end
+
+        def self.use_castxml
+            if !`which castxml`.empty?
+                return "castxml"
+            end
+            return "gccxml"
+
+        end
+        # Runs castxml on the provided file and with the given options, and
+        # return the Nokogiri::XML object representing the result
+        #
+        # Raises RuntimeError if casrxml failed to run
+        def self.castxml(file, options)
+            cmdline = [use_castxml, *castxml_default_options]
+            if raw = options[:rawflags]
+                cmdline.concat(raw)
+            end
+
+            if defs = options[:define]
+                defs.each do |str|
+                    cmdline << "-D#{str}"
+                end
+            end
+
+            if inc = options[:include]
+                inc.each do |str|
+                    cmdline << "-I#{str}"
+                end
+            end
+
+            cmdline << file
+            
+            Tempfile.open('typelib_gccxml') do |io|
+                cmdline << "--castxml-gccxml" 
+                cmdline << "-o #{io.path}"
+            
+                STDOUT.puts "2 -----  "
+                STDOUT.puts "with call #{cmdline.join(' ')} "
+                STDOUT.puts "2 -----  "
+
+
+                #if !system(cmdline.join(" "))
+                if !system(cmdline.join(" "))
+                    raise ArgumentError, "gccxml returned an error while parsing #{file} with call #{cmdline.join(' ')} "
+                end
+                
+                FileUtils.copy_file(io.path, "/tmp/debug2.castxml")
+                return ""
+                
+                io.open
+                return io.read
+            end
         end
         # Runs gccxml on the provided file and with the given options, and
         # return the Nokogiri::XML object representing the result
@@ -800,6 +857,8 @@ module Typelib
                 if !system(*cmdline)
                     raise ArgumentError, "gccxml returned an error while parsing #{file}"
                 end
+                 
+                FileUtils.copy_file(io.path, "/tmp/debug2.gccxml")
 
                 return io.read
             end
@@ -819,6 +878,7 @@ module Typelib
             # Add the standard C++ types (such as /std/string)
             Registry.add_standard_cxx_types(registry)
 
+            castxml(file, options)
             xml = gccxml(file, options)
             converter = GCCXMLLoader.new
             converter.opaques = opaques
@@ -833,16 +893,35 @@ module Typelib
             includes = options[:include].map { |v| "-I#{v}" }
             defines  = options[:define].map { |v| "-D#{v}" }
 
-            Tempfile.open('orogen_gccxml_input') do |io|
+            Tempfile.open(['orogen_gccxml_input','.hpp']) do |io|
                 files.each do |path|
                     io.puts "#include <#{path}>"
                 end
                 io.flush
-                result = IO.popen([gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]) do |gccxml_io|
+                call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
+                if true #debug
+                    call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
+                    File.open("/tmp/debug1.gccxml","w+"){|f| f.write `#{call.join(' ')}`}
+                end
+                if true 
+                    #call = [use_castxml, "--castxml-gccxml", "-E", *includes, *defines, *castxml_default_options, io.path] 
+                    call = [use_castxml, "--castxml-gccxml", "-E", *includes, *defines, *castxml_default_options, io.path] 
+                    File.open("/tmp/debug1.castxml","w+"){|f| f.write `#{call.join(' ')}`}
+                end
+                
+                call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
+                result = IO.popen(call) do |gccxml_io|
                     gccxml_io.read
                 end
+
+#                STDOUT.puts "-------------"
+#                STDOUT.puts "#{call.join(' ')}"
+#                STDOUT.puts "-------------"
+#                FileUtils.copy_file(io.path, "/tmp/gcc-debug.hpp")
+
                 if !$?.success?
-                    raise ArgumentError, "failed to preprocess #{files.join(" ")}"
+                    FileUtils.copy_file(io.path, "/tmp/gcc-debug.hpp")
+                    raise ArgumentError, "failed to preprocess #{files.join(" ")} \"#{call[0..-1].join(" ")} /tmp/gcc-debug\""
                 end
             end
         end
