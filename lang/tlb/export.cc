@@ -76,8 +76,15 @@ namespace
         {
             std::string key = it->first;
             MetaData::Values values = it->second;
-            for (MetaData::Values::const_iterator it_value = values.begin(); it_value != values.end(); ++it_value)
-                stream << "<metadata key=\"" << key << "\"><![CDATA[" << *it_value << "]]></metadata>\n";
+            if (values.empty())
+            {
+                stream << "<metadata key=\"" << key << "\" />";
+            }
+            else
+            {
+                for (MetaData::Values::const_iterator it_value = values.begin(); it_value != values.end(); ++it_value)
+                    stream << "<metadata key=\"" << key << "\"><![CDATA[" << *it_value << "]]></metadata>\n";
+            }
         }
         return stream.str();
     }
