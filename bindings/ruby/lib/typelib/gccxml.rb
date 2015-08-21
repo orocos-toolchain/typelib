@@ -830,13 +830,22 @@ module Typelib
                     io.puts "#include <#{path}>"
                 end
                 io.flush
-                result = IO.popen(["gccxml", "--preprocess", *includes, *defines, *gccxml_default_options, io.path]) do |gccxml_io|
-                    gccxml_io.read
+                Tempfile.open('gccxml_err') do |err|
+                    command = ["gccxml", "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
+                    result = IO.popen(command, err: err.path) do |gccxml_io|
+                        gccxml_io.read
+                    end
+                    if !$?.success?
+                        Typelib.debug do
+                            FileUtils.copy_file(io.path, "/tmp/gcc-debug")
+                            Typelib.debug "Command was '#{command.join(' ')}."
+                            Typelib.debug "Debug file created at '/tmp/gccxml-debug'."
+                        end
+                        raise ArgumentError, "gccxml failed to preprocess #{files.join(' ')} error is:
+#{err.read}"
+                    end
+                    result
                 end
-                if !$?.success?
-                    raise ArgumentError, "failed to preprocess #{files.join(" ")}"
-                end
-                result
             end
         end
     end
