@@ -52,9 +52,10 @@ module Typelib
                          "-tlbSavePath=#{clang_output_io.path}",
                          *header_files,
                          '--',
-                         '-isystem/usr/bin/../lib/clang/3.4/include',
+#                         '-isystem/usr/bin/../lib/clang/3.4/include',
+                         '-resource-dir=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0',
                          *include_path,
-                         "-x", "c++"]
+                         "-x", "c++", "-stdlib=libc++"]
 
                     # and finally call importer-tool
                     if !system(*command_line)
@@ -93,7 +94,7 @@ module Typelib
 
                 # just to be sure to have exactly the same compiler as the
                 # importer we enforce "clang-3.4"
-                result = IO.popen(["clang-3.4", "-E", *includes, *defines, io.path]) do |clang_io|
+                result = IO.popen(["clang", '-resource-dir=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0',  "-stdlib=libc++", "-E", *includes, *defines, io.path]) do |clang_io|
                     clang_io.read
                 end
                 if !$?.success?
