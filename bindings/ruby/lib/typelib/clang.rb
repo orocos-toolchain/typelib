@@ -69,6 +69,20 @@ module Typelib
             end
         end
 
+        def self.clang_binary_name
+            if system("which clang-3.4 > /dev/null 2>&1")
+                return "clang-3.4"
+            elsif system("which clang > /dev/null 2>&1")
+                IO.popen(['clang', '--version']) do |clang_io|
+                    clang_version = clang_io.read
+                    if clang_version.include?('clang version 3.4')
+                        return "clang"
+                    end
+                end
+            end
+            raise RuntimeError, "Couldn't find clang 3.4 compiler binary!"
+        end
+
         # NOTE: preprocessing of a group of header-files by the actual compiler
         # is needed by orogen to get the resolved top-level include-files. once
         # this is done by the clang-based importer the preprocessing can be
@@ -93,7 +107,7 @@ module Typelib
 
                 # just to be sure to have exactly the same compiler as the
                 # importer we enforce "clang-3.4"
-                result = IO.popen(["clang-3.4", "-E", *includes, *defines, io.path]) do |clang_io|
+                result = IO.popen([clang_binary_name, "-E", *includes, *defines, io.path]) do |clang_io|
                     clang_io.read
                 end
                 if !$?.success?
