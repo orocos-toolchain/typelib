@@ -129,7 +129,7 @@ module Typelib
             direct_dependencies
         end
 
-        # [ValueSet<Type>] Returns the types that are directly referenced by +self+
+        # [Set<Type>] Returns the types that are directly referenced by +self+
         #
         # @see recursive_dependencies
         def self.direct_dependencies
@@ -138,13 +138,13 @@ module Typelib
 
         # Returns the set of all types that are needed to define +self+
         #
-        # @param [ValueSet<Type>] set if given, the new types will be added to
+        # @param [Set<Type>] set if given, the new types will be added to
         #   this set. Otherwise, a new set is created. In both cases, the set is
         #   returned
-        # @return [ValueSet<Type>]
+        # @return [Set<Type>]
         def self.recursive_dependencies(set = nil)
             if !@recursive_dependencies
-                @recursive_dependencies = ValueSet.new
+                @recursive_dependencies = Set.new
                 direct_dependencies.each do |direct_dep|
                     @recursive_dependencies << direct_dep
                     direct_dep.recursive_dependencies(@recursive_dependencies)

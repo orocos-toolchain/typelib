@@ -7,7 +7,6 @@ require 'delegate'
 require 'pp'
 require 'facets/string/camelcase'
 require 'set'
-require 'utilrb/value_set'
 require 'base64'
 
 if !defined?(Infinity)
