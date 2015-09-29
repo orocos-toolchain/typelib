@@ -574,7 +574,7 @@ static VALUE container_erase(VALUE self, VALUE obj)
 
 bool container_delete_if_i(Value v, VALUE registry, VALUE container)
 {
-    VALUE rb_v = typelib_to_ruby(v, registry, container);
+    VALUE rb_v = cxx2rb::value_wrap(v, registry, container);
     return RTEST(rb_yield(rb_v));
 }
 
