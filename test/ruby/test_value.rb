@@ -312,7 +312,7 @@ class TC_Value < Minitest::Test
         arrays.zero!
         array_a_struct = arrays.raw_a_struct
         array_a_struct[0] = ns1_test_t.new(a: 10)
-        assert_equal [10, 0, 0, 0, 0, 0, 0, 0, 0, 0], array_a_struct.to_a
+        assert_equal [10, 0, 0, 0, 0, 0, 0, 0, 0, 0], array_a_struct.map(&:a)
     end
 
     def test_convertion_to_from_ruby
@@ -357,6 +357,9 @@ class TC_Value < Minitest::Test
         assert_equal [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], arrays.raw_a_struct.to_ruby
         arrays.apply_changes_from_converted_types
         assert_equal [10, 0, 0, 0, 0, 0, 0, 0, 0, 0], arrays.raw_a_struct.to_ruby
+    ensure
+        Typelib.convertions_from_ruby.from_typename.delete('/NS1/Test')
+        Typelib.convertions_to_ruby.from_typename.delete('/NS1/Test')
     end
 end
 
