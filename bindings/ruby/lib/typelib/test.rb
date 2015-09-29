@@ -28,7 +28,7 @@ Typelib.load_type_plugins = false
 require 'test_config'
 require 'minitest/autorun'
 require 'minitest/spec'
-require 'flexmock/test_unit'
+require 'flexmock/minitest'
 
 if ENV['TEST_ENABLE_PRY'] != '0'
     begin
@@ -40,11 +40,6 @@ end
 
 module Typelib
     module SelfTest
-        if defined? FlexMock
-            include FlexMock::ArgumentTypes
-            include FlexMock::MockContainer
-        end
-
         def setup
             @__warn_about_helper_method_clashes = Typelib.warn_about_helper_method_clashes?
             Typelib.warn_about_helper_method_clashes = false
@@ -52,22 +47,10 @@ module Typelib
         end
 
         def teardown
-            if defined? FlexMock
-                flexmock_teardown
-            end
             super
             Typelib.warn_about_helper_method_clashes = @__warn_about_helper_method_clashes
         end
     end
-end
-
-# Workaround a problem with flexmock and minitest not being compatible with each
-# other (currently). See github.com/jimweirich/flexmock/issues/15.
-if defined?(FlexMock) && !FlexMock::TestUnitFrameworkAdapter.method_defined?(:assertions)
-    class FlexMock::TestUnitFrameworkAdapter
-        attr_accessor :assertions
-    end
-    FlexMock.framework_adapter.assertions = 0
 end
 
 module Minitest
