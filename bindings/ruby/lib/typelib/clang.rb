@@ -1,8 +1,14 @@
 require 'set'
 require 'tempfile'
+require 'rbconfig'
+
 
 module Typelib
     module CLangLoader
+	def self.macos?
+            RbConfig::CONFIG["host_os"] =~ %r!([Dd]arwin)!
+	end
+
         # Imports the given C++ file into the registry using CLANG
         def self.load(registry, file, kind, options)
             #Checking if the clang importer is installed and can be found on the system
@@ -45,16 +51,22 @@ module Typelib
                     # compare the output of "echo '#include <stdarg.h>'|clang -xc -v -"
                     # and read here:
                     #   https://github.com/Valloric/YouCompleteMe/issues/303#issuecomment-17656962
-                    command_line =
-                        ['typelib-clang-tlb-importer',
-                         "-silent",
-                         "-opaquePath=#{opaque_registry_io.path}",
-                         "-tlbSavePath=#{clang_output_io.path}",
-                         *header_files,
-                         '--',
-                         '-isystem/usr/bin/../lib/clang/3.4/include',
-                         *include_path,
-                         "-x", "c++"]
+		    command_line =
+			['typelib-clang-tlb-importer',
+			 "-silent",
+			 "-opaquePath=#{opaque_registry_io.path}",
+			 "-tlbSavePath=#{clang_output_io.path}",
+			 *header_files,
+			 '--',
+			 *include_path,
+			 "-x", "c++"]
+
+		    if macos?
+                        command_line <<  '-resource-dir=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0'
+                        command_line <<  '-stdlib=libc++'
+		    else
+                        command_line << '-isystem/usr/bin/../lib/clang/3.4/include'
+		    end
 
                     # and finally call importer-tool
                     if !system(*command_line)
@@ -105,11 +117,16 @@ module Typelib
                 end
                 io.flush
 
-                # just to be sure to have exactly the same compiler as the
-                # importer we enforce "clang-3.4"
-                result = IO.popen([clang_binary_name, "-E", *includes, *defines, io.path]) do |clang_io|
+                additional_opts = []
+
+                if macos?
+                    additional_opts = ['-resource-dir=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0',  '-stdlib=libc++']
+                end
+
+                result = IO.popen([clang_binary_name, *additional_opts ,"-E", *includes, *defines, io.path]) do |clang_io|
                     clang_io.read
                 end
+
                 if !$?.success?
                     raise ArgumentError, "resolve_toplevel_include_mapping(): Failed to preprocess one of #{files.join(", ")}"
                 end
