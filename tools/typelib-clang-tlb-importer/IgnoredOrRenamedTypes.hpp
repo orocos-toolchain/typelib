@@ -17,6 +17,7 @@ class IgnoredOrRenamedType {
   private:
     IgnoredOrRenamedType();
     static IgnoredOrRenamedType *getInstance();
+    static bool replaceAll(std::string& str, const std::string& from, const std::string& to);
 
     // carefully, this is a very sharp sword!!! will ignore template args that
     // _begin_with_ the strings in this vector!

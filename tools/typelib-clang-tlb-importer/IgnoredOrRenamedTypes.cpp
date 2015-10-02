@@ -44,19 +44,28 @@ bool IgnoredOrRenamedType::isTemplateArgumentIgnored(const std::string& typelibN
     return false;
 }
 
+
+bool IgnoredOrRenamedType::replaceAll(std::string& str, const std::string& from, const std::string& to) {
+    bool res=false;
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+	res = true;
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+    return res;
+}
+
 std::pair<bool, std::string>
 IgnoredOrRenamedType::isTypeRenamed(const std::string &typelibName) {
-    std::pair<bool, std::string> retval(false, "");
-    for (std::vector<std::pair<std::string, std::string> >::const_iterator it =
-             getInstance()->vTypeRenames.begin();
-         it != getInstance()->vTypeRenames.end(); ++it) {
-        if ((*it).first == typelibName) {
-            retval.first = true;
-            retval.second = (*it).second;
-            return retval;
-        }
+    std::string result = typelibName;
+    bool res=false;
+    for (std::vector<std::pair<std::string, std::string> >::const_iterator it = getInstance()->vTypeRenames.begin(); it != getInstance()->vTypeRenames.end(); ++it) {
+        size_t start_pos = 0;
+	res = res || replaceAll(result, it->first, it->second);
     }
-    return retval;
+
+    return std::make_pair(res,result);
 }
 
 IgnoredOrRenamedType::IgnoredOrRenamedType() {
@@ -69,6 +78,10 @@ IgnoredOrRenamedType::IgnoredOrRenamedType() {
     vTemplateArgsToBeIgnored.push_back("/std/allocator");
     vTemplateArgsToBeIgnored.push_back("/std/char_traits");
 
+    vTypeRenames.push_back(std::pair<std::string, std::string>(
+        "/std/__1", "/std"));
+    vTypeRenames.push_back(std::pair<std::string, std::string>(
+        "/std/__cxx11", "/std"));
     vTypeRenames.push_back(std::pair<std::string, std::string>(
         "/std/basic_string", "/std/string"));
 }

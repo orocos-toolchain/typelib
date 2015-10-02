@@ -78,7 +78,13 @@ std::string cxxToTypelibName(const std::string &cxxName) {
     if (typelibName.at(0) != '/' && typelibName.length() > 1)
         typelibName.insert(0, 1, '/');
 
-    // woa, thats it.
+    // woa, thats it, nearly.
+
+    std::pair<bool, std::string> retval = IgnoredOrRenamedType::isTypeRenamed(typelibName);
+    if (retval.first) {
+        return retval.second;
+    }
+
     return typelibName;
 }
 
