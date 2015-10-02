@@ -1,7 +1,11 @@
 include(LLVMTools)
 
 # we tested and developed _only_ against llvm-3.4
-llvm_find_config(3.4)
+if(APPLE)
+	llvm_find_config("")
+else()
+	llvm_find_config(3.4)
+endif()
 
 # fail hard if we got no llvm-config!
 if (NOT LLVM_CONFIG_EXECUTABLE)
@@ -14,6 +18,8 @@ message(STATUS "typelib-clang-tlb-importer: configuring with ${LLVM_CONFIG_EXECU
 # be what you want!
 llvm_get_config(LLVM_CXXFLAGS "--cxxflags")
 string(REGEX REPLACE "-I[^ ]+" "" LLVM_CXXFLAGS ${LLVM_CXXFLAGS})
+string(REPLACE " -fno-exceptions" "" LLVM_CXXFLAGS ${LLVM_CXXFLAGS})
+string(REPLACE " -fno-rtti" "" LLVM_CXXFLAGS ${LLVM_CXXFLAGS})
 
 llvm_get_config(LLVM_LIBRARY_DIRS "--libdir")
 
@@ -58,9 +64,17 @@ include_directories(${LLVM_INCLUDE_DIRS})
 
 find_package(Threads)
 
-pkg_check_modules(TINFO REQUIRED tinfo)
-add_definitions(${TINFO_CFLAGS})
-include_directories(${TINFO_INCLUDE_DIRS})
+find_package(PkgConfig)
+if(APPLE)
+  pkg_check_modules(TINFO REQUIRED ncurses)
+  add_definitions(${TINFO_CFLAGS})
+  include_directories(${TINFO_INCLUDE_DIRS})
+else(APPLE)
+  pkg_check_modules(TINFO REQUIRED tinfo)
+  add_definitions(${TINFO_CFLAGS})
+  include_directories(${TINFO_INCLUDE_DIRS})
+endif(APPLE)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 find_package(DL)
 include_directories(${LIBDL_INCLUDE_DIR})
