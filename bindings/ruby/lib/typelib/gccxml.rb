@@ -322,6 +322,7 @@ module Typelib
                 end
             end
             ignore_message[xmlnode['id']] = msg
+            nil
         end
 
         # Returns if +name+ has been declared as an opaque
