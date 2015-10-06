@@ -24,6 +24,16 @@ namespace Typelib
         UnknownLayoutBytecode() : std::runtime_error("found an unknown marshalling bytecode operation") { }
     };
 
+    /** Exception thrown when processing a MemoryLayout and it appears that it
+     * is invalid
+     */
+    class InvalidMemoryLayout : public std::runtime_error
+    {
+        public:
+            InvalidMemoryLayout(std::string const& msg)
+                : std::runtime_error(msg) {}
+    };
+
     // This is needed because the FLAG_CONTAINER descriptor is followed by a
     // pointer on a Container instance
     BOOST_STATIC_ASSERT((sizeof(size_t) == sizeof(void*)));
