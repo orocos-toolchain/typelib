@@ -34,7 +34,12 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 add_definitions(-Wall)
-CMAKE_USE_FULL_RPATH("${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib/typelib")
+CMAKE_USE_FULL_RPATH("${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib/typelib")
+
+IF(APPLE)
+  SET(CMAKE_INSTALL_NAME_DIR @rpath)
+  SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+ENDIF(APPLE)
 
 pkg_search_module (LibXML  libxml-2.0 libxml2 libxml>=2)
 IF(NOT LibXML_FOUND)
