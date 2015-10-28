@@ -484,6 +484,10 @@ module Typelib
                         end
                     end
 
+                    if xmlnode['incomplete'] == '1'
+                        return ignore(xmlnode, "ignoring incomplete type #{name}, it is not selected explicitly inside a transport class.")
+                    end
+
                     member_ids = (xmlnode['members'] || '').split(" ")
                     member_ids.each do |id|
                         if info.virtual_members.include?(id)
