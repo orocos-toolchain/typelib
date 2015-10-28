@@ -37,13 +37,13 @@
 
   </compound>
   <compound name="/ns_namedVector/samples/Joints" size="56" >
-    <field name="bla" type="/double" offset="48">
-    
-    </field>
     <field name="names" type="/std/vector&lt;/std/string&gt;" offset="0">
     
     </field>
     <field name="elements" type="/std/vector&lt;/double&gt;" offset="24">
+    
+    </field>
+    <field name="bla" type="/double" offset="48">
     
     </field>
   <metadata key="base_classes"><![CDATA[/ns_namedVector/NamedVector</double>]]></metadata>

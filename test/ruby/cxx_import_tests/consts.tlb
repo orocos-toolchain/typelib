@@ -3,7 +3,6 @@
   <numeric name="/uint64_t" category="uint" size="8" >
   
   </numeric>
-  <alias name="/const unsigned long" source="/uint64_t"/>
   <compound name="/consts/C1" size="24" >
     <field name="m1" type="/uint64_t" offset="0">
     

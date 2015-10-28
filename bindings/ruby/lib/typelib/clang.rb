@@ -10,7 +10,7 @@ module Typelib
         end
 
         # Imports the given C++ file into the registry using CLANG
-        def self.load(registry, file, kind, options)
+        def self.load(registry, file, kind, opaques: Set.new, include_paths: Array.new, **options)
             #Checking if the clang importer is installed and can be found on the system
             if !system("which typelib-clang-tlb-importer > /dev/null 2>&1")
                 raise RuntimeError, "typelib-clang-tlb-importer is not installed in PATH"
@@ -23,7 +23,7 @@ module Typelib
             
             # this gives us an array of opaques
             opaque_registry = Registry.new
-            options[:opaques].uniq.each do |opaque_t|
+            opaques.to_a.uniq.each do |opaque_t|
                 opaque_registry.create_opaque(opaque_t, 0)
             end
             
@@ -37,7 +37,7 @@ module Typelib
             #
             # FIXME: calling the importer on this list of files can be
             # parallelized?
-            header_files = options[:required_files]
+            header_files = options[:required_files] || [file]
             
             # create a registry from the given opaques, so that the importer can
             # load the informations to use it sduring processing.
