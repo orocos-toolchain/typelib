@@ -1,12 +1,16 @@
 require 'typelib/test'
+require_relative './cxx_test_helpers'
 
-class TC_TypelibGCCXML < Minitest::Test
+class TC_CXX_GCCXML < Minitest::Test
     include Typelib
 
-    attr_reader :cxx_test_dir
+    extend CXXTestHelpers
+    cxx_test_dir = File.expand_path('cxx_import_tests', File.dirname(__FILE__))
+    generate_common_tests('gccxml', cxx_test_dir, castxml: false)
 
+    attr_reader :cxx_test_dir
     def setup
-        @cxx_test_dir = File.expand_path('cxx_import_tests', File.dirname(__FILE__))
+        @cxx_test_dir = File.expand_path('gccxml_import_tests', File.dirname(__FILE__))
         super
     end
 

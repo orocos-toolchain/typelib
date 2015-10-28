@@ -50,10 +50,10 @@
 
   </compound>
   <compound name="/classes/NextLevel" size="8" >
-    <field name="b" type="/int32_t" offset="4">
+    <field name="a" type="/int32_t" offset="0">
     
     </field>
-    <field name="a" type="/int32_t" offset="0">
+    <field name="b" type="/int32_t" offset="4">
     
     </field>
   <metadata key="base_classes"><![CDATA[/classes/FirstLevel]]></metadata>

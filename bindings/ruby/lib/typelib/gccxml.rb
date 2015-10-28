@@ -761,7 +761,7 @@ module Typelib
             return "gccxml"
         end
 
-        def self.use_castxml
+        def self.castxml_binary_name
             if !`which castxml`.empty?
                 return "castxml"
             end
@@ -773,7 +773,7 @@ module Typelib
         #
         # Raises RuntimeError if casrxml failed to run
         def self.castxml(file, options)
-            cmdline = [use_castxml, *castxml_default_options, "--castxml-gccxml", '-x', 'c++', '-std=c++11']
+            cmdline = [castxml_binary_name, *castxml_default_options, "--castxml-gccxml", '-x', 'c++', '-std=c++11']
             required_files = (options[:required_files] || [file])
             if raw = options[:rawflags]
                 cmdline.concat(raw)
@@ -848,8 +848,10 @@ module Typelib
             # Add the standard C++ types (such as /std/string)
             Registry.add_standard_cxx_types(registry)
 
-            raw_xml = castxml(file, options)
-            #xml = gccxml(file, options)
+            raw_xml = if options[:castxml] then castxml(file, options)
+                      else gccxml(file, options)
+                      end
+
             raw_xml.each do |xml|
                 converter = GCCXMLLoader.new
                 converter.opaques = registry_opaques.dup
@@ -870,29 +872,18 @@ module Typelib
                     io.puts "#include <#{path}>"
                 end
                 io.flush
-                call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
-                if false #debug
+
+                if options[:castxml]
                     call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
-                    File.open("/tmp/debug1.gccxml","w+"){|f| f.write `#{call.join(' ')}`}
+                else
+                    call = [castxml_binary_name, "--castxml-gccxml", "-E", *includes, *defines, *castxml_default_options, io.path] 
                 end
-                if true 
-                    #call = [use_castxml, "--castxml-gccxml", "-E", *includes, *defines, *castxml_default_options, io.path] 
-                    call = [use_castxml, "--castxml-gccxml", "-E", *includes, *defines, *castxml_default_options, io.path] 
-                    File.open("/tmp/debug1.castxml","w+"){|f| f.write `#{call.join(' ')}`}
-                end
-                
-                # call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
+
                 result = IO.popen(call) do |gccxml_io|
                     gccxml_io.read
                 end
 
-#                STDOUT.puts "-------------"
-#                STDOUT.puts "#{call.join(' ')}"
-#                STDOUT.puts "-------------"
-#                FileUtils.copy_file(io.path, "/tmp/gcc-debug.hpp")
-
                 if !$?.success?
-                    FileUtils.copy_file(io.path, "/tmp/gcc-debug.hpp")
                     raise ArgumentError, "failed to preprocess #{files.join(" ")} \"#{call[0..-1].join(" ")} /tmp/gcc-debug\""
                 end
             end
