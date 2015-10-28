@@ -487,7 +487,7 @@ module Typelib
                         end
                         if base_type_name = resolve_type_id(child_node['type'])
                             base_type = registry.get(base_type_name)
-                            [base_type, Integer(child_node['offset'])]
+                            [base_type, Integer(child_node['offset'] || '0')]
                         else
                             return ignore(xmlnode, "ignoring #{name}, it has ignored base classes")
                         end
