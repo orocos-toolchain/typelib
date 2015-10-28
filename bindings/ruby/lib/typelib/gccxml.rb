@@ -41,7 +41,7 @@ module Typelib
             end
         end
 
-        STORED_TAGS = %w{Namespace Typedef Enumeration Struct Class ArrayType FundamentalType PointerType}
+        STORED_TAGS = %w{Namespace Typedef Enumeration Struct Class ArrayType FundamentalType PointerType CvQualifiedType}
 
         def initialize(required_files)
             @required_files = Hash.new
@@ -420,8 +420,9 @@ module Typelib
                 else return ignore(xmlnode)
                 end
             elsif kind == "CvQualifiedType"
-                name = resolve_qualified_type(xmlnode)
-                return ignore(xmlnode, "#{name}: cannot represent qualified types")
+                qualified_name, name = resolve_qualified_type(xmlnode)
+                registry.alias(qualified_name, name)
+                return name
             end
 
             if !(name = resolve_node_typelib_name(xmlnode))
