@@ -419,6 +419,11 @@ namespace Typelib
          */
         void mergeMetaData(Type const& other) const;
 
+        /** Reorders the field in increasing offset and name order, to have a
+         * stable order
+         */
+        void normalizeFieldOrder();
+
     private:
 	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;

@@ -269,6 +269,7 @@ namespace
             loadMetaData(xml, field.getMetaData());
         }
 
+        compound->normalizeFieldOrder();
         compound->setSize(size);
         factory.insert(node, compound);
         return compound;
