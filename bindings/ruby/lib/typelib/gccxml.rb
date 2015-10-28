@@ -269,23 +269,27 @@ module Typelib
                        id_or_node
                    end
 
-            if !node
-                return []
+            if !node['name']
+                return
             elsif name = id_to_name_parts[node['id']]
                 return name
             else
                 name = cxx_to_typelib(node['name'])
                 if name == "::"
                     return []
+                elsif !node['context'] # root namespace
+                    return [name[1..-1]]
+                elsif parent = resolve_node_name_parts(node['context'])
+                    id_to_name_parts[node['id']] = parent + [name[1..-1]]
                 end
-                # Remove the leading slash
-                id_to_name_parts[node['id']] = (resolve_node_name_parts(node['context']) + [name[1..-1]])
             end
 
         end
 
         def resolve_node_typelib_name(id_or_node)
-            resolve_node_name_parts(id_or_node).join("/")
+            if parts = resolve_node_name_parts(id_or_node)
+                parts.join("/")
+            end
         end
 
         def resolve_type_id(id)
@@ -338,7 +342,10 @@ module Typelib
             if xmlnode['volatile'] == "1"
                 spec << 'volatile'
             end
-            id_to_name[xmlnode['id']] = "#{spec.join(" ")} #{resolve_type_id(xmlnode['type'])}"
+            name = resolve_type_id(xmlnode['type'])
+            qualified_name = "#{name} #{spec.join(" ")}"
+            id_to_name[xmlnode['id']] = qualified_name
+            return qualified_name, name
         end
 
         def source_file_for(xmlnode)
@@ -417,8 +424,9 @@ module Typelib
                 return ignore(xmlnode, "#{name}: cannot represent qualified types")
             end
 
-            name = resolve_node_typelib_name(xmlnode)
-            if name =~ /gccxml_workaround/
+            if !(name = resolve_node_typelib_name(xmlnode))
+                return
+            elsif name =~ /gccxml_workaround/
                 return
             end
             if registry.include?(name)
@@ -513,7 +521,12 @@ module Typelib
                         elsif field_type_name = resolve_type_id(field['type'])
                             [field['name'], field_type_name, Integer(field['offset']) / 8, field['line']]
                         else
-                            return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is of the ignored type #{id_to_name[field['type']]}")
+                            ignored_type_name = id_to_name[field['type']]
+                            if ignored_type_name
+                                return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is of the ignored type #{ignored_type_name}")
+                            else
+                                return ignore(xmlnode, "ignoring #{name} since its field #{field['name']} is of an anonymous type")
+                            end
                         end
                     end
                     type = registry.create_compound(name, Integer(xmlnode['size']) / 8) do |c|
