@@ -401,10 +401,10 @@ module Typelib
             elsif kind == "ArrayType"
                 if pointed_to_type = resolve_type_id(xmlnode['type'])
                     value = xmlnode["max"]
-                    if value =~ /^(\d+)u/
+                    if value =~ /^(\d+)u?$/
                         size = Integer($1) + 1
                     else
-                        raise "expected NUMBERu for the 'max' attribute of an array definition, but got #{value}"
+                        raise "expected NUMBER (for castxml) or NUMBERu (for gccxml) for the 'max' attribute of an array definition, but got \'#{value}\'"
                     end
                     array_typename = (id_to_name[id] = "#{pointed_to_type}[#{size}]")
                     registry.create_array(pointed_to_type, size)
