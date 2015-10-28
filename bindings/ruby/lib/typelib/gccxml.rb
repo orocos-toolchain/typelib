@@ -462,7 +462,6 @@ module Typelib
                         contained_node = info.name_to_nodes[contained_type].first
                         if !contained_node
                             contained_basename, contained_context = resolve_namespace_of(template_args[0])
-                            binding.pry
                             contained_node = info.name_to_nodes[contained_basename].
                                 find { |node| node['context'].to_s == contained_context }
                         end
@@ -773,17 +772,9 @@ module Typelib
 
             required_files.map do |file|
                 Tempfile.open('typelib_gccxml') do |io|
-                    STDOUT.puts "2 -----  "
-                    STDOUT.puts "with call #{cmdline.join(' ')} "
-                    STDOUT.puts "2 -----  "
-
-                    IO.popen([*cmdline, "-o", io.path, file]).read
-                    if !$?.success?
+                    if !system(*cmdline, '-o', io.path, file)
                         raise ArgumentError, "gccxml returned an error while parsing #{file} with call #{cmdline.join(' ')} "
                     end
-                    puts "CASTXML: #{cmdline.join(" ")} -o #{io.path} #{file}"
-                    
-                    FileUtils.copy_file(io.path, "/tmp/debug2.castxml-#{file.gsub(/[^\w]+/, '_')}")
                     io.open
                     io.read
                 end
@@ -818,8 +809,6 @@ module Typelib
                 if !system(*cmdline)
                     raise ArgumentError, "gccxml returned an error while parsing #{file}"
                 end
-                 
-                FileUtils.copy_file(io.path, "/tmp/debug2.gccxml")
                 [io.read]
             end
         end
