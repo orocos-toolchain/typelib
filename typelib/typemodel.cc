@@ -305,6 +305,19 @@ namespace Typelib
         }
         return NULL;
     }
+    static bool fieldOffsetOrdering(Field const& f0, Field const& f1)
+    {
+        if (f0.getOffset() < f1.getOffset())
+            return true;
+        else if (f0.getOffset() == f1.getOffset())
+            return f0.getName() < f1.getName();
+        else return false;
+    }
+    void Compound::normalizeFieldOrder()
+    {
+        m_fields.sort(fieldOffsetOrdering);
+    }
+
     unsigned int Compound::getTrailingPadding() const
     {
         if (m_fields.empty())
