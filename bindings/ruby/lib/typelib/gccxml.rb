@@ -202,25 +202,44 @@ module Typelib
             end
         end
 
+        def cxx_to_typelib(name)
+            self.class.cxx_to_typelib(name)
+        end
+
+        def normalize_type_name(name)
+            tokens = CXX.template_tokenizer(name)
+            self.class.tokenized_cxx_to_typelib(tokens) do |n|
+                if registry.include?(n)
+                    registry.get(n).name
+                elsif node = find_node_by_name(n)
+                    resolve_type_definition(node) || n
+                else n
+                end
+            end
+        end
+
         def self.cxx_to_typelib(name)
             name = name.gsub('::', '/')
             name = name.gsub('> >', '>>')
 
-            tokens = GCCXMLLoader.template_tokenizer(name)
+            tokens = CXX.template_tokenizer(name)
             tokenized_cxx_to_typelib(tokens)
         end
 
-        def self.tokenized_cxx_to_typelib(tokens)
+        def self.tokenized_cxx_to_typelib(tokens, &filter)
             result = []
             while !tokens.empty?
                 tk = tokens.shift
-                if tk =~ /^\/?std\/vector/
-                    template_arguments = collect_template_arguments(tokens)
-                    arg = tokenized_cxx_to_typelib(template_arguments.first)
-                    if tk[0, 1] != "/"
-                        tk = "/#{tk}"
+                if tk == "<"
+                    tokens.unshift(tk)
+                    template_arguments = CXX.collect_template_arguments(tokens)
+                    args = template_arguments.map do |tk|
+                        typelib_name = tokenized_cxx_to_typelib(tk)
+                        if filter then filter[typelib_name]
+                        else typelib_name
+                        end
                     end
-                    result << "#{tk}<#{arg}>"
+                    result[-1] = "#{result[-1]}<#{args.join(",")}>"
                 elsif tk =~ /^[-\d<>,]+/
                     result << tk.gsub(/[-x]/, "0")
                 elsif tk[0, 1] != "/"
@@ -236,16 +255,12 @@ module Typelib
             result
         end
 
-        def cxx_to_typelib(name)
-            self.class.cxx_to_typelib(name)
-        end
-
         # Given a full Typelib type name, returns a [name, id] pair where +name+
         # is the type's basename and +id+ the context ID (i.e. the GCCXML
         # namespace ID)
         def resolve_namespace_of(name)
             context = nil
-            while name =~ /\/(\w+)\/(.*)/
+            while name =~ /^\/(\w+)\/(.*)/
                 ns   = "/#{$1}"
                 name = "/#{$2}"
                 candidates = info.name_to_nodes[ns].find_all { |n| n.name == "Namespace" }
@@ -429,11 +444,12 @@ module Typelib
                 return
             elsif name =~ /gccxml_workaround/
                 return
-            end
-            if registry.include?(name)
+            elsif registry.include?(name)
                 name = id_to_name[id] = registry.get(name).name
                 return name
             end
+
+            normalized_name = normalize_type_name(name)
 
             if kind != "Typedef" && name =~ /\/__\w+$/
                 # This is defined as private STL/Compiler implementation
@@ -452,23 +468,20 @@ module Typelib
             end
 
             if kind == "Struct" || kind == "Class"
-                type_name, template_args = GCCXMLLoader.parse_template(name)
+                type_name, template_args = CXX.parse_template(name)
                 if type_name == "/std/string"
                     # This is internally known to typelib
                 elsif Typelib::Registry.available_containers.include?(type_name)
                     # This is known to Typelib as a container
                     contained_type = template_args[0]
                     if !registry.include?(contained_type)
-                        contained_node = info.name_to_nodes[contained_type].first
+                        contained_node = find_node_by_name(contained_type)
                         if !contained_node
-                            contained_basename, contained_context = resolve_namespace_of(template_args[0])
-                            contained_node = info.name_to_nodes[contained_basename].
-                                find { |node| node['context'].to_s == contained_context }
-                        end
-                        if !contained_node
-                            raise "Internal error: cannot find definition for #{contained_type}"
+                            raise "Internal error: cannot find definition for #{contained_type}, element of #{name}"
                         end
                         if ignored?(contained_node["id"])
+                            return ignore(xmlnode, "ignoring #{name} as its element type #{contained_type} is ignored as well")
+                        elsif !resolve_type_definition(contained_node)
                             return ignore(xmlnode, "ignoring #{name} as its element type #{contained_type} is ignored as well")
                         end
                     end
@@ -529,7 +542,7 @@ module Typelib
                             end
                         end
                     end
-                    type = registry.create_compound(name, Integer(xmlnode['size']) / 8) do |c|
+                    type = registry.create_compound(normalized_name, Integer(xmlnode['size']) / 8) do |c|
                         base_classes.each do |base_type, base_offset|
                             base_type.each_field do |name, type|
                                 offset = base_type.offset_of(name)
@@ -540,6 +553,9 @@ module Typelib
                         field_defs.each do |field_name, field_type, field_offset, field_line|
                             c.add(field_name, field_type, field_offset)
                         end
+                    end
+                    if name != normalized_name
+                        registry.alias(name, normalized_name)
                     end
                     set_source_file(type, xmlnode)
                     base_classes.each do |base_type, _|
@@ -572,34 +588,39 @@ module Typelib
                 end
 
             elsif kind == "Enumeration"
-                type = registry.create_enum(name) do |e|
+                type = registry.create_enum(normalized_name) do |e|
                     info.enum_values[id].each do |enum_value|
                         e.add(enum_value["name"], Integer(enum_value['init']))
                     end
+                end
+                if name != normalized_name
+                    registry.alias(name, normalized_name)
                 end
                 set_source_file(type, xmlnode)
             else
                 return ignore(xmlnode, "ignoring #{name} as it is of the unsupported GCCXML type #{kind}, XML node is #{xmlnode}")
             end
 
+
             name
         end
 
-        # Finds the typedef node that defines the given name
-        def find_typedef_by_name(name)
-            name, context = resolve_namespace_of(name)
-            return if !context # this typedef does not appear in the loaded files
-
-            info.name_to_nodes[name].each do |node|
-                next if node.name != "Typedef"
-                next if node["context"].to_s != context
+        def find_node_by_name(typename, node_type: nil)
+            if node = info.name_to_nodes[typename].first
                 return node
+            else
+                basename, context = resolve_namespace_of(typename)
+                return if !context
+                info.name_to_nodes[basename].
+                    find do |node|
+                        (node['context'].to_s == context) &&
+                            !node_type || (node.name == node_type)
+                    end
             end
-            nil
         end
 
         def resolve_std_string
-            if node = find_typedef_by_name('/std/string')
+            if node = find_node_by_name('/std/string', node_type: 'Typedef')
                 type_node = node_from_id(node["type"].to_s)
                 full_name = resolve_node_typelib_name(type_node)
                 registry.alias full_name, '/std/string'
@@ -617,7 +638,7 @@ module Typelib
             # First do typedefs. Search for the typedefs that are named like our
             # type, if we find one, alias it
             opaques.dup.each do |opaque_name|
-                if node = find_typedef_by_name(opaque_name)
+                if node = find_node_by_name(opaque_name, node_type: 'Typedef')
                     type_node = node_from_id(node["type"].to_s)
                     full_name = resolve_node_typelib_name(type_node)
 
