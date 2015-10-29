@@ -1,22 +1,5 @@
 <?xml version="1.0"?>
 <typelib>
-  <opaque name="/Eigen/Quaternion&lt;/double&gt;" size="0" >
-  
-  </opaque>
-  <opaque name="/Eigen/Quaternionf" size="0" >
-  <metadata key="cxxname"><![CDATA[typedef Quaternionf Eigen::Quaternion<float, 0>]]></metadata>
-<metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Geometry/Quaternion.h:295]]></metadata>
-
-  </opaque>
-  <opaque name="/Eigen/Vector3d" size="0" >
-  <metadata key="cxxname"><![CDATA[typedef Vector3d Eigen::Matrix<double, 3, 1, 0, 3, 1>]]></metadata>
-<metadata key="opaque_is_typedef"><![CDATA[1]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/eigen3/Eigen/src/Core/Matrix.h:395]]></metadata>
-
-  </opaque>
-  <alias name="/Eigen/Matrix&lt;/double,3,1,0,3,1&gt;" source="/Eigen/Vector3d"/>
-  <alias name="/Eigen/Quaternion&lt;/float,0&gt;" source="/Eigen/Quaternionf"/>
   <numeric name="/float" category="float" size="4" >
   
   </numeric>
@@ -48,22 +31,6 @@
     </field>
   <metadata key="cxxname"><![CDATA[struct templates::workaround]]></metadata>
 <metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/templates.hh:34]]></metadata>
-
-  </compound>
-  <compound name="/templates/eigen/S2" size="24" >
-    <field name="V" type="/Eigen/Vector3d" offset="0">
-    
-    </field>
-  <metadata key="cxxname"><![CDATA[struct templates::eigen::S2]]></metadata>
-<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/templates.hh:16]]></metadata>
-
-  </compound>
-  <compound name="/templates/eigen/S3" size="16" >
-    <field name="Q" type="/Eigen/Quaternionf" offset="0">
-    
-    </field>
-  <metadata key="cxxname"><![CDATA[struct templates::eigen::S3]]></metadata>
-<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/templates.hh:20]]></metadata>
 
   </compound>
   <compound name="/templates/templateclasses/D1" size="20" >

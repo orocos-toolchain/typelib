@@ -1,26 +1,7 @@
 #ifndef TEST_HEADER_DATA_TEMPLATES_H
 #define TEST_HEADER_DATA_TEMPLATES_H
 
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
 namespace templates {
-
-    namespace eigen {
-
-        typedef Eigen::Matrix<float,3,4> aMatrix;
-        struct S1 {
-            aMatrix M;
-        };
-
-        struct S2 {
-            Eigen::Vector3d V;
-        };
-
-        struct S3 {
-            Eigen::Quaternionf Q;
-        };
-    }
 
     // just a testcase... is not detected, as there is not instantiation. even
     // if we name this type as "Opaque"!
