@@ -1,6 +1,7 @@
 $LOAD_PATH.unshift "@CMAKE_BINARY_DIR@/bindings/ruby"
 $LOAD_PATH.unshift "@CMAKE_BINARY_DIR@/bindings/ruby/lib"
 $LOAD_PATH.unshift "@CMAKE_SOURCE_DIR@/bindings/ruby/lib"
+$LOAD_PATH.unshift "@CMAKE_CURRENT_BINARY_DIR@"
 
 SRCDIR   = "@CMAKE_SOURCE_DIR@/test"
 BUILDDIR = "@CMAKE_BINARY_DIR@/test"
