@@ -30,6 +30,8 @@ static void addStandardTypes(Typelib::Registry& r)
         r.alias(normalized_type_name, "/char");
     r.alias(normalized_type_name, "/unsigned char");
 
+    normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<wchar_t>::digits + 1) + "_t";
+    r.alias(normalized_type_name, "/wchar_t");
 
     normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<short int>::digits + 1) + "_t";
     r.alias(normalized_type_name, "/signed short int");
