@@ -303,7 +303,7 @@ module Typelib
                     # slash
                     name = cxx_to_typelib(name)[1..-1]
                 elsif name == '::'
-                    return []
+                    return ['']
                 end
                 if !node['context'] # root namespace
                     return [name]
@@ -316,7 +316,7 @@ module Typelib
 
         def resolve_node_cxx_name(id_or_node)
             if parts = resolve_node_name_parts(id_or_node, cxx: true)
-                "::" + parts.join("::")
+                parts.join("::")
             end
         end
 
@@ -671,7 +671,6 @@ module Typelib
                     opaques << full_name << normalized_name
                     opaque_t = registry.get(opaque_name)
                     set_source_file(opaque_t, node)
-                    opaque_t.metadata.set('cxxname', cxx_name)
                     opaque_t.metadata.set('opaque_is_typedef', '1')
                     registry.alias full_name, opaque_name
                     registry.alias normalized_name, opaque_name

@@ -10,16 +10,15 @@
     <field name="second" type="/double" offset="8">
     
     </field>
-  <metadata key="cxxname"><![CDATA[struct std::pair<double, double>]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/bits/stl_pair.h:95]]></metadata>
+  <metadata key="cxxname"><![CDATA[::std::pair<double,double>]]></metadata>
 
   </compound>
   <compound name="/ns_compound_with_pairs/TestClass" size="16" >
     <field name="member" type="/std/pair&lt;/double,/double&gt;" offset="0">
     
     </field>
-  <metadata key="cxxname"><![CDATA[class ns_compound_with_pairs::TestClass]]></metadata>
-<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/compound_with_pair.hh:9]]></metadata>
+  <metadata key="cxxname"><![CDATA[::ns_compound_with_pairs::TestClass]]></metadata>
+<metadata key="source_file_line"><![CDATA[compound_with_pair.hh:9]]></metadata>
 
   </compound>
 </typelib>

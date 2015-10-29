@@ -42,8 +42,8 @@
     <field name="f" type="/uint16_t" offset="18">
     
     </field>
-  <metadata key="cxxname"><![CDATA[class attribute_packed::C1]]></metadata>
-<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/attribute_packed.hh:23]]></metadata>
+  <metadata key="cxxname"><![CDATA[::attribute_packed::C1]]></metadata>
+<metadata key="source_file_line"><![CDATA[attribute_packed.hh:23]]></metadata>
 
   </compound>
   <compound name="/attribute_packed/S1" size="20" >
@@ -65,8 +65,8 @@
     <field name="f" type="/uint16_t" offset="18">
     
     </field>
-  <metadata key="cxxname"><![CDATA[struct attribute_packed::S1]]></metadata>
-<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/attribute_packed.hh:13]]></metadata>
+  <metadata key="cxxname"><![CDATA[::attribute_packed::S1]]></metadata>
+<metadata key="source_file_line"><![CDATA[attribute_packed.hh:13]]></metadata>
 
   </compound>
 </typelib>
