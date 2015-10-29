@@ -287,7 +287,7 @@ module Typelib
             return name, context
         end
 
-        def resolve_node_name_parts(id_or_node)
+        def resolve_node_name_parts(id_or_node, cxx: false)
             node = if id_or_node.respond_to?(:to_str)
                        info.id_to_node[id_or_node]
                    else
@@ -296,23 +296,32 @@ module Typelib
 
             if !node['name']
                 return
-            elsif name = id_to_name_parts[node['id']]
-                return name
             else
-                name = cxx_to_typelib(node['name'])
-                if name == "::"
+                name = node['name']
+                if !cxx
+                    # Convert to typelib conventions, and remove the leading
+                    # slash
+                    name = cxx_to_typelib(name)[1..-1]
+                elsif name == '::'
                     return []
-                elsif !node['context'] # root namespace
-                    return [name[1..-1]]
-                elsif parent = resolve_node_name_parts(node['context'])
-                    id_to_name_parts[node['id']] = parent + [name[1..-1]]
+                end
+                if !node['context'] # root namespace
+                    return [name]
+                elsif parent = resolve_node_name_parts(node['context'], cxx: cxx)
+                    return parent + [name]
                 end
             end
 
         end
 
+        def resolve_node_cxx_name(id_or_node)
+            if parts = resolve_node_name_parts(id_or_node, cxx: true)
+                "::" + parts.join("::")
+            end
+        end
+
         def resolve_node_typelib_name(id_or_node)
-            if parts = resolve_node_name_parts(id_or_node)
+            if parts = resolve_node_name_parts(id_or_node, cxx: false)
                 parts.join("/")
             end
         end
@@ -427,7 +436,8 @@ module Typelib
             if kind == "PointerType"
                 if pointed_to_type = resolve_type_id(xmlnode['type'])
                     pointed_to_name = (id_to_name[id] = "#{pointed_to_type}*")
-                    registry.build(pointed_to_name)
+                    pointer_type = registry.build(pointed_to_name)
+                    pointer_type.metadata.set('cxxname', "#{pointer_type.deference.metadata.get('cxxname')}*")
                     return pointed_to_name
                 else return ignore(xmlnode)
                 end
@@ -440,7 +450,8 @@ module Typelib
                         raise "expected NUMBER (for castxml) or NUMBERu (for gccxml) for the 'max' attribute of an array definition, but got \'#{value}\'"
                     end
                     array_typename = (id_to_name[id] = "#{pointed_to_type}[#{size}]")
-                    registry.create_array(pointed_to_type, size)
+                    array_type = registry.create_array(pointed_to_type, size)
+                    array_type.metadata.set('cxxname', "#{array_type.deference.metadata.get('cxxname')}[#{size}]")
                     return array_typename
                 else return ignore(xmlnode)
                 end
@@ -455,27 +466,22 @@ module Typelib
             elsif name =~ /gccxml_workaround/
                 return
             elsif registry.include?(name)
-                name = id_to_name[id] = registry.get(name).name
-                return name
-            end
-
-            normalized_name = normalize_type_name(name)
-
-            if kind != "Typedef" && name =~ /\/__\w+$/
+                type = registry.get(name)
+                cxxname = resolve_node_cxx_name(xmlnode)
+                if name == type.name
+                    set_source_file(type, xmlnode)
+                    type.metadata.set 'cxxname', cxxname
+                end
+                return id_to_name[id] = type.name
+            elsif kind != "Typedef" && name =~ /\/__\w+$/
                 # This is defined as private STL/Compiler implementation
                 # structures. Just ignore it
                 return ignore(xmlnode)
             end
+            cxxname = resolve_node_cxx_name(xmlnode)
 
-            id_to_name[id] = name
-            if opaque?(name)
-                # Nothing to do ...
-                type = registry.get(name)
-                if name == type.name
-                    set_source_file(type, xmlnode)
-                end
-                return name
-            end
+            normalized_name = normalize_type_name(name)
+            id_to_name[id]  = normalized_name
 
             if kind == "Struct" || kind == "Class"
                 type_name, template_args = CXX.parse_template(name)
@@ -497,9 +503,10 @@ module Typelib
                     end
 
                     type = registry.create_container type_name, template_args[0]
+                    type.metadata.set('cxxname', cxxname)
                     set_source_file(type, xmlnode)
                     registry.alias(name, type.name)
-                    name = type.name
+                    id_to_name[id] = normalized_name = type.name
                 else
                     # Make sure that we can digest it. Forbidden are: non-public members
                     base_classes = info.bases[xmlnode['id']].map do |child_node|
@@ -517,7 +524,7 @@ module Typelib
                     end
 
                     if xmlnode['incomplete'] == '1'
-                        return ignore(xmlnode, "ignoring incomplete type #{name}, it is not selected explicitly inside a transport class.")
+                        return ignore(xmlnode, "ignoring incomplete type #{name}")
                     end
 
                     member_ids = (xmlnode['members'] || '').split(" ")
@@ -564,6 +571,7 @@ module Typelib
                             c.add(field_name, field_type, field_offset)
                         end
                     end
+                    type.metadata.set('cxxname', cxxname)
                     if name != normalized_name
                         registry.alias(name, normalized_name)
                     end
@@ -591,11 +599,16 @@ module Typelib
                     return ignore(xmlnode, "cannot create the #{name} typedef, as it points to #{id_to_name[xmlnode['type']]} which is ignored")
                 end
 
-                if name != registry.get(pointed_to_type).name
-                    registry.alias(name, registry.get(pointed_to_type).name)
-                    # And always resolve the typedef as the type it is pointing to
-                    id_to_name[id] = pointed_to_type
+                pointed_to_name = registry.get(pointed_to_type).name
+
+                if name != pointed_to_name
+                    registry.alias(name, pointed_to_name)
                 end
+                if normalized_name != pointed_to_name
+                    registry.alias(normalized_name, registry.get(pointed_to_type).name)
+                end
+                # Always resolve the typedef as the type it is pointing to
+                id_to_name[id] = pointed_to_name
 
             elsif kind == "Enumeration"
                 type = registry.create_enum(normalized_name) do |e|
@@ -603,6 +616,7 @@ module Typelib
                         e.add(enum_value["name"], Integer(enum_value['init']))
                     end
                 end
+                type.metadata.set('cxxname', cxxname)
                 if name != normalized_name
                     registry.alias(name, normalized_name)
                 end
@@ -612,7 +626,7 @@ module Typelib
             end
 
 
-            name
+            normalized_name
         end
 
         def find_node_by_name(typename, node_type: nil)
@@ -634,6 +648,7 @@ module Typelib
                 type_node = node_from_id(node["type"].to_s)
                 full_name = resolve_node_typelib_name(type_node)
                 registry.alias full_name, '/std/string'
+                registry.get('/std/string').metadata.set 'cxxname', '::std::string'
             end
         end
 
@@ -651,12 +666,15 @@ module Typelib
                 if node = find_node_by_name(opaque_name, node_type: 'Typedef')
                     type_node = node_from_id(node["type"].to_s)
                     full_name = resolve_node_typelib_name(type_node)
+                    normalized_name = normalize_type_name(full_name)
 
-                    opaques << full_name
+                    opaques << full_name << normalized_name
                     opaque_t = registry.get(opaque_name)
                     set_source_file(opaque_t, node)
+                    opaque_t.metadata.set('cxxname', cxx_name)
                     opaque_t.metadata.set('opaque_is_typedef', '1')
                     registry.alias full_name, opaque_name
+                    registry.alias normalized_name, opaque_name
                 end
             end
         end
