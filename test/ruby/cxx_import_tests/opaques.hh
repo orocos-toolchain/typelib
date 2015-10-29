@@ -45,7 +45,9 @@ namespace ns_opaques {
     };
     // need an instantiation of the template-specialization which is named as
     // "opaque"
-    C4<float> inst_C4;
+    struct __gccxml_workaround_C4 {
+        C4<float> inst_C4;
+    };
 
     // the same, ust with two template-arguments -- for funz
     template<typename T, typename U>

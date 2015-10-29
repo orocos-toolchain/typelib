@@ -18,8 +18,7 @@
     <field name="tv_nsec" type="/int64_t" offset="8">
     
     </field>
-  <metadata key="cxxname"><![CDATA[struct timespec]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
+  <metadata key="cxxname"><![CDATA[::timespec]]></metadata>
 
   </compound>
   <alias name="/unsigned int" source="/uint32_t"/>
@@ -30,16 +29,16 @@
     <field name="b" type="/uint32_t" offset="4">
     
     </field>
-  <metadata key="cxxname"><![CDATA[struct nested_records::S1]]></metadata>
-<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/nested_records.hh:9]]></metadata>
+  <metadata key="cxxname"><![CDATA[::nested_records::S1]]></metadata>
+<metadata key="source_file_line"><![CDATA[nested_records.hh:9]]></metadata>
 
   </compound>
   <compound name="/nested_records/S3" size="16" >
     <field name="t" type="/timespec" offset="0">
     
     </field>
-  <metadata key="cxxname"><![CDATA[struct nested_records::S3]]></metadata>
-<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/nested_records.hh:21]]></metadata>
+  <metadata key="cxxname"><![CDATA[::nested_records::S3]]></metadata>
+<metadata key="source_file_line"><![CDATA[nested_records.hh:21]]></metadata>
 
   </compound>
   <compound name="/nested_records/S2" size="12" >
@@ -49,8 +48,8 @@
     <field name="n" type="/nested_records/S1" offset="4">
     
     </field>
-  <metadata key="cxxname"><![CDATA[struct nested_records::S2]]></metadata>
-<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/nested_records.hh:15]]></metadata>
+  <metadata key="cxxname"><![CDATA[::nested_records::S2]]></metadata>
+<metadata key="source_file_line"><![CDATA[nested_records.hh:15]]></metadata>
 
   </compound>
 </typelib>

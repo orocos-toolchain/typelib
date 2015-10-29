@@ -9,8 +9,7 @@
   <alias name="/char" source="/int8_t"/>
   <alias name="/wchar_t" source="/int32_t"/>
   <container  name="/std/string" of="/int8_t" size="8" kind="/std/string" >
-  <metadata key="cxxname"><![CDATA[class std::basic_string<char>]]></metadata>
-<metadata key="source_file_line"><![CDATA[/usr/include/c++/4.9/bits/basic_string.tcc:1132]]></metadata>
+  <metadata key="cxxname"><![CDATA[::std::string]]></metadata>
 
   </container>
   <alias name="/std/basic_string&lt;/char&gt;" source="/std/string"/>
@@ -18,16 +17,16 @@
     <field name="arr" type="/int32_t[3]" offset="0">
     
     </field>
-  <metadata key="cxxname"><![CDATA[struct strings::C3]]></metadata>
-<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/strings.hh:19]]></metadata>
+  <metadata key="cxxname"><![CDATA[::strings::C3]]></metadata>
+<metadata key="source_file_line"><![CDATA[strings.hh:19]]></metadata>
 
   </compound>
   <compound name="/strings/S1" size="8" >
     <field name="myS" type="/std/string" offset="0">
     
     </field>
-  <metadata key="cxxname"><![CDATA[struct strings::S1]]></metadata>
-<metadata key="source_file_line"><![CDATA[.../tools/typelib-clang-tlb-importer/test/strings.hh:8]]></metadata>
+  <metadata key="cxxname"><![CDATA[::strings::S1]]></metadata>
+<metadata key="source_file_line"><![CDATA[strings.hh:8]]></metadata>
 
   </compound>
 </typelib>

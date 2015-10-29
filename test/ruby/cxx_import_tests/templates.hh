@@ -12,7 +12,7 @@ namespace templates {
     };
 
     // in able to find the template named in the opaque, we need an acutal instantiation
-    struct workaround {  templates::C1<double> foo; };
+    struct __gccxml_workaround_c1_double { templates::C1<double> foo; };
 
     // special trick: do an explicit template instantiation, and see if the
     // source_file_line property is correct -- which seems to be the case in the moment
@@ -20,7 +20,7 @@ namespace templates {
       public:
         float B;
     };
-    C1<float> inst_C1;
+    struct __gccxml_workaround_c1_float { templates::C1<float> foo; };
 
     namespace templateclasses {
     class D1 {

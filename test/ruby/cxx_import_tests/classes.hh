@@ -58,7 +58,9 @@ namespace classes {
         };
     };
 
-    // second: test the "base_classes" meta-data feature
+    // The C* classes are opaques ... verify that the cxxname and
+    // source_file_line metadata are properly set
+
     class C1 { public: double a; };
     class C2 : public C1 { public: double b; };
     class C3 : public S1, private C1 { public: double c; };

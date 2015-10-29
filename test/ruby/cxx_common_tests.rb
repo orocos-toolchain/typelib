@@ -12,6 +12,37 @@ module CXXCommonTests
         @importer_options ||= Hash.new
     end
 
+    def assert_equivalent_types(expected_type, actual_type, error_message)
+        if expected_type != actual_type
+            pp = PP.new(error_message)
+            name.pretty_print(pp)
+            pp.breakable
+            pp.text "Expected: "
+            pp.breakable
+            pp.text expected_type.to_xml
+            pp.breakable
+            pp.text "Actual: "
+            pp.breakable
+            pp.text actual_type.to_xml
+            flunk(error_message)
+        end
+
+        expected_type.metadata.each do |key, expected_metadata|
+            if !actual_type.metadata.include?(key)
+                flunk("#{actual_type.name} was expected to have a metadata value for #{key} equal to #{expected_metadata}, but does not have any")
+            end
+            if key == 'source_file_line' # resolve paths relatively to the test dir
+                expected_metadata = expected_metadata.map do |path|
+                    File.expand_path(path, cxx_test_dir)
+                end
+            end
+            actual_metadata = actual_type.metadata.get(key).to_set
+            if actual_metadata != expected_metadata.to_set
+                flunk("#{actual_type.name} was expected to have a metadata value for #{key} equal to #{expected_metadata}, but it is equal to #{actual_metadata.to_a}")
+            end
+        end
+    end
+
     # The bulk of the C++ tests are made of a C++ file and an expected tlb file.
     # This method generate one test method per such file
     #
@@ -43,20 +74,8 @@ module CXXCommonTests
                         raise e, "#{e.message}: known types are #{reg.each.map(&:name).sort.join(", ")}"
                     end
 
-                    if expected_type != actual_type
-                        error_message = "in #{file}, failed expected and actual definitions type for #{name} differ\n"
-                        pp = PP.new(error_message)
-                        name.pretty_print(pp)
-                        pp.breakable
-                        pp.text "Expected: "
-                        pp.breakable
-                        pp.text expected_type.to_xml
-                        pp.breakable
-                        pp.text "Actual: "
-                        pp.breakable
-                        pp.text actual_type.to_xml
-                        flunk(error_message)
-                    end
+                    assert_equivalent_types expected_type, actual_type,
+                        "in #{file}, failed expected and actual definitions type for #{name} differ\n"
                 end
             end
         end
@@ -108,7 +127,7 @@ module CXXCommonTests
 
     def test_import_template_of_container
         reg = Typelib::Registry.import File.join(cxx_test_dir, 'template_of_container.h')
-        assert reg.include?('/BaseTemplate</std/vector</double>>')
+        assert reg.include?('/BaseTemplate</std/vector</double>>'), "cannot find /BaseTemplate</std/vector</double>>, vectors in registry: #{reg.map(&:name).grep(/vector/).sort.join(", ")}"
     end
 
     def test_import_documentation_parsing_handles_opening_bracket_and_struct_definition_on_different_lines
