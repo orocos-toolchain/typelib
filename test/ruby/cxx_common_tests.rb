@@ -37,7 +37,11 @@ module CXXCommonTests
                 loader.load(reg, file, 'c', importer_options)
 
                 expected.each(with_aliases: true) do |name, expected_type|
-                    actual_type = reg.build(name)
+                    begin
+                        actual_type = reg.build(name)
+                    rescue Typelib::NotFound => e
+                        raise e, "#{e.message}: known types are #{reg.each.map(&:name).sort.join(", ")}"
+                    end
 
                     if expected_type != actual_type
                         error_message = "in #{file}, failed expected and actual definitions type for #{name} differ\n"
