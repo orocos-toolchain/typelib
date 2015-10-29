@@ -558,7 +558,7 @@ module Typelib
                 end
             elsif kind == "FundamentalType"
                 if !registry.include?(name)
-                    return ignore(xmlnode)
+                    return ignore(xmlnode, "unknown fundamental type #{name}")
                 end
             elsif kind == "Typedef"
                 if !(pointed_to_type = resolve_type_id(xmlnode['type']))
