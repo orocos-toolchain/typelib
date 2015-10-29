@@ -207,14 +207,24 @@ module Typelib
         end
 
         def normalize_type_name(name)
+            registry.build(name).name
+        rescue Typelib::NotFound
             tokens = CXX.template_tokenizer(name)
-            self.class.tokenized_cxx_to_typelib(tokens) do |n|
-                if registry.include?(n)
-                    registry.get(n).name
-                elsif node = find_node_by_name(n)
-                    resolve_type_definition(node) || n
-                else n
+            new_name = self.class.tokenized_cxx_to_typelib(tokens) do |n|
+                begin
+                    registry.build(n).name
+                rescue Typelib::NotFound
+                    if node = find_node_by_name(n)
+                        resolve_type_definition(node) || n
+                    else n
+                    end
                 end
+            end
+
+            if new_name == name
+                name
+            else
+                normalize_type_name(new_name)
             end
         end
 
@@ -313,8 +323,8 @@ module Typelib
                 nil
             elsif name = id_to_name[id]
                 name
-            elsif typedef = node_from_id(id)
-                resolve_type_definition(typedef)
+            elsif node = node_from_id(id)
+                resolve_type_definition(node)
             end
         end
 

@@ -108,7 +108,7 @@ module CXXCommonTests
 
     def test_import_template_of_container
         reg = Typelib::Registry.import File.join(cxx_test_dir, 'template_of_container.h')
-        assert reg.include?('/BaseTemplate</std/vector</double>>')
+        assert reg.include?('/BaseTemplate</std/vector</double>>'), "cannot find /BaseTemplate</std/vector</double>>, vectors in registry: #{reg.map(&:name).grep(/vector/).sort.join(", ")}"
     end
 
     def test_import_documentation_parsing_handles_opening_bracket_and_struct_definition_on_different_lines
