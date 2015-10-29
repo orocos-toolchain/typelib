@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<typelib>
+<!-- The tlb importer passes the type name in a TypeBuilder, to automatically
+     build e.g. arrays. This is deprecated, but some files might still depend
+     on it. The type builder was buggy w.r.t. templates. Test for it -->
+     <opaque name="/templates/C1&lt;/double[4]&gt;" size="0"/>
+</typelib>
+
