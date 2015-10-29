@@ -251,6 +251,8 @@ namespace Typelib
 	    }
 	}
 
+        result->copySourceIDs(*this);
+        result->mergeMetaData(*this);
         return result.release();
     }
 
