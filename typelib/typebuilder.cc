@@ -120,8 +120,8 @@ namespace Typelib
     {
         ParsedTypename result;
         ModifierList& modlist(result.second);
-        size_t end = full_name.size() - 1;
-        while (true)
+        int end = full_name.size() - 1;
+        while (end > 0)
         {
             Modifier new_mod;
             if (full_name[end] == ']')
@@ -132,20 +132,24 @@ namespace Typelib
                 new_mod.category = Type::Array;
                 new_mod.size = atoi(&full_name[start] + 1);
                 end = start - 1;
+                modlist.push_front(new_mod);
             }
             else if (full_name[end] == '*')
             {
                 new_mod.category = Type::Pointer;
                 new_mod.size = 1;
                 --end;
-            } 
+                modlist.push_front(new_mod);
+            }
+            else if (full_name[end] == ' ')
+                --end;
 	    else
             {
                 result.first = string(full_name, 0, end + 1);
                 return result;
             }
-            modlist.push_front(new_mod);
         }
+        throw InvalidIndirectName(full_name + " does not seem to be a valid type name");
     }
 
     TypeBuilder::TypeSpec TypeBuilder::parse(const Registry& registry, const std::string& full_name)
