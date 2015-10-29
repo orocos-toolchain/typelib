@@ -585,6 +585,27 @@ module Typelib
             name
         end
 
+        # Finds the typedef node that defines the given name
+        def find_typedef_by_name(name)
+            name, context = resolve_namespace_of(name)
+            return if !context # this typedef does not appear in the loaded files
+
+            info.name_to_nodes[name].each do |node|
+                next if node.name != "Typedef"
+                next if node["context"].to_s != context
+                return node
+            end
+            nil
+        end
+
+        def resolve_std_string
+            if node = find_typedef_by_name('/std/string')
+                type_node = node_from_id(node["type"].to_s)
+                full_name = resolve_node_typelib_name(type_node)
+                registry.alias full_name, '/std/string'
+            end
+        end
+
         # This method looks for the real name of opaques
         #
         # The issue with opaques is that they might be either typedefs or
@@ -596,16 +617,13 @@ module Typelib
             # First do typedefs. Search for the typedefs that are named like our
             # type, if we find one, alias it
             opaques.dup.each do |opaque_name|
-                name, context = resolve_namespace_of(opaque_name)
-                next if !context # this opaque does not appear in the loaded headers
-                info.name_to_nodes[name].find_all { |n| n.name == "Typedef" }.each do |typedef|
-                    next if context && typedef["context"].to_s != context
-                    type_node = node_from_id(typedef["type"].to_s)
+                if node = find_typedef_by_name(opaque_name)
+                    type_node = node_from_id(node["type"].to_s)
                     full_name = resolve_node_typelib_name(type_node)
 
                     opaques << full_name
                     opaque_t = registry.get(opaque_name)
-                    set_source_file(opaque_t, typedef)
+                    set_source_file(opaque_t, node)
                     opaque_t.metadata.set('opaque_is_typedef', '1')
                     registry.alias full_name, opaque_name
                 end
@@ -670,6 +688,9 @@ module Typelib
                 all_types.concat(info.types_per_file[file_id])
                 all_typedefs.concat(info.typedefs_per_file[file_id])
             end
+
+            # Resolve the real name of '/std/string'
+            resolve_std_string
 
             if !opaques.empty?
                 # We MUST emit the opaque definitions before calling
