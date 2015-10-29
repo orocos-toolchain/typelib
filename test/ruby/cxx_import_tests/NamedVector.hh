@@ -7,9 +7,6 @@
 namespace ns_namedVector {
 
 template <class T> struct NamedVector {
-    // these datatypes ("std/string", "/std/vector</std/string>" and
-    // "/std/vector</double>") are all "Containers", whose working is very
-    // magic and not quite well defined... just don't care.
     std::vector<std::string> names;
     std::vector<T> elements;
 };
