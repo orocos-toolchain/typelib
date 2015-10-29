@@ -1,6 +1,7 @@
 #include "typebuilder.hh"
 #include "registry.hh"
 #include "typemodel.hh"
+#include <boost/lexical_cast.hpp>
 
 #include <numeric>
 #include <sstream>
@@ -115,39 +116,45 @@ namespace Typelib
             : std::runtime_error(what) {}
     };
 
-    TypeBuilder::TypeSpec TypeBuilder::parse(const Registry& registry, const std::string& full_name)
+    TypeBuilder::ParsedTypename TypeBuilder::parseTypename(std::string const& full_name)
     {
-        static const char* first_chars = "*[";
-
-        TypeSpec spec;
-
-        size_t end = full_name.find_first_of(first_chars);
-        string base_name = full_name.substr(0, end);
-        spec.first = registry.get(base_name);
-        if (! spec.first) throw Undefined(base_name);
-
-        size_t full_length(full_name.length());
-        ModifierList& modlist(spec.second);
-        while (end < full_length)
+        ParsedTypename result;
+        ModifierList& modlist(result.second);
+        size_t end = full_name.size() - 1;
+        while (true)
         {
             Modifier new_mod;
-            if (full_name[end] == '[')
+            if (full_name[end] == ']')
             {
+                size_t start = full_name.find_last_of('[', end);
+                if (start == string::npos)
+                    throw InvalidIndirectName(full_name + " is not a valid type name: array definition missing opening bracket at character " + boost::lexical_cast<std::string>(end));
                 new_mod.category = Type::Array;
-                new_mod.size = atoi(&full_name[end] + 1);
-                end = full_name.find(']', end) + 1;
+                new_mod.size = atoi(&full_name[start] + 1);
+                end = start - 1;
             }
             else if (full_name[end] == '*')
             {
                 new_mod.category = Type::Pointer;
                 new_mod.size = 1;
-                ++end;
+                --end;
             } 
 	    else
-		throw InvalidIndirectName(full_name + " is not a valid type name");
-            modlist.push_back(new_mod);
+            {
+                result.first = string(full_name, 0, end + 1);
+                return result;
+            }
+            modlist.push_front(new_mod);
         }
+    }
 
+    TypeBuilder::TypeSpec TypeBuilder::parse(const Registry& registry, const std::string& full_name)
+    {
+        ParsedTypename parsed_name = parseTypename(full_name);
+        TypeSpec spec;
+        spec.first = registry.get(parsed_name.first);
+        if (! spec.first) throw Undefined(parsed_name.first);
+        spec.second = parsed_name.second;
         return spec;
     }
 
@@ -170,10 +177,8 @@ namespace Typelib
 
     std::string TypeBuilder::getBaseTypename(const std::string& full_name)
     {
-        static const char* first_chars = "*[";
-
-        size_t end = full_name.find_first_of(first_chars);
-        return string(full_name, 0, end);
+        ParsedTypename parsed = parseTypename(full_name);
+        return parsed.first;
     }
 };
 

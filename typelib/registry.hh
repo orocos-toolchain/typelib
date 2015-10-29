@@ -25,6 +25,9 @@ namespace Typelib
         Undefined(const std::string& name)
             : RegistryException("undefined type '" + name + "'")
             , m_name(name) {}
+        Undefined(const std::string& name, const std::string& msg)
+            : RegistryException("undefined type '" + name + "': " + msg)
+            , m_name(name) {}
         ~Undefined() throw() {}
 
         std::string getName() const { return m_name; }

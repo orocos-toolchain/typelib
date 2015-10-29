@@ -16,17 +16,6 @@ namespace Typelib
         std::string m_basename;
         Type* m_type;
 
-        struct Modifier
-        {
-            Type::Category category;
-            int size; // Size of an array, deference count on multi-dim pointers
-        };
-        typedef std::list<Modifier> ModifierList;
-        typedef std::pair<const Type*, ModifierList> TypeSpec;
-
-        static TypeSpec parse(const Registry& registry, const std::string& full_name);
-        static const Type& build(Registry& registry, const TypeSpec& spec, int size);
-
         Registry& m_registry;
 
     public:
@@ -68,7 +57,20 @@ namespace Typelib
 	/** Get base type, that is the type \c full_name is derived from
 	 * @return the new type or 0 if it can't be built */
         static const Type* getBaseType(const Registry& registry, const std::string& full_name);
-};
+
+        struct Modifier
+        {
+            Type::Category category;
+            int size; // Size of an array, deference count on multi-dim pointers
+        };
+        typedef std::list<Modifier> ModifierList;
+        typedef std::pair<std::string, ModifierList> ParsedTypename;
+        typedef std::pair<const Type*, ModifierList> TypeSpec;
+
+        static ParsedTypename parseTypename(const std::string& full_name);
+        static TypeSpec parse(const Registry& registry, const std::string& full_name);
+        static const Type& build(Registry& registry, const TypeSpec& spec, int size);
+    };
 };
 
 #endif

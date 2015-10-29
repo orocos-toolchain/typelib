@@ -128,7 +128,7 @@ namespace
             if (! base)
             {
                 if (it == m_map.end())
-                    throw Undefined(basename);
+                    throw Undefined(basename, "while building " + name + " from " + basename);
 
                 TypeNode    type(it->second);
                 m_map.erase(it);
