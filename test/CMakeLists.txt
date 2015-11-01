@@ -10,7 +10,7 @@ ADD_EXECUTABLE(typelib_testsuite testsuite.cc
     test_plugin.cc test_value.cc test_containers.cc
     test_memory_layout.cc test_marshalling.cc ${TEST_LANG_C})
 
-TARGET_LINK_LIBRARIES(typelib_testsuite typeLib typeLang_cSupport ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
+TARGET_LINK_LIBRARIES(typelib_testsuite typeLib typeLang_cSupport ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} ${Boost_SYSTEM_LIBRARIES} pthread)
 if (ENABLE_INTERNAL_CPARSER)
     TARGET_LINK_LIBRARIES(typelib_testsuite typeLang_c)
 endif()
