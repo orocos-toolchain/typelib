@@ -24,6 +24,4 @@
 
   </compound>
   <alias name="/Laser/array_typedef" source="/int32_t[256]"/>
-  <alias name="/int" source="/int32_t"/>
-  <alias name="/unsigned int" source="/uint32_t"/>
 </typelib>

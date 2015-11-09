@@ -6,7 +6,6 @@
   <numeric name="/int32_t" category="sint" size="4" >
   
   </numeric>
-  <alias name="/int" source="/int32_t"/>
   <opaque name="/templates/C1&lt;/double&gt;" size="0" >
   <metadata key="cxxname"><![CDATA[::templates::C1<double>]]></metadata>
 <metadata key="source_file_line"><![CDATA[templates.hh:9]]></metadata>

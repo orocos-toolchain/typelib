@@ -3,11 +3,9 @@
   <numeric name="/int32_t" category="sint" size="4" >
   
   </numeric>
-  <alias name="/int" source="/int32_t"/>
   <numeric name="/uint8_t" category="uint" size="1" >
   
   </numeric>
-  <alias name="/unsigned char" source="/uint8_t"/>
   <opaque name="/ns/C2&lt;/float&gt;" size="0" >
   
   </opaque>
@@ -33,7 +31,6 @@
 <metadata key="source_file_line"><![CDATA[typedefs.hh:43]]></metadata>
 
   </opaque>
-  <alias name="/ns/S1" source="/ns/myTestTypedef"/>
   <alias name="/ns/aClassTypedef" source="/ns/aClass"/>
   <compound name="/ns/test" size="16" >
     <field name="C" type="/uint8_t" offset="0">

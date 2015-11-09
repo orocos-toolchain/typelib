@@ -156,6 +156,10 @@ module Typelib
         # Cached file contents (used to parse documentation)
         attr_reader :source_file_contents
 
+        # A list of aliases that are created during import to help the import,
+        # but should not end up in the final registry
+        attr_reader :permanent_aliases
+
         def node_from_id(id)
             info.id_to_node[id]
         end
@@ -166,6 +170,7 @@ module Typelib
             @id_to_name   = Hash.new
             @ignore_message = Hash.new
             @source_file_contents = Hash.new
+            @permanent_aliases = Set.new
         end
 
         def self.template_tokenizer(name)
@@ -505,7 +510,9 @@ module Typelib
                     type = registry.create_container type_name, template_args[0]
                     type.metadata.set('cxxname', cxxname)
                     set_source_file(type, xmlnode)
-                    registry.alias(name, type.name)
+                    if name != type.name
+                        registry.alias(name, type.name)
+                    end
                     id_to_name[id] = normalized_name = type.name
                 else
                     # Make sure that we can digest it. Forbidden are: non-public members
@@ -605,7 +612,7 @@ module Typelib
                     registry.alias(name, pointed_to_name)
                 end
                 if normalized_name != pointed_to_name
-                    registry.alias(normalized_name, registry.get(pointed_to_type).name)
+                    register_permanent_alias(normalized_name, registry.get(pointed_to_type))
                 end
                 # Always resolve the typedef as the type it is pointing to
                 id_to_name[id] = pointed_to_name
@@ -728,6 +735,7 @@ module Typelib
             Typelib::Registry.add_standard_cxx_types(registry)
             registry.alias('/std/basic_string</char>', '/std/string')
             base_registry = @registry.dup
+            @permanent_aliases = Set.new
 
             @info = GCCXMLInfo.new(required_files)
             info.parse(xml)
@@ -785,7 +793,30 @@ module Typelib
                 end
             end
 
-            registry.minimal(base_registry)
+            filtered_registry = Registry.new
+            registry.each do |t|
+                if !base_registry.include?(t.name)
+                    filtered_registry.merge(t.minimal_registry(with_aliases: false))
+                end
+            end
+            registry.each(with_aliases: true) do |name, t|
+                next if (name == t.name) || !filtered_registry.include?(t.name)
+                next if base_registry.include?(name)
+
+                if permanent_alias?(name)
+                    filtered_registry.alias(name, t.name)
+                end
+            end
+            filtered_registry
+        end
+
+        def permanent_alias?(name)
+            permanent_aliases.include?(name)
+        end
+
+        def register_permanent_alias(name, type)
+            registry.alias(name, type.name)
+            permanent_aliases << name
         end
 
         class << self

@@ -2,7 +2,6 @@
 <typelib>
     <numeric name='/int32_t' category='sint' size='4'>
     </numeric>
-    <alias name='/int32_t const' source='/int32_t'/>
     <compound name='/negative/anon_S2' size='8'>
         <field name='A' type='/int32_t' offset='0'>
             <metadata key='source_file_line'>

@@ -15,8 +15,6 @@
   <numeric name="/uint64_t" category="uint" size="8" >
   
   </numeric>
-  <alias name="/int" source="/int32_t"/>
-  <alias name="/long" source="/int64_t"/>
   <compound name="/timespec" size="16" >
     <field name="tv_sec" type="/int64_t" offset="0">
     
@@ -28,8 +26,6 @@
 <metadata key="source_file_line"><![CDATA[/usr/include/time.h:120]]></metadata>
 
   </compound>
-  <alias name="/unsigned int" source="/uint32_t"/>
-  <alias name="/unsigned long long" source="/uint64_t"/>
   <compound name="/arrays/C1" size="40" >
     <field name="A3" type="/timespec[2]" offset="0">
     
