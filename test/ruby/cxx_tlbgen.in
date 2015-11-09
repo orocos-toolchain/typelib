@@ -53,5 +53,8 @@ registry.import(cxx_file, 'c', defines: defines, include_paths: [cxx_test_dir])
 #
 # However, we're in the case where formatting matters (the XML files are meant
 # to be reviewed manually), use REXML to reformat.
-puts REXML::Document.new(registry.to_xml).to_s
-
+new_tlb = File.join(cxx_test_dir, "#{File.basename(cxx_file, '.hh')}.tlb.new")
+File.open(new_tlb, 'w') do |io|
+    REXML::Document.new(registry.to_xml).write(io, 4)
+end
+puts "written: #{new_tlb}"
