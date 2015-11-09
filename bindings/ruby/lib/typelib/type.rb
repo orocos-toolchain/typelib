@@ -608,8 +608,8 @@ module Typelib
 
             # @return [Registry] a registry that contains only the types needed
             #   to define this type
-            def minimal_registry
-                registry.minimal(name, true)
+            def minimal_registry(with_aliases: true)
+                registry.minimal(name, with_aliases)
             end
 
             # @return [String] a XML representation of this type
