@@ -975,6 +975,15 @@ module Typelib
         end
     end
 
+    class CastXMLLoader < GCCXMLLoader
+        def self.load(registry, file, kind, **options)
+            super(registry, file, kind, castxml: true, **options)
+        end
+        def self.preprocess(files, kind, **options)
+            super(files, kind, castxml: true, **options)
+        end
+    end
+
     class Registry
         # @deprecated use {GCCXMLLoader.load} and {CXX.load}
         def self.load_from_gccxml(registry, file, kind, options)

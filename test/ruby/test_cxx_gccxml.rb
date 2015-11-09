@@ -7,7 +7,7 @@ class TC_CXX_GCCXML < Minitest::Test
 
     def setup
         super
-        setup_loader 'gccxml', castxml: false
+        setup_loader 'gccxml'
     end
 
     def test_cxx_to_typelib_subtype_of_container
