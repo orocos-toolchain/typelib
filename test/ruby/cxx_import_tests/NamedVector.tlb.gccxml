@@ -11,6 +11,7 @@
         <metadata key="cxxname"><![CDATA[::std::vector<double, std::allocator<double> >]]></metadata>
     </container>
     <container  name="/std/vector&lt;/std/string&gt;" of="/std/string" size="24" kind="/std/vector" >
+        <metadata key="cxxname"><![CDATA[::std::vector<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >]]></metadata>
     </container>
     <compound name="/ns_namedVector/NamedVector&lt;/double&gt;" size="48" >
         <field name="names" type="/std/vector&lt;/std/string&gt;" offset="0">

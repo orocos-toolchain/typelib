@@ -10,7 +10,7 @@
     <field name="second" type="/double" offset="8">
     
     </field>
-  <metadata key="cxxname"><![CDATA[::std::pair<double,double>]]></metadata>
+  <metadata key="cxxname"><![CDATA[::std::pair<double, double>]]></metadata>
 
   </compound>
   <compound name="/ns_compound_with_pairs/TestClass" size="16" >

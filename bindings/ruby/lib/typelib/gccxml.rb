@@ -321,7 +321,11 @@ module Typelib
 
         def resolve_node_cxx_name(id_or_node)
             if parts = resolve_node_name_parts(id_or_node, cxx: true)
-                parts.join("::")
+                parts.map do |n|
+                    n.gsub(/,\s*/, ', ').
+                        gsub(/<::/, "< ::").
+                        gsub(/>>/, "> >")
+                end.join("::")
             end
         end
 
