@@ -124,20 +124,6 @@ module CXXCommonTests
         CXXCommonTests.cxx_test_dir
     end
 
-    def test_import_non_virtual_inheritance
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'non_virtual_inheritance.h'), 'c', cxx_importer: loader
-        type = reg.get('/Derived')
-        assert_equal ['/FirstBase', '/SecondBase'], type.metadata.get('base_classes')
-
-        field_type = reg.get('/uint64_t')
-        expected = [
-            ['first', field_type, 0],
-            ['second', field_type, 8],
-            ['third', field_type, 16]
-        ]
-        assert_equal expected, type.fields.map { |name, field_type| [name, field_type, type.offset_of(name)] }
-    end
-
     def test_import_virtual_methods
         reg = Typelib::Registry.import File.join(cxx_test_dir, 'virtual_methods.h'), 'c', cxx_importer: loader
         assert !reg.include?('/Class')
