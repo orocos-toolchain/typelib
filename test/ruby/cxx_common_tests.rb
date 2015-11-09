@@ -125,7 +125,7 @@ module CXXCommonTests
     end
 
     def test_import_non_virtual_inheritance
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'non_virtual_inheritance.h')
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'non_virtual_inheritance.h'), 'c', cxx_importer: loader
         type = reg.get('/Derived')
         assert_equal ['/FirstBase', '/SecondBase'], type.metadata.get('base_classes')
 
@@ -139,50 +139,50 @@ module CXXCommonTests
     end
 
     def test_import_virtual_methods
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'virtual_methods.h')
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'virtual_methods.h'), 'c', cxx_importer: loader
         assert !reg.include?('/Class')
     end
 
     def test_import_virtual_inheritance
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'virtual_inheritance.h')
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'virtual_inheritance.h'), 'c', cxx_importer: loader
         assert reg.include?('/Base')
         assert !reg.include?('/Derived')
     end
 
     def test_import_private_base_class
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'private_base_class.h')
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'private_base_class.h'), 'c', cxx_importer: loader
         assert reg.include?('/Base')
         assert !reg.include?('/Derived')
     end
 
     def test_import_ignored_base_class
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'ignored_base_class.h')
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'ignored_base_class.h'), 'c', cxx_importer: loader
         assert !reg.include?('/Base')
         assert !reg.include?('/Derived')
     end
 
     def test_import_template_of_container
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'template_of_container.h')
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'template_of_container.h'), 'c', cxx_importer: loader
         assert reg.include?('/BaseTemplate</std/vector</double>>'), "cannot find /BaseTemplate</std/vector</double>>, vectors in registry: #{reg.map(&:name).grep(/vector/).sort.join(", ")}"
     end
 
     def test_import_documentation_parsing_handles_opening_bracket_and_struct_definition_on_different_lines
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_with_struct_and_opening_bracket_on_different_lines.h')
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_with_struct_and_opening_bracket_on_different_lines.h'), 'c', cxx_importer: loader
         assert_equal ["this is a multiline\ndocumentation block"], reg.get('/DocumentedType').metadata.get('doc')
     end
 
     def test_import_documentation_parsing_handles_spaces_between_opening_bracket_and_struct_definition
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_with_space_between_struct_and_opening_bracket.h')
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_with_space_between_struct_and_opening_bracket.h'), 'c', cxx_importer: loader
         assert_equal ["this is a multiline\ndocumentation block"], reg.get('/DocumentedType').metadata.get('doc')
     end
 
     def test_import_documentation_parsing_handles_opening_bracket_and_struct_definition_on_the_same_line
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_with_struct_and_opening_bracket_on_the_same_line.h')
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_with_struct_and_opening_bracket_on_the_same_line.h'), 'c', cxx_importer: loader
         assert_equal ["this is a multiline\ndocumentation block"], reg.get('/DocumentedType').metadata.get('doc')
     end
 
     def test_import_supports_utf8
-        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_utf8.h')
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_utf8.h'), 'c', cxx_importer: loader
         assert_equal ["this is a \u9999 multiline with \u1290 unicode characters"], reg.get('/DocumentedType').metadata.get('doc')
     end
 end
