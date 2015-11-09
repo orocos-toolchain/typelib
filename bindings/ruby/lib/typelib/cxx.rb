@@ -75,6 +75,7 @@ module Typelib
 
         CXX_LOADERS = Hash[
             'gccxml' => GCCXMLLoader,
+            'castxml' => CastXMLLoader,
             'clang'  => CLangLoader
         ]
 

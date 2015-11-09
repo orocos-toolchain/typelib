@@ -7,7 +7,7 @@ class TC_CXX_CastXML < Minitest::Test
 
     def setup
         super
-        setup_loader 'gccxml', castxml: true, name: 'castxml'
+        setup_loader 'castxml'
     end
 end
 
