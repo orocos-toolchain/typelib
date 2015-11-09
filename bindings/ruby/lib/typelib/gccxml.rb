@@ -171,6 +171,7 @@ module Typelib
             @ignore_message = Hash.new
             @source_file_contents = Hash.new
             @permanent_aliases = Set.new
+            @registry = Typelib::Registry.new
         end
 
         def self.template_tokenizer(name)
@@ -255,16 +256,14 @@ module Typelib
                         end
                     end
                     result[-1] = "#{result[-1]}<#{args.join(",")}>"
-                elsif tk =~ /^[-\d<>,]+/
-                    result << tk.gsub(/[-x]/, "0")
-                elsif tk[0, 1] != "/"
+                elsif tk[0, 1] != "/" && tk !~ /^[-+\d]/
                     result << "/#{tk}"
                 else
                     result << tk
                 end
             end
             result = result.join("")
-            if result[0, 1] != "/"
+            if result[0, 1] != "/" && result !~ /^[-+\d]/
                 result = "/#{result}"
             end
             result
