@@ -34,6 +34,24 @@ namespace classes {
         int b;
     };
 
+    class Left
+    {
+        public:
+            int a;
+    };
+
+    class Right
+    {
+        public:
+            int b;
+    };
+
+    class MultipleInheritance : public Left, public Right
+    {
+        public:
+            int c;
+    };
+
     class NextWith_anonymous_InName : public NextLevel {
       public:
         int spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam;
