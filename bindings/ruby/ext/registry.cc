@@ -359,7 +359,7 @@ VALUE registry_minimal(VALUE self, VALUE rb_auto, VALUE with_aliases)
     {
         Registry& auto_types = rb2cxx::object<Registry>(rb_auto);
         try { 
-            Registry* result = registry.minimal(auto_types);
+            Registry* result = registry.minimal(auto_types, RTEST(with_aliases));
             return registry_wrap(cRegistry, result);
         }
         catch(std::exception const& e)

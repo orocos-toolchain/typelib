@@ -41,7 +41,7 @@ module Typelib
         #   @return [Typelib::Registry] the registry that allows to define the
         #     named type
         #
-        # @overload minimal(auto_types, with_aliases = true)
+        # @overload minimal(auto_types, with_aliases = false)
         #   @param [Typelib::Registry] auto_types a registry containing the
         #     types that are not necessary in the result
         #   @param [Boolean] with_aliases if true, aliases defined in self that
@@ -50,7 +50,7 @@ module Typelib
         #     types of self that are not in auto_types. Note that it may contain
         #     types that are in the auto_types registry, if they are needed to
         #     define some other type
-	def minimal(type, with_aliases = true)
+        def minimal(type, with_aliases = type.respond_to?(:to_str))
 	    do_minimal(type, with_aliases)
 	end
 
