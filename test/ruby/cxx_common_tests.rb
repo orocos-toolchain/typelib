@@ -73,7 +73,10 @@ module CXXCommonTests
                     begin
                         actual_type = reg.build(name)
                     rescue Typelib::NotFound => e
-                        raise e, "#{e.message}: known types are #{reg.each.map(&:name).sort.join(", ")}"
+                        kind = if name == expected_type.name then "type"
+                               else "alias"
+                               end
+                        raise e, "#{kind} in expected registry not found in actual one, #{e.message}: known types are #{reg.each.map(&:name).sort.join(", ")}"
                     end
 
                     assert_equivalent_types expected_type, actual_type,
