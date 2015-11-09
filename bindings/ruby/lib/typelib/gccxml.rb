@@ -611,8 +611,11 @@ module Typelib
                 if name != pointed_to_name
                     registry.alias(name, pointed_to_name)
                 end
-                if normalized_name != pointed_to_name
-                    register_permanent_alias(normalized_name, registry.get(pointed_to_type))
+                if (normalized_name != pointed_to_name)
+                    registry.alias(normalized_name, pointed_to_name)
+                    if !Typelib.basename(normalized_name).start_with?("__")
+                        register_permanent_alias(normalized_name, registry.get(pointed_to_type))
+                    end
                 end
                 # Always resolve the typedef as the type it is pointing to
                 id_to_name[id] = pointed_to_name
