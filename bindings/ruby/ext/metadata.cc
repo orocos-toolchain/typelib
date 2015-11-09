@@ -94,6 +94,7 @@ void typelib_ruby::Typelib_init_metadata()
     rb_define_method(cMetaData, "get", RUBY_METHOD_FUNC(metadata_get), 1);
     rb_define_method(cMetaData, "add", RUBY_METHOD_FUNC(metadata_add), -1);
     rb_define_method(cMetaData, "clear", RUBY_METHOD_FUNC(metadata_clear), -1);
+    rb_define_method(cMetaData, "delete", RUBY_METHOD_FUNC(metadata_clear), -1);
     rb_define_method(cMetaData, "keys", RUBY_METHOD_FUNC(metadata_keys), 0);
     enc_utf8 = rb_enc_find("utf-8");
 }
