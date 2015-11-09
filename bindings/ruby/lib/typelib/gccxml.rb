@@ -971,6 +971,8 @@ module Typelib
                 if !$?.success?
                     raise ArgumentError, "failed to preprocess #{files.join(" ")} \"#{call[0..-1].join(" ")} /tmp/gcc-debug\""
                 end
+
+                result
             end
         end
     end
