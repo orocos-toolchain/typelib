@@ -38,7 +38,6 @@
   <numeric name="/int32_t" category="sint" size="4" >
   
   </numeric>
-  <alias name="/int" source="/int32_t"/>
   <compound name="/enums/S1" size="8" >
     <field name="A" type="/int32_t" offset="0">
     

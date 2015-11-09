@@ -21,5 +21,4 @@
   <alias name="/consts/my_other_const_typedef" source="/uint64_t"/>
   <alias name="/consts/my_other_typedef" source="/uint64_t"/>
   <alias name="/consts/my_typedef" source="/uint64_t"/>
-  <alias name="/unsigned long" source="/uint64_t"/>
 </typelib>

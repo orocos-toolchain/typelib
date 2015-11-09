@@ -89,6 +89,4 @@
 <metadata key="source_file_line"><![CDATA[classes.hh:42]]></metadata>
 
   </compound>
-  <alias name="/int" source="/int32_t"/>
-  <alias name="/long" source="/int64_t"/>
 </typelib>

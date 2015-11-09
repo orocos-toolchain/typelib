@@ -9,8 +9,6 @@
   <numeric name="/int8_t" category="sint" size="1" >
   
   </numeric>
-  <alias name="/char" source="/int8_t"/>
-  <alias name="/int" source="/int32_t"/>
   <compound name="/N1/N2/S1" size="24" >
     <field name="A" type="/int32_t" offset="0">
     

@@ -18,11 +18,6 @@
   <numeric name="/uint8_t" category="uint" size="1" >
   
   </numeric>
-  <alias name="/int" source="/int32_t"/>
-  <alias name="/long" source="/int64_t"/>
-  <alias name="/signed char" source="/int8_t"/>
-  <alias name="/unsigned char" source="/uint8_t"/>
-  <alias name="/unsigned short" source="/uint16_t"/>
   <compound name="/attribute_packed/C1" size="20" >
     <field name="a" type="/uint8_t" offset="0">
     

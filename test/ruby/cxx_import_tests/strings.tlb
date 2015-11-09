@@ -6,13 +6,10 @@
   <numeric name="/int8_t" category="sint" size="1" >
   
   </numeric>
-  <alias name="/char" source="/int8_t"/>
-  <alias name="/wchar_t" source="/int32_t"/>
   <container  name="/std/string" of="/int8_t" size="8" kind="/std/string" >
   <metadata key="cxxname"><![CDATA[::std::string]]></metadata>
 
   </container>
-  <alias name="/std/basic_string&lt;/char&gt;" source="/std/string"/>
   <compound name="/strings/C3" size="12" >
     <field name="arr" type="/int32_t[3]" offset="0">
     

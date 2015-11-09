@@ -4,19 +4,15 @@
     </numeric>
     <numeric name="/int8_t" category="sint" size="1" >
     </numeric>
-    <alias name="/char" source="/int8_t"/>
     <container  name="/std/string" of="/int8_t" size="8" kind="/std/string" >
         <metadata key="cxxname"><![CDATA[::std::string]]></metadata>
     </container>
     <container  name="/std/vector&lt;/double&gt;" of="/double" size="24" kind="/std/vector" >
         <metadata key="cxxname"><![CDATA[::std::vector<double,std::allocator<double> >]]></metadata>
     </container>
-    <alias name="/std/basic_string&lt;/char&gt;" source="/std/string"/>
-    <alias name="/std/vector&lt;/double,/std/allocator&lt;/double&gt;&gt;" source="/std/vector&lt;/double&gt;"/>
     <container  name="/std/vector&lt;/std/string&gt;" of="/std/string" size="24" kind="/std/vector" >
         <metadata key="cxxname"><![CDATA[::std::vector<std::basic_string<char, std::char_traits<char>, std::allocator<char> >,std::allocator<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >]]></metadata>
     </container>
-    <alias name="/std/vector&lt;/std/basic_string&lt;/char,/std/char_traits&lt;/char&gt;,/std/allocator&lt;/char&gt;&gt;,/std/allocator&lt;/std/basic_string&lt;/char,/std/char_traits&lt;/char&gt;,/std/allocator&lt;/char&gt;&gt;&gt;&gt;" source="/std/vector&lt;/std/string&gt;"/>
     <compound name="/ns_namedVector/NamedVector&lt;/double&gt;" size="48" >
         <field name="names" type="/std/vector&lt;/std/string&gt;" offset="0">
         </field>

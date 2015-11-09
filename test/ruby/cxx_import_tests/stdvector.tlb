@@ -12,8 +12,6 @@
   <numeric name="/int64_t" category="sint" size="8" >
   
   </numeric>
-  <alias name="/int" source="/int32_t"/>
-  <alias name="/long" source="/int64_t"/>
   <compound name="/timespec" size="16" >
     <field name="tv_sec" type="/int64_t" offset="0">
     
@@ -40,15 +38,10 @@
   <metadata key="cxxname"><![CDATA[::std::vector<timespec,std::allocator<timespec> >]]></metadata>
 
   </container>
-  <alias name="/std/vector&lt;/double,/std/allocator&lt;/double&gt;&gt;" source="/std/vector&lt;/double&gt;"/>
-  <alias name="/std/vector&lt;/float,/std/allocator&lt;/float&gt;&gt;" source="/std/vector&lt;/float&gt;"/>
-  <alias name="/std/vector&lt;/int,/std/allocator&lt;/int&gt;&gt;" source="/std/vector&lt;/int32_t&gt;"/>
   <container  name="/std/vector&lt;/std/vector&lt;/int32_t&gt;&gt;" of="/std/vector&lt;/int32_t&gt;" size="24" kind="/std/vector" >
   <metadata key="cxxname"><![CDATA[::std::vector<std::vector<int, std::allocator<int> >,std::allocator<std::vector<int, std::allocator<int> > > >]]></metadata>
 
   </container>
-  <alias name="/std/vector&lt;/timespec,/std/allocator&lt;/timespec&gt;&gt;" source="/std/vector&lt;/timespec&gt;"/>
-  <alias name="/std/vector&lt;/std/vector&lt;/int,/std/allocator&lt;/int&gt;&gt;,/std/allocator&lt;/std/vector&lt;/int,/std/allocator&lt;/int&gt;&gt;&gt;&gt;" source="/std/vector&lt;/std/vector&lt;/int32_t&gt;&gt;"/>
   <compound name="/stdvector/C1" size="48" >
     <field name="v" type="/std/vector&lt;/double&gt;[2]" offset="0">
     

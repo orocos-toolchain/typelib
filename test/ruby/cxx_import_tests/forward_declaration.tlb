@@ -3,7 +3,6 @@
   <numeric name="/int32_t" category="sint" size="4" >
   
   </numeric>
-  <alias name="/int" source="/int32_t"/>
   <compound name="/ns/ForwardDeclaration" size="8" >
     <field name="a" type="/int32_t" offset="0">
     
