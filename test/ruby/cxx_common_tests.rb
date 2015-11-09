@@ -67,7 +67,9 @@ module CXXCommonTests
                 end
                 loader.load(reg, file, 'c', importer_options)
 
+                names = Set.new
                 expected.each(with_aliases: true) do |name, expected_type|
+                    names << name
                     begin
                         actual_type = reg.build(name)
                     rescue Typelib::NotFound => e
@@ -76,6 +78,12 @@ module CXXCommonTests
 
                     assert_equivalent_types expected_type, actual_type,
                         "in #{file}, failed expected and actual definitions type for #{name} differ\n"
+                end
+
+                actual_names = reg.each(with_aliases: true).map { |n, _| n }.to_set
+                remaining = actual_names - names
+                if !remaining.empty?
+                    flunk("#{remaining.size} types defined that were not in the expected registry: #{remaining.to_a.sort.join(", ")}")
                 end
             end
         end
