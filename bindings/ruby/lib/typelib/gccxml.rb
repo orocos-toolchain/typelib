@@ -727,6 +727,8 @@ module Typelib
             @registry = Typelib::Registry.new
             Typelib::Registry.add_standard_cxx_types(registry)
             registry.alias('/std/basic_string</char>', '/std/string')
+            base_registry = @registry.dup
+
             @info = GCCXMLInfo.new(required_files)
             info.parse(xml)
 
@@ -783,7 +785,7 @@ module Typelib
                 end
             end
 
-            registry
+            registry.minimal(base_registry)
         end
 
         class << self
