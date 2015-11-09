@@ -21,5 +21,11 @@ class TC_CXX_GCCXML < Minitest::Test
         assert_equal '/BaseTemplate</std/vector</double,/std/allocator</double>>>',
             Typelib::GCCXMLLoader.cxx_to_typelib(cxx_name)
     end
+
+    def test_normalize_type_name_does_not_add_a_slash_to_numeric_template_parameters
+        loader = flexmock(self.loader.new, find_node_by_name: nil)
+        assert_equal '/Eigen/Matrix</double,0,1,2>',
+            loader.normalize_type_name('/Eigen/Matrix</double,0,1,2>')
+    end
 end
 
