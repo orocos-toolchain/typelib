@@ -895,9 +895,6 @@ module Typelib
                 end
             end
 
-            # Add the standard C++ types (such as /std/string)
-            Registry.add_standard_cxx_types(registry)
-
             raw_xml = if options[:castxml] then castxml(file, options)
                       else gccxml(file, options)
                       end
