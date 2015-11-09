@@ -5,11 +5,21 @@
 # update the importer_options hash with default options that must be passed to
 # the loader
 module CXXCommonTests
-    attr_reader :loader, :importer_options
+    attr_reader :loader, :loader_name, :importer_options
 
     def setup
         super
         @importer_options ||= Hash.new
+    end
+
+    def setup_loader(loader_name, **options)
+        if loader = Typelib::CXX::CXX_LOADERS[loader_name]
+            @loader = loader
+            @loader_name = loader_name
+            importer_options.merge!(options)
+        else
+            raise ArgumentError, "unknown loader #{loader_name}"
+        end
     end
 
     def assert_equivalent_types(expected_type, actual_type, error_message)
@@ -58,36 +68,51 @@ module CXXCommonTests
             opaques  = "#{prefix}.opaques"
             tlb      = "#{prefix}.tlb"
             next if !File.file?(tlb)
+            next if !File.file?(tlb)
 
             define_method "test_cxx_common_#{basename}" do
                 reg = Typelib::Registry.new
-                expected = Typelib::Registry.from_xml(File.read(tlb))
                 if File.file?(opaques)
                     reg.import(opaques, 'tlb')
                 end
                 loader.load(reg, file, 'c', importer_options)
 
-                names = Set.new
-                expected.each(with_aliases: true) do |name, expected_type|
-                    names << name
-                    begin
-                        actual_type = reg.build(name)
-                    rescue Typelib::NotFound => e
-                        kind = if name == expected_type.name then "type"
-                               else "alias"
-                               end
-                        raise e, "#{kind} in expected registry not found in actual one, #{e.message}: known types are #{reg.each.map(&:name).sort.join(", ")}"
-                    end
+                importer_specific_tlb = "#{tlb}.#{loader_name}"
+                has_specific_tlb = File.file?(importer_specific_tlb)
 
-                    assert_equivalent_types expected_type, actual_type,
-                        "in #{file}, failed expected and actual definitions type for #{name} differ\n"
-                end
+                expected = Typelib::Registry.from_xml(File.read(tlb))
+                assert_registry_match(expected, reg, require_equivalence: !has_specific_tlb)
 
-                actual_names = reg.each(with_aliases: true).map { |n, _| n }.to_set
-                remaining = actual_names - names
-                if !remaining.empty?
-                    flunk("#{remaining.size} types defined that were not in the expected registry: #{remaining.to_a.sort.join(", ")}")
+                if has_specific_tlb
+                    expected = Typelib::Registry.from_xml(File.read(importer_specific_tlb))
+                    assert_registry_match(expected, reg, require_equivalence: true)
                 end
+            end
+        end
+    end
+
+    def assert_registry_match(expected, actual, require_equivalence: true)
+        names = Set.new
+        expected.each(with_aliases: true) do |name, expected_type|
+            names << name
+            begin
+                actual_type = actual.build(name)
+            rescue Typelib::NotFound => e
+                kind = if name == expected_type.name then "type"
+                       else "alias"
+                       end
+                raise e, "#{kind} in expected registry not found in actual one, #{e.message}: known types are #{actual.each.map(&:name).sort.join(", ")}"
+            end
+
+            assert_equivalent_types expected_type, actual_type,
+                "failed expected and actual definitions type for #{name} differ\n"
+        end
+
+        if require_equivalence
+            actual_names = actual.each(with_aliases: true).map { |n, _| n }.to_set
+            remaining = actual_names - names
+            if !remaining.empty?
+                flunk("#{remaining.size} types defined that were not in the expected registry: #{remaining.to_a.sort.join(", ")}")
             end
         end
     end
