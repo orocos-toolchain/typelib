@@ -7,8 +7,7 @@ class TC_CXX_CastXML < Minitest::Test
 
     def setup
         super
-        @loader = Typelib::CXX::CXX_LOADERS['gccxml']
-        importer_options[:castxml] = true
+        setup_loader 'gccxml', castxml: true, name: 'castxml'
     end
 end
 

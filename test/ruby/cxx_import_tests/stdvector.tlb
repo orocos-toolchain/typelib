@@ -23,23 +23,23 @@
 
   </compound>
   <container  name="/std/vector&lt;/double&gt;" of="/double" size="24" kind="/std/vector" >
- <metadata key="cxxname"><![CDATA[::std::vector<double,std::allocator<double> >]]></metadata>
+ <metadata key="cxxname"><![CDATA[::std::vector<double, std::allocator<double> >]]></metadata>
 
   </container>
   <container  name="/std/vector&lt;/float&gt;" of="/float" size="24" kind="/std/vector" >
-  <metadata key="cxxname"><![CDATA[::std::vector<float,std::allocator<float> >]]></metadata>
+  <metadata key="cxxname"><![CDATA[::std::vector<float, std::allocator<float> >]]></metadata>
 
   </container>
   <container  name="/std/vector&lt;/int32_t&gt;" of="/int32_t" size="24" kind="/std/vector" >
-  <metadata key="cxxname"><![CDATA[::std::vector<int,std::allocator<int> >]]></metadata>
+  <metadata key="cxxname"><![CDATA[::std::vector<int, std::allocator<int> >]]></metadata>
 
   </container>
   <container  name="/std/vector&lt;/timespec&gt;" of="/timespec" size="24" kind="/std/vector" >
-  <metadata key="cxxname"><![CDATA[::std::vector<timespec,std::allocator<timespec> >]]></metadata>
+  <metadata key="cxxname"><![CDATA[::std::vector<timespec, std::allocator<timespec> >]]></metadata>
 
   </container>
   <container  name="/std/vector&lt;/std/vector&lt;/int32_t&gt;&gt;" of="/std/vector&lt;/int32_t&gt;" size="24" kind="/std/vector" >
-  <metadata key="cxxname"><![CDATA[::std::vector<std::vector<int, std::allocator<int> >,std::allocator<std::vector<int, std::allocator<int> > > >]]></metadata>
+  <metadata key="cxxname"><![CDATA[::std::vector<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >]]></metadata>
 
   </container>
   <compound name="/stdvector/C1" size="48" >

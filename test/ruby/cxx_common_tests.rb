@@ -12,10 +12,10 @@ module CXXCommonTests
         @importer_options ||= Hash.new
     end
 
-    def setup_loader(loader_name, **options)
+    def setup_loader(loader_name, name: loader_name, **options)
         if loader = Typelib::CXX::CXX_LOADERS[loader_name]
             @loader = loader
-            @loader_name = loader_name
+            @loader_name = name
             importer_options.merge!(options)
         else
             raise ArgumentError, "unknown loader #{loader_name}"
