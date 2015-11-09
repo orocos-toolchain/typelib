@@ -1,0 +1,54 @@
+<?xml version='1.0'?>
+<typelib>
+    <numeric name='/double' category='float' size='8'>
+    </numeric>
+    <numeric name='/int32_t' category='sint' size='4'>
+    </numeric>
+    <numeric name='/uint64_t' category='uint' size='8'>
+    </numeric>
+    <compound name='/consts/C1' size='24'>
+        <field name='m1' type='/uint64_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[consts.hh:18]]>
+            </metadata>
+        </field>
+        <field name='m2' type='/uint64_t' offset='8'>
+            <metadata key='source_file_line'>
+                <![CDATA[consts.hh:19]]>
+            </metadata>
+        </field>
+        <field name='m3' type='/uint64_t' offset='16'>
+            <metadata key='source_file_line'>
+                <![CDATA[consts.hh:20]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::consts::C1]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[consts.hh:17]]>
+        </metadata>
+    </compound>
+    <compound name='/consts/C2' size='16'>
+        <field name='m1' type='/int32_t*' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[consts.hh:24]]>
+            </metadata>
+        </field>
+        <field name='m2' type='/double' offset='8'>
+            <metadata key='source_file_line'>
+                <![CDATA[consts.hh:25]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::consts::C2]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[consts.hh:23]]>
+        </metadata>
+    </compound>
+    <alias name='/consts/my_const_typedef' source='/uint64_t'/>
+    <alias name='/consts/my_other_const_typedef' source='/uint64_t'/>
+    <alias name='/consts/my_other_typedef' source='/uint64_t'/>
+    <alias name='/consts/my_typedef' source='/uint64_t'/>
+</typelib>
