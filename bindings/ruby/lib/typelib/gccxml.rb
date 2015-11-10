@@ -384,10 +384,11 @@ module Typelib
             if xmlnode['volatile'] == "1"
                 spec << 'volatile'
             end
-            name = resolve_type_id(xmlnode['type'])
-            qualified_name = "#{name} #{spec.join(" ")}"
-            id_to_name[xmlnode['id']] = qualified_name
-            return qualified_name, name
+            if name = resolve_type_id(xmlnode['type'])
+                qualified_name = "#{name} #{spec.join(" ")}"
+                id_to_name[xmlnode['id']] = qualified_name
+                return qualified_name, name
+            end
         end
 
         def source_file_for(xmlnode)
@@ -465,8 +466,11 @@ module Typelib
                 end
             elsif kind == "CvQualifiedType"
                 qualified_name, name = resolve_qualified_type(xmlnode)
-                registry.alias(qualified_name, name)
-                return name
+                if qualified_name
+                    registry.alias(qualified_name, name)
+                    return name
+                else return
+                end
             end
 
             if !(name = resolve_node_typelib_name(xmlnode))

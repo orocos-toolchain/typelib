@@ -25,6 +25,12 @@ namespace consts {
         const double m2;
     };
 
+    class IgnoredType {
+        int field;
+    };
+    struct C3 {
+        const IgnoredType field;
+    };
 }
 
 #endif /*TEST_HEADER_DATA_CONSTS_H*/
