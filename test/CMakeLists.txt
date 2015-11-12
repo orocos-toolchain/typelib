@@ -5,7 +5,7 @@ set_source_files_properties(test_containers.cc PROPERTIES
 
 CONFIGURE_FILE(testsuite.hh.in ${CMAKE_BINARY_DIR}/test/testsuite.hh @ONLY)
 ADD_EXECUTABLE(typelib_testsuite testsuite.cc
-    test_registry.cc
+    test_registry.cc test_value_ops_init.cc
     test_display.cc test_lang_tlb.cc test_model.cc
     test_plugin.cc test_value.cc test_containers.cc
     test_memory_layout.cc test_marshalling.cc ${TEST_LANG_C})

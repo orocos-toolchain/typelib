@@ -94,7 +94,7 @@ module Typelib
         # @return [#load,#preprocess] a loader object suitable for operating
         #   on C++ files
         def self.loader
-            if @loader
+            if instance_variable_defined?(:@loader)
                 @loader
             elsif cxx_loader_name = ENV['TYPELIB_CXX_LOADER']
                 cxx_loader = CXX_LOADERS[cxx_loader_name]

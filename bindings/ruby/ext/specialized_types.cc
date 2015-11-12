@@ -574,7 +574,7 @@ static VALUE container_erase(VALUE self, VALUE obj)
 
 bool container_delete_if_i(Value v, VALUE registry, VALUE container)
 {
-    VALUE rb_v = typelib_to_ruby(v, registry, container);
+    VALUE rb_v = cxx2rb::value_wrap(v, registry, container);
     return RTEST(rb_yield(rb_v));
 }
 
@@ -625,7 +625,7 @@ static VALUE vector_raw_memcpy(VALUE self,VALUE _source,VALUE _size)
     try
     {
         MemoryLayout ops = Typelib::layout_of(container_t.getIndirection());
-        is_memcpy = (ops.size() == 2 && ops[0] == MemLayout::FLAG_MEMCPY);
+        is_memcpy = ops.isMemcpy();
     }
     catch(std::runtime_error) { no_layout = true; }
     if(no_layout)

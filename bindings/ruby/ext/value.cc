@@ -262,6 +262,94 @@ static VALUE type_can_cast_to(VALUE self, VALUE to)
     return from_type.canCastTo(to_type) ? Qtrue : Qfalse;
 }
 
+static VALUE layout_to_ruby(VALUE registry, MemoryLayout::const_iterator begin, MemoryLayout::const_iterator end)
+{
+    VALUE result = rb_ary_new();
+
+    VALUE rb_memcpy = ID2SYM(rb_intern("FLAG_MEMCPY"));
+    VALUE rb_skip = ID2SYM(rb_intern("FLAG_SKIP"));
+    VALUE rb_array = ID2SYM(rb_intern("FLAG_ARRAY"));
+    VALUE rb_end = ID2SYM(rb_intern("FLAG_END"));
+    VALUE rb_container = ID2SYM(rb_intern("FLAG_CONTAINER"));
+
+    // Now, convert into something representable in Ruby
+    for (MemoryLayout::const_iterator it = begin; it != end; ++it)
+    {
+        switch(*it)
+        {
+            case MemLayout::FLAG_MEMCPY:
+                rb_ary_push(result, rb_memcpy);
+                rb_ary_push(result, LONG2NUM(*(++it)));
+                break;
+            case MemLayout::FLAG_SKIP:
+                rb_ary_push(result, rb_skip);
+                rb_ary_push(result, LONG2NUM(*(++it)));
+                break;
+            case MemLayout::FLAG_ARRAY:
+                rb_ary_push(result, rb_array);
+                rb_ary_push(result, LONG2NUM(*(++it)));
+                break;
+            case MemLayout::FLAG_END:
+                rb_ary_push(result, rb_end);
+                break;
+            case MemLayout::FLAG_CONTAINER:
+                rb_ary_push(result, rb_container);
+                rb_ary_push(result, cxx2rb::type_wrap(*reinterpret_cast<Container*>(*(++it)), registry));
+                break;
+            default:
+                rb_raise(rb_eArgError, "error encountered while parsing memory layout");
+        }
+    }
+
+    return result;
+}
+
+static VALUE init_layout_to_ruby(VALUE registry, MemoryLayout::const_iterator begin, MemoryLayout::const_iterator end)
+{
+    VALUE result = rb_ary_new();
+
+    VALUE rb_init = ID2SYM(rb_intern("FLAG_INIT"));
+    VALUE rb_skip = ID2SYM(rb_intern("FLAG_INIT_SKIP"));
+    VALUE rb_repeat = ID2SYM(rb_intern("FLAG_INIT_REPEAT"));
+    VALUE rb_end = ID2SYM(rb_intern("FLAG_INIT_END"));
+    VALUE rb_container = ID2SYM(rb_intern("FLAG_INIT_CONTAINER"));
+
+    // Now, convert into something representable in Ruby
+    for (MemoryLayout::const_iterator it = begin; it != end; ++it)
+    {
+        switch(*it)
+        {
+            case MemLayout::FLAG_INIT:
+                {
+                    rb_ary_push(result, rb_init);
+                    size_t size = *(++it);
+                    rb_ary_push(result, LONG2NUM(size));
+                    for (size_t i = 0; i < size; ++i)
+                        rb_ary_push(result, LONG2NUM(*(++it)));
+                }
+                break;
+            case MemLayout::FLAG_INIT_SKIP:
+                rb_ary_push(result, rb_skip);
+                rb_ary_push(result, LONG2NUM(*(++it)));
+                break;
+            case MemLayout::FLAG_INIT_REPEAT:
+                rb_ary_push(result, rb_repeat);
+                rb_ary_push(result, LONG2NUM(*(++it)));
+                break;
+            case MemLayout::FLAG_INIT_END:
+                rb_ary_push(result, rb_end);
+                break;
+            case MemLayout::FLAG_INIT_CONTAINER:
+                rb_ary_push(result, rb_container);
+                rb_ary_push(result, cxx2rb::type_wrap(*reinterpret_cast<Container*>(*(++it)), registry));
+                break;
+            default:
+                rb_raise(rb_eArgError, "error encountered while parsing memory layout");
+        }
+    }
+    return result;
+}
+
 /*
  *  type.do_memory_layout(VALUE accept_pointers, VALUE accept_opaques, VALUE merge_skip_copy, VALUE remove_trailing_skips) => [operations]
  *
@@ -274,50 +362,19 @@ static VALUE type_memory_layout(VALUE self, VALUE pointers, VALUE opaques, VALUE
     Type const& type(rb2cxx::object<Type>(self));
     VALUE registry = type_get_registry(self);
 
-    VALUE result = rb_ary_new();
-
-    VALUE rb_memcpy = ID2SYM(rb_intern("FLAG_MEMCPY"));
-    VALUE rb_skip = ID2SYM(rb_intern("FLAG_SKIP"));
-    VALUE rb_array = ID2SYM(rb_intern("FLAG_ARRAY"));
-    VALUE rb_end = ID2SYM(rb_intern("FLAG_END"));
-    VALUE rb_container = ID2SYM(rb_intern("FLAG_CONTAINER"));
-
+    MemoryLayout layout;
     try {
-        MemoryLayout layout = Typelib::layout_of(type, RTEST(pointers), RTEST(opaques), RTEST(merge), RTEST(remove_trailing_skips));
-
-        // Now, convert into something representable in Ruby
-        for (MemoryLayout::const_iterator it = layout.begin(); it != layout.end(); ++it)
-        {
-            switch(*it)
-            {
-                case MemLayout::FLAG_MEMCPY:
-                    rb_ary_push(result, rb_memcpy);
-                    rb_ary_push(result, LONG2NUM(*(++it)));
-                    break;
-                case MemLayout::FLAG_SKIP:
-                    rb_ary_push(result, rb_skip);
-                    rb_ary_push(result, LONG2NUM(*(++it)));
-                    break;
-                case MemLayout::FLAG_ARRAY:
-                    rb_ary_push(result, rb_array);
-                    rb_ary_push(result, LONG2NUM(*(++it)));
-                    break;
-                case MemLayout::FLAG_END:
-                    rb_ary_push(result, rb_end);
-                    break;
-                case MemLayout::FLAG_CONTAINER:
-                    rb_ary_push(result, rb_container);
-                    rb_ary_push(result, cxx2rb::type_wrap(*reinterpret_cast<Container*>(*(++it)), registry));
-                    break;
-                default:
-                    rb_raise(rb_eArgError, "error encountered while parsing memory layout");
-            }
-        }
-
+        layout = Typelib::layout_of(type, RTEST(pointers), RTEST(opaques), RTEST(merge), RTEST(remove_trailing_skips));
     } catch(std::exception const& e) {
         rb_raise(rb_eArgError, "%s", e.what());
     }
 
+    VALUE mem_layout = layout_to_ruby(registry, layout.begin(), layout.end());
+    VALUE init_layout = init_layout_to_ruby(registry, layout.init_begin(), layout.init_end());
+
+    VALUE result = rb_ary_new();
+    rb_ary_push(result, mem_layout);
+    rb_ary_push(result, init_layout);
     return result;
 }
 

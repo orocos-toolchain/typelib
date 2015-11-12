@@ -1,4 +1,5 @@
 require 'enumerator'
+require 'utilrb/object/address'
 require 'utilrb/logger'
 require 'utilrb/kernel/options'
 require 'utilrb/module/attr_predicate'

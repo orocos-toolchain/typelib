@@ -23,7 +23,7 @@ Vector::Vector(Type const& on)
 {
     try {
         MemoryLayout ops = Typelib::layout_of(on);
-        is_memcpy = (ops.size() == 2 && ops[0] == MemLayout::FLAG_MEMCPY);
+        is_memcpy = ops.isMemcpy();
     }
     catch(std::runtime_error)
     {

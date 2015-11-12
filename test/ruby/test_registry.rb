@@ -157,9 +157,6 @@ class TC_Registry < Minitest::Test
         assert_raises(ArgumentError) do
             reg.create_compound('NewCompound') { |t| t.field0 = 'int' }
         end
-        assert_raises(ArgumentError) do
-            reg.create_compound('/NewCompound') { |t| }
-        end
         assert_raises(Typelib::NotFound) do
             reg.create_compound('/NewCompound') { |t| t.field0 = 'this_is_an_unknown_type' }
         end
