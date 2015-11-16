@@ -269,6 +269,8 @@ module Typelib
             result
         end
 
+        NAMESPACE_NODE_TYPES = %w{Namespace Struct}
+
         # Given a full Typelib type name, returns a [name, id] pair where +name+
         # is the type's basename and +id+ the context ID (i.e. the GCCXML
         # namespace ID)
@@ -277,7 +279,7 @@ module Typelib
             while name =~ /^\/(\w+)\/(.*)/
                 ns   = "/#{$1}"
                 name = "/#{$2}"
-                candidates = info.name_to_nodes[ns].find_all { |n| n.name == "Namespace" }
+                candidates = info.name_to_nodes[ns].find_all { |n| NAMESPACE_NODE_TYPES.include?(n.name) }
                 if !context
                     context = candidates.to_a.first
                 else

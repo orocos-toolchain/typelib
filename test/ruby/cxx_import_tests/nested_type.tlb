@@ -1,0 +1,49 @@
+<?xml version='1.0'?>
+<typelib>
+    <numeric name='/int32_t' category='sint' size='4'>
+    </numeric>
+    <compound name='/nested_types/Outside' size='4'>
+        <field name='b' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[nested_type.hh:10]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::nested_types::Outside]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[nested_type.hh:4]]>
+        </metadata>
+    </compound>
+    <compound name='/nested_types/Outside/Inside' size='4'>
+        <field name='a' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[nested_type.hh:8]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::nested_types::Outside::Inside]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[nested_type.hh:6]]>
+        </metadata>
+    </compound>
+    <container name='/std/vector&lt;/nested_types/Outside/Inside&gt;' of='/nested_types/Outside/Inside' size='24' kind='/std/vector'>
+        <metadata key='cxxname'>
+            <![CDATA[::std::vector<nested_types::Outside::Inside, std::allocator<nested_types::Outside::Inside> >]]>
+        </metadata>
+    </container>
+    <compound name='/nested_types/User' size='24'>
+        <field name='vector' type='/std/vector&lt;/nested_types/Outside/Inside&gt;' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[nested_type.hh:15]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::nested_types::User]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[nested_type.hh:13]]>
+        </metadata>
+    </compound>
+</typelib>
