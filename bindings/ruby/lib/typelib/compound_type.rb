@@ -4,6 +4,10 @@ module Typelib
     # See the Typelib module documentation for an overview about how types are
     # values are represented.
     class CompoundType < Type
+
+        # Prefix for all instance variables based on the type fields
+        FIELD_NANE_PREFIX = '__typelib_'
+
         # Module used to extend frozen values
         module Freezer
             def set(*args)
@@ -77,7 +81,7 @@ module Typelib
             def invalidate_changes_from_converted_types
                 super()
                 self.class.converted_fields.each do |field_name|
-                    instance_variable_set("@#{field_name}", nil)
+                    instance_variable_set("@#{FIELD_NANE_PREFIX}#{field_name}", nil)
                     if @fields[field_name]
                         @fields[field_name].invalidate_changes_from_converted_types
                     end
@@ -87,7 +91,7 @@ module Typelib
             def apply_changes_from_converted_types
                 super()
                 self.class.converted_fields.each do |field_name|
-                    value = instance_variable_get("@#{field_name}")
+                    value = instance_variable_get("@#{FIELD_NANE_PREFIX}#{field_name}")
                     if !value.nil?
                         if @fields[field_name]
                             @fields[field_name].apply_changes_from_converted_types
@@ -100,13 +104,13 @@ module Typelib
             def dup
                 new_value = super()
                 for field_name in self.class.converted_fields
-                    converted_value = instance_variable_get("@#{field_name}")
+                    converted_value = instance_variable_get("@#{FIELD_NANE_PREFIX}#{field_name}")
                     if !converted_value.nil?
                         # false, nil,  numbers can't be dup'ed
                         if !DUP_FORBIDDEN.include?(converted_value.class)
                             converted_value = converted_value.dup
                         end
-                        instance_variable_set("@#{field_name}", converted_value)
+                        instance_variable_set("@#{FIELD_NANE_PREFIX}#{field_name}", converted_value)
                     end
                 end
                 new_value
@@ -177,7 +181,7 @@ module Typelib
                         include CustomConvertionsHandling
 
                         converted_fields.each do |field_name|
-                            attr_name = "@#{field_name}"
+                            attr_name = "@#{FIELD_NANE_PREFIX}#{field_name}"
                             define_method("#{field_name}=") do |value|
                                 instance_variable_set(attr_name, value)
                             end
