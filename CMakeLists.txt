@@ -6,6 +6,8 @@ PROJECT(typelib)
 SET(PROJECT_VERSION 1.1)
 SET(API_VERSION 1)
 
+FIND_PACKAGE ( Threads REQUIRED )
+
 # This changes the behaviour of list() w.r.t. empty elements. Typelib'cmake code
 # is compatible with the NEW policy, so just set it to avoid getting a cmake
 # warning
