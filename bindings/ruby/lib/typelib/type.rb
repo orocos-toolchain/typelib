@@ -122,6 +122,13 @@ module Typelib
                 recursive_dependencies.include?(type) || recursive_dependencies.any? { |t| t <= type }
         end
 
+        # Check for type equality
+        # In contrast to #==, which calls do_compare (in C++) to compare the 
+        # internal structure of the types, #eql? also compares the names of the types.
+        def self.eql?(other)
+	    self == other && name == other.name
+        end
+
         # @deprecated
         #
         # Replaced by {direct_dependencies}
