@@ -51,7 +51,7 @@ module Typelib
         end
 
         # Resolves all the values described by this path on +root+
-        def resolve(root, elements = elements.dup)
+        def resolve(root, elements = self.elements.dup)
             if elements.empty?
                 return [root]
             end
