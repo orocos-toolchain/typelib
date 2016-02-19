@@ -964,9 +964,9 @@ module Typelib
                 io.flush
 
                 if options[:castxml]
-                    call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
-                else
                     call = [castxml_binary_name, "--castxml-gccxml", "-E", *includes, *defines, *castxml_default_options, io.path] 
+                else
+                    call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
                 end
 
                 result = IO.popen(call) do |gccxml_io|
