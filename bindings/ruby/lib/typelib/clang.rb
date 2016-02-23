@@ -5,9 +5,9 @@ require 'rbconfig'
 
 module Typelib
     module CLangLoader
-	def self.macos?
-            RbConfig::CONFIG["host_os"] =~ %r!([Dd]arwin)!
-	end
+        def self.macos?
+                RbConfig::CONFIG["host_os"] =~ %r!([Dd]arwin)!
+        end
 
         # Imports the given C++ file into the registry using CLANG
         def self.load(registry, file, kind, options)
@@ -29,6 +29,13 @@ module Typelib
             
             include_dirs = options[:include_paths] || []
             include_path = include_dirs.map { |d| "-I#{d}" }
+            defines = options[:define] || []
+            #add -D to the defines, if its missing
+            defines.each do |define|
+                if not define.start_with? '-D'
+                    define.prepend('-D')
+                end
+            end
 
             # which files actually to operate on
             #
@@ -51,22 +58,24 @@ module Typelib
                     # compare the output of "echo '#include <stdarg.h>'|clang -xc -v -"
                     # and read here:
                     #   https://github.com/Valloric/YouCompleteMe/issues/303#issuecomment-17656962
-		    command_line =
-			['typelib-clang-tlb-importer',
-			 "-silent",
-			 "-opaquePath=#{opaque_registry_io.path}",
-			 "-tlbSavePath=#{clang_output_io.path}",
-			 *header_files,
-			 '--',
-			 *include_path,
-			 "-x", "c++"]
+                    command_line =
+                    ['typelib-clang-tlb-importer',
+                    "-silent",
+                    "-opaquePath=#{opaque_registry_io.path}",
+                    "-tlbSavePath=#{clang_output_io.path}",
+                    *header_files,
+                    '--',
+                    *include_path,
+                    "-x",
+                    "c++",
+                    *defines]
 
-		    if macos?
+                    if macos?
                         command_line <<  '-resource-dir=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0'
                         command_line <<  '-stdlib=libc++'
-		    else
+                    else
                         command_line << '-isystem/usr/bin/../lib/clang/3.4/include'
-		    end
+                    end
 
                     # and finally call importer-tool
                     if !system(*command_line)
