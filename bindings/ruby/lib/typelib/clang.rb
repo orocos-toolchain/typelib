@@ -6,7 +6,7 @@ require 'rbconfig'
 module Typelib
     module CLangLoader
         def self.macos?
-                RbConfig::CONFIG["host_os"] =~ %r!([Dd]arwin)!
+            RbConfig::CONFIG["host_os"] =~ %r!([Dd]arwin)!
         end
 
         # Imports the given C++ file into the registry using CLANG
@@ -30,12 +30,8 @@ module Typelib
             include_dirs = options[:include_paths] || []
             include_path = include_dirs.map { |d| "-I#{d}" }
             defines = options[:define] || []
-            #add -D to the defines, if its missing
-            defines.each do |define|
-                if not define.start_with? '-D'
-                    define.prepend('-D')
-                end
-            end
+            #add -D to the defines
+            defines = defines.map { |d| "-D#{d}" }
 
             # which files actually to operate on
             #
@@ -59,16 +55,16 @@ module Typelib
                     # and read here:
                     #   https://github.com/Valloric/YouCompleteMe/issues/303#issuecomment-17656962
                     command_line =
-                    ['typelib-clang-tlb-importer',
-                    "-silent",
-                    "-opaquePath=#{opaque_registry_io.path}",
-                    "-tlbSavePath=#{clang_output_io.path}",
-                    *header_files,
-                    '--',
-                    *include_path,
-                    "-x",
-                    "c++",
-                    *defines]
+                        ['typelib-clang-tlb-importer',
+                        "-silent",
+                        "-opaquePath=#{opaque_registry_io.path}",
+                        "-tlbSavePath=#{clang_output_io.path}",
+                        *header_files,
+                        '--',
+                        *include_path,
+                        "-x",
+                        "c++",
+                        *defines]
 
                     if macos?
                         command_line <<  '-resource-dir=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0'
