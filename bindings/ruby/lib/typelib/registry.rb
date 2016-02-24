@@ -347,6 +347,29 @@ module Typelib
                 end
             end
         end
+        
+        # Creates a new numeric type with the given name
+        #
+        # @param [String] name the type name
+        # @param [Integer] size the type size in bytes
+        # @param [Symbol] category the type category, one of :sint, :uint or
+        #   :float
+        #
+        # @example create a new numeric type
+        #
+        #   registry.create_numeric "/double", size, float: true
+        #
+        def create_numeric(name, size, category)
+            int_category =
+                case category
+                when :sint then 0
+                when :uint then 1
+                when :float then 2
+                else raise ArgumentError, "invalid category #{category}, should be one of :sint, :uint or :float"
+                end
+
+            do_create_numeric(name, size, int_category)
+        end
 
         # Creates a new compound type with the given name on this registry
         #

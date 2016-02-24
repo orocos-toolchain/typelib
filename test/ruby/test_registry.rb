@@ -105,6 +105,32 @@ class TC_Registry < Minitest::Test
         assert_raises(ArgumentError) { Typelib::Registry.from_xml(test) }
     end
 
+    def test_create_numeric_sint
+        reg = make_registry
+        t = reg.create_numeric('/NewSInt', 2, :sint)
+        assert_equal '/NewSInt', t.name
+        assert_equal 2, t.size
+        assert t.integer?
+        assert !t.unsigned?
+    end
+
+    def test_create_numeric_uint
+        reg = make_registry
+        t = reg.create_numeric('/NewUInt', 3, :uint)
+        assert_equal '/NewUInt', t.name
+        assert_equal 3, t.size
+        assert t.integer?
+        assert t.unsigned?
+    end
+
+    def test_create_numeric_float
+        reg = make_registry
+        t = reg.create_numeric('/NewFloat', 4, :float)
+        assert_equal '/NewFloat', t.name
+        assert_equal 4, t.size
+        assert !t.integer?
+    end
+
     def test_create_enum
         reg = make_registry
         t = reg.create_enum('/NewEnum') do |enum_t|
