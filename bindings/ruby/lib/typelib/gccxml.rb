@@ -657,7 +657,7 @@ module Typelib
                 info.name_to_nodes[basename].
                     find do |node|
                         (node['context'].to_s == context) &&
-                            !node_type || (node.name == node_type)
+                            (!node_type || (node.name == node_type))
                     end
             end
         end
