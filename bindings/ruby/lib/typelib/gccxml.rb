@@ -497,6 +497,11 @@ module Typelib
             normalized_name = normalize_type_name(name)
             id_to_name[id]  = normalized_name
 
+            access_specifier = xmlnode['access']
+            if access_specifier && (access_specifier != 'public')
+                return ignore(xmlnode, "ignoring #{name} as it has a non-public access specifier: #{access_specifier}")
+            end
+
             if kind == "Struct" || kind == "Class"
                 type_name, template_args = CXX.parse_template(name)
                 if type_name == "/std/string"
