@@ -269,16 +269,77 @@ module Typelib
             result
         end
 
-        NAMESPACE_NODE_TYPES = %w{Namespace Struct}
+        def self.split_first_namespace(typename)
+            basename  = typename[1..-1]
+            namespace = "/"
+            level = 0
+            while true
+                next_marker = (basename =~ /[\/<>]/)
+                break if !next_marker
+
+                namespace << basename[0, next_marker + 1]
+                basename  = basename[(next_marker + 1)..-1]
+
+                found_char = namespace[-1, 1]
+                if found_char == '/'
+                    break if level == 0
+                elsif found_char == '<'
+                    level += 1
+                elsif found_char == '>'
+                    level -= 1
+                end
+            end
+
+            if basename.empty?
+                return ['/', namespace[1..-1]]
+            else
+                return namespace, basename
+            end
+        end
+
+        def self.split_last_namespace(name)
+            basename = ""
+            typename = name.reverse
+            level = 0
+            while true
+                next_marker = (typename =~ /[\/<>]/)
+                if !next_marker
+                    basename << typename
+                    typename = ""
+                    break
+                end
+
+                basename << typename[0, next_marker]
+                typename = typename[next_marker..-1]
+
+                found_char = typename[0, 1]
+                if found_char == '/'
+                    break if level == 0
+                elsif found_char == '<'
+                    level += 1
+                elsif found_char == '>'
+                    level -= 1
+                end
+
+                basename << found_char
+                typename = typename[1..-1]
+            end
+
+            return typename.reverse, basename.reverse
+        end
+
+        NAMESPACE_NODE_TYPES = %w{Namespace Struct Class}
 
         # Given a full Typelib type name, returns a [name, id] pair where +name+
         # is the type's basename and +id+ the context ID (i.e. the GCCXML
         # namespace ID)
         def resolve_namespace_of(name)
             context = nil
-            while name =~ /^\/(\w+)\/(.*)/
-                ns   = "/#{$1}"
-                name = "/#{$2}"
+            while true
+                ns, name = GCCXMLLoader.split_first_namespace(name)
+                name = "/#{name}"
+                break if ns == '/'
+                ns   = ns[0..-2]
                 candidates = info.name_to_nodes[ns].find_all { |n| NAMESPACE_NODE_TYPES.include?(n.name) }
                 if !context
                     context = candidates.to_a.first
@@ -512,6 +573,7 @@ module Typelib
                     if !registry.include?(contained_type)
                         contained_node = find_node_by_name(contained_type)
                         if !contained_node
+                            contained_node = find_node_by_name(contained_type)
                             raise "Internal error: cannot find definition for #{contained_type}, element of #{name}"
                         end
                         if ignored?(contained_node["id"])
