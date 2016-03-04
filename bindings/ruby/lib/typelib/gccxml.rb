@@ -915,7 +915,7 @@ module Typelib
         #figure out the correct gccxml binary name, debian has changed this name 
         #to gccxml.real
         def self.gcc_binary_name
-            if !`which gccxml.real`.empty?
+            if !`which gccxml.real > /dev/null 2>&1`.empty?
                 return "gccxml.real"
             end
             return "gccxml"
