@@ -922,11 +922,7 @@ module Typelib
         end
 
         def self.castxml_binary_name
-            if !`which castxml`.empty?
-                return "castxml"
-            end
-            return "gccxml"
-
+            return "castxml"
         end
         # Runs castxml on the provided file and with the given options, and
         # return the Nokogiri::XML object representing the result
