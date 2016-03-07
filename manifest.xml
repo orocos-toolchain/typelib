@@ -17,6 +17,7 @@
 
   <depend package="utilrb" />
   <depend_optional package="clang-3.4" />
+  <depend_optional package="castxml" />
   <rosdep name="gccxml" />
   <rosdep name="boost" />
   <rosdep name="facets" />
