@@ -365,6 +365,7 @@ module Typelib
                 return
             else
                 name = node['name']
+                name = name.gsub(/0x0+/, '')
                 if !cxx
                     # Convert to typelib conventions, and remove the leading
                     # slash
