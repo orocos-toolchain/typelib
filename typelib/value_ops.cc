@@ -250,18 +250,21 @@ void Typelib::copy(Value dst, Value src)
     copy(dst.getData(), src.getData(), src.getType());
 }
 
-void Typelib::copy(void* dst, void* src, Type const& type)
+void Typelib::copy(void* dst, void* src, MemoryLayout const& ops)
 {
     if (dst == src)
     {
         // same object, nothing to do
         return;
     }
-
     boost::uint8_t* out_buffer = reinterpret_cast< boost::uint8_t* >(dst);
     boost::uint8_t* in_buffer  = reinterpret_cast< boost::uint8_t* >(src);
-    MemoryLayout ops = layout_of(type);
     ValueOps::copy(out_buffer, in_buffer, ops.begin(), ops.end());
+}
+
+void Typelib::copy(void* dst, void* src, Type const& type)
+{
+    return copy(dst, src, layout_of(type));
 }
 
 bool Typelib::compare(Value dst, Value src)

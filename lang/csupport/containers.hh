@@ -2,19 +2,25 @@
 #define TYPELIB_LANG_C_CONTAINERS_HH
 
 #include <typelib/typemodel.hh>
+#include <typelib/memory_layout.hh>
 
 class Vector : public Typelib::Container
 {
-    bool is_memcpy;
     using Typelib::Container::resize;
     void resize(std::vector<uint8_t>* ptr, size_t new_size) const;
     void copy(std::vector<uint8_t>* dst_ptr, size_t dst_idx, std::vector<uint8_t>* src_ptr, size_t src_idx, size_t count) const;
     void erase(std::vector<uint8_t>* ptr, size_t idx) const;
     std::string getIndirectTypeName(std::string const& element_name) const;
 
+    Typelib::MemoryLayout element_layout;
+
 public:
     static std::string fullName(std::string const& element_name);
     Vector(Typelib::Type const& on);
+
+    static Typelib::MemoryLayout getElementLayout(Type const& element_t);
+    bool hasElementLayout() const;
+    bool isElementMemcpy() const;
 
     bool isRandomAccess() const;
     void setElement(void* ptr, int idx, Typelib::Value value) const;
