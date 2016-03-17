@@ -930,7 +930,7 @@ module Typelib
         #
         # Raises RuntimeError if casrxml failed to run
         def self.castxml(file, options)
-            cmdline = [castxml_binary_name, *castxml_default_options, "--castxml-gccxml", '-x', 'c++', '-std=c++11']
+            cmdline = [castxml_binary_name, *castxml_default_options, "--castxml-gccxml", '-x', 'c++']
             required_files = (options[:required_files] || [file])
             if raw = options[:rawflags]
                 cmdline.concat(raw)
