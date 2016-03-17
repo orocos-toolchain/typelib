@@ -911,7 +911,7 @@ module Typelib
             attr_reader :castxml_default_options
         end
         @gccxml_default_options = Shellwords.split(ENV['TYPELIB_GCCXML_DEFAULT_OPTIONS'] || '-DEIGEN_DONT_VECTORIZE')
-        @castxml_default_options = Shellwords.split(ENV['TYPELIB_CASTXML_DEFAULT_OPTIONS'] || '-DEIGEN_DONT_VECTORIZE')
+        @castxml_default_options = Shellwords.split(ENV['TYPELIB_CASTXML_DEFAULT_OPTIONS'] || '')
 
         #figure out the correct gccxml binary name, debian has changed this name 
         #to gccxml.real
