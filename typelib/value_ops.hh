@@ -53,6 +53,7 @@ namespace Typelib
 
     struct OutputStream
     {
+        virtual ~OutputStream() {}
         virtual void write(uint8_t const* data, size_t size) = 0;
     };
     void dump(Value v, OutputStream& stream);
@@ -66,6 +67,7 @@ namespace Typelib
 
     struct InputStream
     {
+        virtual ~InputStream() {}
         virtual void read(uint8_t* data, size_t size) = 0;
     };
     void load(Value v, InputStream& stream);

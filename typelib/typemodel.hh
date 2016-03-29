@@ -517,6 +517,7 @@ namespace Typelib
     protected:
         struct DeleteIfPredicate
         {
+            virtual ~DeleteIfPredicate() {}
             virtual bool should_delete(Value const& v) = 0;
         };
 
