@@ -216,7 +216,7 @@ namespace Typelib
         return result.release();
     }
 
-    Registry* Registry::minimal(Registry const& auto_types) const
+    Registry* Registry::minimal(Registry const& auto_types, bool keep_auto_aliases) const
     {
         auto_ptr<Registry> result(new Registry);
  
@@ -235,7 +235,7 @@ namespace Typelib
 	    // we must check that it is the same concrete type, or
 	    // we have to add the alias
 	    if (!it.isAlias()) continue;
-            if (auto_types.has(it.getName())) continue;
+            if (!keep_auto_aliases && auto_types.has(it.getName())) continue;
             // Do not continue if it is a typedef on a type that we don't need
             if (!result->has(it->getName(), false)) continue;
 
@@ -251,6 +251,8 @@ namespace Typelib
 	    }
 	}
 
+        result->copySourceIDs(*this);
+        result->mergeMetaData(*this);
         return result.release();
     }
 

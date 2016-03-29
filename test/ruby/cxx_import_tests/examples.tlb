@@ -1,0 +1,18 @@
+<?xml version='1.0'?>
+<typelib>
+    <numeric name='/int32_t' category='sint' size='4'>
+    </numeric>
+    <compound name='/examples/MultiArrayStruct' size='16'>
+        <field name='array' type='/int32_t[2][2]' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[examples.hh:9]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::examples::MultiArrayStruct]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[examples.hh:8]]>
+        </metadata>
+    </compound>
+</typelib>

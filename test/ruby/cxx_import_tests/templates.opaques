@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<typelib>
+
+  <opaque name="/templates/C1&lt;/double&gt;" size="0"/>
+<!--
+wanna test if the explicit template instantiation for the float-variant is
+found with the correct source_file_line property
+-->
+  <opaque name="/templates/C1&lt;/float&gt;" size="0"/>
+
+</typelib>

@@ -25,6 +25,9 @@ namespace Typelib
         Undefined(const std::string& name)
             : RegistryException("undefined type '" + name + "'")
             , m_name(name) {}
+        Undefined(const std::string& name, const std::string& msg)
+            : RegistryException("undefined type '" + name + "': " + msg)
+            , m_name(name) {}
         ~Undefined() throw() {}
 
         std::string getName() const { return m_name; }
@@ -274,8 +277,14 @@ namespace Typelib
         Registry* minimal(std::string const& name, bool with_aliases = true) const;
 
         /** Returns a registry containing the minimal set of types needed to
-         * define the types that are in \c this and not in \c auto_types */
-        Registry* minimal(Registry const& auto_types) const;
+         * define the types that are in \c this and not in \c auto_types
+         *
+         * @param with_auto_aliases if false (the default), aliases defined in
+         *   @c auto_types will not be included in the generated registry. If
+         *   false, these aliases that point to types part of the minimal
+         *   registry will be added
+         */
+        Registry* minimal(Registry const& auto_types, bool with_auto_aliases = false) const;
 
         /** Compares the two registries. Returns true if they contain the same
          * set of types, referenced under the same name

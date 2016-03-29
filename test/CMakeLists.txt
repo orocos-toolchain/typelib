@@ -8,7 +8,7 @@ ADD_EXECUTABLE(typelib_testsuite testsuite.cc
     test_registry.cc test_value_ops_init.cc
     test_display.cc test_lang_tlb.cc test_model.cc
     test_plugin.cc test_value.cc test_containers.cc
-    test_memory_layout.cc test_marshalling.cc ${TEST_LANG_C})
+    test_memory_layout.cc test_marshalling.cc test_typebuilder.cc)
 
 TARGET_LINK_LIBRARIES(typelib_testsuite typeLib typeLang_cSupport ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} ${Boost_SYSTEM_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 if (ENABLE_INTERNAL_CPARSER)

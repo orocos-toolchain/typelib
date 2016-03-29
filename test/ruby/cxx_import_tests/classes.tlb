@@ -1,0 +1,217 @@
+<?xml version='1.0'?>
+<typelib>
+    <opaque name='/classes/C1' size='0'>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::C1]]>
+        </metadata>
+        <metadata key='doc'>
+            <![CDATA[The C* classes are opaques ... verify that the cxxname and
+source_file_line metadata are properly set]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:82]]>
+        </metadata>
+    </opaque>
+    <opaque name='/classes/C2' size='0'>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::C2]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:83]]>
+        </metadata>
+    </opaque>
+    <opaque name='/classes/C3' size='0'>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::C3]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:84]]>
+        </metadata>
+    </opaque>
+    <numeric name='/int32_t' category='sint' size='4'>
+    </numeric>
+    <numeric name='/int64_t' category='sint' size='8'>
+    </numeric>
+    <compound name='/S1' size='16'>
+        <field name='l' type='/int64_t[2]' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:10]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::S1]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:10]]>
+        </metadata>
+    </compound>
+    <compound name='/classes/BaseClass' size='4'>
+        <field name='a' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:17]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::BaseClass]]>
+        </metadata>
+        <metadata key='doc'>
+            <![CDATA[we have a base-class with a member]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:15]]>
+        </metadata>
+    </compound>
+    <compound name='/classes/FirstLevel' size='4'>
+        <field name='a' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:17]]>
+            </metadata>
+        </field>
+        <metadata key='base_classes'>
+            <![CDATA[/classes/BaseClass]]>
+        </metadata>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::FirstLevel]]>
+        </metadata>
+        <metadata key='doc'>
+            <![CDATA[an inheriting class which adds nothing to the interface]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:28]]>
+        </metadata>
+    </compound>
+    <compound name='/classes/Left' size='4'>
+        <field name='a' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:40]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::Left]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:37]]>
+        </metadata>
+    </compound>
+    <compound name='/classes/MultipleInheritance' size='12'>
+        <field name='a' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:40]]>
+            </metadata>
+        </field>
+        <field name='b' type='/int32_t' offset='4'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:46]]>
+            </metadata>
+        </field>
+        <field name='c' type='/int32_t' offset='8'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:52]]>
+            </metadata>
+        </field>
+        <metadata key='base_classes'>
+            <![CDATA[/classes/Left]]>
+        </metadata>
+        <metadata key='base_classes'>
+            <![CDATA[/classes/Right]]>
+        </metadata>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::MultipleInheritance]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:49]]>
+        </metadata>
+    </compound>
+    <compound name='/classes/NextLevel' size='8'>
+        <field name='a' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:17]]>
+            </metadata>
+        </field>
+        <field name='b' type='/int32_t' offset='4'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:34]]>
+            </metadata>
+        </field>
+        <metadata key='base_classes'>
+            <![CDATA[/classes/FirstLevel]]>
+        </metadata>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::NextLevel]]>
+        </metadata>
+        <metadata key='doc'>
+            <![CDATA[and finally someone adding another int.]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:32]]>
+        </metadata>
+    </compound>
+    <compound name='/classes/NextWith_anonymous_InName' size='12'>
+        <field name='a' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:17]]>
+            </metadata>
+        </field>
+        <field name='b' type='/int32_t' offset='4'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:34]]>
+            </metadata>
+        </field>
+        <field name='spamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspamspam' type='/int32_t' offset='8'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:57]]>
+            </metadata>
+        </field>
+        <metadata key='base_classes'>
+            <![CDATA[/classes/NextLevel]]>
+        </metadata>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::NextWith_anonymous_InName]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:55]]>
+        </metadata>
+    </compound>
+    <compound name='/classes/Right' size='4'>
+        <field name='b' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:46]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::Right]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:43]]>
+        </metadata>
+    </compound>
+    <compound name='/classes/StructWithAnonStruct/secondAnonVariant' size='4'>
+        <field name='e' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:75]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::StructWithAnonStruct::secondAnonVariant]]>
+        </metadata>
+        <metadata key='doc'>
+            <![CDATA[this is exported]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:74]]>
+        </metadata>
+    </compound>
+    <compound name='/classes/With_sizeof_InName' size='4'>
+        <field name='holymolymotherfucker' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[classes.hh:61]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::classes::With_sizeof_InName]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[classes.hh:60]]>
+        </metadata>
+    </compound>
+</typelib>

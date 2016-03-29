@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/double" category="float" size="8" >
+  
+  </numeric>
+  <numeric name="/float" category="float" size="4" >
+  
+  </numeric>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <numeric name="/int64_t" category="sint" size="8" >
+  
+  </numeric>
+  <compound name="/timespec" size="16" >
+    <field name="tv_sec" type="/int64_t" offset="0">
+    
+    </field>
+    <field name="tv_nsec" type="/int64_t" offset="8">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[::timespec]]></metadata>
+
+  </compound>
+  <container  name="/std/vector&lt;/double&gt;" of="/double" size="24" kind="/std/vector" >
+ <metadata key="cxxname"><![CDATA[::std::vector<double, std::allocator<double> >]]></metadata>
+
+  </container>
+  <container  name="/std/vector&lt;/float&gt;" of="/float" size="24" kind="/std/vector" >
+  <metadata key="cxxname"><![CDATA[::std::vector<float, std::allocator<float> >]]></metadata>
+
+  </container>
+  <container  name="/std/vector&lt;/int32_t&gt;" of="/int32_t" size="24" kind="/std/vector" >
+  <metadata key="cxxname"><![CDATA[::std::vector<int, std::allocator<int> >]]></metadata>
+
+  </container>
+  <container  name="/std/vector&lt;/timespec&gt;" of="/timespec" size="24" kind="/std/vector" >
+  <metadata key="cxxname"><![CDATA[::std::vector<timespec, std::allocator<timespec> >]]></metadata>
+
+  </container>
+  <container  name="/std/vector&lt;/std/vector&lt;/int32_t&gt;&gt;" of="/std/vector&lt;/int32_t&gt;" size="24" kind="/std/vector" >
+  <metadata key="cxxname"><![CDATA[::std::vector<std::vector<int, std::allocator<int> >, std::allocator<std::vector<int, std::allocator<int> > > >]]></metadata>
+
+  </container>
+  <compound name="/stdvector/C1" size="48" >
+    <field name="v" type="/std/vector&lt;/double&gt;[2]" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[::stdvector::C1]]></metadata>
+<metadata key="source_file_line"><![CDATA[stdvector.hh:35]]></metadata>
+
+  </compound>
+  <compound name="/stdvector/S1" size="32" >
+    <field name="a" type="/int32_t" offset="0">
+    
+    </field>
+    <field name="v1" type="/std/vector&lt;/float&gt;" offset="8">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[::stdvector::S1]]></metadata>
+<metadata key="source_file_line"><![CDATA[stdvector.hh:14]]></metadata>
+
+  </compound>
+  <compound name="/stdvector/S2" size="24" >
+    <field name="v1" type="/std/vector&lt;/timespec&gt;" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[::stdvector::S2]]></metadata>
+<metadata key="source_file_line"><![CDATA[stdvector.hh:20]]></metadata>
+
+  </compound>
+  <compound name="/stdvector/S3" size="24" >
+    <field name="v2" type="/std/vector&lt;/double&gt;" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[::stdvector::S3]]></metadata>
+<metadata key="source_file_line"><![CDATA[stdvector.hh:25]]></metadata>
+
+  </compound>
+  <compound name="/stdvector/S4" size="24" >
+    <field name="vecOfVec" type="/std/vector&lt;/std/vector&lt;/int32_t&gt;&gt;" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[::stdvector::S4]]></metadata>
+<metadata key="source_file_line"><![CDATA[stdvector.hh:30]]></metadata>
+
+  </compound>
+  <alias name="/stdvector/myvec" source="/std/vector&lt;/double&gt;"/>
+</typelib>

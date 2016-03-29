@@ -75,6 +75,7 @@ module Typelib
 
         CXX_LOADERS = Hash[
             'gccxml' => GCCXMLLoader,
+            'castxml' => CastXMLLoader,
             'clang'  => CLangLoader
         ]
 
@@ -109,8 +110,11 @@ module Typelib
 
         # Loads a C++ file and imports it in the given registry, based on the
         # current C++ importer setting
-        def self.load(registry, file, kind, options)
-            loader.load(registry, file, kind, options)
+        def self.load(registry, file, kind, cxx_importer: self.loader, **options)
+            if cxx_importer.respond_to?(:to_str)
+                cxx_importer = CXX_LOADERS[cxx_importer]
+            end
+            cxx_importer.load(registry, file, kind, options)
         end
 
         def self.preprocess(files, kind, options)

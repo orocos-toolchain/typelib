@@ -1,0 +1,61 @@
+<?xml version='1.0'?>
+<typelib>
+    <numeric name='/int32_t' category='sint' size='4'>
+    </numeric>
+    <opaque name='/ns_opaques/C1' size='0'>
+        <metadata key='cxxname'>
+            <![CDATA[::ns_opaques::C1]]>
+        </metadata>
+        <metadata key='doc'>
+            <![CDATA[this class has a pointer, which should prevent it from beeing added to
+the database. however, we added an entry into "opaques.opaques" where
+the class is named, so it has to be be added.]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[opaques.hh:14]]>
+        </metadata>
+    </opaque>
+    <opaque name='/ns_opaques/C4&lt;/float&gt;' size='0'>
+        <metadata key='cxxname'>
+            <![CDATA[::ns_opaques::C4<float>]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[opaques.hh:43]]>
+        </metadata>
+    </opaque>
+    <opaque name='/ns_opaques/C5&lt;/float,/int&gt;' size='0'>
+        <metadata key='cxxname'>
+            <![CDATA[::ns_opaques::C5<float, int>]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[opaques.hh:54]]>
+        </metadata>
+    </opaque>
+    <compound name='/ns_opaques/cruft' size='16'>
+        <field name='data' type='/int32_t[4]' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[opaques.hh:8]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::ns_opaques::cruft]]>
+        </metadata>
+        <metadata key='doc'>
+            <![CDATA[so that we have a database, no matter what]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[opaques.hh:7]]>
+        </metadata>
+    </compound>
+    <opaque name='/ns_opaques/typedef_of_C3' size='0'>
+        <metadata key='cxxname'>
+            <![CDATA[::ns_opaques::typedef_of_C3]]>
+        </metadata>
+        <metadata key='opaque_is_typedef'>
+            <![CDATA[1]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[opaques.hh:34]]>
+        </metadata>
+    </opaque>
+</typelib>
