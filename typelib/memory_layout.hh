@@ -46,6 +46,7 @@ namespace Typelib
         const_iterator begin() const { return ops.begin(); }
         const_iterator end() const   { return ops.end(); }
         size_t size() const { return ops.size(); }
+        bool isEmpty() const { return ops.empty(); }
 
         Ops init_ops;
         const_iterator init_begin() const { return init_ops.begin(); }

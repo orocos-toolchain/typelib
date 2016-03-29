@@ -21,6 +21,7 @@ namespace Typelib
 
     void copy(Value dst, Value src);
     void copy(void* dst, void* src, Type const& type);
+    void copy(void* dst, void* src, MemoryLayout const& ops);
 
     bool compare(Value dst, Value src);
     bool compare(void* dst, void* src, Type const& type);
