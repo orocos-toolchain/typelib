@@ -30,7 +30,12 @@ static void addStandardTypes(Typelib::Registry& r)
         r.alias(normalized_type_name, "/char");
     r.alias(normalized_type_name, "/unsigned char");
 
-    normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<wchar_t>::digits + 1) + "_t";
+    if(std::numeric_limits<wchar_t>::is_signed)
+    {
+        normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<wchar_t>::digits + 1) + "_t";
+    } else {
+        normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<wchar_t>::digits) + "_t";
+    }
     r.alias(normalized_type_name, "/wchar_t");
 
     normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<short int>::digits + 1) + "_t";
