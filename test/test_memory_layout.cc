@@ -23,14 +23,20 @@ void REQUIRE_LAYOUT_EQUALS(size_t* begin, size_t* end, MemoryLayout const& layou
 {
     BOOST_REQUIRE_EQUAL(end - begin, layout.ops.size());
     for (size_t* it = begin; it != end; ++it)
+    {
+        BOOST_TEST_MESSAGE("checking layout element " << it - begin);
         BOOST_REQUIRE_EQUAL(*it, layout.ops[it - begin]);
+    }
 }
 
 void REQUIRE_INIT_EQUALS(size_t* begin, size_t* end, MemoryLayout const& layout)
 {
     BOOST_REQUIRE_EQUAL(end - begin, layout.init_ops.size());
     for (size_t* it = begin; it != end; ++it)
+    {
+        BOOST_TEST_MESSAGE("checking init element " << it - begin);
         BOOST_REQUIRE_EQUAL(*it, layout.init_ops[it - begin]);
+    }
 }
 
 void REQUIRE_INIT_EMPTY(MemoryLayout const& layout)
@@ -302,9 +308,22 @@ BOOST_AUTO_TEST_CASE( test_simplifies_merges_consecutive_memcpy )
     MemoryLayout layout;
     layout.pushMemcpy(10);
     layout.pushMemcpy(20);
-    MemoryLayout result = layout.simplify(false);
+    MemoryLayout result = layout.simplify(false, false);
     size_t expected[] = { FLAG_MEMCPY, 30 };
     REQUIRE_LAYOUT_EQUALS(expected, expected + 2, result);
+}
+
+BOOST_AUTO_TEST_CASE( test_it_does_not_mistake_an_element_that_looks_like_a_skip_when_removing_trailing_skips )
+{
+    MemoryLayout first_element;
+    first_element.pushMemcpy(FLAG_SKIP);
+
+    MemoryLayout layout;
+    layout.pushArray(10, first_element);
+
+    layout = layout.simplify(true, true);
+    size_t expected[] = { FLAG_MEMCPY, 10 * FLAG_SKIP };
+    REQUIRE_LAYOUT_EQUALS(expected, expected + 2, layout);
 }
 
 BOOST_AUTO_TEST_CASE( test_it_does_not_mistake_something_looking_like_a_typecode_when_simplifying )
@@ -323,7 +342,7 @@ BOOST_AUTO_TEST_CASE( test_it_does_not_mistake_something_looking_like_a_typecode
     layout.pushArray(10, second_element);
     layout.pushMemcpy(20);
 
-    MemoryLayout result = layout.simplify(true);
+    MemoryLayout result = layout.simplify(true, false);
     size_t expected[] = { FLAG_MEMCPY, 10 * (MemLayout::FLAG_ARRAY + 1) + 10 * 10 + 20 };
     REQUIRE_LAYOUT_EQUALS(expected, expected + 2, result);
     size_t init_expected[] = {
@@ -344,7 +363,7 @@ BOOST_AUTO_TEST_CASE( test_simplifies_converts_simple_arrays_to_memcpy )
         layout.pushMemcpy(21);
     layout.pushEnd();
     layout.pushMemcpy(22);
-    MemoryLayout result = layout.simplify(false);
+    MemoryLayout result = layout.simplify(false, false);
     size_t expected[] = { FLAG_MEMCPY, 442 };
     REQUIRE_LAYOUT_EQUALS(expected, expected + 2, result);
 }
@@ -356,7 +375,7 @@ BOOST_AUTO_TEST_CASE( test_simplifies_removes_empty_arrays )
     MemoryLayout array_ops;
     layout.pushArray(10, array_ops);
     layout.pushMemcpy(22);
-    MemoryLayout result = layout.simplify(false);
+    MemoryLayout result = layout.simplify(false, false);
     size_t expected[] = { FLAG_MEMCPY, 32 };
     REQUIRE_LAYOUT_EQUALS(expected, expected + 2, result);
     REQUIRE_INIT_EMPTY(result);
@@ -375,7 +394,7 @@ BOOST_AUTO_TEST_CASE( test_simplifies_converts_recursive_arrays_to_memcpy )
         layout.pushMemcpy(15);
     layout.pushEnd();
     layout.pushMemcpy(22);
-    MemoryLayout result = layout.simplify(false);
+    MemoryLayout result = layout.simplify(false, false);
     size_t expected[] = { FLAG_MEMCPY, 1692 };
     REQUIRE_LAYOUT_EQUALS(expected, expected + 2, result);
 }

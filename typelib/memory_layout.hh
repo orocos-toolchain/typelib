@@ -53,7 +53,6 @@ namespace Typelib
         const_iterator init_end() const   { return init_ops.end(); }
         size_t init_size() const { return init_ops.size(); }
 
-        void removeTrailingSkips();
         void pushMemcpy(size_t size,
                 std::vector<uint8_t> const& init_data = std::vector<uint8_t>());
         void pushSkip(size_t size);
@@ -63,7 +62,7 @@ namespace Typelib
         void pushGenericOp(size_t op, size_t size);
         void pushEnd();
         bool isMemcpy() const;
-        MemoryLayout simplify(bool merge_skip_copy) const;
+        MemoryLayout simplify(bool merge_skip_copy, bool remove_trailing_skips) const;
         void validate() const;
         void display(std::ostream& out) const;
 
@@ -85,8 +84,8 @@ namespace Typelib
                 const_iterator end);
 
     private:
-        const_iterator simplify(bool merge_skip_copy, const_iterator it, const_iterator end, MemoryLayout& simplified) const;
-        const_iterator simplifyBlock(bool merge_skip_copy, const_iterator it, const_iterator end, MemoryLayout& simplified) const;
+        const_iterator simplify(bool merge_skip_copy, bool remove_trailing_skips, const_iterator it, const_iterator end, unsigned int depth, MemoryLayout& simplified) const;
+        const_iterator simplifyBlock(bool merge_skip_copy, bool remove_trailing_skips, const_iterator it, const_iterator end, unsigned int depth, MemoryLayout& simplified) const;
         const_iterator simplifyInit(const_iterator it, const_iterator end, MemoryLayout& result, bool shave_last_skip = false) const;
         const_iterator simplifyInitBlock(const_iterator it, const_iterator end, MemoryLayout& result) const;
         size_t m_offset;
@@ -181,9 +180,7 @@ namespace Typelib
     inline MemoryLayout layout_of(Type const& t, bool accept_pointers = false, bool accept_opaques = false, bool merge_skip_copy = true, bool remove_trailing_skips = true)
     {
         MemoryLayout ret = raw_layout_of(t, accept_pointers, accept_opaques);
-        if (remove_trailing_skips)
-            ret.removeTrailingSkips();
-        return ret.simplify(merge_skip_copy);
+        return ret.simplify(merge_skip_copy, remove_trailing_skips);
     }
 }
 

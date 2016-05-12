@@ -6,15 +6,6 @@ using namespace Typelib::MemLayout;
 using namespace std;
 using boost::lexical_cast;
 
-void MemoryLayout::removeTrailingSkips()
-{
-    while (ops.size() > 2 && ops[ops.size() - 2] == FLAG_SKIP)
-    {
-        ops.pop_back();
-        ops.pop_back();
-    }
-}
-
 bool MemoryLayout::isMemcpy() const
 {
     return (ops.size() == 2 && ops[0] == MemLayout::FLAG_MEMCPY);
@@ -233,12 +224,12 @@ MemoryLayout::const_iterator MemoryLayout::simplifyInit(const_iterator it, const
     return it;
 }
 
-MemoryLayout MemoryLayout::simplify(bool merge_skip_copy) const
+MemoryLayout MemoryLayout::simplify(bool merge_skip_copy, bool remove_trailing_skips) const
 {
     // Merge skips and memcpy: if a skip is preceded by a memcpy (or another
     // skip), simply merge the counts.
     MemoryLayout merged;
-    const_iterator end = simplify(merge_skip_copy, ops.begin(), ops.end(), merged);
+    const_iterator end = simplify(merge_skip_copy, remove_trailing_skips, ops.begin(), ops.end(), 0, merged);
     if (end != ops.end())
         throw InvalidMemoryLayout("simplify() did not reach the end");
 
@@ -246,9 +237,9 @@ MemoryLayout MemoryLayout::simplify(bool merge_skip_copy) const
     return merged;
 }
 
-MemoryLayout::const_iterator MemoryLayout::simplifyBlock(bool merge_skip_copy, const_iterator it, const_iterator end, MemoryLayout& simplified) const
+MemoryLayout::const_iterator MemoryLayout::simplifyBlock(bool merge_skip_copy, bool remove_trailing_skips, const_iterator it, const_iterator end, unsigned int depth, MemoryLayout& simplified) const
 {
-    const_iterator simplify_end = simplify(merge_skip_copy, it, end, simplified);
+    const_iterator simplify_end = simplify(merge_skip_copy, remove_trailing_skips, it, end, depth, simplified);
     if (simplify_end == end)
         throw InvalidMemoryLayout("expected FLAG_END but reached end of stream");
     else if (*simplify_end != FLAG_END)
@@ -256,9 +247,9 @@ MemoryLayout::const_iterator MemoryLayout::simplifyBlock(bool merge_skip_copy, c
     return simplify_end;
 }
 
-MemoryLayout::const_iterator MemoryLayout::simplify(bool merge_skip_copy, const_iterator it, const_iterator end, MemoryLayout& simplified) const
+MemoryLayout::const_iterator MemoryLayout::simplify(bool merge_skip_copy, bool remove_trailing_skips, const_iterator it, const_iterator end, unsigned int depth, MemoryLayout& simplified) const
 {
-    size_t current_op = FLAG_MEMCPY, current_op_count = 0;
+    size_t current_op = FLAG_MEMCPY, current_op_count = 0, current_skip_count = 0;
     for (; it != end; ++it)
     {
         size_t op   = *it;
@@ -277,7 +268,7 @@ MemoryLayout::const_iterator MemoryLayout::simplify(bool merge_skip_copy, const_
             size_t array_size = *(++it);
             simplified.pushGenericOp(FLAG_ARRAY, array_size);
             size_t content_i = simplified.size();
-            it = simplifyBlock(merge_skip_copy, ++it, end, simplified);
+            it = simplifyBlock(merge_skip_copy, remove_trailing_skips, ++it, end, depth + 1, simplified);
             size_t added_ops = simplified.size() - content_i;
 
             // Check whether we should squash the array and its contents.  Note
@@ -332,27 +323,39 @@ MemoryLayout::const_iterator MemoryLayout::simplify(bool merge_skip_copy, const_
             }
 
             simplified.pushGenericOp(FLAG_CONTAINER, *(++it));
-            it = simplifyBlock(merge_skip_copy, ++it, end, simplified);
+            it = simplifyBlock(merge_skip_copy, remove_trailing_skips, ++it, end, depth + 1, simplified);
             simplified.pushEnd();
         }
-        else if (op == current_op)
-            current_op_count += *(++it);
-        else if (merge_skip_copy)
+        else // either FLAG_MEMCPY or FLAG_SKIP
         {
-            current_op = FLAG_MEMCPY;
-            current_op_count += *(++it);
+            size_t size = *(++it);
+            if (op == FLAG_SKIP)
+                current_skip_count += size;
+
+            if (op == current_op)
+                current_op_count += size;
+            else if (merge_skip_copy)
+            {
+                current_op = FLAG_MEMCPY;
+                current_op_count += size;
+            }
+            else
+            {
+                if (current_op_count)
+                    simplified.pushGenericOp(current_op, current_op_count);
+                current_op = op;
+                current_op_count = size;
+            }
         }
-        else
-        {
-            if (current_op_count)
-                simplified.pushGenericOp(current_op, current_op_count);
-            current_op = op;
-            current_op_count = *(++it);
-        }
+        if (op != FLAG_SKIP)
+            current_skip_count = 0;
     }
 
     if (current_op_count)
-        simplified.pushGenericOp(current_op, current_op_count);
+    {
+        if (!remove_trailing_skips || current_op != FLAG_SKIP || depth > 0)
+            simplified.pushGenericOp(current_op, current_op_count - current_skip_count);
+    }
 
     return it;
 }
@@ -436,25 +439,31 @@ void MemoryLayout::display(ostream& out) const
     string indent;
     for (const_iterator it = ops.begin(); it != ops.end(); ++it)
     {
+        std::string idx = boost::lexical_cast<std::string>(it - ops.begin());
+        if (idx.size() < 3)
+            idx += "  ";
+        if (idx.size() < 2)
+            idx += " ";
+
         switch(*it)
         {
             case FLAG_MEMCPY:
-                out << indent << "FLAG_MEMCPY " << *(++it) << "\n";
+                out << idx << indent << "FLAG_MEMCPY " << *(++it) << "\n";
                 break;
             case FLAG_SKIP:
-                out << indent << "FLAG_SKIP " << *(++it) << "\n";
+                out << idx << indent << "FLAG_SKIP " << *(++it) << "\n";
                 break;
             case FLAG_ARRAY:
-                out << indent << "FLAG_ARRAY " << *(++it) << "\n";
+                out << idx << indent << "FLAG_ARRAY " << *(++it) << "\n";
                 indent += "  ";
                 break;
             case FLAG_CONTAINER:
-                out << indent << "FLAG_CONTAINER " << reinterpret_cast<Type const*>(*(++it))->getName() << "\n";
+                out << idx << indent << "FLAG_CONTAINER " << reinterpret_cast<Type const*>(*(++it))->getName() << "\n";
                 indent += "  ";
                 break;
             case FLAG_END:
                 indent = indent.substr(0, indent.size() - 2);
-                out << indent << "FLAG_END" << "\n";
+                out << idx << indent << "FLAG_END" << "\n";
                 break;
 
         }
