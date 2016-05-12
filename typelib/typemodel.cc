@@ -458,7 +458,7 @@ namespace Typelib
     {
         Enum const& other_type = static_cast<Enum const&>(type);
         if (!Type::do_compare(type, equality, stack))
-            return true;
+            return false;
         if (equality)
             return (m_values == other_type.m_values);
         else
