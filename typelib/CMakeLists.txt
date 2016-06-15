@@ -15,7 +15,7 @@ endif (NOT TYPELIB_HARDCODED_PLUGIN_PATH)
 set_source_files_properties(endianness.cc PROPERTIES
     COMPILE_FLAGS -fno-strict-aliasing)
 
-target_link_libraries(typeLib ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES})
+target_link_libraries(typeLib pthread ${CMAKE_DL_LIBS} ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES} ${Boost_THREAD_LIBRARIES})
 #TARGET_LINK_LIBRARIES(typeLib typeLang_c typeLang_tlb typeLang_idl)
 
 install(TARGETS typeLib
