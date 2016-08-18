@@ -15,8 +15,17 @@ if (ENABLE_INTERNAL_CPARSER)
     TARGET_LINK_LIBRARIES(typelib_testsuite typeLang_c)
 endif()
 
+if (ROCK_TEST_LOG_DIR)
+    list(APPEND __boost_test_parameters
+        --log_format=xml
+        --log_level=all
+        --log_sink=${ROCK_TEST_LOG_DIR}/typelib_testsuite.boost.xml)
+    file(MAKE_DIRECTORY "${ROCK_TEST_LOG_DIR}")
+endif()
+
 ADD_TEST(CxxSuiteInstalledPlugins ${CMAKE_CURRENT_BINARY_DIR}/typelib_testsuite)
-ADD_TEST(CxxSuiteLocalPlugins ${CMAKE_CURRENT_BINARY_DIR}/typelib_testsuite)
+ADD_TEST(CxxSuiteLocalPlugins ${CMAKE_CURRENT_BINARY_DIR}/typelib_testsuite
+    ${__boost_test_parameters})
 # the pluginmanager can load plugins from a list of paths set in the
 # environment. for testing we don't want to use the plugins in the
 # install-folder, but the freshly compiled ones in the build-folder. note that

@@ -13,7 +13,7 @@ module CXXCommonTests
     end
 
     def setup_loader(loader_name, name: loader_name, **options)
-        if test_selected_loader = ENV['TEST_CXX_LOADER']
+        if test_selected_loader = ENV['TYPELIB_CXX_LOADER']
             if test_selected_loader != loader_name
                 skip "test environment selected #{test_selected_loader} as loader, skipping #{loader_name}"
             end
