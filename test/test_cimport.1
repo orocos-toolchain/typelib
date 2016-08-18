@@ -1,8 +1,6 @@
-#ifdef __GCCXML__
 #include <vector>
 #include <stdint.h>
 #include <string>
-#endif
 
 int h2RecordErrMsgs(char *bywho, char *moduleName, short moduleId, 
 		    int nbErrors, const int errMsgs[]);
@@ -20,12 +18,6 @@ struct A
 typedef struct A ADef;
 typedef int array_typedef[256];
 typedef int multi_array_typedef[256][512];
-
-#ifndef __GCCXML__
-typedef struct Recursive {
-    struct Recursive* next;
-} Recursive;
-#endif
 
 typedef struct B
 {

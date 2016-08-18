@@ -7,7 +7,7 @@ class TC_CXX_Clang < Minitest::Test
 
     def setup
         super
-        @loader = Typelib::CXX::CXX_LOADERS['clang']
+        setup_loader('clang')
     end
 end
 
