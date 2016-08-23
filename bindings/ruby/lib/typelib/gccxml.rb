@@ -718,7 +718,7 @@ module Typelib
 
         def find_node_by_name(typename, node_type: nil)
             if node = info.name_to_nodes[typename].first
-                return node
+                return node if !node_type || (node.name == node_type)
             else
                 basename, context = resolve_namespace_of(typename)
                 return if !context
@@ -809,6 +809,8 @@ module Typelib
         end
 
         IGNORED_NODES = %w{Method OperatorMethod Destructor Constructor Function OperatorFunction}.to_set
+
+        attr_writer :info
 
         def load(required_files, xml)
             @registry = Typelib::Registry.new
