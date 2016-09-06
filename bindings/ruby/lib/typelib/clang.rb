@@ -88,12 +88,12 @@ module Typelib
             elsif system("which clang > /dev/null 2>&1")
                 IO.popen(['clang', '--version']) do |clang_io|
                     clang_version = clang_io.read
-                    if clang_version.include?('clang version 3.4')
+                    if clang_version.include?('clang version 3.')
                         return "clang"
                     end
                 end
             end
-            raise RuntimeError, "Couldn't find clang 3.4 compiler binary!"
+            raise RuntimeError, "Couldn't find clang 3.x compiler binary!"
         end
 
         # NOTE: preprocessing of a group of header-files by the actual compiler
