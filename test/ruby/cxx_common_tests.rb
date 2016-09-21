@@ -171,4 +171,9 @@ module CXXCommonTests
         reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_utf8.h'), 'c', cxx_importer: loader
         assert_equal ["this is a \u9999 multiline with \u1290 unicode characters"], reg.get('/DocumentedType').metadata.get('doc')
     end
+
+    def test_resolves_opaques_to_their_true_name
+        registry = Typelib::Registry.new
+        registry.import(File.join(cxx_test_dir, 'bug_opaque_import.hh'), 'c', cxx_importer: loader, opaques: ['/OpaquePoint'])
+    end
 end
