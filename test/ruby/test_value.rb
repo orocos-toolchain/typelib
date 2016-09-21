@@ -221,7 +221,7 @@ class TC_Value < Minitest::Test
 	assert( a.is_a?(/A$/) )
 
 	assert( a.is_a?(registry.get("/A")) )
-	assert( a.is_a?(registry.get("long long")) )
+	assert( a.is_a?(registry.get("/int64_t")) )
     end
 
     def test_dup

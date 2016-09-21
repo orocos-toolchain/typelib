@@ -4,7 +4,7 @@
     </numeric>
     <numeric name="/int8_t" category="sint" size="1" >
     </numeric>
-    <container  name="/std/string" of="/int8_t" size="8" kind="/std/string" >
+    <container  name="/std/string" of="/int8_t" size="32" kind="/std/string" >
         <metadata key="cxxname"><![CDATA[::std::string]]></metadata>
     </container>
     <container  name="/std/vector&lt;/double&gt;" of="/double" size="24" kind="/std/vector" >
@@ -14,8 +14,10 @@
     </container>
     <compound name="/ns_namedVector/NamedVector&lt;/double&gt;" size="48" >
         <field name="names" type="/std/vector&lt;/std/string&gt;" offset="0">
+            <metadata key="source_file_line"><![CDATA[NamedVector.hh:10]]></metadata>
         </field>
         <field name="elements" type="/std/vector&lt;/double&gt;" offset="24">
+            <metadata key="source_file_line"><![CDATA[NamedVector.hh:11]]></metadata>
         </field>
         <metadata key="cxxname"><![CDATA[::ns_namedVector::NamedVector<double>]]></metadata>
         <metadata key="source_file_line"><![CDATA[NamedVector.hh:9]]></metadata>

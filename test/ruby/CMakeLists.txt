@@ -16,13 +16,23 @@ ADD_TEST(NAME RubyInstalledPlugins
         -I${CMAKE_CURRENT_SOURCE_DIR}
         -I${CMAKE_CURRENT_BINARY_DIR} -rminitest/autorun -e "${test_requires}")
 
+set(__test_parameters --)
+if (ROCK_TEST_LOG_DIR)
+    list(APPEND __test_parameters
+        --junit
+        --junit-filename=${ROCK_TEST_LOG_DIR}/ruby.xml
+        --junit-jenkins)
+    file(MAKE_DIRECTORY "${ROCK_TEST_LOG_DIR}")
+endif()
+
 # the second ruby-test running explicitly against the freshly compiled plugins
 # in the build folder
 ADD_TEST(NAME RubyLocalPlugins
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     COMMAND ${RUBY_EXECUTABLE} -w -I${CMAKE_CURRENT_SOURCE_DIR}/../../bindings/ruby/lib
         -I${CMAKE_CURRENT_SOURCE_DIR}
-        -I${CMAKE_CURRENT_BINARY_DIR} -rminitest/autorun -e "${test_requires}")
+        -I${CMAKE_CURRENT_BINARY_DIR} -rminitest/autorun -e "${test_requires}"
+        ${__test_parameters})
 # the pluginmanager can load plugins from a list of paths set in the
 # environment. for testing we don't want to use the plugins in the
 # install-folder, but the freshly compiled ones in the build-folder. note that
