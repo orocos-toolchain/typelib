@@ -29,6 +29,7 @@ namespace Typelib
        
         bool visit_(Pointer const& type);
         bool visit_(Array const& type);
+        bool visit_(Container const& type);
 
     public:
         TypeDisplayVisitor(std::ostream& stream, std::string const& base_indent);
