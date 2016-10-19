@@ -485,6 +485,18 @@ class TC_SpecializedTypes < Minitest::Test
         assert(null.null?)
     end
 
+    def test_null_type_equality
+        registry = Typelib::Registry.new
+        void_t = registry.create_null('/void')
+        nil_t  = registry.create_null('/nil')
+        other_registry = Typelib::Registry.new
+        other_void_t = other_registry.create_null('/void')
+
+        assert_equal void_t, other_void_t
+        refute_equal void_t, nil_t
+        refute_equal other_void_t, nil_t
+    end
+
     def test_containers
         std = make_registry.get("StdCollections")
         assert(std[:dbl_vector] < Typelib::ContainerType)
