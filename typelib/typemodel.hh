@@ -256,6 +256,8 @@ namespace Typelib
     public:
         NullType(std::string const& name) : Type(name, 0, Type::NullType ) {}
 	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
+	virtual bool do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const
+        { return other.getName() == getName(); }
 
     private:
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const { return new NullType(*this); }
