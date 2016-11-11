@@ -518,6 +518,7 @@ module Typelib
         # Compound types are returned as a hash from the field name (as a
         # string) to the converted field value.
         def to_simple_value(options = Hash.new)
+            apply_changes_from_converted_types
             result = Hash.new
             raw_each_field { |name, v| result[name.to_s] = v.to_simple_value(options) }
             result

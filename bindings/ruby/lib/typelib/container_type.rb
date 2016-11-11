@@ -409,6 +409,7 @@ module Typelib
         # the latter case, a 'size' field is added with the number of elements
         # in the container to allow for validation on the receiving end.
         def to_simple_value(options = Hash.new)
+            apply_changes_from_converted_types
             if options[:pack_simple_arrays] && element_t.respond_to?(:pack_code)
                 Hash[pack_code: element_t.pack_code,
                      size: size,
