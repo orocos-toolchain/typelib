@@ -216,6 +216,7 @@ module Typelib
         # Array types are returned as either an array of their converted
         # elements, or the hash described for the :pack_simple_arrays option.
         def to_simple_value(options = Hash.new)
+            apply_changes_from_converted_types
             if options[:pack_simple_arrays] && element_t.respond_to?(:pack_code)
                 Hash[pack_code: element_t.pack_code,
                      size: self.class.length,

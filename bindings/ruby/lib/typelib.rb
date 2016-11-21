@@ -193,6 +193,9 @@ module Typelib
     # Generic method that converts a Typelib value into the corresponding Ruby
     # value.
     def self.to_ruby(value, original_type = nil)
+        if value.respond_to?(:apply_changes_from_converted_types)
+            value.apply_changes_from_converted_types
+        end
         (original_type || value.class).to_ruby(value)
     end
 
