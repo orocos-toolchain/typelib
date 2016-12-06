@@ -71,6 +71,10 @@ module Typelib
             template_args = template_args_to_typelib(args)
             yield("#{m}#{template_args}")
             return if !relaxed_naming
+            Typelib.warn "possible old-style access on Types, use Types.namespace.of.Type instead of Types::Namespace::Of::Type"
+            caller.each do |call|
+                Typelib.warn "  #{call}"
+            end
             yield("#{m.snakecase}#{template_args}")
             yield("#{m.camelcase}#{template_args}")
         end
