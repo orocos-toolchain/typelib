@@ -246,6 +246,12 @@ module Typelib
             concat(values)
         end
 
+        # Create a new container with the given size and element
+        def self.of_size(size, element = deference.new)
+            element = Typelib.from_ruby(element, deference).to_byte_array
+            from_buffer([size].pack("Q") + element * size)
+        end
+
         # This should return an object that allows to identify whether the
         # Typelib instances pointing to elements should be invalidated after
         # certain operations

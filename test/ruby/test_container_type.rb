@@ -74,5 +74,23 @@ describe Typelib::ContainerType do
             assert_equal ruby_value, Base64.strict_decode64(v[:data]).unpack("#{v[:pack_code]}*")
         end
     end
+
+    describe ".of_size" do
+        attr_reader :container_t, :ruby_value, :value
+        before do
+            @container_t = registry.create_container '/std/vector', '/int32_t'
+            @ruby_value = 42
+            @value = Typelib.from_ruby(ruby_value, container_t.deference)
+        end
+        it "creates a container of the requested size" do
+            assert_equal 20, container_t.of_size(20).size
+        end
+        it "initializes the container with the given element" do
+            assert_equal [42] * 20, container_t.of_size(20, 42).to_a
+        end
+        it "can initialize an empty container" do
+            assert container_t.of_size(0).empty?
+        end
+    end
 end
 
