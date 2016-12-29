@@ -2,8 +2,4 @@
 
 export TYPELIB_USE_GCCXML=1
 
-if [ `uname -s` = Darwin ]; then
-    export DYLD_LIBRARY_PATH=@CMAKE_INSTALL_PREFIX@/lib/typelib:$DYLD_LIBRARY_PATH
-else
-    export LD_LIBRARY_PATH=@CMAKE_INSTALL_PREFIX@/lib/typelib:$LD_LIBRARY_PATH
-fi
+# Note: LD_LIBRARY_PATH/DYLD_LIBRARY_PATH will be set in 00.utilrb.sh.in.
