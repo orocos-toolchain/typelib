@@ -305,6 +305,19 @@ namespace Typelib
         }
         return NULL;
     }
+    static bool fieldOffsetOrdering(Field const& f0, Field const& f1)
+    {
+        if (f0.getOffset() < f1.getOffset())
+            return true;
+        else if (f0.getOffset() == f1.getOffset())
+            return f0.getName() < f1.getName();
+        else return false;
+    }
+    void Compound::normalizeFieldOrder()
+    {
+        m_fields.sort(fieldOffsetOrdering);
+    }
+
     unsigned int Compound::getTrailingPadding() const
     {
         if (m_fields.empty())
@@ -445,7 +458,7 @@ namespace Typelib
     {
         Enum const& other_type = static_cast<Enum const&>(type);
         if (!Type::do_compare(type, equality, stack))
-            return true;
+            return false;
         if (equality)
             return (m_values == other_type.m_values);
         else

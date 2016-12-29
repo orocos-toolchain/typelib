@@ -19,16 +19,28 @@ string Vector::fullName(std::string const& element_name)
 
 Vector::Vector(Type const& on)
     : Container("/std/vector", fullName(on.getName()), getNaturalSize(), on)
-    , is_memcpy(false)
+    , element_layout(getElementLayout(on))
+{
+}
+
+bool Vector::isElementMemcpy() const
+{
+    return element_layout.isMemcpy();
+}
+
+bool Vector::hasElementLayout() const
+{
+    return !element_layout.isEmpty();
+}
+
+MemoryLayout Vector::getElementLayout(Type const& element_t)
 {
     try {
-        MemoryLayout ops = Typelib::layout_of(on);
-        is_memcpy = (ops.size() == 2 && ops[0] == MemLayout::FLAG_MEMCPY);
+        return Typelib::layout_of(element_t);
     }
     catch(std::runtime_error)
     {
-        // No layout for this type. Simply disable memcpy
-        is_memcpy = false;
+        return MemoryLayout();
     }
 }
 
@@ -83,36 +95,48 @@ void Vector::resize(std::vector<uint8_t>* ptr, size_t new_size) const
     Type const& element_t = getIndirection();
     size_t element_size = getIndirection().getSize();
 
-    //
-    // BIG FAT WARNING
-    //
-    // This assumes that std::vector is implemented so that the data structure
-    // does *not* contain pointers towards its own location
-    //
-    // If this assumption is broken, we would need to have a saner (but less
-    // efficient) implementation
-    //
-    // This assumption is tested in test_containers.cc in the C++ test suite
-    //
-
     size_t old_raw_size   = ptr->size();
     size_t old_size       = getElementCount(ptr);
     size_t new_raw_size   = new_size * element_size;
 
-    if (!is_memcpy && old_size > new_size)
+    if (!hasElementLayout())
+        throw std::runtime_error("could not compute layout for element type " + element_t.getName() + ", cannot copy");
+
+    if (isElementMemcpy())
+    {
+        ptr->resize(new_raw_size);
+        return;
+    }
+
+
+    if (old_size > new_size)
     {
         // Need to destroy the elements that are at the end of the container
         for (size_t i = new_raw_size; i < old_raw_size; i += element_size)
-            Typelib::destroy(Value(&(*ptr)[i], element_t));
+            Typelib::destroy(&(*ptr)[i], element_layout);
     }
 
-    ptr->resize(new_raw_size);
 
-    if (!is_memcpy && old_size < new_size)
+    if (ptr->capacity() >= new_raw_size)
+        ptr->resize(new_raw_size);
+    else
+    {
+        std::vector<uint8_t> new_buffer;
+        new_buffer.resize(new_raw_size);
+        size_t copy_raw_size = std::min(old_raw_size, new_raw_size);
+        for (size_t i = 0; i < copy_raw_size; i += element_size)
+        {
+            Typelib::init(&new_buffer[i], element_layout);
+            Typelib::copy(&new_buffer[i], &(*ptr)[i], element_layout);
+        }
+        ptr->swap(new_buffer);
+    }
+
+    if (old_size < new_size)
     {
         // Need to initialize the new elements at the end of the container
         for (size_t i = old_raw_size; i < new_raw_size; i += element_size)
-            Typelib::init(Value(&(*ptr)[i], element_t));
+            Typelib::init(&(*ptr)[i], element_layout);
     }
 }
 
@@ -185,9 +209,12 @@ bool Vector::compare(void* ptr, void* other) const
     uint8_t* base_b = &(*b_ptr)[0];
     for (size_t i = 0; i < element_count; ++i)
     {
+        /// !!! We don't use element_layout here as comparing requires a
+        // different layout. If performance becomes an issue, we'll have to
+        // precompute both
         if (!Typelib::compare(
-                    Value(base_a + i * element_size, element_t),
-                    Value(base_b + i * element_size, element_t)))
+                    base_a + i * element_size,
+                    base_b + i * element_size, element_t))
             return false;
     }
     return true;
@@ -211,7 +238,7 @@ void Vector::copy(std::vector<uint8_t>* dst_ptr, size_t dst_idx, std::vector<uin
     size_t element_size = element_t.getSize();
     uint8_t* base_src = &(*src_ptr)[src_idx * element_size];
     uint8_t* base_dst = &(*dst_ptr)[dst_idx * element_size];
-    if (is_memcpy)
+    if (isElementMemcpy())
     {
         if (dst_ptr == src_ptr)
             memmove(base_dst, base_src, element_size * count);
@@ -277,7 +304,7 @@ Container::MarshalOps::const_iterator Vector::dump(
         reinterpret_cast< std::vector<uint8_t> const* >(container_ptr);
 
     MarshalOps::const_iterator it = begin;
-    if (is_memcpy)
+    if (isElementMemcpy())
     {
         // optimize a bit: do a huge memcpy if possible
         size_t size       = *(++it) * element_count;
@@ -311,7 +338,7 @@ Container::MarshalOps::const_iterator Vector::load(
     resize(vector_ptr, element_count);
 
     MarshalOps::const_iterator it = begin;
-    if (is_memcpy)
+    if (isElementMemcpy())
     {
         size_t size       = *(++it) * element_count;
         stream.read(&(*vector_ptr)[0], size);

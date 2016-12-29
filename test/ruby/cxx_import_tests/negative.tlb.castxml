@@ -1,0 +1,34 @@
+<?xml version='1.0'?>
+<typelib>
+    <numeric name='/int32_t' category='sint' size='4'>
+    </numeric>
+    <compound name='/negative/S1' size='8'>
+        <field name='pA' type='/int32_t*' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[negative.hh:8]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::negative::S1]]>
+        </metadata>
+        <metadata key='doc'>
+            <![CDATA[we don't want to have records with pointers]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[negative.hh:7]]>
+        </metadata>
+    </compound>
+    <compound name='/negative/S2' size='8'>
+        <field name='pA' type='/int32_t*' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[negative.hh:11]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::negative::S2]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[negative.hh:10]]>
+        </metadata>
+    </compound>
+</typelib>

@@ -21,6 +21,7 @@ namespace Typelib
 
     void copy(Value dst, Value src);
     void copy(void* dst, void* src, Type const& type);
+    void copy(void* dst, void* src, MemoryLayout const& ops);
 
     bool compare(Value dst, Value src);
     bool compare(void* dst, void* src, Type const& type);
@@ -52,6 +53,7 @@ namespace Typelib
 
     struct OutputStream
     {
+        virtual ~OutputStream() {}
         virtual void write(uint8_t const* data, size_t size) = 0;
     };
     void dump(Value v, OutputStream& stream);
@@ -65,6 +67,7 @@ namespace Typelib
 
     struct InputStream
     {
+        virtual ~InputStream() {}
         virtual void read(uint8_t* data, size_t size) = 0;
     };
     void load(Value v, InputStream& stream);

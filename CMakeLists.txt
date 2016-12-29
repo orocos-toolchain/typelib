@@ -6,6 +6,19 @@ PROJECT(typelib)
 SET(PROJECT_VERSION 1.1)
 SET(API_VERSION 1)
 
+FIND_PACKAGE ( Threads REQUIRED )
+
+# This changes the behaviour of list() w.r.t. empty elements. Typelib'cmake code
+# is compatible with the NEW policy, so just set it to avoid getting a cmake
+# warning
+cmake_policy(SET CMP0007 NEW)
+
+# make the clang-based importer optional for now. the option is planned to be
+# removed in the future, after using the new importer as default.
+option(BUILD_CLANG_TLB_IMPORTER
+    "set to ON to enable compiling of the llvm/clang based importer"
+    OFF)
+
 IF(APPLE)
   set(CMAKE_SHARED_MODULE_SUFFIX ".bundle")
 ENDIF(APPLE)
@@ -23,7 +36,12 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 add_definitions(-Wall)
-CMAKE_USE_FULL_RPATH("${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib/typelib")
+CMAKE_USE_FULL_RPATH("${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib/typelib")
+
+IF(APPLE)
+  SET(CMAKE_INSTALL_NAME_DIR @rpath)
+  SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+ENDIF(APPLE)
 
 pkg_search_module (LibXML  libxml-2.0 libxml2 libxml>=2)
 IF(NOT LibXML_FOUND)
@@ -71,6 +89,9 @@ ADD_SUBDIRECTORY(lang/csupport)
 ADD_SUBDIRECTORY(lang/tlb)
 ADD_SUBDIRECTORY(lang/idl)
 ADD_SUBDIRECTORY(typelib)
+
+
+add_subdirectory(tools)
 
 # Install an env-hook if catkin is found
 find_package(catkin QUIET)

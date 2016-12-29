@@ -157,21 +157,6 @@ class TC_Value < Minitest::Test
 	assert_equal([10, 20, 30, 40], a.to_byte_array.unpack('Qicxs'))
     end
 
-    def test_pointer
-        type = CXXRegistry.new.build("/int*")
-	value = type.new
-	value.zero!
-        assert_raises(ArgumentError) { value.deference }
-	assert(value.null?)
-	assert_equal(nil, value.to_ruby)
-
-        type  = CXXRegistry.new.build("/int")
-        value = type.new
-        assert_equal(value.class, type)
-        ptr   = value.to_ptr
-        assert_same(value, ptr.deference)
-    end
-
     def test_string_handling
         buffer_t = CXXRegistry.new.build("/char[256]")
         buffer = buffer_t.new
@@ -236,7 +221,7 @@ class TC_Value < Minitest::Test
 	assert( a.is_a?(/A$/) )
 
 	assert( a.is_a?(registry.get("/A")) )
-	assert( a.is_a?(registry.get("long long")) )
+	assert( a.is_a?(registry.get("/int64_t")) )
     end
 
     def test_dup
@@ -307,6 +292,29 @@ class TC_Value < Minitest::Test
         assert float_t.wrap(nan_f).to_ruby.nan?
     end
 
+    def test_vector_of_vector
+        registry = make_registry
+        containers_t = registry.get('Collections')
+        v_v_struct_t = containers_t[:v_v_struct]
+        v_struct_t   = v_v_struct_t.deference
+        struct_t     = v_struct_t.deference
+
+        v_v_struct = v_v_struct_t.new
+        v_v_struct << [struct_t.new(a: 10)]
+        assert_equal 10, v_v_struct.raw_get(0).raw_get(0).a
+    end
+
+    def test_arrays
+        registry = make_registry
+        array_t = registry.get('Arrays')
+        ns1_test_t = registry.get('/NS1/Test')
+        arrays = array_t.new
+        arrays.zero!
+        array_a_struct = arrays.raw_a_struct
+        array_a_struct[0] = ns1_test_t.new(a: 10)
+        assert_equal [10, 0, 0, 0, 0, 0, 0, 0, 0, 0], array_a_struct.map(&:a)
+    end
+
     def test_convertion_to_from_ruby
         Typelib.convert_to_ruby '/NS1/Test', Integer do |value|
             value.a
@@ -349,6 +357,9 @@ class TC_Value < Minitest::Test
         assert_equal [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], arrays.raw_a_struct.to_ruby
         arrays.apply_changes_from_converted_types
         assert_equal [10, 0, 0, 0, 0, 0, 0, 0, 0, 0], arrays.raw_a_struct.to_ruby
+    ensure
+        Typelib.convertions_from_ruby.from_typename.delete('/NS1/Test')
+        Typelib.convertions_to_ruby.from_typename.delete('/NS1/Test')
     end
 end
 

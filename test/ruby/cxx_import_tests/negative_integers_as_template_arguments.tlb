@@ -1,0 +1,34 @@
+<?xml version='1.0'?>
+<typelib>
+    <numeric name='/double' category='float' size='8'>
+    </numeric>
+    <compound name='/Instanciator' size='8'>
+        <field name='field' type='/double' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[negative_integers_as_template_arguments.hh:5]]>
+            </metadata>
+        </field>
+        <metadata key='base_classes'>
+            <![CDATA[/Test<-2>]]>
+        </metadata>
+        <metadata key='cxxname'>
+            <![CDATA[::Instanciator]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[negative_integers_as_template_arguments.hh:10]]>
+        </metadata>
+    </compound>
+    <compound name='/Test&lt;-2&gt;' size='8'>
+        <field name='field' type='/double' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[negative_integers_as_template_arguments.hh:5]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::Test<-2>]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[negative_integers_as_template_arguments.hh:2]]>
+        </metadata>
+    </compound>
+</typelib>

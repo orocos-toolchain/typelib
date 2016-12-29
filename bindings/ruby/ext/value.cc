@@ -117,7 +117,7 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
     VALUE base  = class_of(type);
     VALUE klass = rb_funcall(rb_cClass, rb_intern("new"), 1, base);
     VALUE rb_type = Data_Wrap_Struct(rb_cObject, 0, 0, const_cast<Type*>(&type));
-    rb_iv_set(klass, "@registry", registry);
+    rb_iv_set(klass, "@__typelib_registry", registry);
     rb_iv_set(klass, "@type", rb_type);
     rb_iv_set(klass, "@name", rb_str_new2(type.getName().c_str()));
     rb_iv_set(klass, "@null", (type.getCategory() == Type::NullType) ? Qtrue : Qfalse);
@@ -262,6 +262,94 @@ static VALUE type_can_cast_to(VALUE self, VALUE to)
     return from_type.canCastTo(to_type) ? Qtrue : Qfalse;
 }
 
+static VALUE layout_to_ruby(VALUE registry, MemoryLayout::const_iterator begin, MemoryLayout::const_iterator end)
+{
+    VALUE result = rb_ary_new();
+
+    VALUE rb_memcpy = ID2SYM(rb_intern("FLAG_MEMCPY"));
+    VALUE rb_skip = ID2SYM(rb_intern("FLAG_SKIP"));
+    VALUE rb_array = ID2SYM(rb_intern("FLAG_ARRAY"));
+    VALUE rb_end = ID2SYM(rb_intern("FLAG_END"));
+    VALUE rb_container = ID2SYM(rb_intern("FLAG_CONTAINER"));
+
+    // Now, convert into something representable in Ruby
+    for (MemoryLayout::const_iterator it = begin; it != end; ++it)
+    {
+        switch(*it)
+        {
+            case MemLayout::FLAG_MEMCPY:
+                rb_ary_push(result, rb_memcpy);
+                rb_ary_push(result, LONG2NUM(*(++it)));
+                break;
+            case MemLayout::FLAG_SKIP:
+                rb_ary_push(result, rb_skip);
+                rb_ary_push(result, LONG2NUM(*(++it)));
+                break;
+            case MemLayout::FLAG_ARRAY:
+                rb_ary_push(result, rb_array);
+                rb_ary_push(result, LONG2NUM(*(++it)));
+                break;
+            case MemLayout::FLAG_END:
+                rb_ary_push(result, rb_end);
+                break;
+            case MemLayout::FLAG_CONTAINER:
+                rb_ary_push(result, rb_container);
+                rb_ary_push(result, cxx2rb::type_wrap(*reinterpret_cast<Container*>(*(++it)), registry));
+                break;
+            default:
+                rb_raise(rb_eArgError, "error encountered while parsing memory layout");
+        }
+    }
+
+    return result;
+}
+
+static VALUE init_layout_to_ruby(VALUE registry, MemoryLayout::const_iterator begin, MemoryLayout::const_iterator end)
+{
+    VALUE result = rb_ary_new();
+
+    VALUE rb_init = ID2SYM(rb_intern("FLAG_INIT"));
+    VALUE rb_skip = ID2SYM(rb_intern("FLAG_INIT_SKIP"));
+    VALUE rb_repeat = ID2SYM(rb_intern("FLAG_INIT_REPEAT"));
+    VALUE rb_end = ID2SYM(rb_intern("FLAG_INIT_END"));
+    VALUE rb_container = ID2SYM(rb_intern("FLAG_INIT_CONTAINER"));
+
+    // Now, convert into something representable in Ruby
+    for (MemoryLayout::const_iterator it = begin; it != end; ++it)
+    {
+        switch(*it)
+        {
+            case MemLayout::FLAG_INIT:
+                {
+                    rb_ary_push(result, rb_init);
+                    size_t size = *(++it);
+                    rb_ary_push(result, LONG2NUM(size));
+                    for (size_t i = 0; i < size; ++i)
+                        rb_ary_push(result, LONG2NUM(*(++it)));
+                }
+                break;
+            case MemLayout::FLAG_INIT_SKIP:
+                rb_ary_push(result, rb_skip);
+                rb_ary_push(result, LONG2NUM(*(++it)));
+                break;
+            case MemLayout::FLAG_INIT_REPEAT:
+                rb_ary_push(result, rb_repeat);
+                rb_ary_push(result, LONG2NUM(*(++it)));
+                break;
+            case MemLayout::FLAG_INIT_END:
+                rb_ary_push(result, rb_end);
+                break;
+            case MemLayout::FLAG_INIT_CONTAINER:
+                rb_ary_push(result, rb_container);
+                rb_ary_push(result, cxx2rb::type_wrap(*reinterpret_cast<Container*>(*(++it)), registry));
+                break;
+            default:
+                rb_raise(rb_eArgError, "error encountered while parsing memory layout");
+        }
+    }
+    return result;
+}
+
 /*
  *  type.do_memory_layout(VALUE accept_pointers, VALUE accept_opaques, VALUE merge_skip_copy, VALUE remove_trailing_skips) => [operations]
  *
@@ -274,56 +362,25 @@ static VALUE type_memory_layout(VALUE self, VALUE pointers, VALUE opaques, VALUE
     Type const& type(rb2cxx::object<Type>(self));
     VALUE registry = type_get_registry(self);
 
-    VALUE result = rb_ary_new();
-
-    VALUE rb_memcpy = ID2SYM(rb_intern("FLAG_MEMCPY"));
-    VALUE rb_skip = ID2SYM(rb_intern("FLAG_SKIP"));
-    VALUE rb_array = ID2SYM(rb_intern("FLAG_ARRAY"));
-    VALUE rb_end = ID2SYM(rb_intern("FLAG_END"));
-    VALUE rb_container = ID2SYM(rb_intern("FLAG_CONTAINER"));
-
+    MemoryLayout layout;
     try {
-        MemoryLayout layout = Typelib::layout_of(type, RTEST(pointers), RTEST(opaques), RTEST(merge), RTEST(remove_trailing_skips));
-
-        // Now, convert into something representable in Ruby
-        for (MemoryLayout::const_iterator it = layout.begin(); it != layout.end(); ++it)
-        {
-            switch(*it)
-            {
-                case MemLayout::FLAG_MEMCPY:
-                    rb_ary_push(result, rb_memcpy);
-                    rb_ary_push(result, LONG2NUM(*(++it)));
-                    break;
-                case MemLayout::FLAG_SKIP:
-                    rb_ary_push(result, rb_skip);
-                    rb_ary_push(result, LONG2NUM(*(++it)));
-                    break;
-                case MemLayout::FLAG_ARRAY:
-                    rb_ary_push(result, rb_array);
-                    rb_ary_push(result, LONG2NUM(*(++it)));
-                    break;
-                case MemLayout::FLAG_END:
-                    rb_ary_push(result, rb_end);
-                    break;
-                case MemLayout::FLAG_CONTAINER:
-                    rb_ary_push(result, rb_container);
-                    rb_ary_push(result, cxx2rb::type_wrap(*reinterpret_cast<Container*>(*(++it)), registry));
-                    break;
-                default:
-                    rb_raise(rb_eArgError, "error encountered while parsing memory layout");
-            }
-        }
-
+        layout = Typelib::layout_of(type, RTEST(pointers), RTEST(opaques), RTEST(merge), RTEST(remove_trailing_skips));
     } catch(std::exception const& e) {
         rb_raise(rb_eArgError, "%s", e.what());
     }
 
+    VALUE mem_layout = layout_to_ruby(registry, layout.begin(), layout.end());
+    VALUE init_layout = init_layout_to_ruby(registry, layout.init_begin(), layout.init_end());
+
+    VALUE result = rb_ary_new();
+    rb_ary_push(result, mem_layout);
+    rb_ary_push(result, init_layout);
     return result;
 }
 
 VALUE typelib_ruby::type_get_registry(VALUE self)
 {
-    return rb_iv_get(self, "@registry");
+    return rb_iv_get(self, "@__typelib_registry");
 }
 
 
@@ -489,7 +546,7 @@ VALUE value_do_cast(VALUE self, VALUE target_type)
     if (value.getType() == to_type)
         return self;
 
-    VALUE registry = rb_iv_get(target_type, "@registry");
+    VALUE registry = type_get_registry(target_type);
     Value casted(value.getData(), to_type);
 #   ifdef VERBOSE
     fprintf(stderr, "wrapping casted value\n");
@@ -555,7 +612,7 @@ VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)
 VALUE typelib_ruby::value_get_registry(VALUE self)
 {
     VALUE type = rb_funcall(self, rb_intern("class"), 0);
-    return rb_iv_get(type, "@registry");
+    return type_get_registry(type);
 }
 
 /** 
@@ -604,7 +661,7 @@ static VALUE typelib_do_copy(VALUE, VALUE to, VALUE from)
 }
 
 /* call-seq:
- *  Typelib.compare(to, from) => true or false
+ *  Typelib.do_compare(to, from) => true or false
  *
  * Proper comparison of two values. +to+ and +from+'s types do not have to be of
  * the same registries, as long as the types can be cast'ed into each other.
@@ -635,7 +692,7 @@ void typelib_ruby::Typelib_init_values()
 {
     VALUE mTypelib  = rb_define_module("Typelib");
     rb_define_singleton_method(mTypelib, "do_copy", RUBY_METHOD_FUNC(typelib_do_copy), 2);
-    rb_define_singleton_method(mTypelib, "compare", RUBY_METHOD_FUNC(typelib_compare), 2);
+    rb_define_singleton_method(mTypelib, "do_compare", RUBY_METHOD_FUNC(typelib_compare), 2);
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
     rb_define_alloc_func(cType, value_alloc);

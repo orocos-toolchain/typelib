@@ -67,19 +67,20 @@ namespace
             if (xmlStrcmp(xml->name, reinterpret_cast<const xmlChar*>("metadata")))
                 continue;
             string key = getAttribute<string>(xml, "key");
-            string value;
+            metadata.add(key, MetaData::Values());
+
             // Look at a child CDATA block
             xmlNodePtr cdata = xml->children;
             for(; cdata; cdata=cdata->next)
             {
                 if (cdata->type == XML_CDATA_SECTION_NODE)
                 {
-                    value = reinterpret_cast<char const*>(cdata->content);
+                    std::string value = reinterpret_cast<char const*>(cdata->content);
+                    metadata.add(key, value);
                     break;
                 }
             }
 
-            metadata.add(key, value);
         }
     }
 
@@ -127,7 +128,7 @@ namespace
             if (! base)
             {
                 if (it == m_map.end())
-                    throw Undefined(basename);
+                    throw Undefined(basename, "while building " + name + " from " + basename);
 
                 TypeNode    type(it->second);
                 m_map.erase(it);
@@ -268,6 +269,7 @@ namespace
             loadMetaData(xml, field.getMetaData());
         }
 
+        compound->normalizeFieldOrder();
         compound->setSize(size);
         factory.insert(node, compound);
         return compound;

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<typelib>
+    <numeric name="/double" category="float" size="8" >
+    </numeric>
+    <numeric name="/int8_t" category="sint" size="1" >
+    </numeric>
+    <container  name="/std/string" of="/int8_t" size="0" kind="/std/string" >
+        <metadata key="cxxname"><![CDATA[::std::string]]></metadata>
+    </container>
+    <container  name="/std/vector&lt;/double&gt;" of="/double" size="0" kind="/std/vector" >
+        <metadata key="cxxname"><![CDATA[::std::vector<double, std::allocator<double> >]]></metadata>
+    </container>
+    <container  name="/std/vector&lt;/std/string&gt;" of="/std/string" size="0" kind="/std/vector" >
+        <metadata key="cxxname"><![CDATA[::std::vector<std::basic_string<char>, std::allocator<std::basic_string<char> > >]]></metadata>
+    </container>
+    <compound name="/ns_namedVector/NamedVector&lt;/double&gt;" size="48" >
+        <field name="names" type="/std/vector&lt;/std/string&gt;" offset="0">
+            <metadata key="source_file_line"><![CDATA[NamedVector.hh:10]]></metadata>
+        </field>
+        <field name="elements" type="/std/vector&lt;/double&gt;" offset="24">
+            <metadata key="source_file_line"><![CDATA[NamedVector.hh:11]]></metadata>
+        </field>
+        <metadata key="cxxname"><![CDATA[::ns_namedVector::NamedVector<double>]]></metadata>
+        <metadata key="source_file_line"><![CDATA[NamedVector.hh:9]]></metadata>
+    </compound>
+
+    <compound name="/ns_namedVector/samples/Joints" size="56" >
+        <field name="names" type="/std/vector&lt;/std/string&gt;" offset="0">
+            <metadata key="source_file_line"><![CDATA[NamedVector.hh:10]]></metadata>
+        </field>
+        <field name="elements" type="/std/vector&lt;/double&gt;" offset="24">
+            <metadata key="source_file_line"><![CDATA[NamedVector.hh:11]]></metadata>
+        </field>
+        <field name="bla" type="/double" offset="48">
+            <metadata key="source_file_line"><![CDATA[NamedVector.hh:16]]></metadata>
+        </field>
+        <metadata key="base_classes"><![CDATA[/ns_namedVector/NamedVector</double>]]></metadata>
+        <metadata key="cxxname"><![CDATA[::ns_namedVector::samples::Joints]]></metadata>
+        <metadata key="source_file_line"><![CDATA[NamedVector.hh:15]]></metadata>
+    </compound>
+    <alias name="/ns_namedVector/commands/Joints" source="/ns_namedVector/samples/Joints"/>
+</typelib>
+

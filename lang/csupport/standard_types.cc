@@ -2,7 +2,7 @@
 #include "containers.hh"
 #include <boost/lexical_cast.hpp>
 #include "typelib/typename.hh"
-
+#include <iostream>
 using namespace Typelib;
 
 static void addStandardTypes(Typelib::Registry& r)
@@ -14,7 +14,7 @@ static void addStandardTypes(Typelib::Registry& r)
     
     // Add standard sized integers
     static const int sizes[] = { 1, 2, 4, 8 };
-    for (int i = 0; i < 4; ++i)
+    for (size_t i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i)
     {
         std::string suffix = "int" + boost::lexical_cast<std::string>(sizes[i] * 8) + "_t";
         r.add(new Numeric("/"  + suffix, sizes[i], Numeric::SInt));
@@ -30,6 +30,13 @@ static void addStandardTypes(Typelib::Registry& r)
         r.alias(normalized_type_name, "/char");
     r.alias(normalized_type_name, "/unsigned char");
 
+    if(std::numeric_limits<wchar_t>::is_signed)
+    {
+        normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<wchar_t>::digits + 1) + "_t";
+    } else {
+        normalized_type_name = "/uint" + boost::lexical_cast<std::string>(std::numeric_limits<wchar_t>::digits) + "_t";
+    }
+    r.alias(normalized_type_name, "/wchar_t");
 
     normalized_type_name = "/int" + boost::lexical_cast<std::string>(std::numeric_limits<short int>::digits + 1) + "_t";
     r.alias(normalized_type_name, "/signed short int");

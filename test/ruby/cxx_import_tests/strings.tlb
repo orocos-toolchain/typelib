@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<typelib>
+  <numeric name="/int32_t" category="sint" size="4" >
+  
+  </numeric>
+  <numeric name="/int8_t" category="sint" size="1" >
+  
+  </numeric>
+  <container  name="/std/string" of="/int8_t" size="32" kind="/std/string" >
+  <metadata key="cxxname"><![CDATA[::std::string]]></metadata>
+  <metadata key="doc"><![CDATA[A string of @c char]]></metadata>
+
+  </container>
+  <compound name="/strings/C3" size="12" >
+    <field name="arr" type="/int32_t[3]" offset="0">
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[::strings::C3]]></metadata>
+<metadata key="source_file_line"><![CDATA[strings.hh:19]]></metadata>
+
+  </compound>
+  <compound name="/strings/S1" size="32" >
+    <field name="myS" type="/std/string" offset="0">
+        <metadata key="source_file_line"><![CDATA[strings.hh:9]]></metadata>
+    
+    </field>
+  <metadata key="cxxname"><![CDATA[::strings::S1]]></metadata>
+<metadata key="source_file_line"><![CDATA[strings.hh:8]]></metadata>
+
+  </compound>
+</typelib>

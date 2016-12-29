@@ -1,6 +1,6 @@
 require 'enumerator'
+require 'utilrb/object/address'
 require 'utilrb/logger'
-require 'utilrb/object/singleton_class'
 require 'utilrb/kernel/options'
 require 'utilrb/module/attr_predicate'
 require 'utilrb/module/const_defined_here_p'
@@ -8,7 +8,6 @@ require 'delegate'
 require 'pp'
 require 'facets/string/camelcase'
 require 'set'
-require 'utilrb/value_set'
 require 'base64'
 
 if !defined?(Infinity)
@@ -174,6 +173,7 @@ require 'typelib/container_type'
 require 'typelib/metadata'
 
 require 'typelib/registry'
+require 'typelib/registry_export'
 require 'typelib/cxx_registry'
 require 'typelib/specializations'
 require 'typelib_ruby'
@@ -193,6 +193,9 @@ module Typelib
     # Generic method that converts a Typelib value into the corresponding Ruby
     # value.
     def self.to_ruby(value, original_type = nil)
+        if value.respond_to?(:apply_changes_from_converted_types)
+            value.apply_changes_from_converted_types
+        end
         (original_type || value.class).to_ruby(value)
     end
 
@@ -217,6 +220,16 @@ module Typelib
         to.allocating_operation do
             do_copy(to, from)
         end
+    end
+
+    def self.compare(a, b)
+        if a.respond_to?(:apply_changes_from_converted_types)
+            a.apply_changes_from_converted_types
+        end
+        if b.respond_to?(:apply_changes_from_converted_types)
+            b.apply_changes_from_converted_types
+        end
+        do_compare(a, b)
     end
 
     # Exception raised when Typelib.from_ruby is called but the value cannot be
@@ -320,9 +333,7 @@ module Typelib
     end
 end
 
-if ENV['TYPELIB_USE_GCCXML'] != '0'
-    require 'typelib/gccxml'
-end
+require 'typelib/cxx'
 
 # Finally, set guard types on the root classes
 module Typelib

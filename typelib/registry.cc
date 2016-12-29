@@ -216,7 +216,7 @@ namespace Typelib
         return result.release();
     }
 
-    Registry* Registry::minimal(Registry const& auto_types) const
+    Registry* Registry::minimal(Registry const& auto_types, bool keep_auto_aliases) const
     {
         auto_ptr<Registry> result(new Registry);
  
@@ -235,7 +235,7 @@ namespace Typelib
 	    // we must check that it is the same concrete type, or
 	    // we have to add the alias
 	    if (!it.isAlias()) continue;
-            if (auto_types.has(it.getName())) continue;
+            if (!keep_auto_aliases && auto_types.has(it.getName())) continue;
             // Do not continue if it is a typedef on a type that we don't need
             if (!result->has(it->getName(), false)) continue;
 
@@ -251,6 +251,8 @@ namespace Typelib
 	    }
 	}
 
+        result->copySourceIDs(*this);
+        result->mergeMetaData(*this);
         return result.release();
     }
 
@@ -583,16 +585,16 @@ namespace Typelib
         while (!queue.empty())
         {
             RegistryIterator const end = this->end();
-            for (RegistryIterator it = this->begin(); it != end; ++it)
+            for (RegistryIterator regIt = this->begin(); regIt != end; ++regIt)
             {
-                Type const& t = *it;
-                if (it.isAlias()) continue;
+                Type const& t = *regIt;
+                if (regIt.isAlias()) continue;
                 if (result.count(&t) || queue.count(&t)) continue;
 
                 std::set<Type const*> dependencies = t.dependsOn();
-                for (TypeSet::const_iterator it = queue.begin(); it != queue.end(); ++it)
+                for (TypeSet::const_iterator typeIt = queue.begin(); typeIt != queue.end(); ++typeIt)
                 {
-                    if (dependencies.count(*it))
+                    if (dependencies.count(*typeIt))
                     {
                         new_queue.insert(&t);
                         break;

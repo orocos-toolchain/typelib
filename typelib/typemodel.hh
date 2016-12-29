@@ -256,6 +256,8 @@ namespace Typelib
     public:
         NullType(std::string const& name) : Type(name, 0, Type::NullType ) {}
 	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
+	virtual bool do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const
+        { return other.getName() == getName(); }
 
     private:
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const { return new NullType(*this); }
@@ -419,6 +421,11 @@ namespace Typelib
          */
         void mergeMetaData(Type const& other) const;
 
+        /** Reorders the field in increasing offset and name order, to have a
+         * stable order
+         */
+        void normalizeFieldOrder();
+
     private:
 	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
 	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
@@ -512,6 +519,7 @@ namespace Typelib
     protected:
         struct DeleteIfPredicate
         {
+            virtual ~DeleteIfPredicate() {}
             virtual bool should_delete(Value const& v) = 0;
         };
 

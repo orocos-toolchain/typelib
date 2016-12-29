@@ -3,6 +3,13 @@ require 'typelib/test'
 class TC_Registry < Minitest::Test
     Registry = Typelib::Registry
     CXXRegistry = Typelib::CXXRegistry
+
+    attr_reader :reg
+    def setup
+        @reg = Typelib::Registry.new
+        reg.create_numeric '/int32_t', 4, :sint
+    end
+
     def test_aliasing
 	registry = CXXRegistry.new
 	registry.alias "/my_own_and_only_int", "/int"
@@ -80,7 +87,7 @@ class TC_Registry < Minitest::Test
 
 	values = Typelib.log_silent { reg.each.to_a }
 	refute_equal(0, values.size)
-	assert(values.include?(reg.get("/int")))
+	assert(values.include?(reg.get("/int32_t")))
 	assert(values.include?(reg.get("/EContainer")))
 
 	values = reg.each(:with_aliases => true).to_a
@@ -105,84 +112,30 @@ class TC_Registry < Minitest::Test
         assert_raises(ArgumentError) { Typelib::Registry.from_xml(test) }
     end
 
-    def test_export
-	reg = make_registry
-        mod = Module.new
-        Typelib.log_silent do
-            reg.export_to_ruby(mod)
-        end
-
-        assert_equal reg.get('/E_comparison_1/E_with_added_values'),
-            mod::EComparison_1::EWithAddedValues
-        assert_equal reg.get('/B'),
-            mod::B
-
+    def test_create_numeric_sint
+        reg = make_registry
+        t = reg.create_numeric('/NewSInt', 2, :sint)
+        assert_equal '/NewSInt', t.name
+        assert_equal 2, t.size
+        assert t.integer?
+        assert !t.unsigned?
     end
 
-    def test_clear_export
-	reg = make_registry
-        mod = Module.new
-        Typelib.log_silent do
-            reg.export_to_ruby(mod)
-        end
-
-        ns = mod.const_get(:NS1).const_get(:NS2)
-        assert(!ns.constants.empty?)
-        assert(!ns.exported_types.empty?, "#{ns.exported_types.inspect} was expected to be empty")
-
-        reg.clear_exports(mod)
-
-        assert_equal([:EComparison_1, :EComparison_2, :NS1, :VeryLongNamespaceName, :Std].to_set, mod.constants.map(&:to_sym).to_set)
-        assert(mod.exported_types.empty?, "#{mod.exported_types.inspect} was expected to be empty")
-
-        assert(ns.constants.empty?)
-        assert(ns.exported_types.empty?, "#{ns.exported_types.inspect} was expected to be empty")
+    def test_create_numeric_uint
+        reg = make_registry
+        t = reg.create_numeric('/NewUInt', 3, :uint)
+        assert_equal '/NewUInt', t.name
+        assert_equal 3, t.size
+        assert t.integer?
+        assert t.unsigned?
     end
 
-    def test_clear_export_keeps_custom_objects
-	reg = make_registry
-        mod = Module.new
-        Typelib.log_silent do
-            reg.export_to_ruby(mod)
-        end
-
-        obj = Object.new
-        mod.const_set('CustomConstant', obj)
-        reg.clear_exports(mod)
-        assert_equal([:EComparison_1, :EComparison_2, :NS1, :VeryLongNamespaceName, :Std, :CustomConstant].to_set, mod.constants.map(&:to_sym).to_set)
-        assert(mod.exported_types.empty?, "#{mod.exported_types.inspect} was expected to be empty")
-        assert_equal(obj, mod::CustomConstant)
-    end
-
-    def test_export_converted_type
-	reg = make_registry
-        mod = Module.new
-
-        converted_t = reg.get('/B')
-        converted_t.convert_to_ruby(Time) { |bla| }
-        Typelib.log_silent do
-            reg.export_to_ruby(mod)
-        end
-
-        assert_equal(Time, mod::B)
-    end
-
-    def test_export_converted_type_to_existing_type
-	reg = make_registry
-        mod = Module.new
-        target_t = Class.new
-
-        ns = Module.new
-        mod.const_set(:EComparison_1, ns)
-        ns.const_set(:EWithAddedValues, target_t)
-
-        converted_t = reg.get('/E_comparison_1/E_with_added_values')
-        converted_t.convert_to_ruby(target_t) { |bla| }
-        Typelib.log_silent do
-            reg.export_to_ruby(mod)
-        end
-
-        assert_equal(target_t, mod::EComparison_1::EWithAddedValues)
+    def test_create_numeric_float
+        reg = make_registry
+        t = reg.create_numeric('/NewFloat', 4, :float)
+        assert_equal '/NewFloat', t.name
+        assert_equal 4, t.size
+        assert !t.integer?
     end
 
     def test_create_enum
@@ -204,28 +157,26 @@ class TC_Registry < Minitest::Test
     end
 
     def test_create_container
-        reg = make_registry
-
-        vector_t = reg.create_container('/std/vector', '/int')
+        vector_t = reg.create_container('/std/vector', '/int32_t')
         assert(vector_t <= Typelib::ContainerType)
-        assert_same(reg.get('int'), vector_t.deference)
+        assert_same(reg.get('int32_t'), vector_t.deference)
 
-        assert_raises(Typelib::NotFound) do
-            reg.create_container('/this_is_an_unknown_container', '/int')
+        e = assert_raises(Typelib::NotFound) do
+            reg.create_container('/this_is_an_unknown_container', '/int32_t')
         end
+        assert_equal "/this_is_an_unknown_container is not a known container type", e.message
 
-        assert_raises(Typelib::NotFound) do
+        e = assert_raises(Typelib::NotFound) do
             reg.create_container('/std/vector', '/this_is_an_unknown_type')
         end
+        assert_equal "cannot find /this_is_an_unknown_type in registry", e.message
     end
 
     def test_create_array
-        reg = make_registry
-
-        array_t = reg.create_array('/int', 20043)
+        array_t = reg.create_array('/int32_t', 20043)
         assert(array_t <= Typelib::ArrayType)
         assert_equal(array_t.length, 20043)
-        assert_same(reg.get('int'), array_t.deference)
+        assert_same(reg.get('int32_t'), array_t.deference)
 
         assert_raises(Typelib::NotFound) do
             reg.create_array('/this_is_an_unknown_type', 10000)
@@ -233,27 +184,25 @@ class TC_Registry < Minitest::Test
     end
 
     def test_create_compound
-        reg = make_registry
+        reg.create_numeric '/double', 8, :float
         assert_raises(ArgumentError) do
-            reg.create_compound('NewCompound') { |t| t.field0 = 'int' }
+            reg.create_compound('NewCompound') { |t| t.field0 = '/int32_t' }
         end
-        assert_raises(ArgumentError) do
-            reg.create_compound('/NewCompound') { |t| }
+        e = assert_raises(Typelib::NotFound) do
+            reg.create_compound('/NewCompound') { |t| t.field0 = '/this_is_an_unknown_type' }
         end
-        assert_raises(Typelib::NotFound) do
-            reg.create_compound('/NewCompound') { |t| t.field0 = 'this_is_an_unknown_type' }
-        end
+        assert_equal "cannot find /this_is_an_unknown_type in registry", e.message
         type = reg.create_compound('/NewCompound') do |t|
-            t.field0 = 'int'
-            t.add('field1', 'double', 10)
-            t.field2 = 'double[29459]'
+            t.field0 = '/int32_t'
+            t.add('field1', '/double', 10)
+            t.field2 = '/double[29459]'
         end
         assert(type <= Typelib::CompoundType)
-        assert_same(reg.get('int'), type['field0'])
+        assert_same(reg.get('/int32_t'), type['field0'])
         assert_equal(0, type.offset_of('field0'))
-        assert_same(reg.get('double'), type['field1'])
+        assert_same(reg.get('/double'), type['field1'])
         assert_equal(10, type.offset_of('field1'))
-        assert_same(reg.get('double[29459]'), type['field2'])
+        assert_same(reg.get('/double[29459]'), type['field2'])
         assert_equal(10 + type['field1'].size, type.offset_of('field2'))
     end
 

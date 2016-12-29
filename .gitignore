@@ -6,3 +6,6 @@
 # *~
 .*.swp
 build
+compile_commands.json
+*.orig
+.gdb_history

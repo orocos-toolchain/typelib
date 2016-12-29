@@ -207,11 +207,11 @@ class TC_SpecializedTypes < Minitest::Test
     def test_compound_method_overloading
         t = registry.create_compound '/CompoundWithOverloadingClashes' do |compound_t|
             # should not be overloaded on the class, but OK on the instance
-            compound_t.name = '/int'
+            compound_t.name = '/int32_t'
             # should not be overloaded on the instance, but OK on the class
-            compound_t.cast = '/int'
+            compound_t.cast = '/int32_t'
             # should be overloaded in both cases
-            compound_t.object_id = '/int'
+            compound_t.object_id = '/int32_t'
         end
 
         v = t.new
@@ -256,7 +256,7 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_array_plain_initialize_from_ruby_array
-        array_t = registry.create_array '/int', 10
+        array_t = registry.create_array '/int32_t', 10
         # Array too small
         assert_raises(ArgumentError) do
             array_t.new([0, 1, 2, 3, 4, 5])
@@ -268,7 +268,7 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_array_plain_raw_each
-        array_t = registry.create_array '/int', 10
+        array_t = registry.create_array '/int32_t', 10
         array = array_t.new
         10.times do |i|
             array[i] = i
@@ -339,15 +339,16 @@ class TC_SpecializedTypes < Minitest::Test
 
 
     def test_enum
-        registry = make_registry
-        e_type = registry.get("EContainer")
-        enum   = e_type[:value]
-        assert_equal([["E_FIRST", 0], ["E_SECOND", 1], ["E_SET", -1], ["E_PARENS", -2],
-                      ["E_OCT", 7],   ["E_HEX", 255],  ["LAST", 8],   ["E_FROM_SIZEOF_STD", 4],
-                      ["E_FROM_SIZEOF_SPEC", registry.get("B").size],
-                      ["E_FROM_SYMBOL", 255]].to_set, enum.keys.to_set)
+        registry = Typelib::Registry.new
+        registry.create_enum '/E' do |enum|
+            enum.add 'E_FIRST', 0
+            enum.add 'E_SECOND', 1
+        end
+        e_container = registry.create_compound '/EContainer' do |c|
+            c.add 'value', '/E'
+        end
 
-        e = e_type.new
+        e = e_container.new
         assert(e.respond_to?(:value))
         assert(e.respond_to?(:value=))
         e.value = 0
@@ -359,19 +360,32 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_enum_can_cast_to_superset
-        registry = make_registry
-        e_type  = registry.get("E")
-        e_added = registry.get("E_comparison_1/E_with_added_values")
-        assert(!(e_type == e_added))
-        assert(e_type.casts_to?(e_added))
+        registry = Typelib::Registry.new
+        e_type = registry.create_enum '/E' do |enum|
+            enum.add 'E_FIRST', 0
+            enum.add 'E_SECOND', 1
+        end
+        e_modified = registry.create_enum '/E_modified' do |enum|
+            enum.add 'E_FIRST', 0
+            enum.add 'E_SECOND', 1
+            enum.add 'E_THIRD', 2
+        end
+        refute_equal e_type, e_modified
+        assert e_type.casts_to?(e_modified)
     end
 
     def test_enum_cannot_cast_to_subset
-        registry = make_registry
-        e_type  = registry.get("E")
-        e_added = registry.get("E_comparison_1/E_with_added_values")
-        assert(!(e_type == e_added))
-        assert(!(e_added.casts_to?(e_type)))
+        registry = Typelib::Registry.new
+        e_type = registry.create_enum '/E' do |enum|
+            enum.add 'E_FIRST', 0
+            enum.add 'E_SECOND', 1
+        end
+        e_modified = registry.create_enum '/E_modified' do |enum|
+            enum.add 'E_FIRST', 0
+            enum.add 'E_SECOND', 2
+        end
+        refute_equal e_type, e_modified
+        refute e_type.casts_to?(e_modified)
     end
 
     def test_enum_cannot_cast_to_modified
@@ -403,7 +417,12 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_numeric
-        long = make_registry.get("/int")
+        registry = Typelib::Registry.new
+        registry.create_numeric '/int32_t', 4, :sint
+        registry.create_numeric '/uint32_t', 4, :uint
+        registry.create_numeric '/double', 8, :float
+
+        long = registry.get("/int32_t")
         assert(long < NumericType)
         assert(long.integer?)
         assert(!long.unsigned?)
@@ -412,13 +431,13 @@ class TC_SpecializedTypes < Minitest::Test
         long_v = long.from_ruby(10)
         assert_equal 10, long_v.to_ruby
 
-        ulong = make_registry.get("/unsigned int")
+        ulong = registry.get("/uint32_t")
         assert(ulong < NumericType)
         assert_equal(4, ulong.size)
         assert(ulong.integer?)
         assert(ulong.unsigned?)
 
-        double = make_registry.get("/double")
+        double = registry.get("/double")
         assert(double < NumericType)
         assert_equal(8, double.size)
         assert(!double.integer?)
@@ -426,7 +445,9 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_numeric_to_ruby
-        long = make_registry.get("/int")
+        registry = Typelib::Registry.new
+        registry.create_numeric '/int32_t', 4, :sint
+        long = registry.get("/int32_t")
         v = long.new
         v.zero!
         zero = Typelib.to_ruby(v)
@@ -435,26 +456,45 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_numeric_from_ruby
-        long = make_registry.get("/int")
+        registry = Typelib::Registry.new
+        registry.create_numeric '/int32_t', 4, :sint
+        long = registry.get("/int32_t")
         zero = Typelib.from_ruby(0, long)
         assert_kind_of Typelib::NumericType, zero
         assert_equal 0, Typelib.to_ruby(zero)
     end
 
     def test_numeric_from_ruby_raises_UnknownConversionRequested_when_converting_a_non_numeric
-        long = make_registry.get("/int")
+        registry = Typelib::Registry.new
+        registry.create_numeric '/int32_t', 4, :sint
+        long = registry.get("/int32_t")
         assert_raises(UnknownConversionRequested) { long.from_ruby('10') }
     end
 
     def test_string_handling
-        char_pointer  = make_registry.build("char*").new
+        registry = Typelib::CXXRegistry.new
+        char_pointer  = registry.build("char*").new
         assert(char_pointer.string_handler?)
         assert(char_pointer.respond_to?(:to_str))
     end
 
     def test_null
-        null = make_registry.get("/void")
+        registry = Typelib::Registry.new
+        registry.create_null '/void'
+        null = registry.get("/void")
         assert(null.null?)
+    end
+
+    def test_null_type_equality
+        registry = Typelib::Registry.new
+        void_t = registry.create_null('/void')
+        nil_t  = registry.create_null('/nil')
+        other_registry = Typelib::Registry.new
+        other_void_t = other_registry.create_null('/void')
+
+        assert_equal void_t, other_void_t
+        refute_equal void_t, nil_t
+        refute_equal other_void_t, nil_t
     end
 
     def test_containers
@@ -561,18 +601,19 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_create_container
-        reg = make_registry
+        reg = Typelib::Registry.new
+        int32_t = reg.create_numeric '/int32_t', 4, :sint
         assert_raises(ArgumentError) { reg.create_container("/blabla") }
-        cont = reg.create_container "/std/vector", reg.get("DisplayTest")
+        cont = reg.create_container "/std/vector", int32_t
 
         assert(cont < Typelib::ContainerType)
         assert_equal("/std/vector", cont.container_kind)
-        assert_equal(reg.get("DisplayTest"), cont.deference)
-        assert_equal("/std/vector</DisplayTest>", cont.name)
+        assert_equal(int32_t, cont.deference)
+        assert_equal("/std/vector</int32_t>", cont.name)
     end
 
     def test_std_string
-        reg   = make_registry
+        reg   = Typelib::CXXRegistry.new
         type  = reg.get("/std/string")
         value = type.new
 
@@ -586,7 +627,7 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_std_string_push
-        reg   = make_registry
+        reg   = Typelib::CXXRegistry.new
         string_t  = reg.get("/std/string")
 
         str = Typelib.from_ruby("string", string_t)
@@ -598,7 +639,7 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_std_string_concat
-        reg   = make_registry
+        reg   = Typelib::CXXRegistry.new
         string_t  = reg.get("/std/string")
 
         str = Typelib.from_ruby("string1", string_t)
@@ -607,7 +648,7 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_boolean
-        reg = make_registry
+        reg = Typelib::CXXRegistry.new
 
         type = reg.get "bool"
 
@@ -621,7 +662,10 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_boolean_in_struct
-        reg = make_registry
+        reg = Typelib::CXXRegistry.new
+        reg.create_compound '/BoolHandling' do |c|
+            c.add 'value', '/bool'
+        end
 
         type = reg.get "BoolHandling"
         value = type.new
@@ -644,7 +688,8 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_vector_freeze
-        vector_t = make_registry.get("/std/vector</double>")
+        registry = Typelib::CXXRegistry.new
+        vector_t = registry.create_container '/std/vector', '/double'
         vector = vector_t.new
 
         10.times do |i|
@@ -660,7 +705,8 @@ class TC_SpecializedTypes < Minitest::Test
     end
 
     def test_vector_invalidate_refuses_toplevel_values
-        vector_t = make_registry.get("/std/vector</double>")
+        registry = Typelib::CXXRegistry.new
+        vector_t = registry.create_container '/std/vector', '/double'
         vector = vector_t.new
         assert_raises(ArgumentError) { vector.invalidate }
     end

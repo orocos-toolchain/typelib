@@ -112,6 +112,10 @@ module Typelib
                 @elements[index]
             end
 
+            def get(index)
+                self[index]
+            end
+
             # Returns the value at the given index
             def [](index, chunk_size = nil)
                 if chunk_size
@@ -142,6 +146,10 @@ module Typelib
                 end
 
                 do_set(index, value)
+            end
+
+            def set(index, value)
+                self[index] = value
             end
 
             def []=(index, value)
@@ -236,6 +244,12 @@ module Typelib
         # Adds a new value at the end of the sequence
         def push(*values)
             concat(values)
+        end
+
+        # Create a new container with the given size and element
+        def self.of_size(size, element = deference.new)
+            element = Typelib.from_ruby(element, deference).to_byte_array
+            from_buffer([size].pack("Q") + element * size)
         end
 
         # This should return an object that allows to identify whether the
@@ -401,6 +415,7 @@ module Typelib
         # the latter case, a 'size' field is added with the number of elements
         # in the container to allow for validation on the receiving end.
         def to_simple_value(options = Hash.new)
+            apply_changes_from_converted_types
             if options[:pack_simple_arrays] && element_t.respond_to?(:pack_code)
                 Hash[pack_code: element_t.pack_code,
                      size: size,

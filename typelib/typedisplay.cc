@@ -49,7 +49,7 @@ bool TypeDisplayVisitor::visit_(Compound const& type, Field const& field)
 { 
     m_stream << m_indent << "(+" << field.getOffset() << ") ";
     TypeVisitor::visit_(type, field);
-    m_stream << "\n";
+    m_stream << " " << field.getName() << std::endl;
     return true;
 }
 
@@ -72,7 +72,7 @@ bool TypeDisplayVisitor::visit_(Numeric const& type)
     };
 
     m_stream
-        << name << "(" << type.getSize() << ")";
+        << name << "(" << type.getSize() << ") (" << type.getName() << ")";
     return true;
 }
 
@@ -103,4 +103,8 @@ bool TypeDisplayVisitor::visit_(Array const& type)
     return true;
 }
 
-
+bool TypeDisplayVisitor::visit_(Container const& type)
+{
+    m_stream << "container " << type.kind() << "<" << type.getIndirection().getName() << ">";
+    return true;
+}

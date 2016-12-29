@@ -359,7 +359,7 @@ VALUE registry_minimal(VALUE self, VALUE rb_auto, VALUE with_aliases)
     {
         Registry& auto_types = rb2cxx::object<Registry>(rb_auto);
         try { 
-            Registry* result = registry.minimal(auto_types);
+            Registry* result = registry.minimal(auto_types, RTEST(with_aliases));
             return registry_wrap(cRegistry, result);
         }
         catch(std::exception const& e)
@@ -646,6 +646,34 @@ static VALUE registry_create_opaque(VALUE registry, VALUE _name, VALUE _size)
 }
 
 /*
+ * @method registry.do_create_numeric(name, size, category)
+ *
+ *  @param [Integer] category either 0 for signed integer, 1 for unsigned
+ *    integer and 2 for float
+ *
+ * Creates a new numeric type, with the given name, size and integerness
+ */
+static VALUE registry_do_create_numeric(VALUE registry, VALUE _name, VALUE _size, VALUE _category)
+{
+    Registry& reg = rb2cxx::object<Registry>(registry);
+
+    Typelib::Numeric::NumericCategory typelib_category;
+    int category = NUM2INT(_category);
+    if (category == 0)
+        typelib_category = Typelib::Numeric::SInt;
+    else if (category == 1)
+        typelib_category = Typelib::Numeric::UInt;
+    else if (category == 2)
+        typelib_category = Typelib::Numeric::Float;
+    else rb_raise(rb_eArgError, "invalid mode %i, accepted modes are 0 (for SInt), 1 (for UInt) and 2 (for Float)", category);
+
+    Typelib::Type* type = new Typelib::Numeric(StringValuePtr(_name), NUM2INT(_size), typelib_category);
+    try { reg.add(type, true, ""); }
+    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
+    return cxx2rb::type_wrap(*type, registry);
+}
+
+/*
  * call-seq:
  *   registry.create_null(name)
  *
@@ -685,6 +713,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "reverse_depends", RUBY_METHOD_FUNC(registry_reverse_depends), 1);
     rb_define_method(cRegistry, "remove", RUBY_METHOD_FUNC(registry_remove), 1);
     rb_define_method(cRegistry, "source_id_of", RUBY_METHOD_FUNC(registry_source_id_of), 1);
+    rb_define_method(cRegistry, "do_create_numeric", RUBY_METHOD_FUNC(registry_do_create_numeric), 3);
     rb_define_method(cRegistry, "do_create_compound", RUBY_METHOD_FUNC(registry_create_compound), 3);
     rb_define_method(cRegistry, "do_create_enum", RUBY_METHOD_FUNC(registry_create_enum), 3);
     rb_define_method(cRegistry, "create_opaque", RUBY_METHOD_FUNC(registry_create_opaque), 2);

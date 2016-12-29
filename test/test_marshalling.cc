@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
         };
 
         MemoryLayout ops;
-        ops.insert(ops.end(), raw_ops, raw_ops + 14);
+        ops.ops.insert(ops.ops.end(), raw_ops, raw_ops + 14);
 
         Type const& type = *registry.get("/A");
         memset(&a, 1, sizeof(A));
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE( test_marshalling_simple )
         };
 
         MemoryLayout ops;
-        ops.insert(ops.end(), raw_ops, raw_ops + 9);
+        ops.ops.insert(ops.ops.end(), raw_ops, raw_ops + 9);
 
         Type const& type = *registry.get("/B");
         vector<uint8_t> buffer;

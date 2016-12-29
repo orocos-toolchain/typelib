@@ -1,0 +1,20 @@
+#! /usr/bin/env ruby
+
+require_relative './test_config'
+require 'typelib/test'
+
+has_files = false
+ARGV.delete_if do |arg|
+    if File.file?(full_path = File.join(SRCDIR, 'ruby', arg))
+        has_files = true
+        require full_path
+        true
+    end
+end
+
+if !has_files
+    Dir.glob(File.join(SRCDIR, 'ruby', 'test_*.rb')) do |file|
+        require file
+    end
+end
+

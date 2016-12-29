@@ -122,6 +122,13 @@ module Typelib
                 recursive_dependencies.include?(type) || recursive_dependencies.any? { |t| t <= type }
         end
 
+        # Check for type equality
+        # In contrast to #==, which calls do_compare (in C++) to compare the 
+        # internal structure of the types, #eql? also compares the names of the types.
+        def self.eql?(other)
+	    self == other && name == other.name
+        end
+
         # @deprecated
         #
         # Replaced by {direct_dependencies}
@@ -129,7 +136,7 @@ module Typelib
             direct_dependencies
         end
 
-        # [ValueSet<Type>] Returns the types that are directly referenced by +self+
+        # [Set<Type>] Returns the types that are directly referenced by +self+
         #
         # @see recursive_dependencies
         def self.direct_dependencies
@@ -138,13 +145,13 @@ module Typelib
 
         # Returns the set of all types that are needed to define +self+
         #
-        # @param [ValueSet<Type>] set if given, the new types will be added to
+        # @param [Set<Type>] set if given, the new types will be added to
         #   this set. Otherwise, a new set is created. In both cases, the set is
         #   returned
-        # @return [ValueSet<Type>]
+        # @return [Set<Type>]
         def self.recursive_dependencies(set = nil)
             if !@recursive_dependencies
-                @recursive_dependencies = ValueSet.new
+                @recursive_dependencies = Set.new
                 direct_dependencies.each do |direct_dep|
                     @recursive_dependencies << direct_dep
                     direct_dep.recursive_dependencies(@recursive_dependencies)
@@ -348,7 +355,9 @@ module Typelib
 
         class << self
 	    # The Typelib::Registry this type belongs to
-            attr_reader :registry
+            def registry
+                @__typelib_registry
+            end
 
 	    # The type's full name (i.e. name and namespace). In typelib,
 	    # namespace components are separated by '/'
@@ -440,6 +449,7 @@ module Typelib
 	    end
 
 	    def to_s; "#<#{superclass.name}: #{name}>" end
+            def inspect; to_s end
 
 	    # are we a null type ?
 	    def null?; @null end
@@ -596,9 +606,15 @@ module Typelib
 		end
 	    end
 
+            # @return [Registry] a registry that contains only the types needed
+            #   to define this type
+            def minimal_registry(with_aliases: true)
+                registry.minimal(name, with_aliases)
+            end
+
             # @return [String] a XML representation of this type
             def to_xml
-                registry.minimal(name, true).to_xml
+                minimal_registry.to_xml
             end
 
             def initialize_base_class
@@ -670,6 +686,11 @@ module Typelib
                 options[:remove_trailing_skips])
         end
 
+        # Method called by typelib for internal initialization.
+        #
+        # Do not override unless you know what you are doing
+        #
+        # Initialization of default values should be done in {#initialize}
         def typelib_initialize
         end
 
@@ -734,7 +755,7 @@ module Typelib
 	def is_a?(typename); self.class.is_a?(typename) end
 
         def inspect
-            sprintf("#<%s:%s @%s>", self.class.superclass.name, self.class.name, to_memory_ptr.inspect)
+            raw_to_s + ": " + to_simple_value.inspect
         end
 
         # Returns a representation of this type only into simple Ruby values,

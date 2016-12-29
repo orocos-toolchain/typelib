@@ -240,6 +240,8 @@ typelib_ruby::memory_init(VALUE ptr, VALUE type)
         if (layout_it == memory_layouts.end())
         {
             cxx2rb::RbRegistry& registry = rb2cxx::object<cxx2rb::RbRegistry>(type_get_registry(type));
+            if (registry.registry->get(t.getName()) != &t)
+                throw std::logic_error("memory_init: mismatch between Ruby-registered registry and C++ registry that really holds the type for " + t.getName());
             layout_it = memory_layouts.insert(
                 make_pair( &t, RbMemoryLayout(layout_of(t, true), registry.registry) )
                 ).first;
