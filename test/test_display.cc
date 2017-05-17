@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(test_csv)
     {
 	// Get the test file into repository
 	utilmm::config_set config;
-	auto_ptr<Registry> registry(PluginManager::self()->load("tlb", TEST_DATA_PATH("test_cimport.tlb"), config));
+	auto_ptr<Registry> registry(PluginManager::getInstance().load("tlb", TEST_DATA_PATH("test_cimport.tlb"), config));
 
 	{
 	    ostringstream stream;

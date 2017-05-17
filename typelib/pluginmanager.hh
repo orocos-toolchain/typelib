@@ -4,7 +4,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <typelib/utilmm/singleton/use.hh>
 #include <typelib/utilmm/configset.hh>
 #include <stdexcept>
 
@@ -182,13 +181,10 @@ namespace Typelib
             , utilmm::config_set const& config
             , Registry& into );
 
-	/** The one PluginManager object. See main PluginManager documentation
-	 * for its use.
-	 */
-        typedef utilmm::singleton::use<PluginManager> self;
-
+        static PluginManager& getInstance();
+            
     private:
-        friend class utilmm::singleton::wrapper<PluginManager>;
+        static PluginManager *instance;
     };
 }
 

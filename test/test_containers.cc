@@ -66,8 +66,8 @@ static void import_test_types(Registry& registry)
     static const char* test_file = TEST_DATA_PATH("test_cimport.tlb");
 
     utilmm::config_set config;
-    PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    PluginManager &manager(PluginManager::getInstance());
+    auto_ptr<Importer> importer(manager.importer("tlb"));
     BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
 }
 
