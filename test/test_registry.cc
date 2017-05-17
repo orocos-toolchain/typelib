@@ -208,9 +208,9 @@ BOOST_AUTO_TEST_CASE( test_repositories_merge )
     static const char* test_file = TEST_DATA_PATH("test_cimport.tlb");
 
     utilmm::config_set config;
-    PluginManager::self manager;
+    PluginManager &manager(PluginManager::getInstance());
 
-    std::auto_ptr<Registry> ref( manager->load("tlb", test_file, config));
+    std::auto_ptr<Registry> ref( manager.load("tlb", test_file, config));
     Registry target;
     target.merge(*ref);
     assert_registries_equal(target, *ref);

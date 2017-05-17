@@ -53,8 +53,8 @@ namespace Typelib
     Registry::Registry()
         : m_global(nameSort)
     { 
-        PluginManager::self manager;
-        manager->registerPluginTypes(*this);
+        PluginManager &manager(PluginManager::getInstance());
+        manager.registerPluginTypes(*this);
         setDefaultNamespace("/");
     }
     Registry::~Registry() { clear(); }

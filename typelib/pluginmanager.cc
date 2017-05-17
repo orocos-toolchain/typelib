@@ -6,10 +6,13 @@
 #include <boost/filesystem.hpp>
 #include <boost/version.hpp>
 #include <dlfcn.h>
+#include <iostream>
 
 using namespace std;
 using namespace Typelib;
 using namespace boost::filesystem;
+
+PluginManager *PluginManager::instance = NULL;
 
 namespace
 {
@@ -173,7 +176,7 @@ void PluginManager::save(std::string const& kind, Registry const& registry, std:
 }
 void PluginManager::save(std::string const& kind, utilmm::config_set const& config, Registry const& registry, std::ostream& into)
 {
-    auto_ptr<Exporter> exporter(PluginManager::self()->exporter(kind));
+    auto_ptr<Exporter> exporter(PluginManager::getInstance().exporter(kind));
     exporter->save(into, config, registry);
 }
 
@@ -207,7 +210,7 @@ Registry* PluginManager::load(std::string const& kind, std::istream& stream, uti
 void PluginManager::load(std::string const& kind, std::istream& stream, utilmm::config_set const& config
         , Registry& into )
 {
-    std::auto_ptr<Importer> importer(PluginManager::self()->importer(kind));
+    std::auto_ptr<Importer> importer(PluginManager::getInstance().importer(kind));
     importer->load(stream, config, into);
 }
 Registry* PluginManager::load(std::string const& kind, std::string const& file, utilmm::config_set const& config)
@@ -219,7 +222,14 @@ Registry* PluginManager::load(std::string const& kind, std::string const& file, 
 void PluginManager::load(std::string const& kind, std::string const& file, utilmm::config_set const& config
         , Registry& into)
 {
-    auto_ptr<Importer> importer(PluginManager::self()->importer(kind));
+    auto_ptr<Importer> importer(PluginManager::getInstance().importer(kind));
     importer->load(file, config, into);
 }
 
+PluginManager& PluginManager::getInstance()
+{
+    if(instance == NULL)
+        instance = new PluginManager();
+    
+    return *instance;
+}

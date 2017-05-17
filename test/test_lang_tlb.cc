@@ -19,34 +19,34 @@ using namespace std;
 #ifdef HAS_INTERNAL_CPARSER
 BOOST_AUTO_TEST_CASE( test_tlb_rejects_recursive_types )
 {
-    PluginManager::self manager;
+    PluginManager &manager(PluginManager::getInstance());
     Registry registry;
 
     static const char* test_file = TEST_DATA_PATH("test_cimport.1");
     utilmm::config_set config;
-    manager->load("c", test_file, config, registry);
+    manager.load("c", test_file, config, registry);
 
-    BOOST_REQUIRE_THROW(manager->save("tlb", registry), ExportError);
+    BOOST_REQUIRE_THROW(manager.save("tlb", registry), ExportError);
 }
 #endif
 
 BOOST_AUTO_TEST_CASE( test_tlb_idempotent )
 {
-    PluginManager::self manager;
+    PluginManager &manager(PluginManager::getInstance());
     Registry registry;
 
     static const char* test_file = TEST_DATA_PATH("test_cimport.tlb");
     {
         utilmm::config_set config;
-        manager->load("tlb", test_file, config, registry);
+        manager.load("tlb", test_file, config, registry);
     }
 
     string result;
-    result = manager->save("tlb", registry);
+    result = manager.save("tlb", registry);
     istringstream io(result);
     utilmm::config_set config;
     Registry* reloaded = NULL;
-    reloaded = manager->load("tlb", io, config);
+    reloaded = manager.load("tlb", io, config);
 
     if (!registry.isSame(*reloaded))
     {
@@ -68,8 +68,8 @@ BOOST_AUTO_TEST_CASE( test_tlb_idempotent )
 
 BOOST_AUTO_TEST_CASE( test_tlb_import )
 {
-    PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    PluginManager &manager(PluginManager::getInstance());
+    auto_ptr<Importer> importer(manager.importer("tlb"));
     utilmm::config_set config;
 
     {
