@@ -5,10 +5,18 @@ describe Typelib::RegistryExport do
     before do
         @reg = Typelib::Registry.new
         @root = Typelib::RegistryExport::Namespace.new
-        root.reset_registry_export(reg, nil)
+        root.reset_registry_export(reg, nil, '/')
     end
 
     describe "access from constants" do
+        before do
+            @original_logger_level = Typelib.logger.level
+            Typelib.logger.level = Logger::FATAL
+        end
+        after do
+            Typelib.logger.level = @original_logger_level
+        end
+
         it "gives access to toplevel objects" do
             type = reg.create_compound '/CustomType'
             assert_same type, root::CustomType
