@@ -16,7 +16,7 @@
   <license>CeCILL-B (BSD-like)</license>
 
   <depend package="utilrb" />
-  <rosdep name="gccxml" />
+  <depend_optional package="gccxml" />
   <rosdep name="boost" />
   <rosdep name="facets" />
   <rosdep name="libxml2" />
