@@ -1021,8 +1021,9 @@ module Typelib
         end
 
         def self.preprocess(files, kind, options)
-            includes = options[:include].map { |v| "-I#{v}" }
-            defines  = options[:define].map { |v| "-D#{v}" }
+            includes = options.fetch(:include, Array.new).map { |v| "-I#{v}" }
+            defines  = options.fetch(:define, Array.new).map { |v| "-D#{v}" }
+            rawflags = options.fetch(:rawflags, Array.new)
 
             Tempfile.open(['orogen_gccxml_input','.hpp']) do |io|
                 files.each do |path|
@@ -1031,9 +1032,9 @@ module Typelib
                 io.flush
 
                 if options[:castxml]
-                    call = [castxml_binary_name, "--castxml-gccxml", "-E", *includes, *defines, *castxml_default_options, io.path] 
+                    call = [castxml_binary_name, "--castxml-gccxml", "-E", *includes, *defines, *rawflags, *castxml_default_options, io.path] 
                 else
-                    call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
+                    call = [gcc_binary_name, "--preprocess", *includes, *defines, *rawflags, *gccxml_default_options, io.path]
                 end
 
                 result = IO.popen(call) do |gccxml_io|
