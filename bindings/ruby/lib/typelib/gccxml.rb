@@ -860,6 +860,7 @@ module Typelib
                     line = Integer(line)
                     if doc = GCCXMLLoader.parse_cxx_documentation_before(source_file_content(file), line)
                         type.metadata.set('doc', doc)
+                        extract_doc_metadata(type.metadata, doc)
                     end
                 end
                 if type.respond_to?(:field_metadata)
@@ -869,6 +870,7 @@ module Typelib
                             line = Integer(line)
                             if doc = GCCXMLLoader.parse_cxx_documentation_before(source_file_content(file), line)
                                 md.set('doc', doc)
+                                extract_doc_metadata(md, doc)
                             end
                         end
                     end
@@ -890,6 +892,15 @@ module Typelib
                 end
             end
             filtered_registry
+        end
+
+        def extract_doc_metadata(metadata, doc)
+            meta = doc.split("\n").grep(/^\s*@meta/)
+            meta.each do |line|
+                if line =~ /^\s*@meta (\w+)\s+(.*)$/
+                    metadata.add($1, $2)
+                end
+            end
         end
 
         def permanent_alias?(name)
