@@ -178,6 +178,16 @@ require 'typelib/cxx_registry'
 require 'typelib/specializations'
 require 'typelib_ruby'
 
+Typelib::Type.instance_variable_set :@metadata, Typelib::MetaData.new
+Typelib::IndirectType.instance_variable_set :@metadata, Typelib::MetaData.new
+Typelib::OpaqueType.instance_variable_set :@metadata, Typelib::MetaData.new
+Typelib::PointerType.instance_variable_set :@metadata, Typelib::MetaData.new
+Typelib::NumericType.instance_variable_set :@metadata, Typelib::MetaData.new
+Typelib::ArrayType.instance_variable_set :@metadata, Typelib::MetaData.new
+Typelib::CompoundType.instance_variable_set :@metadata, Typelib::MetaData.new
+Typelib::EnumType.instance_variable_set :@metadata, Typelib::MetaData.new
+Typelib::ContainerType.instance_variable_set :@metadata, Typelib::MetaData.new
+
 require 'typelib/standard_convertions'
 
 require 'typelib/path'

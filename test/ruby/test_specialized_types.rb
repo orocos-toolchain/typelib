@@ -35,6 +35,18 @@ class TC_SpecializedTypes < Minitest::Test
     attr_reader :array_t
     attr_reader :root_t
 
+    def test_base_classes_have_metadata
+        assert_kind_of Typelib::MetaData, Typelib::IndirectType.metadata
+        assert_kind_of Typelib::MetaData, Typelib::OpaqueType.metadata
+        assert_kind_of Typelib::MetaData, Typelib::PointerType.metadata
+        assert_kind_of Typelib::MetaData, Typelib::NumericType.metadata
+        assert_kind_of Typelib::MetaData, Typelib::ArrayType.metadata
+        assert_kind_of Typelib::MetaData, Typelib::CompoundType.metadata
+        assert_kind_of Typelib::MetaData, Typelib::EnumType.metadata
+        assert_kind_of Typelib::MetaData, Typelib::ContainerType.metadata
+        assert_kind_of Typelib::MetaData, Typelib::CompoundType.metadata
+    end
+
     # Not in setup() since we want to make sure
     # that the registry is not destroyed by the GC
     def make_registry
