@@ -7,7 +7,7 @@ module Typelib
 
             include RegistryExport
 
-            def reset_registry_export(registry, filter_block, typename_prefix = '/')
+            def reset_registry_export(registry = self.registry, *)
                 @registry = registry
                 super
             end
@@ -37,9 +37,11 @@ module Typelib
         attr_reader :__typelib_registry_export_typename_prefix
         attr_reader :__typelib_registry_export_filter_block
 
-        def reset_registry_export(registry, filter_block, typename_prefix = '/')
+        def reset_registry_export(registry = self.registry,
+                                  filter_block = @__typelib_registry_export_filter_block,
+                                  typename_prefix = @__typelib_registry_export_typename_prefix)
             if registry && (self.registry != registry)
-                raise RuntimeError, "setting up #{self} to be an export type from #{registry}, but it is a type from #{self.registry}"
+                raise RuntimeError, "setting up #{self} to be an export type from #{registry}, but it is already exporting types from #{self.registry}"
             end
 
             @__typelib_registry_export_filter_block = filter_block
@@ -48,7 +50,9 @@ module Typelib
         end
 
         def initialize_registry_export(mod, name)
-            reset_registry_export(mod.registry, mod.__typelib_registry_export_filter_block, "#{mod.__typelib_registry_export_typename_prefix}#{name}/")
+            reset_registry_export(mod.registry,
+                                  mod.__typelib_registry_export_filter_block,
+                                  "#{mod.__typelib_registry_export_typename_prefix}#{name}/")
         end
 
         def disable_registry_export
@@ -71,6 +75,10 @@ module Typelib
             template_args = template_args_to_typelib(args)
             yield("#{m}#{template_args}")
             return if !relaxed_naming
+            Typelib.warn "possible old-style access on Types, use Types.namespace.of.Type instead of Types::Namespace::Of::Type"
+            caller.each do |call|
+                Typelib.warn "  #{call}"
+            end
             yield("#{m.snakecase}#{template_args}")
             yield("#{m.camelcase}#{template_args}")
         end
@@ -127,7 +135,7 @@ module Typelib
 
                 attr_reader :registry
 
-                def reset_registry_export(registry, filter_block, typename_prefix = '/')
+                def reset_registry_export(registry = self.registry, *args)
                     @registry = registry
                     super
                 end

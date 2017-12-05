@@ -16,13 +16,18 @@
   <license>CeCILL-B (BSD-like)</license>
 
   <depend package="utilrb" />
-  <depend_optional package="clang-3.4" />
-  <depend_optional package="castxml" />
-  <rosdep name="gccxml" />
-  <rosdep name="boost" />
-  <rosdep name="facets" />
-  <rosdep name="libxml2" />
-  <rosdep name="pkg-config" />
+  
+  <!-- typelib depends on onle one of these optional libraries
+       the user has to choose which one to use and install it manually
+       <depend_optional package="clang-3.4" />
+       <depend_optional package="castxml" />
+       <depend_optional package="gccxml" />
+  -->
+  <depend package="boost" />
+  <depend package="facets" />
+  <depend package="libxml2" />
+  <depend package="pkg-config" />
+  <depend package="ruby-dev" />
 
   <tags>stable</tags>
 

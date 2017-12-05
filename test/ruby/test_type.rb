@@ -17,6 +17,10 @@ class TC_Type < Minitest::Test
         registry
     end
 
+    def test_type_class_has_metadata
+        assert_kind_of Typelib::MetaData, Type.metadata
+    end
+
     def test_type_should_be_equal_when_they_are_the_same_object
         type = CXXRegistry.new.get("/int32_t")
         assert_equal type, type

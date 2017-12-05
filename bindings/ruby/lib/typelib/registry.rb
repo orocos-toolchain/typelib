@@ -109,7 +109,7 @@ module Typelib
         # which it should be done is given in +base_module+
         def export_to_ruby(base_module, options = Hash.new, &block)
             base_module.extend RegistryExport
-            base_module.reset_registry_export(self, block)
+            base_module.reset_registry_export(self, block, '/')
         end
 
 	# Returns the file type as expected by Typelib from 

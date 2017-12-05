@@ -860,6 +860,7 @@ module Typelib
                     line = Integer(line)
                     if doc = GCCXMLLoader.parse_cxx_documentation_before(source_file_content(file), line)
                         type.metadata.set('doc', doc)
+                        extract_doc_metadata(type.metadata, doc)
                     end
                 end
                 if type.respond_to?(:field_metadata)
@@ -869,6 +870,7 @@ module Typelib
                             line = Integer(line)
                             if doc = GCCXMLLoader.parse_cxx_documentation_before(source_file_content(file), line)
                                 md.set('doc', doc)
+                                extract_doc_metadata(md, doc)
                             end
                         end
                     end
@@ -890,6 +892,15 @@ module Typelib
                 end
             end
             filtered_registry
+        end
+
+        def extract_doc_metadata(metadata, doc)
+            meta = doc.split("\n").grep(/^\s*@meta/)
+            meta.each do |line|
+                if line =~ /^\s*@meta (\w+)\s+(.*)$/
+                    metadata.add($1, $2)
+                end
+            end
         end
 
         def permanent_alias?(name)
@@ -1026,8 +1037,9 @@ module Typelib
         end
 
         def self.preprocess(files, kind, options)
-            includes = options[:include].map { |v| "-I#{v}" }
-            defines  = options[:define].map { |v| "-D#{v}" }
+            includes = options.fetch(:include, Array.new).map { |v| "-I#{v}" }
+            defines  = options.fetch(:define, Array.new).map { |v| "-D#{v}" }
+            rawflags = options.fetch(:rawflags, Array.new)
 
             Tempfile.open(['orogen_gccxml_input','.hpp']) do |io|
                 files.each do |path|
@@ -1036,9 +1048,9 @@ module Typelib
                 io.flush
 
                 if options[:castxml]
-                    call = [castxml_binary_name, "--castxml-gccxml", "-E", *includes, *defines, *castxml_default_options, io.path] 
+                    call = [castxml_binary_name, "--castxml-gccxml", "-E", *includes, *defines, *rawflags, *castxml_default_options, io.path] 
                 else
-                    call = [gcc_binary_name, "--preprocess", *includes, *defines, *gccxml_default_options, io.path]
+                    call = [gcc_binary_name, "--preprocess", *includes, *defines, *rawflags, *gccxml_default_options, io.path]
                 end
 
                 result = IO.popen(call) do |gccxml_io|

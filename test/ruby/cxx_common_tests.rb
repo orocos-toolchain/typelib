@@ -173,6 +173,12 @@ module CXXCommonTests
         assert_equal ["this is a multiline\ndocumentation block"], reg.get('/DocumentedType').metadata.get('doc')
     end
 
+    def test_import_documentation_extracts_metadata_tags
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_metadata_tags.h'), 'c', cxx_importer: loader
+        assert_equal ["struct_metadata"], reg.get('/DocumentedType').metadata.get('test')
+        assert_equal ["field_metadata"], reg.get('/DocumentedType').field_metadata['field'].get('test')
+    end
+
     def test_import_supports_utf8
         reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_utf8.h'), 'c', cxx_importer: loader
         assert_equal ["this is a \u9999 multiline with \u1290 unicode characters"], reg.get('/DocumentedType').metadata.get('doc')
