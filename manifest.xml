@@ -23,11 +23,11 @@
        <depend_optional package="castxml" />
        <depend_optional package="gccxml" />
   -->
-  <depend package="boost" />
-  <depend package="facets" />
-  <depend package="libxml2" />
-  <depend package="pkg-config" />
-  <depend package="ruby-dev" />
+  <rosdep name="boost" />
+  <rosdep name="facets" />
+  <rosdep name="libxml2" />
+  <rosdep name="pkg-config" />
+  <rosdep name="ruby-dev" />
 
   <tags>stable</tags>
 
