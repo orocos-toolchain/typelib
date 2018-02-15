@@ -9,6 +9,11 @@ require 'pp'
 require 'facets/string/camelcase'
 require 'set'
 require 'base64'
+require 'backports/2.4.0/true_class/dup'
+require 'backports/2.4.0/false_class/dup'
+require 'backports/2.4.0/fixnum/dup'
+require 'backports/2.4.0/float/dup'
+require 'backports/2.4.0/nil_class/dup'
 
 if !defined?(Infinity)
     Infinity = Float::INFINITY
@@ -136,8 +141,6 @@ module Typelib
         end
     end
 
-    # Set of classes that have a #dup method but on which dup is forbidden
-    DUP_FORBIDDEN = [TrueClass, FalseClass, Fixnum, Float, Symbol]
     @@loaded_typelib_plugins = false
 
     def self.load_typelib_plugins(force: false)

@@ -105,13 +105,10 @@ module Typelib
                 new_value = super()
                 for field_name in self.class.converted_fields
                     converted_value = instance_variable_get("@#{FIELD_NANE_PREFIX}#{field_name}")
-                    if !converted_value.nil?
-                        # false, nil,  numbers can't be dup'ed
-                        if !DUP_FORBIDDEN.include?(converted_value.class)
-                            converted_value = converted_value.dup
-                        end
-                        instance_variable_set("@#{FIELD_NANE_PREFIX}#{field_name}", converted_value)
+                    if !converted_value.kind_of?(Symbol)
+                        converted_value = converted_value.dup
                     end
+                    instance_variable_set("@#{FIELD_NANE_PREFIX}#{field_name}", converted_value.dup)
                 end
                 new_value
             end
