@@ -138,13 +138,20 @@ module Typelib
 
     # Set of classes that have a #dup method but on which dup is forbidden
     DUP_FORBIDDEN = [TrueClass, FalseClass, Fixnum, Float, Symbol]
+    @@loaded_typelib_plugins = false
 
-    def self.load_typelib_plugins
+    def self.load_typelib_plugins(force: false)
+        if !force && @@loaded_typelib_plugins
+            return
+        end
+
         found_by_gem = Set.new
         Gem.find_files('*/typelib_plugin.rb').each do |plugin_path|
             found_by_gem << plugin_path
             require plugin_path
         end
+
+        @@loaded_typelib_plugins = true
 
         if !ENV['TYPELIB_RUBY_PLUGIN_PATH'] || (@@typelib_plugin_path == ENV['TYPELIB_RUBY_PLUGIN_PATH'])
             return
