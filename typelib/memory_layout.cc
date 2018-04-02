@@ -54,7 +54,7 @@ void MemoryLayout::pushArray(size_t dimension, MemoryLayout const& array_ops)
     ops.push_back(dimension);
     ops.insert(ops.end(), array_ops.begin(), array_ops.end());
     ops.push_back(FLAG_END);
-    
+
     pushInitRepeat(dimension, array_ops);
 }
 
@@ -220,7 +220,7 @@ MemoryLayout::const_iterator MemoryLayout::simplifyInit(const_iterator it, const
     }
     else if (!current_init_data.empty())
         simplified.pushInit(current_init_data);
-    
+
     return it;
 }
 
@@ -386,7 +386,7 @@ void MemoryLayout::validate() const
                     throw InvalidMemoryLayout("found FLAG_END without a corresponding start (ARRAY/CONTAINER)");
                 --indent;
                 break;
-            default: 
+            default:
                 throw InvalidMemoryLayout("found invalid bytecode");
 
         }

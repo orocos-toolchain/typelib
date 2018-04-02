@@ -264,7 +264,7 @@ bool Vector::visit(void* ptr, ValueVisitor& visitor) const
     uint8_t* base = &(*vector_ptr)[0];
     size_t   element_size  = getIndirection().getSize();
     size_t   element_count = getElementCount(vector_ptr);
-    const Type &indirect(getIndirection()); 
+    const Type &indirect(getIndirection());
 
     for (size_t i = 0; i < element_count; ++i)
         visitor.dispatch(Value(base + i * element_size, indirect));
@@ -490,7 +490,7 @@ Container::MarshalOps::const_iterator String::load(
         reinterpret_cast< std::string* >(container_ptr);
 
     string_ptr->clear();
-        
+
     std::vector<uint8_t> buffer;
     buffer.resize(element_count);
     stream.read(&buffer[0], element_count);

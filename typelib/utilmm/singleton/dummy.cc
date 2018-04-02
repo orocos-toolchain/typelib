@@ -9,13 +9,13 @@ using namespace utilmm::singleton;
  * class utilmm::singleton::dummy
  */
 
-// structors 
+// structors
 dummy::dummy()
   :ref_counter(0ul) {}
 
 dummy::~dummy() {}
 
-// modifiers 
+// modifiers
 void dummy::incr_ref() const {
   ++ref_counter;
 }

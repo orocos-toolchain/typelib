@@ -24,7 +24,7 @@ namespace utilmm {
      *
      * @note All the mathods of this class are for internal use
      * do not call them directly.
-     * 
+     *
      * @ingroup singleton
      */
     template<typename Ty>

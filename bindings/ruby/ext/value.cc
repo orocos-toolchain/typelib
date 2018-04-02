@@ -42,7 +42,7 @@ void* value_root_ptr(VALUE value)
  * pointer. Problems arise when one of the two following situations are met:
  * * we reference a memory zone inside another memory zone (for instance,
  *   an array element or a structure field). In that case, the DLPtr object
- *   must not free the allocated zone. 
+ *   must not free the allocated zone.
  * * two Typelib objects reference the same memory zone (first array
  *   element or first field of a structure). In that case, we must reuse the
  *   same DLPtr object, or DL will override the free function of the other
@@ -76,10 +76,10 @@ static VALUE value_allocate(Type const& type, VALUE registry)
 }
 
 namespace typelib_ruby {
-    VALUE cType	 = Qnil;
-    VALUE cNumeric	 = Qnil;
-    VALUE cOpaque	 = Qnil;
-    VALUE cNull	 = Qnil;
+    VALUE cType  = Qnil;
+    VALUE cNumeric       = Qnil;
+    VALUE cOpaque        = Qnil;
+    VALUE cNull  = Qnil;
     VALUE cIndirect  = Qnil;
     VALUE cPointer   = Qnil;
     VALUE cArray     = Qnil;
@@ -92,15 +92,15 @@ VALUE cxx2rb::class_of(Typelib::Type const& type)
 {
     using Typelib::Type;
     switch(type.getCategory()) {
-	case Type::Numeric:	return cNumeric;
-	case Type::Compound:    return cCompound;
-	case Type::Pointer:     return cPointer;
-	case Type::Array:       return cArray;
-	case Type::Enum:        return cEnum;
+        case Type::Numeric:     return cNumeric;
+        case Type::Compound:    return cCompound;
+        case Type::Pointer:     return cPointer;
+        case Type::Array:       return cArray;
+        case Type::Enum:        return cEnum;
         case Type::Container:   return cContainer;
         case Type::Opaque:      return cOpaque;
         case Type::NullType:    return cNull;
-	default:                return cType;
+        default:                return cType;
     }
 }
 
@@ -112,7 +112,7 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
 
     WrapperMap::const_iterator it = wrappers.find(&type);
     if (it != wrappers.end())
-	return it->second.second;
+        return it->second.second;
 
     VALUE base  = class_of(type);
     VALUE klass = rb_funcall(rb_cClass, rb_intern("new"), 1, base);
@@ -125,7 +125,7 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
     rb_iv_set(klass, "@metadata", cxx2rb::metadata_wrap(type.getMetaData()));
 
     if (rb_respond_to(klass, rb_intern("subclass_initialize")))
-	rb_funcall(klass, rb_intern("subclass_initialize"), 0);
+        rb_funcall(klass, rb_intern("subclass_initialize"), 0);
 
     wrappers.insert(std::make_pair(&type, std::make_pair(false, klass)));
     return klass;
@@ -137,14 +137,14 @@ VALUE cxx2rb::type_wrap(Type const& type, VALUE registry)
 
 /* @overload type.to_csv([basename [, separator]])
  *
- * Returns a one-line representation of this type, using +separator+ 
- * to separate each fields. If +basename+ is given, use it as a 
+ * Returns a one-line representation of this type, using +separator+
+ * to separate each fields. If +basename+ is given, use it as a
  * 'variable name'. For instance, calling this method on an array
  * with a basename of 'array' will return
- *  
+ *
  *   array[0] array[1]
  *
- * without basename, it would be 
+ * without basename, it would be
  *
  *   [0] [1]
  *
@@ -189,7 +189,7 @@ static VALUE typelib_do_namespace(VALUE mod, VALUE name)
 /* @overload split_typename
  *
  * Splits the typename of self into its components
- * 
+ *
  * @return [Array<String>]
  */
 static VALUE typelib_do_split_name(VALUE mod, VALUE name)
@@ -209,13 +209,13 @@ static VALUE typelib_do_split_name(VALUE mod, VALUE name)
  * @return [Boolean]
  */
 static VALUE type_equal_operator(VALUE rbself, VALUE rbwith)
-{ 
+{
     if (rbself == rbwith)
         return Qtrue;
     if (!rb_obj_is_kind_of(rbwith, rb_cClass))
         return Qfalse;
     if ((rbwith == cType) || !RTEST(rb_funcall(rbwith, rb_intern("<"), 1, cType)))
-	return Qfalse;
+        return Qfalse;
 
     Type const& self(rb2cxx::object<Type>(rbself));
     Type const& with(rb2cxx::object<Type>(rbwith));
@@ -427,7 +427,7 @@ VALUE value_from_memory_zone(VALUE klass, VALUE ptr)
 {
     VALUE result = value_create_empty(klass);
     Value& value  = rb2cxx::object<Value>(result);
-    
+
     // Protect the memory zone against GC until we don't need it anymore
     rb_iv_set(result, "@ptr", ptr);
     value = Value(memory_cptr(ptr), value.getType());
@@ -600,10 +600,10 @@ VALUE value_memory_eql_p(VALUE rbself, VALUE rbwith)
 {
     Value& self = rb2cxx::object<Value>(rbself);
     Value& with = rb2cxx::object<Value>(rbwith);
-	
+
     if (self.getData() == with.getData())
-	return Qtrue;
-    
+        return Qtrue;
+
     // Type#== checks for type equality before calling memory_equal?
     Type const& type = self.getType();
     return memcmp(self.getData(), with.getData(), type.getSize()) == 0 ? Qtrue : Qfalse;
@@ -615,11 +615,11 @@ VALUE typelib_ruby::value_get_registry(VALUE self)
     return type_get_registry(type);
 }
 
-/** 
+/**
  * call-seq:
- *   value.to_csv([separator])	    => string
+ *   value.to_csv([separator])      => string
  *
- * Returns a one-line representation of this value, using +separator+ 
+ * Returns a one-line representation of this value, using +separator+
  * to separate each fields
  */
 static VALUE value_to_csv(int argc, VALUE* argv, VALUE self)
@@ -696,7 +696,7 @@ void typelib_ruby::Typelib_init_values()
 
     cType     = rb_define_class_under(mTypelib, "Type", rb_cObject);
     rb_define_alloc_func(cType, value_alloc);
-    rb_define_singleton_method(cType, "==",	       RUBY_METHOD_FUNC(type_equal_operator), 1);
+    rb_define_singleton_method(cType, "==",            RUBY_METHOD_FUNC(type_equal_operator), 1);
     rb_define_singleton_method(cType, "size",          RUBY_METHOD_FUNC(&type_size), 0);
     rb_define_singleton_method(cType, "do_memory_layout", RUBY_METHOD_FUNC(&type_memory_layout), 4);
     rb_define_singleton_method(cType, "do_dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);

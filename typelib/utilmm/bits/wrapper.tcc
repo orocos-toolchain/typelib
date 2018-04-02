@@ -34,7 +34,7 @@ namespace utilmm {
     inline std::string wrapper<Ty>::name() {
       return typeid(Ty).name();
     }
-    
+
     template<typename Ty>
     void wrapper<Ty>::attach() {
       dummy::attach(name(), details::wrapper_factory<Ty>());
@@ -49,7 +49,7 @@ namespace utilmm {
     Ty &wrapper<Ty>::instance() {
         // dynamic_cast fails on gcc 3.3.5. Don't know why, the types
         // seem right :(
-        // Fall back to static_cast 
+        // Fall back to static_cast
       // return dynamic_cast<wrapper *>(dummy::instance(name()))->value;
       return static_cast<wrapper *>(dummy::instance(name()))->value;
     }

@@ -5,7 +5,7 @@
 #include "parsing.hh"
 #include <boost/lexical_cast.hpp>
 
-namespace 
+namespace
 {
     using std::string;
 

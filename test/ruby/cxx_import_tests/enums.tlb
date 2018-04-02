@@ -21,7 +21,7 @@
   <alias name="/enums/E2_t" source="/enums/E2"/>
   <compound name="/enums/S2" size="4" >
     <field name="A" type="/enums/E2" offset="0">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::enums::S2]]></metadata>
 <metadata key="source_file_line"><![CDATA[enums.hh:29]]></metadata>
@@ -29,21 +29,21 @@
   </compound>
   <compound name="/enums/S3" size="4" >
     <field name="A" type="/enums/E2" offset="0">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::enums::S3]]></metadata>
 <metadata key="source_file_line"><![CDATA[enums.hh:33]]></metadata>
 
   </compound>
   <numeric name="/int32_t" category="sint" size="4" >
-  
+
   </numeric>
   <compound name="/enums/S1" size="8" >
     <field name="A" type="/int32_t" offset="0">
-    
+
     </field>
     <field name="B" type="/enums/E1" offset="4">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::enums::S1]]></metadata>
 <metadata key="source_file_line"><![CDATA[enums.hh:24]]></metadata>
@@ -60,7 +60,7 @@
   </enum>
   <compound name="/enums/S4" size="4" >
     <field name="A" type="/std/float_round_style" offset="0">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::enums::S4]]></metadata>
 <metadata key="source_file_line"><![CDATA[enums.hh:41]]></metadata>

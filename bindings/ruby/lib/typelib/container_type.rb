@@ -171,7 +171,7 @@ module Typelib
                 end
             end
         end
-        
+
         class DeepCopyArray < Array
             def dup
                 result = DeepCopyArray.new
@@ -265,7 +265,7 @@ module Typelib
             memory_id    = self.contained_memory_id
             yield
         ensure
-            if invalidated? 
+            if invalidated?
                 # All children have been invalidated already by #invalidate
             elsif memory_id && (memory_id != self.contained_memory_id)
                 Typelib.debug { "invalidating all elements in #{raw_to_s}" }
@@ -372,22 +372,22 @@ module Typelib
         def pretty_print(pp)
             apply_changes_from_converted_types
             index = 0
-	    pp.text '['
-	    pp.nest(2) do
-		pp.breakable
-		pp.seplist(enum_for(:each)) do |element|
-		    pp.text "[#{index}] = "
-		    element.pretty_print(pp)
+            pp.text '['
+            pp.nest(2) do
+                pp.breakable
+                pp.seplist(enum_for(:each)) do |element|
+                    pp.text "[#{index}] = "
+                    element.pretty_print(pp)
                     index += 1
-		end
-	    end
-	    pp.breakable
-	    pp.text ']'
+                end
+            end
+            pp.breakable
+            pp.text ']'
         end
 
         # Returns the description of a type using only simple ruby objects
         # (Hash, Array, Numeric and String).
-        # 
+        #
         #    { name: TypeName,
         #      class: NameOfTypeClass, # CompoundType, ...
         #       # The content of 'element' is controlled by the :recursive option

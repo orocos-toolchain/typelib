@@ -7,7 +7,7 @@
 using namespace Typelib;
 using namespace std;
 
-namespace 
+namespace
 {
     using namespace Typelib;
     using namespace std;
@@ -20,16 +20,16 @@ namespace
     protected:
         void output()
         {
-            string name = join(m_name, ""); 
+            string name = join(m_name, "");
             m_headers.push_back(name);
         }
 
         bool visit_ (OpaqueType const& type) { output(); return true; }
         bool visit_ (Numeric const&) { output(); return true; }
         bool visit_ (Enum const&) { output(); return true; }
-             
+
         bool visit_ (Pointer const& type)
-        { 
+        {
             m_name.push_front("*(");
             m_name.push_back(")");
             TypeVisitor::visit_(type);
@@ -69,7 +69,7 @@ namespace
             m_name.pop_back();
             return true;
         }
- 
+
         using TypeVisitor::visit_;
     public:
         list<string> apply(Type const& type, std::string const& basename)
@@ -86,12 +86,12 @@ namespace
     {
         list<string>  m_output;
         bool m_char_as_numeric;
-        
+
     protected:
         template<typename T>
         bool display(T value)
         {
-            m_output.push_back(boost::lexical_cast<string>(value)); 
+            m_output.push_back(boost::lexical_cast<string>(value));
             return true;
         }
         using ValueVisitor::visit_;
@@ -123,7 +123,7 @@ namespace
         bool visit_ (float   & value) { return display(value); }
         bool visit_ (double  & value) { return display(value); }
         bool visit_ (Enum::integral_type& v, Enum const& e)
-        { 
+        {
             try { m_output.push_back(e.get(v)); }
             catch(Typelib::Enum::ValueNotFound)
             { display(v); }

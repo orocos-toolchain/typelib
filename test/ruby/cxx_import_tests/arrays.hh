@@ -8,7 +8,7 @@
 namespace arrays {
 
     /** inspired from "laser.h"
-     * 
+     *
      * but, as a courtesy, with a BlockCommandComment
      */
     struct D1 {

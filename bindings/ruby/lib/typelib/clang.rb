@@ -22,7 +22,7 @@ module Typelib
                     opaque_registry.merge(registry.minimal(type.name))
                 end
             end
-            
+
             include_dirs = options[:include_paths] || []
             include_path = include_dirs.map { |d| "-I#{d}" }
             defines = options[:define] || []
@@ -34,7 +34,7 @@ module Typelib
             # FIXME: calling the importer on this list of files can be
             # parallelized?
             header_files = options[:required_files] || [file]
-            
+
             # create a registry from the given opaques, so that the importer can
             # load the informations to use it sduring processing.
             #

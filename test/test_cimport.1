@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <string>
 
-int h2RecordErrMsgs(char *bywho, char *moduleName, short moduleId, 
-		    int nbErrors, const int errMsgs[]);
+int h2RecordErrMsgs(char *bywho, char *moduleName, short moduleId,
+                    int nbErrors, const int errMsgs[]);
 
 int functionWithGCCAttributes(void* id) __attribute__((__nothrow__)) __attribute__((__nonnull__ (1)));
 
@@ -129,23 +129,23 @@ typedef struct TestMemoryManagement {
 
 namespace NS1 {
     namespace NS2 {
-	struct Test {
-	    int a;
-	};
+        struct Test {
+            int a;
+        };
     }
 }
 
 namespace NS1 {
     namespace Bla {
-	struct Test { 
-	    char a;
-	};
+        struct Test {
+            char a;
+        };
     }
 
-    struct Test { 
-	short a;
+    struct Test {
+        short a;
 #ifndef VALID_STRICT_C
-	NS1::Bla::Test b;
+        NS1::Bla::Test b;
 #endif
     };
 }
@@ -153,18 +153,18 @@ namespace NS1 {
 #ifndef VALID_STRICT_C
 namespace NS1 {
     namespace NS1_1 {
-	struct Foo {
-	    int a;
-	    short b;
-	};
+        struct Foo {
+            int a;
+            short b;
+        };
     }
 
     namespace NS1_2 {
-	typedef NS1_1::Foo Foo;
+        typedef NS1_1::Foo Foo;
     }
 
     struct Foo {
-	NS1_1::Foo test;
+        NS1_1::Foo test;
     };
 }
 

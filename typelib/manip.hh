@@ -9,10 +9,10 @@ namespace Typelib
 
     class Manip
     {
-        virtual bool manip 
+        virtual bool manip
              ( Registry const& source
              , Registry& destination
-             , utilmm::config_set const& config ); 
+             , utilmm::config_set const& config );
     };
 }
 

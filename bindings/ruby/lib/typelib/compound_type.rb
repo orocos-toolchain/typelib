@@ -133,15 +133,15 @@ module Typelib
             end
         end
 
-	# Initializes this object to the pointer +ptr+, and initializes it
-	# to +init+. Valid values for +init+ are:
-	# * a hash, in which case it is a { field_name => field_value } hash
-	# * an array, in which case the fields are initialized in order
-	# Note that a compound should be either fully initialized or not initialized
+        # Initializes this object to the pointer +ptr+, and initializes it
+        # to +init+. Valid values for +init+ are:
+        # * a hash, in which case it is a { field_name => field_value } hash
+        # * an array, in which case the fields are initialized in order
+        # Note that a compound should be either fully initialized or not initialized
         def typelib_initialize
             super
-	    # A hash in which we cache Type objects for each of the structure fields
-	    @fields = Hash.new
+            # A hash in which we cache Type objects for each of the structure fields
+            @fields = Hash.new
             @field_types = self.class.field_types
         end
 
@@ -163,12 +163,12 @@ module Typelib
         @field_types = Hash.new
         @field_metadata = Hash.new
         class << self
-	    # Check if this type can be used in place of +typename+
-	    # In case of compound types, we check that either self, or
-	    # the first element field is +typename+
-	    def is_a?(typename)
-		super || (!self.fields.empty? && self.fields[0].last.is_a?(typename))
-	    end
+            # Check if this type can be used in place of +typename+
+            # In case of compound types, we check that either self, or
+            # the first element field is +typename+
+            def is_a?(typename)
+                super || (!self.fields.empty? && self.fields[0].last.is_a?(typename))
+            end
 
             # The set of fields that are converted to a different type when
             # accessed from Ruby, as a set of names
@@ -204,7 +204,7 @@ module Typelib
             # I.e. if a convertion is declared as
             #
             #   convert_to_ruby '/base/Time', :to => Time
-            # 
+            #
             # and the type T is a structure with a field of type /base/Time, then
             # if
             #
@@ -249,10 +249,10 @@ module Typelib
                     end
             end
 
-	    # Called by the extension to initialize the subclass
-	    # For each field, it creates getters and setters on 
-	    # the object, and a getter in the singleton class 
-	    # which returns the field type
+            # Called by the extension to initialize the subclass
+            # For each field, it creates getters and setters on
+            # the object, and a getter in the singleton class
+            # which returns the field type
             def subclass_initialize
                 @field_types = Hash.new
                 @fields = Array.new
@@ -318,13 +318,13 @@ module Typelib
                 raise "no such field #{fieldname} in #{self}"
             end
 
-	    # The list of fields
+            # The list of fields
             attr_reader :fields
             # A name => type map of the types of each fiel
             attr_reader :field_types
             # A name => object mapping of the field metadata objects
             attr_reader :field_metadata
-	    # Returns the type of +name+
+            # Returns the type of +name+
             def [](name)
                 if result = field_types[name]
                     result
@@ -336,18 +336,18 @@ module Typelib
             def has_field?(name)
                 field_types.has_key?(name)
             end
-	    # Iterates on all fields
+            # Iterates on all fields
             #
             # @yield [name,type] the fields of this compound
             # @return [void]
             def each_field
                 return enum_for(__method__) if !block_given?
-		fields.each { |field| yield(*field) } 
-	    end
+                fields.each { |field| yield(*field) }
+            end
 
             # Returns the description of a type using only simple ruby objects
             # (Hash, Array, Numeric and String).
-            # 
+            #
             #    { 'name' => TypeName,
             #      'class' => NameOfTypeClass, # CompoundType, ...
             #       # The content of 'element' is controlled by the :recursive option
@@ -384,48 +384,48 @@ module Typelib
                 super.merge(fields: fields)
             end
 
-	    def pretty_print_common(pp) # :nodoc:
+            def pretty_print_common(pp) # :nodoc:
                 pp.group(2, '{', '}') do
-		    pp.breakable
+                    pp.breakable
                     all_fields = get_fields.to_a
-                    
+
                     pp.seplist(all_fields) do |field|
-			yield(*field)
+                        yield(*field)
                     end
                 end
-	    end
+            end
 
             def pretty_print(pp, verbose = false) # :nodoc:
-		super(pp)
-		pp.text ' '
-		pretty_print_common(pp) do |name, offset, type, metadata|
+                super(pp)
+                pp.text ' '
+                pretty_print_common(pp) do |name, offset, type, metadata|
                     if doc = metadata.get('doc').first
                         if pp_doc(pp, doc)
                             pp.breakable
                         end
                     end
-		    pp.text name
+                    pp.text name
                     if verbose
                         pp.text "[#{offset}] <"
                     else
                         pp.text " <"
                     end
-		    pp.nest(2) do
+                    pp.nest(2) do
                         type.pretty_print(pp, false)
-		    end
-		    pp.text '>'
-		end
+                    end
+                    pp.text '>'
+                end
             end
         end
 
-	def pretty_print(pp) # :nodoc:
+        def pretty_print(pp) # :nodoc:
             apply_changes_from_converted_types
-	    self.class.pretty_print_common(pp) do |name, offset, type|
-		pp.text name
-		pp.text "="
-		get_field(name).pretty_print(pp)
-	    end
-	end
+            self.class.pretty_print_common(pp) do |name, offset, type|
+                pp.text name
+                pp.text "="
+                get_field(name).pretty_print(pp)
+            end
+        end
 
         # Returns true if +name+ is a valid field name. It can either be given
         # as a string or a symbol
@@ -437,10 +437,10 @@ module Typelib
             get(name)
         end
 
-	# Returns the value of the field +name+
+        # Returns the value of the field +name+
         def get_field(name)
             get(name)
-	end
+        end
 
         def raw_get_field(name)
             raw_get(name)
@@ -482,12 +482,12 @@ module Typelib
             end
             typelib_set_field(name, value)
 
-	rescue ArgumentError => e
-	    if e.message =~ /^no field \w+ in /
-		raise e, (e.message + " in #{name}(#{self.class.name})"), e.backtrace
-	    else
-		raise e, (e.message + " while setting #{name} in #{self.class.name}"), e.backtrace
-	    end
+        rescue ArgumentError => e
+            if e.message =~ /^no field \w+ in /
+                raise e, (e.message + " in #{name}(#{self.class.name})"), e.backtrace
+            else
+                raise e, (e.message + " while setting #{name} in #{self.class.name}"), e.backtrace
+            end
         end
 
         def set_field(name, value)
@@ -509,9 +509,9 @@ module Typelib
             value = Typelib.from_ruby(value, @field_types[name])
             raw_set_field(name.to_s, value)
 
-	rescue TypeError => e
-	    raise e, "#{e.message} for #{self.class.name}.#{name}", e.backtrace
-	end
+        rescue TypeError => e
+            raise e, "#{e.message} for #{self.class.name}.#{name}", e.backtrace
+        end
 
         # (see Type#to_simple_value)
         #

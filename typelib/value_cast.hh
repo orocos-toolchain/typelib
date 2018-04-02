@@ -22,7 +22,7 @@ namespace Typelib
             m_found = true;
             return false;
         }
-         
+
     public:
         CastingVisitor()
             : ValueVisitor(false), m_found(false), m_value() {};
@@ -37,7 +37,7 @@ namespace Typelib
         }
     };
 
-    /** Casts a Value object to a given simple type T 
+    /** Casts a Value object to a given simple type T
      * @throws BadValueCast */
     template<typename T>
     T value_cast(Value v)
@@ -46,7 +46,7 @@ namespace Typelib
         return caster.apply(v);
     }
 
-    /** Casts a pointer to a given simple type T using \c type as the type for \c *ptr 
+    /** Casts a pointer to a given simple type T using \c type as the type for \c *ptr
      * @throws BadValueCast */
     template<typename T>
     T value_cast(void* ptr, Type const& type)

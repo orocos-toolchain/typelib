@@ -743,7 +743,7 @@ module Typelib
         #
         # The issue with opaques is that they might be either typedefs or
         # templates with default arguments. In both cases, we need to find out
-        # their real name 
+        # their real name
         #
         # For the typedefs, it it easy
         def resolve_opaques
@@ -926,7 +926,7 @@ module Typelib
         @gccxml_default_options = Shellwords.split(ENV['TYPELIB_GCCXML_DEFAULT_OPTIONS'] || '-DEIGEN_DONT_VECTORIZE')
         @castxml_default_options = Shellwords.split(ENV['TYPELIB_CASTXML_DEFAULT_OPTIONS'] || '')
 
-        #figure out the correct gccxml binary name, debian has changed this name 
+        #figure out the correct gccxml binary name, debian has changed this name
         #to gccxml.real
         def self.gcc_binary_name
             if `which gccxml.real 2>/dev/null`.empty?
@@ -1043,7 +1043,7 @@ module Typelib
                 io.flush
 
                 if options[:castxml]
-                    call = [castxml_binary_name, "--castxml-gccxml", "-E", *includes, *defines, *rawflags, *castxml_default_options, io.path] 
+                    call = [castxml_binary_name, "--castxml-gccxml", "-E", *includes, *defines, *rawflags, *castxml_default_options, io.path]
                 else
                     call = [gcc_binary_name, "--preprocess", *includes, *defines, *rawflags, *gccxml_default_options, io.path]
                 end

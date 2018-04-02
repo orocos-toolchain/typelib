@@ -4,4 +4,4 @@ TARGET_LINK_LIBRARIES(typeLang_idl typeLib ${LibXML_LIBRARIES} ${Boost_SYSTEM_LI
 
 INSTALL(TARGETS typeLang_idl
     LIBRARY DESTINATION lib/typelib)
-    
+

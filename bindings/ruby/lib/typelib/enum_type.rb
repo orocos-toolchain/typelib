@@ -21,14 +21,14 @@ module Typelib
         class << self
             # Returns the description of a type using only simple ruby objects
             # (Hash, Array, Numeric and String).
-            # 
+            #
             #    { 'name' => TypeName,
             #      'class' => 'EnumType',
             #      # The content of 'element' is controlled by the :recursive option
             #      'values' => [{ 'name' => NameOfValue,
             #                     'value' => ValueOfValue }],
             #      # Only if :layout_info is true
-            #      'size' => SizeOfTypeInBytes 
+            #      'size' => SizeOfTypeInBytes
             #    }
             #
             # @option (see Type#to_h)
@@ -43,10 +43,10 @@ module Typelib
 
             def pretty_print(pp, verbose = false) # :nodoc:
                 super
-		pp.text '{'
+                pp.text '{'
                 pp.nest(2) do
                     keys = self.keys.sort_by(&:last)
-		    pp.breakable
+                    pp.breakable
                     pp.seplist(keys) do |keydef|
                         if verbose
                             pp.text keydef.join(" = ")
@@ -55,8 +55,8 @@ module Typelib
                         end
                     end
                 end
-		pp.breakable
-		pp.text '}'
+                pp.breakable
+                pp.text '}'
             end
         end
     end

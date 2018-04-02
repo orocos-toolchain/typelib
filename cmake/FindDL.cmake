@@ -16,7 +16,7 @@ FIND_PATH(LIBDL_INCLUDE_DIR dlfcn.h)
 SET(LIBDL_NAMES dl libdl ltdl libltdl)
 FIND_LIBRARY(LIBDL_LIBRARY NAMES ${LIBDL_NAMES} )
 
-# handle the QUIETLY and REQUIRED arguments and set LIBDL_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set LIBDL_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibDL DEFAULT_MSG LIBDL_LIBRARY

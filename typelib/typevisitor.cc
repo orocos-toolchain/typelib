@@ -18,12 +18,12 @@ namespace Typelib
     bool TypeVisitor::visit_  (Container const& type)
     { return dispatch(type.getIndirection()); }
 
-    bool TypeVisitor::visit_  (Compound const& type)                 
-    {  
+    bool TypeVisitor::visit_  (Compound const& type)
+    {
         typedef Compound::FieldList Fields;
         Fields const& fields(type.getFields());
         Fields::const_iterator const end = fields.end();
-        
+
         for (Fields::const_iterator it = fields.begin(); it != end; ++it)
         {
             if (! visit_(type, *it))
@@ -31,7 +31,7 @@ namespace Typelib
         }
         return true;
     }
-    bool TypeVisitor::visit_  (Compound const& type, Field const& field)   
+    bool TypeVisitor::visit_  (Compound const& type, Field const& field)
     { return dispatch(field.getType()); }
 
     bool TypeVisitor::dispatch(Type const& type)

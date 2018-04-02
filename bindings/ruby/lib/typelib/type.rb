@@ -123,10 +123,10 @@ module Typelib
         end
 
         # Check for type equality
-        # In contrast to #==, which calls do_compare (in C++) to compare the 
+        # In contrast to #==, which calls do_compare (in C++) to compare the
         # internal structure of the types, #eql? also compares the names of the types.
         def self.eql?(other)
-	    self == other && name == other.name
+            self == other && name == other.name
         end
 
         # @deprecated
@@ -257,10 +257,10 @@ module Typelib
         #
         # It is guaranteed that this value will be referring to a different
         # memory zone than +self+
-	def dup
-	    new = self.class.new
-	    Typelib.copy(new, self)
-	end
+        def dup
+            new = self.class.new
+            Typelib.copy(new, self)
+        end
         alias clone dup
 
         module Invalidate
@@ -316,7 +316,7 @@ module Typelib
         # in values of this type
         #
         # It is mostly useful in Type#handle_invalidation
-        # 
+        #
         # @return [Accessor]
         def self.containers_accessor
             @containers ||= Accessor.find_in_type(self, :raw_get_cached, :raw_each_cached) do |t|
@@ -354,20 +354,20 @@ module Typelib
         end
 
         class << self
-	    # The Typelib::Registry this type belongs to
+            # The Typelib::Registry this type belongs to
             def registry
                 @__typelib_registry
             end
 
-	    # The type's full name (i.e. name and namespace). In typelib,
-	    # namespace components are separated by '/'
-	    def name
-		if defined? @name
-		    @name
-		else
-		    super
-		end
-	    end
+            # The type's full name (i.e. name and namespace). In typelib,
+            # namespace components are separated by '/'
+            def name
+                if defined? @name
+                    @name
+                else
+                    super
+                end
+            end
 
             # Helper class that validates the options given to
             # Type.memory_layout and Type#to_byte_array
@@ -411,13 +411,13 @@ module Typelib
                     options[:remove_trailing_skips])
             end
 
-	    # Returns the namespace part of the type's name.  If +separator+ is
-	    # given, the namespace components are separated by it, otherwise,
-	    # the default of Typelib::NAMESPACE_SEPARATOR is used. If nil is
-	    # used as new separator, no change is made either.
-	    def namespace(separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
+            # Returns the namespace part of the type's name.  If +separator+ is
+            # given, the namespace components are separated by it, otherwise,
+            # the default of Typelib::NAMESPACE_SEPARATOR is used. If nil is
+            # used as new separator, no change is made either.
+            def namespace(separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
                 Typelib.namespace(name, separator, remove_leading)
-	    end
+            end
 
             # Returns the basename part of the type's name, i.e. the type name
             # without the namespace part.
@@ -444,15 +444,15 @@ module Typelib
             #   type_t.full_name('::')
             #
             # will return the C++ name for the given type
-	    def full_name(separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
-		namespace(separator, remove_leading) + basename(separator)
-	    end
+            def full_name(separator = Typelib::NAMESPACE_SEPARATOR, remove_leading = false)
+                namespace(separator, remove_leading) + basename(separator)
+            end
 
-	    def to_s; "#<#{superclass.name}: #{name}>" end
+            def to_s; "#<#{superclass.name}: #{name}>" end
             def inspect; to_s end
 
-	    # are we a null type ?
-	    def null?; @null end
+            # are we a null type ?
+            def null?; @null end
             # True if this type is opaque
             #
             # Values from opaque types cannot be manipulated by Typelib. They
@@ -460,7 +460,7 @@ module Typelib
             # (by some unspecified means) to a value that Typelib can manipulate
             def opaque?; @opaque end
 
-	    # Returns the pointer-to-self type
+            # Returns the pointer-to-self type
             def to_ptr; registry.build(name + "*") end
 
             # Given a markdown-formatted string, return what should be displayed
@@ -500,8 +500,8 @@ module Typelib
                         pp.breakable
                     end
                 end
-		pp.text name 
-	    end
+                pp.text name
+            end
 
             # Creates a new value from either a MemoryZone instance (i.e. a
             # pointer), or from a marshalled version of a value.
@@ -524,28 +524,28 @@ module Typelib
             #   value = type.wrap(marshalled)
             #
             def wrap(ptr)
-		if null?
-		    raise TypeError, "this is a null type"
+                if null?
+                    raise TypeError, "this is a null type"
                 elsif ptr.kind_of?(String)
                     new_value = from_buffer(ptr)
                 elsif ptr.kind_of?(MemoryZone)
                     new_value = from_memory_zone(ptr)
                 else
                     raise ArgumentError, "can only wrap strings and memory zones"
-		end
+                end
 
                 if size = new_value.marshalling_size
                     Typelib.add_allocated_memory(size)
                 end
                 new_value
-	    end
+            end
 
             # Allocates a new Typelib object that is initialized from the information
             # given in the passed string
             #
             # The options given here have to be exactly the same than the ones
             # given to #to_byte_array
-            # 
+            #
             # @param [String] buffer
             # @option options [Boolean] accept_pointers (false) whether pointers, when
             #   present, should cause an exception to be raised or simply
@@ -593,18 +593,18 @@ module Typelib
                 end
             end
 
-	    # Check if this type is a +typename+. If +typename+
-	    # is a string or a regexp, we match it against the type
-	    # name. Otherwise we call Class#<
-	    def is_a?(typename)
-		if typename.respond_to?(:to_str)
-		    typename.to_str === self.name
-		elsif Regexp === typename
-		    typename === self.name
-		else
-		    self <= typename
-		end
-	    end
+            # Check if this type is a +typename+. If +typename+
+            # is a string or a regexp, we match it against the type
+            # name. Otherwise we call Class#<
+            def is_a?(typename)
+                if typename.respond_to?(:to_str)
+                    typename.to_str === self.name
+                elsif Regexp === typename
+                    typename === self.name
+                else
+                    self <= typename
+                end
+            end
 
             # @return [Registry] a registry that contains only the types needed
             #   to define this type
@@ -643,7 +643,7 @@ module Typelib
         # samples, to remove the overhead of option validation
         def from_buffer_direct(string, accept_pointers = false, accept_opaques = false, merge_skip_copy = true, remove_trailing_skips = true)
             allocating_operation do
-                do_from_buffer(string, 
+                do_from_buffer(string,
                                accept_pointers,
                                accept_opaques,
                                merge_skip_copy,
@@ -662,7 +662,7 @@ module Typelib
         #
         #   marshalled_data = result.to_byte_array
         #   value = my_registry.get('/base/Type').from_buffer(marshalled_data)
-        # 
+        #
         # @option options [Boolean] accept_pointers (false) whether pointers, when
         #   present, should cause an exception to be raised or simply
         #   ignored
@@ -704,55 +704,55 @@ module Typelib
             Typelib.to_ruby(self, self.class)
         end
 
-	# Check for value equality
+        # Check for value equality
         def ==(other)
-	    # If other is also a type object, we first
-	    # check basic constraints before trying conversion
-	    # to Ruby objects
+            # If other is also a type object, we first
+            # check basic constraints before trying conversion
+            # to Ruby objects
             if Type === other
-		return Typelib.compare(self, other)
-	    else
+                return Typelib.compare(self, other)
+            else
                 # +other+ is a Ruby type. Try converting +self+ to ruby and
                 # check for equality in Ruby objects
-		if (ruby_value = Typelib.to_ruby(self)).eql?(self)
-		    return false
-		end
-		other == ruby_value
-	    end
+                if (ruby_value = Typelib.to_ruby(self)).eql?(self)
+                    return false
+                end
+                other == ruby_value
+            end
         end
 
-	# Returns a PointerType object which points to +self+. Note that
-	# to_ptr.deference == self
+        # Returns a PointerType object which points to +self+. Note that
+        # to_ptr.deference == self
         def to_ptr
             pointer = self.class.to_ptr.wrap(@ptr.to_ptr)
-	    pointer.instance_variable_set(:@points_to, self)
-	    pointer
+            pointer.instance_variable_set(:@points_to, self)
+            pointer
         end
-	
-	def to_s # :nodoc:
-	    if respond_to?(:to_str)
-		to_str
-	    elsif ! (ruby_value = to_ruby).eql?(self)
-		ruby_value.to_s
-	    else
+
+        def to_s # :nodoc:
+            if respond_to?(:to_str)
+                to_str
+            elsif ! (ruby_value = to_ruby).eql?(self)
+                ruby_value.to_s
+            else
                 raw_to_s
-	    end
-	end
+            end
+        end
 
         def raw_to_s
             "#<#{self.class.name}: 0x#{address.to_s(16)} ptr=0x#{@ptr.zone_address.to_s(16)}>"
         end
 
-	def pretty_print(pp) # :nodoc:
-	    pp.text to_s
-	end
+        def pretty_print(pp) # :nodoc:
+            pp.text to_s
+        end
 
         # Get the memory pointer for self
         #
         # @return [MemoryZone]
         def to_memory_ptr; @ptr end
 
-	def is_a?(typename); self.class.is_a?(typename) end
+        def is_a?(typename); self.class.is_a?(typename) end
 
         def inspect
             raw_to_s + ": " + to_simple_value.inspect
@@ -784,7 +784,7 @@ module Typelib
         # set to :nil by default, as JSON cannot represent NaN and Infinity and
         # converting those to null is the behaviour specified in the JSON
         # documentation.
-        # 
+        #
         # (see Type#to_simple_value)
         def to_json_value(options = Hash.new)
             to_simple_value(Hash[:special_float_values => :nil].merge(options))

@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
         Type const& type       = *registry.get("/StdCollections");
         vector<uint8_t> buffer = dump(Value(&data, type));
 
-        size_t size_without_trailing_padding = 
+        size_t size_without_trailing_padding =
             reinterpret_cast<uint8_t const*>(&data.padding) + sizeof(data.padding) - reinterpret_cast<uint8_t const*>(&data)
                 - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)
                 + sizeof(double) * 20 // elements
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
 
     {
         StdCollections data;
-        
+
         data.iv = 0;
         data.v8 = 1;
         data.v_of_v.resize(5);
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
 
         Type const& type       = *registry.get("/StdCollections");
         vector<uint8_t> buffer = dump(Value(&data, type));
-        size_t size_without_trailing_padding = 
+        size_t size_without_trailing_padding =
             reinterpret_cast<uint8_t const*>(&data.padding) + sizeof(data.padding) - reinterpret_cast<uint8_t const*>(&data);
         BOOST_REQUIRE_EQUAL( buffer.size(),
                 size_without_trailing_padding - sizeof(std::vector<double>) - sizeof (std::vector< std::vector<double> >)

@@ -11,7 +11,7 @@ namespace Typelib
     /** Exception raised when generating a memory layout for an unsupported type
      */
     struct NoLayout : public std::runtime_error
-    { 
+    {
         NoLayout(Type const& type, std::string const& reason)
             : std::runtime_error("there is no memory layout for type " + type.getName() + ": " + reason) { }
     };
@@ -20,7 +20,7 @@ namespace Typelib
      * invalid bytecode.
      */
     struct UnknownLayoutBytecode : public std::runtime_error
-    { 
+    {
         UnknownLayoutBytecode() : std::runtime_error("found an unknown marshalling bytecode operation") { }
     };
 

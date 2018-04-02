@@ -22,7 +22,7 @@ namespace utilmm {
     use<Ty>::use(use<Ty> const &other) {
       wrapper<Ty>::attach();
     }
-  
+
     template<typename Ty>
     use<Ty>::~use() {
       wrapper<Ty>::detach();

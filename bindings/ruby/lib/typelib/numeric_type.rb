@@ -23,14 +23,14 @@ module Typelib
 
         # Returns the description of a type using only simple ruby objects
         # (Hash, Array, Numeric and String).
-        # 
+        #
         #    { 'name' => TypeName,
         #      'class' => 'EnumType',
         #      'integer' => Boolean,
         #      # Only for integral types
         #      'unsigned' => Boolean,
         #      # Unlike with the other types, the 'size' field is always present
-        #      'size' => SizeOfTypeInBytes 
+        #      'size' => SizeOfTypeInBytes
         #    }
         #
         # @option (see Type#to_h)

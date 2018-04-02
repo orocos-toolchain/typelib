@@ -26,7 +26,7 @@ namespace Typelib
     };
 
     template<typename Type>
-    class GenericIOPlugin 
+    class GenericIOPlugin
         : public plugin_traits<Type>::plugin_base
     {
     public:

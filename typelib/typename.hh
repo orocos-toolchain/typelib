@@ -19,7 +19,7 @@ namespace Typelib
     };
     typedef boost::tokenizer<NameSeparator> NameTokenizer;
 
-    
+
     bool isAbsoluteName(const std::string& name);
     bool isValidNamespace(const std::string& name, bool absolute);
     bool isValidTypename(const std::string& name, bool absolute);
@@ -30,7 +30,7 @@ namespace Typelib
      * isValidTypename returns true
      */
     std::list<std::string> splitTypename(std::string const& name);
-    
+
     /** Returns +name+ as a namespace name, valid to build an absolute type
      * name by simple concatenation
      *
@@ -59,7 +59,7 @@ namespace Typelib
      */
     std::string getMinimalPathTo(std::string const& full_name, std::string const& ns);
     /** Returns true if \c name1 is either in a more in-depth namespace than
-     * name2 (i.e. name2 == /A/B/class and name1 == /A/B/C/class2 or if 
+     * name2 (i.e. name2 == /A/B/class and name1 == /A/B/C/class2 or if
      * name2 < name1 (lexicographic sort). Otherwise, returns false
      */
     bool nameSort(std::string const& name1, std::string const& name2);

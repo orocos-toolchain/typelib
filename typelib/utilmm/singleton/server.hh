@@ -28,7 +28,7 @@ namespace utilmm {
       ~server();
 
       static server &instance();
-      
+
       void attach(std::string const &name, details::dummy_factory const& factory);
       bool detach(std::string const &name);
 
@@ -65,5 +65,5 @@ namespace utilmm {
 /** @defgroup intern Library internal utilities
  * @brief This group include all the component
  * of the library only used for the internal implementation
- * of the library. 
+ * of the library.
  */

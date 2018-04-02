@@ -80,10 +80,10 @@ class TC_SpecializedTypes < Minitest::Test
 
     def test_compound_inititialize_with_hash
         expected_value = { :plain => 10,
-            :compound => { :plain => 10, :vector => [1, 2, 3, 5] }, 
+            :compound => { :plain => 10, :vector => [1, 2, 3, 5] },
             :plain_vector => [4, 5, 8, 10],
             :vector => [
-                { :plain => 1, :vector => [1, 2, 3, 5] }, 
+                { :plain => 1, :vector => [1, 2, 3, 5] },
                 { :plain => 5, :vector => [2, 3, 4, 6] }
             ]
         }
@@ -152,10 +152,10 @@ class TC_SpecializedTypes < Minitest::Test
 
     def test_compound_convertion_from_hash
         expected_value = { :plain => 10,
-            :compound => { :plain => 10, :vector => [1, 2, 3, 5] }, 
+            :compound => { :plain => 10, :vector => [1, 2, 3, 5] },
             :plain_vector => [4, 5, 8, 10],
             :vector => [
-                { :plain => 1, :vector => [1, 2, 3, 5] }, 
+                { :plain => 1, :vector => [1, 2, 3, 5] },
                 { :plain => 5, :vector => [2, 3, 4, 6] }
             ]
         }
@@ -296,10 +296,10 @@ class TC_SpecializedTypes < Minitest::Test
         array = array_t.new
 
         expected_value = { :plain => 10,
-            :compound => { :plain => 10, :vector => [1, 2, 3, 5] }, 
+            :compound => { :plain => 10, :vector => [1, 2, 3, 5] },
             :plain_vector => [4, 5, 8, 10],
             :vector => [
-                { :plain => 1, :vector => [1, 2, 3, 5] }, 
+                { :plain => 1, :vector => [1, 2, 3, 5] },
                 { :plain => 5, :vector => [2, 3, 4, 6] }
             ]
         }

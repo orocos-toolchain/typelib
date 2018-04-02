@@ -788,7 +788,7 @@ struct ByteCounterStream : public OutputStream
     { result += size; }
 };
 size_t Typelib::getDumpSize(Value v)
-{ 
+{
     MemoryLayout ops = layout_of(v.getType());
     return getDumpSize(v, ops);
 }

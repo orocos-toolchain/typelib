@@ -20,7 +20,7 @@ namespace
 
 TypeDisplayVisitor::TypeDisplayVisitor(std::ostream& stream, std::string const& base_indent)
     : m_stream(stream), m_indent(base_indent) {}
-            
+
 bool TypeDisplayVisitor::visit_(NullType const& type)
 {
     m_stream << "null\n";
@@ -34,9 +34,9 @@ bool TypeDisplayVisitor::visit_(OpaqueType const& type)
 }
 
 bool TypeDisplayVisitor::visit_(Compound const& type)
-{ 
+{
     m_stream << "compound " << type.getName() << " [" << type.getSize() << "] {\n";
-    
+
     { Indent indenter(m_indent);
         TypeVisitor::visit_(type);
     }
@@ -46,7 +46,7 @@ bool TypeDisplayVisitor::visit_(Compound const& type)
     return true;
 }
 bool TypeDisplayVisitor::visit_(Compound const& type, Field const& field)
-{ 
+{
     m_stream << m_indent << "(+" << field.getOffset() << ") ";
     TypeVisitor::visit_(type, field);
     m_stream << " " << field.getName() << std::endl;
@@ -82,7 +82,7 @@ bool TypeDisplayVisitor::visit_(Enum const& type)
     Enum::ValueMap::const_iterator it;
 
     for (it = type.values().begin(); it != type.values().end(); ++it)
-	m_stream << "\n    " << it->first << " -> " << it->second;
+        m_stream << "\n    " << it->first << " -> " << it->second;
 
     return true;
 }

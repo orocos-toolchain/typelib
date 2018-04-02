@@ -15,7 +15,7 @@ boost::recursive_mutex utilmm::singleton::server::sing_mtx;
 /*
  * class utilmm::singleton::server
  */
-// structors 
+// structors
 server::server() {
   the_instance = this;
 }
@@ -46,7 +46,7 @@ bool server::detach(std::string const &name) {
   return false;
 }
 
-// observers 
+// observers
 dummy *server::get(std::string const &name) const {
   return singletons.find(name)->second;
 }

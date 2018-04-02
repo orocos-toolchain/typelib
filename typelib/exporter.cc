@@ -42,7 +42,7 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
         , bool (*) (const std::string&, const std::string&)
         >     TypeMap;
     TypeMap types(nameSort);
-       
+
     RegistryIterator const it_end(registry.end());
     for (RegistryIterator it = registry.begin(); it != it_end; ++it)
         types.insert(make_pair(it.getName(), it));
@@ -58,15 +58,15 @@ void Exporter::save(std::ostream& stream, utilmm::config_set const& config, Regi
 
         while (it != end)
         {
-	    bool done_dependencies = false;
-	    if (it->second.isAlias())
-		done_dependencies = (saved_types.find(&(*it->second)) != saved_types.end());
-	    else
-	    {
+            bool done_dependencies = false;
+            if (it->second.isAlias())
+                done_dependencies = (saved_types.find(&(*it->second)) != saved_types.end());
+            else
+            {
                 std::set<Type const*> dependencies = it->second->dependsOn();
-		done_dependencies = includes(saved_types.begin(), saved_types.end(),
-			dependencies.begin(), dependencies.end());
-	    }
+                done_dependencies = includes(saved_types.begin(), saved_types.end(),
+                        dependencies.begin(), dependencies.end());
+            }
 
             if (done_dependencies)
             {

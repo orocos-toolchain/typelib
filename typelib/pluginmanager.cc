@@ -14,7 +14,7 @@ using namespace boost::filesystem;
 namespace
 {
     using namespace std;
-    
+
     template<typename Map, typename Object>
     bool add_plugin(Map& plugin_map, Object* object)
     { return (plugin_map.insert( make_pair(object->getName(), object) ).second); }

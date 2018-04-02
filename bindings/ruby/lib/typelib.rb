@@ -59,14 +59,14 @@ end
 #
 # Each class representing a type can be further specialized using
 # Typelib.specialize_model and Typelib.specialize
-# 
+#
 module Typelib
     extend Logger::Root('Typelib', Logger::WARN)
 
     TYPELIB_LIB_DIR = File.expand_path('typelib', File.dirname(__FILE__))
 
     class << self
-	# If true (the default), typelib will load its type plugins. Otherwise,
+        # If true (the default), typelib will load its type plugins. Otherwise,
         # it will not
         attr_predicate :load_type_plugins, true
     end
@@ -274,7 +274,7 @@ module Typelib
     # of expected_type, a value that can be casted into a value of
     # expected_type, or a Ruby value that can be converted into a value of
     # +expected_type+.
-    def self.from_ruby(arg, expected_type)      
+    def self.from_ruby(arg, expected_type)
         if arg.respond_to?(:apply_changes_from_converted_types)
             arg.apply_changes_from_converted_types
         end
@@ -337,9 +337,9 @@ module Typelib
 
     # A raw, untyped, memory zone
     class MemoryZone
-	def to_s
-	    "#<MemoryZone:#{object_id} ptr=0x#{zone_address.to_s(16)}>"
-	end
+        def to_s
+            "#<MemoryZone:#{object_id} ptr=0x#{zone_address.to_s(16)}>"
+        end
     end
 end
 

@@ -58,7 +58,7 @@ module Typelib
                     return key[0..-3], from_container_basename
                 elsif suffix == "[]"
                     return key[0..-3], from_array_basename
-                else 
+                else
                     return key, from_typename
                 end
             else return key, from_regexp
@@ -71,7 +71,7 @@ module Typelib
         #   name
         # @param [Object] value the value to be stored for that key
         def set(key, value, options = Hash.new)
-	    options = Kernel.validate_options options, :if => lambda { |obj| true }
+            options = Kernel.validate_options options, :if => lambda { |obj| true }
             key, set = mapping_for_key(key)
             set = set[key] = (container || Array.new).dup
             set << [options, value]
@@ -87,7 +87,7 @@ module Typelib
         #   name
         # @param [Object] value the value to be added to the set for that key
         def add(key, value, options = Hash.new)
-	    options = Kernel.validate_options options, :if => lambda { |obj| true }
+            options = Kernel.validate_options options, :if => lambda { |obj| true }
             if !container
                 raise ArgumentError, "#{self} does not support containers"
             end
@@ -259,23 +259,23 @@ module Typelib
 
     # Representation of a declared ruby-to-typelib or typelib-to-ruby convertion
     class Convertion
-	# The type that we are converting from
-	#
-	# It is an object that can match type names
-	#
-	# @return [String,Regexp]
-	attr_reader :typelib
-	# The type that we are converting to, if known. It cannot be nil if this
+        # The type that we are converting from
+        #
+        # It is an object that can match type names
+        #
+        # @return [String,Regexp]
+        attr_reader :typelib
+        # The type that we are converting to, if known. It cannot be nil if this
         # object represents a ruby-to-typelib convertion
-	#
-	# @return [Class,nil]
-	attr_reader :ruby
-	# The convertion proc
-	attr_reader :block
+        #
+        # @return [Class,nil]
+        attr_reader :ruby
+        # The convertion proc
+        attr_reader :block
 
-	def initialize(typelib, ruby, block)
-	    @typelib, @ruby, @block = typelib, ruby, block
-	end
+        def initialize(typelib, ruby, block)
+            @typelib, @ruby, @block = typelib, ruby, block
+        end
     end
 
     # Declares how to convert values of the given type to an equivalent Ruby
@@ -345,6 +345,6 @@ module Typelib
             raise ArgumentError, "expected a class as first argument, got #{ruby_class}"
         end
         convertions_from_ruby.add(typename, Convertion.new(typename, ruby_class, lambda(&block)), options)
-    end 
+    end
 end
 

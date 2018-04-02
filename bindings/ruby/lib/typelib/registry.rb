@@ -51,8 +51,8 @@ module Typelib
         #     types that are in the auto_types registry, if they are needed to
         #     define some other type
         def minimal(type, with_aliases = type.respond_to?(:to_str))
-	    do_minimal(type, with_aliases)
-	end
+            do_minimal(type, with_aliases)
+        end
 
         # Creates a new registry by loading a typelib XML file
         #
@@ -112,21 +112,21 @@ module Typelib
             base_module.reset_registry_export(self, block, '/')
         end
 
-	# Returns the file type as expected by Typelib from 
-	# the extension of +file+ (see TYPE_BY_EXT)
-	#
-	# Raises RuntimeError if the file extension is unknown
+        # Returns the file type as expected by Typelib from
+        # the extension of +file+ (see TYPE_BY_EXT)
+        #
+        # Raises RuntimeError if the file extension is unknown
         def self.guess_type(file)
-	    ext = File.extname(file)
+            ext = File.extname(file)
             if type = TYPE_BY_EXT[ext]
-		type
+                type
             else
                 raise "Cannot guess file type for #{file}: unknown extension '#{ext}'"
             end
         end
 
-	# Format +option_hash+ to the form expected by do_import
-	# (Yes, I'm lazy and don't want to handles hashes in C)
+        # Format +option_hash+ to the form expected by do_import
+        # (Yes, I'm lazy and don't want to handles hashes in C)
         def self.format_options(option_hash) # :nodoc:
             option_hash.to_a.collect do |opt|
                 if opt[1].kind_of?(Array)
@@ -155,11 +155,11 @@ module Typelib
         end
 
         def initialize(load_plugins = nil)
-	    if load_plugins || (load_plugins.nil? && Typelib.load_type_plugins?)
-            	Typelib.load_typelib_plugins
+            if load_plugins || (load_plugins.nil? && Typelib.load_type_plugins?)
+                Typelib.load_typelib_plugins
             end
             @export_typemap = Hash.new
-	    super()
+            super()
         end
 
         # Returns the handler that will be used to import that file. It can
@@ -167,7 +167,7 @@ module Typelib
         # or a Ruby object responding to 'call' in which case Registry#import
         # will use that object to do the importing.
         def self.handler_for(file, kind = 'auto')
-	    file = File.expand_path(file)
+            file = File.expand_path(file)
             if !kind || kind == 'auto'
                 kind    = Registry.guess_type(file)
             end
@@ -180,34 +180,34 @@ module Typelib
         # Imports the +file+ into this registry. +kind+ is the file format or
         # nil, in which case the file format is guessed by extension (see
         # TYPE_BY_EXT)
-	# 
+        #
         # +options+ is an option hash. The Ruby bindings define the following
         # specific options:
-	# merge:: 
+        # merge::
         #   merges +file+ into this repository. If this is false, an exception
         #   is raised if +file+ contains types already defined in +self+, even
         #   if the definitions are the same.
-	#
-	#     registry.import(my_path, 'auto', :merge => true)
-	#
-	# The Tlb importer has no options
-	#
+        #
+        #     registry.import(my_path, 'auto', :merge => true)
+        #
+        # The Tlb importer has no options
+        #
         # The C importer defines the following options: preprocessor:
         #
-	# define:: 
+        # define::
         #   a list of VAR=VALUE or VAR options for cpp
-	#     registry.import(my_path, :define => ['PATH=/usr', 'NDEBUG'])
-	# include:: 
+        #     registry.import(my_path, :define => ['PATH=/usr', 'NDEBUG'])
+        # include::
         #   a list of path to add to cpp's search path
-	#     registry.import(my_path, :include => ['/usr', '/home/blabla/prefix/include'])
-	# rawflags:: 
+        #     registry.import(my_path, :include => ['/usr', '/home/blabla/prefix/include'])
+        # rawflags::
         #   flags to be passed as-is to cpp. For instance, the two previous
         #   examples can be written
-	#
-	#   registry.import(my_path, 'auto',
-	#     :rawflags => ['-I/usr', '-I/home/blabla/prefix/include', 
-	#                  -DPATH=/usr', -DNDEBUG])
-	# debug::
+        #
+        #   registry.import(my_path, 'auto',
+        #     :rawflags => ['-I/usr', '-I/home/blabla/prefix/include',
+        #                  -DPATH=/usr', -DNDEBUG])
+        # debug::
         #   if true, debugging information is outputted on stdout, and the
         #   preprocessed output is kept.
         #
@@ -216,9 +216,9 @@ module Typelib
         #   this one. If it is not set, types defined in +file+ that are already
         #   defined in +self+ will generate an error, even if the two
         #   definitions are the same.
-	#
+        #
         def import(file, kind = 'auto', options = {})
-	    file = File.expand_path(file)
+            file = File.expand_path(file)
 
             handler = Registry.handler_for(file, kind)
             if handler.respond_to?(:call)
@@ -227,7 +227,7 @@ module Typelib
                 kind = handler
             end
 
-            do_merge = 
+            do_merge =
                 if options.has_key?('merge') then options.delete('merge')
                 elsif options.has_key?(:merge) then options.delete(:merge)
                 else true
@@ -275,18 +275,18 @@ module Typelib
             nil
         end
 
-	# Exports the registry in the provided format, into a Ruby string. The
-	# following formats are allowed as +format+:
-	# 
-	# +tlb+:: Typelib's own XML format
-	# +idl+:: CORBA IDL
-	# 
-	# +options+ is an option hash, which is export-format specific. See the C++
-	# documentation of each exporter for more information.
-	def export(kind, options = {})
+        # Exports the registry in the provided format, into a Ruby string. The
+        # following formats are allowed as +format+:
+        #
+        # +tlb+:: Typelib's own XML format
+        # +idl+:: CORBA IDL
+        #
+        # +options+ is an option hash, which is export-format specific. See the C++
+        # documentation of each exporter for more information.
+        def export(kind, options = {})
             options = Registry.format_options(options)
             do_export(kind, options)
-	end
+        end
 
         # Export the registry into Typelib's own XML format
         def to_xml
@@ -310,7 +310,7 @@ module Typelib
                 @name, @registry, @size = name, registry, size
                 @fields = []
             end
-            
+
             # Create the type on the underlying registry
             def build
                 # Create the offsets, if they are not provided
@@ -347,7 +347,7 @@ module Typelib
                 end
             end
         end
-        
+
         # Creates a new numeric type with the given name
         #
         # @param [String] name the type name
@@ -442,7 +442,7 @@ module Typelib
                 @name, @registry, @size = name, registry, size
                 @symbols = []
             end
-            
+
             # Creates the new enum type on the registry
             def build
                 if @symbols.empty?

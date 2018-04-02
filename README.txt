@@ -76,7 +76,7 @@ At runtime, the bindings require the following:
      http://www.rubygems.org for information about the RubyGems
      system. This system can be installed by the rubygems
      package on Debian.
- 
+
    When you have installed rubygems, run
      gem install utilrb
 

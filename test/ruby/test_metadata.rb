@@ -2,7 +2,7 @@ require 'typelib/test'
 
 class TC_MetaData < Minitest::Test
     attr_reader :type, :registry
-    
+
     def setup
         @registry = Typelib::CXXRegistry.new
         @type = registry.create_compound '/Test' do |c|

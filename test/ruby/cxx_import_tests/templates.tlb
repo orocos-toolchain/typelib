@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <typelib>
   <numeric name="/float" category="float" size="4" >
-  
+
   </numeric>
   <numeric name="/int32_t" category="sint" size="4" >
-  
+
   </numeric>
   <opaque name="/templates/C1&lt;/double&gt;" size="0" >
   <metadata key="cxxname"><![CDATA[::templates::C1<double>]]></metadata>
@@ -18,7 +18,7 @@
   </opaque>
   <compound name="/templates/C1&lt;/float[4]&gt;" size="16" >
     <field name="A" type="/float[4]" offset="0">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::templates::C1<float [4]>]]></metadata>
 <metadata key="source_file_line"><![CDATA[templates.hh:9]]></metadata>
@@ -26,10 +26,10 @@
   </compound>
   <compound name="/templates/templateclasses/D1" size="20" >
     <field name="m1" type="/templates/C1&lt;/float[4]&gt;" offset="0">
-    
+
     </field>
     <field name="m2" type="/int32_t" offset="16">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::templates::templateclasses::D1]]></metadata>
 <metadata key="source_file_line"><![CDATA[templates.hh:26]]></metadata>

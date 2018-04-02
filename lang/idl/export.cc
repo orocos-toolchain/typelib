@@ -57,7 +57,7 @@ namespace
     class IDLTypeIdentifierVisitor : public TypeVisitor
     {
     public:
-	IDLExport const& m_exporter;
+        IDLExport const& m_exporter;
         string    m_front, m_back;
         string    m_namespace;
 
@@ -234,7 +234,7 @@ namespace
     class IDLExportVisitor : public TypeVisitor
     {
     public:
-	IDLExport const& m_exporter;
+        IDLExport const& m_exporter;
         ostringstream  m_stream;
         string    m_indent;
         string    m_namespace;
@@ -298,14 +298,14 @@ namespace
     };
 
     IDLExportVisitor::IDLExportVisitor(Registry const& registry, IDLExport const& exporter,
-	    std::map<std::string, Type const*>& exported_typedefs)
+            std::map<std::string, Type const*>& exported_typedefs)
         : m_exporter(exporter)
         , m_exported_typedefs(exported_typedefs) {}
 
     bool IDLExportVisitor::visit_(Compound const& type)
-    { 
+    {
         m_stream << m_indent << "struct " << normalizeIDLName(type.getBasename()) << " {\n";
-        
+
         { Indent indenter(m_indent);
             TypeVisitor::visit_(type);
         }
@@ -316,7 +316,7 @@ namespace
         return true;
     }
     bool IDLExportVisitor::visit_(Compound const& type, Field const& field)
-    { 
+    {
         m_stream
             << m_indent
             << getIDLAbsolute(field.getType(), field.getName())
@@ -327,32 +327,32 @@ namespace
 
     bool IDLExportVisitor::visit_(Numeric const& type)
     {
-	// no need to export Numeric types, they are already defined by IDL
-	// itself
-	return true;
+        // no need to export Numeric types, they are already defined by IDL
+        // itself
+        return true;
     }
 
     bool IDLExportVisitor::visit_ (Pointer const& type)
     {
-	throw UnsupportedType(type, "pointers are not allowed in IDL");
+        throw UnsupportedType(type, "pointers are not allowed in IDL");
         return true;
     }
     bool IDLExportVisitor::visit_ (Array const& type)
     {
-	throw UnsupportedType(type, "top-level arrays are not handled by the IDLExportVisitor");
+        throw UnsupportedType(type, "top-level arrays are not handled by the IDLExportVisitor");
         return true;
     }
 
     bool IDLExportVisitor::visit_ (Enum const& type)
     {
-	m_stream << m_indent << "enum " << type.getBasename() << " { ";
+        m_stream << m_indent << "enum " << type.getBasename() << " { ";
 
         list<string> symbols;
         Enum::ValueMap const& values = type.values();
-	Enum::ValueMap::const_iterator it, end = values.end();
-	for (it = values.begin(); it != end; ++it)
-	    symbols.push_back(it->first);
-	m_stream << join(symbols, ", ") << " };\n";
+        Enum::ValueMap::const_iterator it, end = values.end();
+        for (it = values.begin(); it != end; ++it)
+            symbols.push_back(it->first);
+        m_stream << join(symbols, ", ") << " };\n";
 
         return true;
     }
@@ -361,11 +361,11 @@ namespace
     {
         if (type.getName() == "/std/string")
             return true;
-                
+
         // sequence<> can be used as-is, but in order to be as cross-ORB
         // compatible as possible we generate sequence typedefs and use them in
         // the compounds. Emit the sequence right now.
-	string target_namespace  = getIDLBase(type.getIndirection()).first;
+        string target_namespace  = getIDLBase(type.getIndirection()).first;
         // We never emit sequences into the main namespace, even if their
         // element is a builtin
         if (target_namespace.empty())
@@ -390,7 +390,7 @@ namespace
 }
 
 using namespace std;
-IDLExport::IDLExport() 
+IDLExport::IDLExport()
     : m_namespace("/"), m_opaque_as_any(false) {}
 
 bool IDLExport::marshalOpaquesAsAny() const { return m_opaque_as_any; }
@@ -409,20 +409,20 @@ void IDLExport::closeNamespaces(ostream& stream, int levels)
 {
     for (int i = 0; i < levels; ++i)
     {
-	m_indent = std::string(m_indent, 0, m_indent.size() - 4);
-	stream << "\n" << m_indent << "};\n";
+        m_indent = std::string(m_indent, 0, m_indent.size() - 4);
+        stream << "\n" << m_indent << "};\n";
     }
 }
 
 void IDLExport::checkType(Type const& type)
 {
     if (type.getCategory() == Type::Pointer)
-	throw UnsupportedType(type, "pointers are not allowed in IDL");
+        throw UnsupportedType(type, "pointers are not allowed in IDL");
     if (type.getCategory() == Type::Array)
     {
-	Type::Category pointed_to = static_cast<Indirect const&>(type).getIndirection().getCategory();
-	if (pointed_to == Type::Array || pointed_to == Type::Pointer)
-	    throw UnsupportedType(type, "multi-dimensional arrays are not supported yet");
+        Type::Category pointed_to = static_cast<Indirect const&>(type).getIndirection().getCategory();
+        if (pointed_to == Type::Array || pointed_to == Type::Pointer)
+            throw UnsupportedType(type, "multi-dimensional arrays are not supported yet");
     }
 
 }
@@ -435,20 +435,20 @@ void IDLExport::adaptNamespace(ostream& stream, string const& ns)
             old_namespace = nameSplit(m_namespace),
             new_namespace = nameSplit(ns);
 
-	while(!old_namespace.empty() && !new_namespace.empty() && old_namespace.front() == new_namespace.front())
-	{
-	    old_namespace.pop_front();
-	    new_namespace.pop_front();
-	}
+        while(!old_namespace.empty() && !new_namespace.empty() && old_namespace.front() == new_namespace.front())
+        {
+            old_namespace.pop_front();
+            new_namespace.pop_front();
+        }
 
-	closeNamespaces(stream, old_namespace.size());
+        closeNamespaces(stream, old_namespace.size());
 
-	while (!new_namespace.empty())
-	{
-	    stream << m_indent << "module " << normalizeIDLName(new_namespace.front()) << " {\n";
-	    m_indent += "    ";
-	    new_namespace.pop_front();
-	}
+        while (!new_namespace.empty())
+        {
+            stream << m_indent << "module " << normalizeIDLName(new_namespace.front()) << " {\n";
+            m_indent += "    ";
+            new_namespace.pop_front();
+        }
     }
     m_namespace = ns;
 }
@@ -517,14 +517,14 @@ bool IDLExport::save
 
     if (type.isAlias())
     {
-	// IDL has C++-like rules for struct and enums. Do not alias a "struct A" to "A";
-	if (type->getNamespace() != type.getNamespace()
-		|| (type->getBasename() != "struct " + type.getBasename()
-		    && type->getBasename() != "enum " + type.getBasename()
-		    && type.getBasename() != "struct " + type->getBasename()
-		    && type.getBasename() != "enum " + type->getBasename()))
-	{
-	    IDLExport::checkType(*type);
+        // IDL has C++-like rules for struct and enums. Do not alias a "struct A" to "A";
+        if (type->getNamespace() != type.getNamespace()
+                || (type->getBasename() != "struct " + type.getBasename()
+                    && type->getBasename() != "enum " + type.getBasename()
+                    && type.getBasename() != "struct " + type->getBasename()
+                    && type.getBasename() != "enum " + type->getBasename()))
+        {
+            IDLExport::checkType(*type);
             ostringstream stream;
 
             std::string type_namespace = getIDLAbsoluteNamespace(type.getNamespace(), *this);
@@ -542,15 +542,15 @@ bool IDLExport::save
                 return false;
             }
 
-	    // Alias types using typedef, taking into account that the aliased type
-	    // may not be in the same module than the new alias.
-	    if (type->getCategory() == Type::Array)
-	    {
-		Array const& array_t = dynamic_cast<Array const&>(*type);
-		stream 
-		    << getIDLAbsolute(array_t.getIndirection())
-		    << " " << type.getBasename() << "[" << array_t.getDimension() << "];";
-	    }
+            // Alias types using typedef, taking into account that the aliased type
+            // may not be in the same module than the new alias.
+            if (type->getCategory() == Type::Array)
+            {
+                Array const& array_t = dynamic_cast<Array const&>(*type);
+                stream
+                    << getIDLAbsolute(array_t.getIndirection())
+                    << " " << type.getBasename() << "[" << array_t.getDimension() << "];";
+            }
             else if (type->getCategory() == Type::Container && type->getName() != "/std/string")
             {
                 // Generate a sequence, regardless of the actual container type
@@ -563,50 +563,50 @@ bool IDLExport::save
                     stream << "any " << type.getBasename() << ";";
             }
             else if (type.getBasename().find_first_of(" ") == string::npos)
-		stream << getIDLAbsolute(*type) << " " << type.getBasename() << ";";
+                stream << getIDLAbsolute(*type) << " " << type.getBasename() << ";";
 
             std::string def = stream.str();
             if (!def.empty())
                 m_typedefs[type_namespace].push_back(def);
             return true;
-	}
+        }
         else return false;
     }
     else
     {
-	// Don't call adaptNamespace right now, since some types can be simply
-	// ignored by the IDLExportVisitor -- resulting in an empty module,
-	// which is not accepted in IDL
-	//
-	// Instead, act "as if" the namespace was changed, capturing the output
-	// in a temporary ostringstream and change namespace only if some output
-	// has actually been generated
-	
-	if (m_blob_threshold && static_cast<int>(type->getSize()) > m_blob_threshold)
-	{
+        // Don't call adaptNamespace right now, since some types can be simply
+        // ignored by the IDLExportVisitor -- resulting in an empty module,
+        // which is not accepted in IDL
+        //
+        // Instead, act "as if" the namespace was changed, capturing the output
+        // in a temporary ostringstream and change namespace only if some output
+        // has actually been generated
+
+        if (m_blob_threshold && static_cast<int>(type->getSize()) > m_blob_threshold)
+        {
             string target_namespace = getIDLAbsoluteNamespace(type.getNamespace(), *this);
             size_t ns_size = namespaceIndentLevel(target_namespace);
             string indent_string = string(ns_size * 4, ' ');
 
-	    adaptNamespace(stream, target_namespace);
-	    stream << indent_string << "typedef sequence<octet> " << type->getBasename() << ";\n";
+            adaptNamespace(stream, target_namespace);
+            stream << indent_string << "typedef sequence<octet> " << type->getBasename() << ";\n";
             return true;
-	}
-	else
-	{
-	    IDLExportVisitor exporter(type.getRegistry(), *this, m_exported_typedefs);
-	    exporter.apply(*type);
+        }
+        else
+        {
+            IDLExportVisitor exporter(type.getRegistry(), *this, m_exported_typedefs);
+            exporter.apply(*type);
 
-	    string result = exporter.getResult();
-	    if (result.empty())
+            string result = exporter.getResult();
+            if (result.empty())
                 return false;
             else
-	    {
-		adaptNamespace(stream, exporter.getTargetNamespace());
-		stream << result;
+            {
+                adaptNamespace(stream, exporter.getTargetNamespace());
+                stream << result;
                 return true;
-	    }
-	}
+            }
+        }
     }
 }
 

@@ -11,12 +11,12 @@ class TC_Registry < Minitest::Test
     end
 
     def test_aliasing
-	registry = CXXRegistry.new
-	registry.alias "/my_own_and_only_int", "/int"
+        registry = CXXRegistry.new
+        registry.alias "/my_own_and_only_int", "/int"
         current_aliases = registry.aliases_of(registry.get("int"))
-	assert_equal(registry.get("my_own_and_only_int"), registry.get("int"))
+        assert_equal(registry.get("my_own_and_only_int"), registry.get("int"))
 
-	assert_equal((current_aliases.to_set << "/my_own_and_only_int"), registry.aliases_of(registry.get("/int")).to_set)
+        assert_equal((current_aliases.to_set << "/my_own_and_only_int"), registry.aliases_of(registry.get("/int")).to_set)
     end
 
     def test_guess_type
@@ -83,19 +83,19 @@ class TC_Registry < Minitest::Test
     end
 
     def test_registry_iteration
-	reg = make_registry
+        reg = make_registry
 
-	values = Typelib.log_silent { reg.each.to_a }
-	refute_equal(0, values.size)
-	assert(values.include?(reg.get("/int32_t")))
-	assert(values.include?(reg.get("/EContainer")))
+        values = Typelib.log_silent { reg.each.to_a }
+        refute_equal(0, values.size)
+        assert(values.include?(reg.get("/int32_t")))
+        assert(values.include?(reg.get("/EContainer")))
 
-	values = reg.each(:with_aliases => true).to_a
-	refute_equal(0, values.size)
-	assert(values.include?(["/EContainer", reg.get("/EContainer")]))
+        values = reg.each(:with_aliases => true).to_a
+        refute_equal(0, values.size)
+        assert(values.include?(["/EContainer", reg.get("/EContainer")]))
 
-	values = reg.each('/NS1').to_a
-	assert_equal(6, values.size, values.map(&:name))
+        values = reg.each('/NS1').to_a
+        assert_equal(6, values.size, values.map(&:name))
     end
 
     def test_validate_xml
@@ -273,4 +273,4 @@ class TC_Registry < Minitest::Test
     end
 end
 
-    
+

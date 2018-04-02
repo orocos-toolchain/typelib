@@ -19,7 +19,7 @@ using boost::lexical_cast;
 using namespace Typelib;
 
 /* Returns true if \c name1 is either in a more in-depth namespace than
- * name2 (i.e. name2 == /A/B/class and name1 == /A/B/C/class2 or if 
+ * name2 (i.e. name2 == /A/B/class and name1 == /A/B/C/class2 or if
  * name2 < name1 (lexicographic sort). Otherwise, returns false
  */
 bool Typelib::nameSort( const std::string& name1, const std::string& name2 )
@@ -45,14 +45,14 @@ bool Typelib::nameSort( const std::string& name1, const std::string& name2 )
 
 namespace Typelib
 {
-    Type const& Registry::null() { 
+    Type const& Registry::null() {
         static NullType const null_type("/nil");
-        return null_type; 
+        return null_type;
     }
-    
+
     Registry::Registry()
         : m_global(nameSort)
-    { 
+    {
         PluginManager::self manager;
         manager->registerPluginTypes(*this);
         setDefaultNamespace("/");
@@ -61,7 +61,7 @@ namespace Typelib
 
     void Registry::updateCurrentNameMap()
     {
-	m_current.clear();
+        m_current.clear();
 
         for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
             m_current.insert( make_pair(it->first, it->second) );
@@ -92,14 +92,14 @@ namespace Typelib
     {
         const std::string norm_name(getNormalizedNamespace(name));
         const int         norm_length(norm_name.length());
-            
+
         TypeMap::const_iterator it = m_global.lower_bound(norm_name);
 
         while ( it != m_global.end() && isInNamespace(it->first, norm_name, true) )
         {
             const std::string rel_name(it->first, norm_length, string::npos);
-	    if (erase_existing)
-		m_current.erase(rel_name);
+            if (erase_existing)
+                m_current.erase(rel_name);
             m_current.insert( make_pair(rel_name, it->second) );
             ++it;
         }
@@ -134,34 +134,34 @@ namespace Typelib
     {
         Typelib::Type::RecursionStack stack;
 
-	// Merge non aliased types. Aliases are never used by type model classes
-	// so we can safely call merge()
-	for(Iterator it = registry.begin(); it != registry.end(); ++it)
-	{
-	    if (it.isAlias()) continue;
-	    it->merge(*this, stack);
-	}
+        // Merge non aliased types. Aliases are never used by type model classes
+        // so we can safely call merge()
+        for(Iterator it = registry.begin(); it != registry.end(); ++it)
+        {
+            if (it.isAlias()) continue;
+            it->merge(*this, stack);
+        }
 
-	for (Iterator it = registry.begin(); it != registry.end(); ++it)
-	{
-	    // Either the alias already points to a concrete type, and
-	    // we must check that it is the same concrete type, or
-	    // we have to add the alias
-	    if (!it.isAlias()) continue;
+        for (Iterator it = registry.begin(); it != registry.end(); ++it)
+        {
+            // Either the alias already points to a concrete type, and
+            // we must check that it is the same concrete type, or
+            // we have to add the alias
+            if (!it.isAlias()) continue;
 
-	    Type const* old_type = get(it.getName());
-	    if (old_type)
-	    {
-		if (!old_type->isSame(*it))
-		    throw DefinitionMismatch(it.getName());
-	    }
-	    else
-	    {
-		// we are sure the concrete type we are pointing to is 
-		// already in the target registry
-		alias(it->getName(), it.getName(), it.isPersistent(), it.getSource());
-	    }
-	}
+            Type const* old_type = get(it.getName());
+            if (old_type)
+            {
+                if (!old_type->isSame(*it))
+                    throw DefinitionMismatch(it.getName());
+            }
+            else
+            {
+                // we are sure the concrete type we are pointing to is
+                // already in the target registry
+                alias(it->getName(), it.getName(), it.isPersistent(), it.getSource());
+            }
+        }
         copySourceIDs(registry);
         mergeMetaData(registry);
     }
@@ -219,37 +219,37 @@ namespace Typelib
     Registry* Registry::minimal(Registry const& auto_types, bool keep_auto_aliases) const
     {
         auto_ptr<Registry> result(new Registry);
- 
-	// Merge non aliased types. Aliases are never used by type model classes
-	// so we can safely call merge()
-	for(Iterator it = begin(); it != end(); ++it)
-	{
-	    if (it.isAlias()) continue;
+
+        // Merge non aliased types. Aliases are never used by type model classes
+        // so we can safely call merge()
+        for(Iterator it = begin(); it != end(); ++it)
+        {
+            if (it.isAlias()) continue;
             if (!auto_types.has(it->getName()))
                 it->merge(*result);
-	}
+        }
 
-	for (Iterator it = begin(); it != end(); ++it)
-	{
-	    // Either the alias already points to a concrete type, and
-	    // we must check that it is the same concrete type, or
-	    // we have to add the alias
-	    if (!it.isAlias()) continue;
+        for (Iterator it = begin(); it != end(); ++it)
+        {
+            // Either the alias already points to a concrete type, and
+            // we must check that it is the same concrete type, or
+            // we have to add the alias
+            if (!it.isAlias()) continue;
             if (!keep_auto_aliases && auto_types.has(it.getName())) continue;
             // Do not continue if it is a typedef on a type that we don't need
             if (!result->has(it->getName(), false)) continue;
 
-	    Type const* old_type = result->get(it.getName());
-	    if (old_type)
-	    {
-		if (!old_type->isSame(*it))
-		    throw DefinitionMismatch(it.getName());
-	    }
-	    else
-	    {
-		result->alias(it->getName(), it.getName(), it.isPersistent(), it.getSource());
-	    }
-	}
+            Type const* old_type = result->get(it.getName());
+            if (old_type)
+            {
+                if (!old_type->isSame(*it))
+                    throw DefinitionMismatch(it.getName());
+            }
+            else
+            {
+                result->alias(it->getName(), it.getName(), it.isPersistent(), it.getSource());
+            }
+        }
 
         result->copySourceIDs(*this);
         result->mergeMetaData(*this);
@@ -280,7 +280,7 @@ namespace Typelib
     Type* Registry::get_(const std::string& name)
     {
         NameMap::const_iterator it = m_current.find(name);
-        if (it != m_current.end()) 
+        if (it != m_current.end())
             return it->second.type;
         return NULL;
     }
@@ -296,7 +296,7 @@ namespace Typelib
     const Type* Registry::get(const std::string& name) const
     {
         NameMap::const_iterator it = m_current.find(name);
-        if (it != m_current.end()) 
+        if (it != m_current.end())
             return it->second.type;
         return NULL;
     }
@@ -329,41 +329,41 @@ namespace Typelib
             throw BadName(name);
 
         const Type* old_type = get(name);
-        if (old_type == new_type) 
-            return; 
+        if (old_type == new_type)
+            return;
         else if (old_type)
             throw AlreadyDefined(name);
 
-        RegistryType regtype = 
+        RegistryType regtype =
             { new_type
             , persistent
             , source_id };
-            
+
         m_global.insert (make_pair(name, regtype));
         m_current.insert(make_pair(name, regtype));
 
         NameTokenizer tokens( m_namespace );
         NameTokenizer::const_iterator ns_it = tokens.begin();
         std::string cur_space = NamespaceMarkString;
-	while(true)
+        while(true)
         {
             if (name.size() <= cur_space.size() || string(name, 0, cur_space.size()) != cur_space)
                 break;
 
-	    string cur_name  = getRelativeName(name, cur_space);
+            string cur_name  = getRelativeName(name, cur_space);
 
-	    // Check if there is already a type with the same relative name
-	    TypeMap::iterator it = m_current.find(cur_name);
-	    if (it == m_current.end() || !nameSort(it->second.type->getName(), name))
-	    {
-		m_current.erase(cur_name);
-		m_current.insert(make_pair(cur_name, regtype));
-	    }
+            // Check if there is already a type with the same relative name
+            TypeMap::iterator it = m_current.find(cur_name);
+            if (it == m_current.end() || !nameSort(it->second.type->getName(), name))
+            {
+                m_current.erase(cur_name);
+                m_current.insert(make_pair(cur_name, regtype));
+            }
 
-	    if (ns_it == tokens.end())
-		break;
+            if (ns_it == tokens.end())
+                break;
             cur_space += *ns_it + NamespaceMarkString;
-	    ++ns_it;
+            ++ns_it;
         }
     }
 
@@ -378,7 +378,7 @@ namespace Typelib
 
         // If there are any aliases for any of the type's dependencies, trigger
         // modifiedDependencyAliases()
-	set<Type const*> dependencies = new_type->dependsOn();
+        set<Type const*> dependencies = new_type->dependsOn();
         for (set<Type const*>::const_iterator dep_it = dependencies.begin();
                 dep_it != dependencies.end(); ++dep_it)
         {
@@ -393,7 +393,7 @@ namespace Typelib
     void Registry::alias(std::string const& base, std::string const& newname, std::string const& source_id)
     {
         Type* base_type = get_(base);
-        if (! base_type) 
+        if (! base_type)
             throw Undefined(base);
 
         return alias(base, newname, isPersistent(newname, *base_type, source_id), source_id);
@@ -405,7 +405,7 @@ namespace Typelib
             throw BadName(newname);
 
         Type* base_type = get_(base);
-        if (! base_type) 
+        if (! base_type)
             throw Undefined(base);
 
         add(newname, base_type, persistent, source_id);
@@ -450,17 +450,17 @@ namespace Typelib
     size_t Registry::size() const { return m_global.size(); }
     void Registry::clear()
     {
-	// Set the type pointer to 0 on aliases
-	for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
-	{
-	    if (it->first != it->second.type->getName())
-		it->second.type = 0;
-	}
-	    
-	// ... then delete the objects
+        // Set the type pointer to 0 on aliases
+        for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
+        {
+            if (it->first != it->second.type->getName())
+                it->second.type = 0;
+        }
+
+        // ... then delete the objects
         for (TypeMap::iterator it = m_global.begin(); it != m_global.end(); ++it)
             delete it->second.type;
-            
+
         m_global.clear();
         m_current.clear();
     }
@@ -569,11 +569,11 @@ namespace Typelib
             t.setSize(it->second);
         }
 
-	for(Iterator it = begin(); it != end(); ++it)
-	{
-	    if (it.isAlias()) continue;
-	    it.get_().resize(*this, sizes);
-	}
+        for(Iterator it = begin(); it != end(); ++it)
+        {
+            if (it.isAlias()) continue;
+            it.get_().resize(*this, sizes);
+        }
     }
 
     std::set<Type const*> Registry::reverseDepends(Type const& type) const

@@ -243,7 +243,7 @@ int main(int argc, const char **argv) {
     TlbImportCallback tlbImportCallback;
     Finder.addMatcher(namedDecl().bind("namedDecl"), &tlbImportCallback);
     Finder.addMatcher(typedefType(hasDeclaration(namedDecl().bind("typedefDecl"))), &tlbImportCallback);
-    
+
     if (int retval = Tool.run(newFrontendActionFactory(&Finder))) {
         std::cout << "Parsing error in clang, cannot continue" << std::endl;
         exit(retval);
@@ -251,6 +251,6 @@ int main(int argc, const char **argv) {
 
     std::cout << "Saving tlb-registry into file '" << tlbSavePath << "'" << std::endl;
     builder.saveRegistry(tlbSavePath);
-    
+
     exit(EXIT_SUCCESS);
 }

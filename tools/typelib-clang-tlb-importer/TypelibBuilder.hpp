@@ -57,7 +57,7 @@ public:
      * @param filename path to tlb-file to save
      */
     void saveRegistry(const std::string &filename);
-    
+
     /** accessor for internal registry
      *
      * @return const-ref of internal registry, for exporting for example
@@ -66,7 +66,7 @@ public:
     {
         return registry;
     }
-    
+
 private:
     Typelib::Type const *registerType(const std::string &canonicalTypeName,
                                     const clang::Type *type,

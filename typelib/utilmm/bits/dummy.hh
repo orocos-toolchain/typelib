@@ -49,17 +49,17 @@ namespace utilmm {
       /** @brief Detach to a singleton
        *
        * @param name Internal id of a singleton
-       * 
+       *
        * This function called by wrapper::detach indicate to the
        * singleton server that the singleton identified as @a name has
-       * lost one client. 
+       * lost one client.
        */
       static void detach(std::string const &name);
 
       /** @brief Singleton generic access
        *
        * @param name Internal id of a singleton
-       * 
+       *
        * @return a pointer to the dummy wrapper of the singleton
        * attached to @a name
        */

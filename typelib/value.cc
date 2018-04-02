@@ -13,7 +13,7 @@ namespace Typelib
 
         // The ValueVisitor object
         ValueVisitor& m_visitor;
-    
+
         template<typename T8, typename T16, typename T32, typename T64>
         bool integer_cast(uint8_t* value, Type const& t)
         {
@@ -30,7 +30,7 @@ namespace Typelib
 
     protected:
         virtual bool visit_ (Numeric const& type)
-        { 
+        {
             uint8_t* value(m_stack.back());
             switch(type.getNumericCategory())
             {
@@ -50,7 +50,7 @@ namespace Typelib
         }
 
         virtual bool visit_ (Enum const& type)
-        { 
+        {
             Enum::integral_type& v = *reinterpret_cast<Enum::integral_type*>(m_stack.back());
             return m_visitor.visit_(v, type);
         }
@@ -104,37 +104,37 @@ namespace Typelib
             m_stack.clear();
             m_stack.push_back( reinterpret_cast<uint8_t*>(value.getData()));
             TypeVisitor::apply(value.getType());
-	    m_stack.pop_back();
+            m_stack.pop_back();
         }
 
     };
 
     bool ValueVisitor::visit_(Value const& v, Pointer const& t)
     { return m_dispatcher->TypeVisitor::visit_(t); }
-    bool ValueVisitor::visit_(Value const& v, Array const& a) 
+    bool ValueVisitor::visit_(Value const& v, Array const& a)
     {
-	uint8_t*  base = static_cast<uint8_t*>(v.getData());
-	m_dispatcher->m_stack.push_back(base);
-	uint8_t*& element = m_dispatcher->m_stack.back();
+        uint8_t*  base = static_cast<uint8_t*>(v.getData());
+        m_dispatcher->m_stack.push_back(base);
+        uint8_t*& element = m_dispatcher->m_stack.back();
 
-	Type const& array_type(a.getIndirection());
-	for (size_t i = 0; i < a.getDimension(); ++i)
-	{
-	    element = base + array_type.getSize() * i;
-	    if (! m_dispatcher->TypeVisitor::visit_(array_type))
-		break;
-	}
+        Type const& array_type(a.getIndirection());
+        for (size_t i = 0; i < a.getDimension(); ++i)
+        {
+            element = base + array_type.getSize() * i;
+            if (! m_dispatcher->TypeVisitor::visit_(array_type))
+                break;
+        }
 
-	m_dispatcher->m_stack.pop_back();
-	return true;
+        m_dispatcher->m_stack.pop_back();
+        return true;
     }
     bool ValueVisitor::visit_(Value const& v, Container const& c)
     { return c.visit(v.getData(), *this); }
-    bool ValueVisitor::visit_(Value const&, Compound const& c) 
+    bool ValueVisitor::visit_(Value const&, Compound const& c)
     { return m_dispatcher->TypeVisitor::visit_(c); }
-    bool ValueVisitor::visit_(Value const&, Compound const& c, Field const& f) 
+    bool ValueVisitor::visit_(Value const&, Compound const& c, Field const& f)
     { return m_dispatcher->TypeVisitor::visit_(c, f); }
-    bool ValueVisitor::visit_(Enum::integral_type&, Enum const& e) 
+    bool ValueVisitor::visit_(Enum::integral_type&, Enum const& e)
     { return m_dispatcher->TypeVisitor::visit_(e); }
     bool ValueVisitor::visit_(Value const& v, OpaqueType const& t)
     { return true; }
@@ -155,7 +155,7 @@ namespace Typelib
     }
     ValueVisitor::~ValueVisitor()
     {
-	delete m_dispatcher;
+        delete m_dispatcher;
     }
     void ValueVisitor::apply(Value v)
     {

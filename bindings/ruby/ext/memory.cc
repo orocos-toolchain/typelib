@@ -178,10 +178,10 @@ memory_aref(void *ptr)
 {
     MemoryTableEntry* entry;
     if (!st_lookup(MemoryTable, (st_data_t)ptr, (st_data_t*)&entry)) {
-	return Qnil;
+        return Qnil;
     }
     if ((VALUE)entry == Qundef)
-	rb_bug("found undef in memory table");
+        rb_bug("found undef in memory table");
 
     return entry->object;
 }
@@ -190,10 +190,10 @@ static void
 memory_aset(void *ptr, VALUE obj, bool owned, void* root_ptr)
 {
     if (! NIL_P(memory_aref(ptr)))
-	rb_raise(rb_eArgError, "there is already a wrapper for %p", ptr);
+        rb_raise(rb_eArgError, "there is already a wrapper for %p", ptr);
 
     if (ptr == root_ptr)
-	rb_raise(rb_eArgError, "pointer and root pointer are equal");
+        rb_raise(rb_eArgError, "pointer and root pointer are equal");
 
     if (!memory_ref(ptr))
     {
@@ -262,18 +262,18 @@ typelib_ruby::memory_wrap(void* ptr, bool take_ownership, void* root_ptr)
     VALUE zone = memory_aref(ptr);
     if (NIL_P(zone))
     {
-#	ifdef VERBOSE
-	fprintf(stderr, "%p: wrapping new memory zone\n", ptr);
-#	endif
+#       ifdef VERBOSE
+        fprintf(stderr, "%p: wrapping new memory zone\n", ptr);
+#       endif
 
         zone = Data_Wrap_Struct(cMemoryZone, 0, &memory_zone_unref, new MemoryZone(ptr));
-	memory_aset(ptr, zone, take_ownership, root_ptr);
+        memory_aset(ptr, zone, take_ownership, root_ptr);
     }
     else
     {
-#	ifdef VERBOSE
-	fprintf(stderr, "%p: already known memory zone\n", ptr);
-#	endif
+#       ifdef VERBOSE
+        fprintf(stderr, "%p: already known memory zone\n", ptr);
+#       endif
     }
 
     return zone;
