@@ -763,4 +763,3 @@ void typelib_ruby::Typelib_init_specialized_types()
     rb_define_method(mVector, "contained_memory_id", RUBY_METHOD_FUNC(vector_contained_memory_id), 0);
     rb_define_method(mVector, "raw_memcpy", RUBY_METHOD_FUNC(vector_raw_memcpy), 2);
 }
-

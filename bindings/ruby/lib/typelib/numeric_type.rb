@@ -13,10 +13,8 @@ module Typelib
             end
         end
 
-        def self.from_ruby(value)
-            v = self.new
-            v.typelib_from_ruby(value)
-            v
+        def copy_from_ruby(value)
+            typelib_from_ruby(value)
         rescue TypeError => e
             raise Typelib::UnknownConversionRequested.new(value, self), "cannot convert #{value} (#{value.class}) to #{self}", e.backtrace
         end

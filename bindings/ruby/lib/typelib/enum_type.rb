@@ -12,10 +12,8 @@ module Typelib
             to_ruby.to_s
         end
 
-        def self.from_ruby(value)
-            v = new
-            v.typelib_from_ruby(value)
-            v
+        def copy_from_ruby(value)
+            typelib_from_ruby(value)
         end
 
         class << self

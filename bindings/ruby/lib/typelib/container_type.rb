@@ -149,7 +149,7 @@ module Typelib
             end
 
             def set(index, value)
-                self[index] = value
+                Typelib.copy_from_ruby(raw_get(index), value)
             end
 
             def []=(index, value)
@@ -258,8 +258,7 @@ module Typelib
         #
         # The default always returns nil, which means that no invalidation is
         # performed
-        def contained_memory_id
-        end
+        def contained_memory_id; end
 
         def handle_container_invalidation
             memory_id    = self.contained_memory_id

@@ -133,6 +133,19 @@ module Typelib
             end
         end
 
+        def copy_from_ruby(hash_or_array)
+            case hash_or_array
+            when Hash
+                set_hash(hash_or_array)
+            when Array
+                set_array(hash_or_array)
+            else
+                raise Typelib::UnknownConversionRequested.
+                    new(hash_or_array, self.class),
+                    "no conversion available from #{hash_or_array} to #{self}"
+            end
+        end
+
         # Initializes this object to the pointer +ptr+, and initializes it
         # to +init+. Valid values for +init+ are:
         # * a hash, in which case it is a { field_name => field_value } hash
@@ -287,21 +300,6 @@ module Typelib
 
                 super if defined? super
 
-                if !convertions_from_ruby.has_key?(Hash)
-                    convert_from_ruby Hash do |value, expected_type|
-                        result = expected_type.new
-                        result.set_hash(value)
-                        result
-                    end
-                end
-
-                if !convertions_from_ruby.has_key?(Array)
-                    convert_from_ruby Array do |value, expected_type|
-                        result = expected_type.new
-                        result.set_array(value)
-                        result
-                    end
-                end
             end
 
             # Returns true if this compound has no fields
@@ -473,14 +471,14 @@ module Typelib
         end
 
         def raw_set(name, value)
+            # If +value+ is already a typelib value, just do a plain copy
             if value.kind_of?(Type)
                 attribute = raw_get(name)
-                # If +value+ is already a typelib value, just do a plain copy
-                if attribute.kind_of?(Typelib::Type)
-                    return Typelib.copy(attribute, value)
-                end
+                Typelib.copy(attribute, value)
+                attribute
+            else
+                typelib_set_field(name, value)
             end
-            typelib_set_field(name, value)
 
         rescue ArgumentError => e
             if e.message =~ /^no field \w+ in /
@@ -502,13 +500,8 @@ module Typelib
         # that the field is a compound type and initialize it using the keys of
         # +value+ as field names
         def set(name, value)
-            if !has_field?(name)
-                raise ArgumentError, "#{self.class.name} has no field called #{name}"
-            end
-
-            value = Typelib.from_ruby(value, @field_types[name])
-            raw_set_field(name.to_s, value)
-
+            attribute = raw_get(name.to_s)
+            Typelib.copy_from_ruby(attribute, value)
         rescue TypeError => e
             raise e, "#{e.message} for #{self.class.name}.#{name}", e.backtrace
         end

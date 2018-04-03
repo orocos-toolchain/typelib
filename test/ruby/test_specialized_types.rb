@@ -440,7 +440,7 @@ class TC_SpecializedTypes < Minitest::Test
         assert(!long.unsigned?)
         assert_equal(4, long.size)
 
-        long_v = long.from_ruby(10)
+        long_v = Typelib.from_ruby(10, long)
         assert_equal 10, long_v.to_ruby
 
         ulong = registry.get("/uint32_t")
@@ -828,4 +828,3 @@ class TC_SpecializedTypes < Minitest::Test
         assert_equal 'test string', value.to_simple_value
     end
 end
-

@@ -293,6 +293,19 @@ module Typelib
         end
     end
 
+    def self.copy_from_ruby(target_value, ruby_value)
+        expected_type = target_value.class
+        use_copy_from_ruby = target_value.respond_to?(:copy_from_ruby) &&
+            !ruby_value.kind_of?(Type) &&
+            !expected_type.convertions_from_ruby[ruby_value.class]
+
+        if use_copy_from_ruby
+            target_value.invalidate_changes_from_converted_types
+            target_value.copy_from_ruby(ruby_value)
+        else
+            Typelib.copy(target_value, Typelib.from_ruby(ruby_value, expected_type))
+        end
+    end
 
     # Initializes +expected_type+ from +arg+, where +arg+ can either be a value
     # of expected_type, a value that can be casted into a value of
@@ -305,26 +318,22 @@ module Typelib
 
         if arg.kind_of?(expected_type)
             return arg
-        elsif arg.class < Type && arg.class.casts_to?(expected_type)
+        elsif arg.kind_of?(Type) && arg.class.casts_to?(expected_type)
             return arg.cast(expected_type)
         elsif convertion = expected_type.convertions_from_ruby[arg.class]
             converted = convertion.call(arg, expected_type)
         elsif expected_type.respond_to?(:from_ruby)
             converted = expected_type.from_ruby(arg)
+        elsif expected_type.method_defined?(:copy_from_ruby)
+            converted = expected_type.new
+            converted.copy_from_ruby(arg)
+        elsif arg.class.name != expected_type.name
+            raise UnknownConversionRequested.new(arg, expected_type), "types differ and there are not convertions from one to the other: #{arg.class.name} <-> #{expected_type.name}"
         else
-            if !(expected_type < NumericType) && !arg.kind_of?(expected_type)
-                if arg.class.name != expected_type.name
-                    raise UnknownConversionRequested.new(arg, expected_type), "types differ and there are not convertions from one to the other: #{arg.class.name} <-> #{expected_type.name}"
-                else
-                    raise ConversionToMismatchedType.new(arg, expected_type), "the types have the same name but different definitions: #{arg.class.name} <-> #{expected_type.name}"
-                end
-            end
-            converted = arg
+            raise ConversionToMismatchedType.new(arg, expected_type), "the types have the same name but different definitions: #{arg.class.name} <-> #{expected_type.name}"
         end
-        if !(expected_type < NumericType) && !converted.kind_of?(expected_type)
-            raise RuntimeError, "invalid conversion of #{arg} to #{expected_type.name}"
-        end
-        if !converted.eql?(arg)
+
+        unless converted.eql?(arg)
             converted.apply_changes_from_converted_types
         end
         converted

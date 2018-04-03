@@ -48,7 +48,7 @@ module Typelib
             #
             # @return [Boolean]
             def needs_convertion_from_ruby?
-                !convertions_from_ruby.empty?
+                !convertions_from_ruby.empty? || method_defined?(:copy_from_ruby)
             end
 
             def compatible_with_memcpy?
