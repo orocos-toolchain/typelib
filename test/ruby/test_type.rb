@@ -3,7 +3,7 @@ require 'typelib/test'
 class TC_Type < Minitest::Test
     include Typelib
     def teardown
-	GC.start
+        GC.start
     end
 
     # Not in setup() since we want to make sure
@@ -67,16 +67,16 @@ class TC_Type < Minitest::Test
 
 
     def test_type_names
-	registry = make_registry
-	bla = registry.get "/NS1/Bla/Test"
-	assert_equal("/NS1/Bla/Test", bla.name)
-	assert_equal("Test", bla.basename)
-	assert_equal("/NS1/Bla/", bla.namespace)
-	assert_equal("::NS1::Bla::", bla.namespace('::'))
-	assert_equal("/NS1/Bla/Test", bla.full_name)
-	assert_equal("::NS1::Bla::Test", bla.full_name('::'))
-	assert_equal("NS1/Bla/Test", bla.full_name(Typelib::NAMESPACE_SEPARATOR, true))
-	assert_equal("NS1::Bla::Test", bla.full_name('::', true))
+        registry = make_registry
+        bla = registry.get "/NS1/Bla/Test"
+        assert_equal("/NS1/Bla/Test", bla.name)
+        assert_equal("Test", bla.basename)
+        assert_equal("/NS1/Bla/", bla.namespace)
+        assert_equal("::NS1::Bla::", bla.namespace('::'))
+        assert_equal("/NS1/Bla/Test", bla.full_name)
+        assert_equal("::NS1::Bla::Test", bla.full_name('::'))
+        assert_equal("NS1/Bla/Test", bla.full_name(Typelib::NAMESPACE_SEPARATOR, true))
+        assert_equal("NS1::Bla::Test", bla.full_name('::', true))
 
         test_data = "<typelib><opaque name=\"/Bla/Blo&lt;/Template&lt;/Inside&gt;&gt;\" size=\"0\" /></typelib>"
         registry = Registry.from_xml(test_data)

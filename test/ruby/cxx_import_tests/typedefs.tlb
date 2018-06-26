@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <typelib>
   <numeric name="/int32_t" category="sint" size="4" >
-  
+
   </numeric>
   <numeric name="/uint8_t" category="uint" size="1" >
-  
+
   </numeric>
   <opaque name="/ns/C2&lt;/float&gt;" size="0" >
-  
+
   </opaque>
   <opaque name="/ns/S2" size="0" >
   <metadata key="cxxname"><![CDATA[::ns::S2]]></metadata>
@@ -16,7 +16,7 @@
   </opaque>
   <compound name="/ns/aClass" size="4" >
     <field name="A" type="/int32_t" offset="0">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::ns::aClass]]></metadata>
 <metadata key="source_file_line"><![CDATA[typedefs.hh:15]]></metadata>
@@ -34,16 +34,16 @@
   <alias name="/ns/aClassTypedef" source="/ns/aClass"/>
   <compound name="/ns/test" size="16" >
     <field name="C" type="/uint8_t" offset="0">
-    
+
     </field>
     <field name="A" type="/ns/aClass" offset="4">
-    
+
     </field>
     <field name="B" type="/int32_t" offset="8">
-    
+
     </field>
     <field name="D" type="/int32_t" offset="12">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::ns::test]]></metadata>
 <metadata key="source_file_line"><![CDATA[typedefs.hh:25]]></metadata>

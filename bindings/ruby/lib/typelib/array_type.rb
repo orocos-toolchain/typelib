@@ -65,22 +65,22 @@ module Typelib
             @elements.clear
         end
 
-	def pretty_print(pp) # :nodoc:
+        def pretty_print(pp) # :nodoc:
             apply_changes_from_converted_types
-	    all_fields = enum_for(:each_with_index).to_a
+            all_fields = enum_for(:each_with_index).to_a
 
-	    pp.text '['
-	    pp.nest(2) do
-		pp.breakable
-		pp.seplist(all_fields) do |element|
-		    element, index = *element 
-		    pp.text "[#{index}] = "
-		    element.pretty_print(pp)
-		end
-	    end
-	    pp.breakable
-	    pp.text ']'
-	end
+            pp.text '['
+            pp.nest(2) do
+                pp.breakable
+                pp.seplist(all_fields) do |element|
+                    element, index = *element
+                    pp.text "[#{index}] = "
+                    element.pretty_print(pp)
+                end
+            end
+            pp.breakable
+            pp.text ']'
+        end
 
         def raw_each
             if !block_given?
@@ -182,19 +182,19 @@ module Typelib
             raw_set(index, Typelib.from_ruby(value, element_t))
         end
 
-	# Returns the pointed-to type (defined for consistency reasons)
-	def self.[](index); deference end
+        # Returns the pointed-to type (defined for consistency reasons)
+        def self.[](index); deference end
 
         # Returns the description of a type using only simple ruby objects
         # (Hash, Array, Numeric and String).
-        # 
+        #
         #    { 'name' => TypeName,
         #      'class' => NameOfTypeClass, # CompoundType, ...
         #      'length' => LengthOfArrayInElements,
         #      # The content of 'element' is controlled by the :recursive option
         #      'element' => DescriptionOfArrayElement,
         #      # Only if :layout_info is true
-        #      'size' => SizeOfTypeInBytes 
+        #      'size' => SizeOfTypeInBytes
         #    }
         #
         # @option (see Type#to_h)

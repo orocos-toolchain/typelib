@@ -19,7 +19,7 @@ static bool is_string_handler(Registry const& registry, Type const& type, bool k
         return false;
 
     if (known_size && type.getCategory() == Type::Pointer)
-	return false;
+        return false;
 
     return true;
 
@@ -29,13 +29,13 @@ static void string_buffer_get(Value const& value, char*& buffer, string::size_ty
     Type const& type(value.getType());
     if (type.getCategory() == Type::Array)
     {
-	buffer = reinterpret_cast<char*>(value.getData());
-	size = static_cast<Array const&>(type).getDimension();
+        buffer = reinterpret_cast<char*>(value.getData());
+        size = static_cast<Array const&>(type).getDimension();
     }
     else
     {
-	buffer = *reinterpret_cast<char**>(value.getData());
-	size   = string::npos;
+        buffer = *reinterpret_cast<char**>(value.getData());
+        size   = string::npos;
     }
 }
 
@@ -59,7 +59,7 @@ static VALUE value_from_string(VALUE mod, VALUE self, VALUE from, VALUE known_go
     Registry const& registry = rb2cxx::object<Registry>(value_get_registry(self));
 
     if (!RTEST(known_good_type) && !is_string_handler(registry, type, true))
-	rb_raise(rb_eTypeError, "Ruby strings can only be converted to char arrays");
+        rb_raise(rb_eTypeError, "Ruby strings can only be converted to char arrays");
 
     char * buffer;
     string::size_type buffer_size;
@@ -85,7 +85,7 @@ static VALUE value_to_string(VALUE mod, VALUE self, VALUE known_good_type)
     Registry const& registry = rb2cxx::object<Registry>(value_get_registry(self));
 
     if (!RTEST(known_good_type) && !is_string_handler(registry, type))
-	rb_raise(rb_eRuntimeError, "invalid conversion to string");
+        rb_raise(rb_eRuntimeError, "invalid conversion to string");
 
     char* buffer;
     string::size_type buffer_size;
@@ -95,13 +95,13 @@ static VALUE value_to_string(VALUE mod, VALUE self, VALUE known_good_type)
         return rb_str_new2(buffer);
     else
     {
-	// Search the real end of the string inside the buffer
-	string::size_type real_size;
-	for (real_size = 0; real_size < buffer_size; ++real_size)
-	{
-	    if (!buffer[real_size])
-		break;
-	}
+        // Search the real end of the string inside the buffer
+        string::size_type real_size;
+        for (real_size = 0; real_size < buffer_size; ++real_size)
+        {
+            if (!buffer[real_size])
+                break;
+        }
         return rb_str_new(buffer, real_size);
     }
 }

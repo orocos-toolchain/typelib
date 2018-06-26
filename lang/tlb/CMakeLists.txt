@@ -7,4 +7,4 @@ TARGET_LINK_LIBRARIES(typeLang_tlb typeLib ${LibXML_LIBRARIES})
 
 INSTALL(TARGETS typeLang_tlb
     LIBRARY DESTINATION lib/typelib)
- 
+

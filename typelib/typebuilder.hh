@@ -21,7 +21,7 @@ namespace Typelib
     public:
         /** Initializes the type builder
          * This constructor builds the canonical name based on @c base
-         * an gets its initial type from @c registry. It throws 
+         * an gets its initial type from @c registry. It throws
          * Undefined(typename) if @c base is not defined
          *
          * @arg registry the registry to act on
@@ -38,10 +38,10 @@ namespace Typelib
         /** Builds a level-deferenced pointer of the current type */
         void addPointer(int level);
         /** Add an outermost dimension to the current type (if it is not
-	 * an array, builds an array */
+         * an array, builds an array */
         void addArrayMajor(int size);
         /** Add an innermost dimension to the current type (if it is not
-	 * an array, builds an array */
+         * an array, builds an array */
         void addArrayMinor(int size);
         /** Sets the size of the current type */
         void setSize(int size);
@@ -49,13 +49,13 @@ namespace Typelib
         /** Get the current type */
         const Type& getType() const;
 
-	/** Build a type from its full name 
-	 * @return the new type or 0 if it can't be built */
+        /** Build a type from its full name
+         * @return the new type or 0 if it can't be built */
         static const Type* build(Registry& registry, const std::string& full_name, int size = 0);
-	/** Get base name, that is the type \c full_name is derived from */
+        /** Get base name, that is the type \c full_name is derived from */
         static std::string getBaseTypename(const std::string& full_name);
-	/** Get base type, that is the type \c full_name is derived from
-	 * @return the new type or 0 if it can't be built */
+        /** Get base type, that is the type \c full_name is derived from
+         * @return the new type or 0 if it can't be built */
         static const Type* getBaseType(const Registry& registry, const std::string& full_name);
 
         struct Modifier

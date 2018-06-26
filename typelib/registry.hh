@@ -8,10 +8,10 @@
 namespace Typelib
 {
     class RegistryIterator;
-    
+
     /** Base for exceptions thrown by the registry */
-    class RegistryException : public std::runtime_error 
-    { 
+    class RegistryException : public std::runtime_error
+    {
     public:
         RegistryException(std::string const& what) : std::runtime_error(what) {}
     };
@@ -80,8 +80,8 @@ namespace Typelib
      *
      * Registry objects provide the following services:
      * <ul>
-     *	<li> type aliases (Registry::alias)
-     *	<li> namespace management: default namespace (Registry::setDefaultNamespace, Registry::getDefaultNamespace),
+     *  <li> type aliases (Registry::alias)
+     *  <li> namespace management: default namespace (Registry::setDefaultNamespace, Registry::getDefaultNamespace),
      *  namespace import (like <tt>using namespace</tt> in C++)
      *  <li> derived types (array, pointers) automatic building (Registry::build)
      * </ul>
@@ -89,7 +89,7 @@ namespace Typelib
     class Registry
     {
         friend class RegistryIterator;
-        
+
     private:
         struct RegistryType
         {
@@ -122,16 +122,16 @@ namespace Typelib
         void updateCurrentNameMap();
 
     public:
-	typedef RegistryIterator Iterator;
+        typedef RegistryIterator Iterator;
 
         Registry();
         ~Registry();
 
         /** Import the \c name namespace into the current namespace.
-	 * @arg erase_existing controls the behaviour in case of name collision. If true,
-	 * the type from the namespace being imported will have priority. If false, 
-	 * an already imported type will have priority.
-	 */
+         * @arg erase_existing controls the behaviour in case of name collision. If true,
+         * the type from the namespace being imported will have priority. If false,
+         * an already imported type will have priority.
+         */
         void importNamespace(const std::string& name, bool erase_existing = false);
 
         /** Sets the default namespace. This removes all namespace import and
@@ -142,12 +142,12 @@ namespace Typelib
          * if no default namespace have been set
          */
         std::string getDefaultNamespace() const;
-       
+
         /** Checks for the availability of a particular type
          *
          * @arg name the type name
-         * @arg build if true, the method returns true if \c name is 
-	 * a derived version (pointer or array) of a known type
+         * @arg build if true, the method returns true if \c name is
+         * a derived version (pointer or array) of a known type
          *
          * @return true if the Type exists, or if it is a derived type and build is true, false otherwise
          */
@@ -165,7 +165,7 @@ namespace Typelib
          * @arg name the type name
          * @return the type object if it exists, 0 otherwise
          */
-        Type const* get(const std::string& name) const;  
+        Type const* get(const std::string& name) const;
 
         /** Gets a RegistryIterator on a given type
          *
@@ -226,14 +226,14 @@ namespace Typelib
         /** Remove all types */
         void        clear();
 
-        /** Get the absolute type name of \c name, 
-         * taking the default namespace into account 
+        /** Get the absolute type name of \c name,
+         * taking the default namespace into account
          * @see setDefaultNamespace getDefaultNamespace */
         std::string getFullName (const std::string& name) const;
 
-	/** Iterator pointing on the first type of the registry */
+        /** Iterator pointing on the first type of the registry */
         RegistryIterator begin() const;
-	/** Past-the-end iterator on the registry */
+        /** Past-the-end iterator on the registry */
         RegistryIterator end() const;
         /** Returns an iterator on the first type whose name starts with
          * +prefix+. If +prefix+ is a namespace name, it will be the first type
@@ -256,16 +256,16 @@ namespace Typelib
          * </code>
          */
         RegistryIterator end(std::string const& prefix) const;
-        
+
         /** Returns a null type */
         static Type const& null();
 
-	/** Merges the content of \c registry into this object */
-	void merge(Registry const& registry);
+        /** Merges the content of \c registry into this object */
+        void merge(Registry const& registry);
 
         /** Merge the metadata information contained in a registry into this one
          */
-	void mergeMetaData(Registry const& registry);
+        void mergeMetaData(Registry const& registry);
 
         /** Modifies the size of a subset of the types, and propagate this size
          * change to the other types
@@ -311,12 +311,12 @@ namespace Typelib
         /** Removes all defined aliases
          */
         void clearAliases();
-        
+
     public:
         enum DumpMode
         {
-            NameOnly = 0, 
-            AllType  = 1, 
+            NameOnly = 0,
+            AllType  = 1,
             WithSourceId = 2,
             RecursiveTypeDump = 4
         };

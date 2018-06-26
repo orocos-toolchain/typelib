@@ -61,7 +61,7 @@ public:
 
     virtual void save
         ( std::ostream& stream
-	, utilmm::config_set const& config
+        , utilmm::config_set const& config
         , Typelib::Registry const& type);
 
     virtual bool save

@@ -11,7 +11,7 @@
 namespace Typelib
 {
     class Registry;
-    
+
     class Exporter;
     class ExportPlugin;
 
@@ -19,7 +19,7 @@ namespace Typelib
     class ImportPlugin;
 
     class TypeDefinitionPlugin;
-    
+
     /** Exception thrown when an unknown plugin is found */
     struct PluginNotFound : std::runtime_error
     {
@@ -28,12 +28,12 @@ namespace Typelib
 
     /** Generic error for problems during export */
     struct ExportError : std::runtime_error
-    { 
+    {
         ExportError(std::string const& msg) : std::runtime_error(msg) {}
     };
 
-    /** The plugin manager 
-     * 
+    /** The plugin manager
+     *
      * It is a singleton, using utilmm::singleton
      * You have to access it using
      * <code>
@@ -58,20 +58,20 @@ namespace Typelib
 
         PluginManager();
         ~PluginManager();
-        
+
     public:
-	/** Registers a new exporter */
+        /** Registers a new exporter */
         bool add(ExportPlugin* plugin);
 
-	/** Build a new import plugin from its plugin name
-	 * @throws PluginNotFound */
+        /** Build a new import plugin from its plugin name
+         * @throws PluginNotFound */
         Importer* importer(std::string const& name) const;
 
-	/** Registers a new importer */
+        /** Registers a new importer */
         bool add(ImportPlugin* plugin);
 
-	/** Build a new export plugin from its plugin name 
-	 * @throws PluginNotFound */
+        /** Build a new export plugin from its plugin name
+         * @throws PluginNotFound */
         Exporter* exporter(std::string const& name) const;
 
         /** Adds a type definition plugin. A type definition plugin defines a
@@ -84,107 +84,107 @@ namespace Typelib
          */
         void registerPluginTypes(Registry& registry);
 
-	/** \overload
-	 * This is provided for backward compatibility only
-	 */
+        /** \overload
+         * This is provided for backward compatibility only
+         */
         static std::string save
-	    ( std::string const& kind
-	    , Registry const& registry);
+            ( std::string const& kind
+            , Registry const& registry);
 
-	/** \overload
-	 */
+        /** \overload
+         */
         static std::string save
-	    ( std::string const& kind
-	    , utilmm::config_set const& config
-	    , Registry const& registry);
+            ( std::string const& kind
+            , utilmm::config_set const& config
+            , Registry const& registry);
 
-       	/** \overload
-	 * This is provided for backward compatibility only
-	 */
-	static void save
-	    ( std::string const& kind
-	    , Registry const& registry
-	    , std::ostream& into);
+        /** \overload
+         * This is provided for backward compatibility only
+         */
+        static void save
+            ( std::string const& kind
+            , Registry const& registry
+            , std::ostream& into);
 
-       	/** Exports a registry to an ostream object
-	 * @arg kind	    the output format. It has to be a valid exporter name
-	 * @arg config      format-specific configuration. See each exporter documentation for details.
-	 * @arg registry    the registry to export
-	 * @arg into	    the ostream object to export to
-	 * @throws PluginNotFound if \c kind is invalid
-	 * @throws UnsupportedType if a specific type cannot be exported into this format
-	 * @throws ExportError if another error occured during the export
-	 */
-	static void save
-	    ( std::string const& kind
-	    , utilmm::config_set const& config
-	    , Registry const& registry
-	    , std::ostream& into);
+        /** Exports a registry to an ostream object
+         * @arg kind        the output format. It has to be a valid exporter name
+         * @arg config      format-specific configuration. See each exporter documentation for details.
+         * @arg registry    the registry to export
+         * @arg into        the ostream object to export to
+         * @throws PluginNotFound if \c kind is invalid
+         * @throws UnsupportedType if a specific type cannot be exported into this format
+         * @throws ExportError if another error occured during the export
+         */
+        static void save
+            ( std::string const& kind
+            , utilmm::config_set const& config
+            , Registry const& registry
+            , std::ostream& into);
 
-	/** \overload
-	 */
+        /** \overload
+         */
         static Registry* load
             ( std::string const& kind
             , std::istream& stream );
-	
-       	/** Imports types from a istream object to an already existing registry
-	 */
-	static void load
+
+        /** Imports types from a istream object to an already existing registry
+         */
+        static void load
             ( std::string const& kind
             , std::istream& stream
             , Registry& into );
 
-       	/** Creates a registry from a file
-	 * @see Importer::load
-	 */
+        /** Creates a registry from a file
+         * @see Importer::load
+         */
         static Registry* load
             ( std::string const& kind
             , std::string const& file );
 
-       	/** Imports types from a file into an already existing registry
-	 * @see Importer::load
-	 */
+        /** Imports types from a file into an already existing registry
+         * @see Importer::load
+         */
         static void load
             ( std::string const& kind
             , std::string const& file
             , Registry& into );
 
 
-	/** \overload
-	 */
+        /** \overload
+         */
         static Registry* load
             ( std::string const& kind
             , std::istream& stream
             , utilmm::config_set const& config );
-	
-       	/** Imports types from a istream object to an already existing registry
-	 */
-	static void load
+
+        /** Imports types from a istream object to an already existing registry
+         */
+        static void load
             ( std::string const& kind
             , std::istream& stream
             , utilmm::config_set const& config
             , Registry& into );
 
-       	/** Creates a registry from a file
-	 * @see Importer::load
-	 */
+        /** Creates a registry from a file
+         * @see Importer::load
+         */
         static Registry* load
             ( std::string const& kind
             , std::string const& file
             , utilmm::config_set const& config );
 
-       	/** Imports types from a file into an already existing registry
-	 * @see Importer::load
-	 */
+        /** Imports types from a file into an already existing registry
+         * @see Importer::load
+         */
         static void load
             ( std::string const& kind
             , std::string const& file
             , utilmm::config_set const& config
             , Registry& into );
 
-	/** The one PluginManager object. See main PluginManager documentation
-	 * for its use.
-	 */
+        /** The one PluginManager object. See main PluginManager documentation
+         * for its use.
+         */
         typedef utilmm::singleton::use<PluginManager> self;
 
     private:

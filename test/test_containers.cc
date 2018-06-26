@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE( test_vector_assumptions )
     // To resize the containers efficiently, we assume that moving the bytes
     // around is fine. This is a valid assumption only if the std::vector's
     // internal structure does not store any pointer to the memory location
-    // 
+    //
     // This tests that this assumption is valid
     {
         vector< vector<double> > values;
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE( test_vector_delete_if )
 }
 
 BOOST_AUTO_TEST_CASE( test_vector_getElement )
-{ 
+{
     Registry registry;
     import_test_types(registry);
 
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE( test_vector_getElement )
 }
 
 BOOST_AUTO_TEST_CASE( test_vector_setElement )
-{ 
+{
     Registry registry;
     import_test_types(registry);
 
@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE( test_vector_setElement )
 }
 
 BOOST_AUTO_TEST_CASE( test_vector_visit )
-{ 
+{
     Registry registry;
     import_test_types(registry);
 

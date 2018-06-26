@@ -42,26 +42,26 @@ static VALUE compound_get_fields(VALUE self)
 
 /* Helper function for CompoundType#[] */
 static VALUE compound_field_get(VALUE rbvalue, VALUE name, VALUE raw)
-{ 
+{
     VALUE registry = value_get_registry(rbvalue);
     Value value = rb2cxx::object<Value>(rbvalue);
     if (! value.getData())
         return Qnil;
 
-    try { 
+    try {
         Value field_value = value_get_field(value, StringValuePtr(name));
         if (RTEST(raw))
             return cxx2rb::value_wrap(field_value, registry, rbvalue);
         else return typelib_to_ruby(field_value, registry, rbvalue);
-    } 
+    }
     catch(FieldNotFound)
-    { rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name)); } 
+    { rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name)); }
     catch(std::exception const& e)
     { rb_raise(rb_eRuntimeError, "%s", e.what()); }
 }
 /* Helper function for CompoundType#[]= */
 static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
-{ 
+{
     Value& tlib_value(rb2cxx::object<Value>(self));
 
     try {
@@ -78,17 +78,17 @@ static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
 /* call-seq:
  *  pointer.deference => pointed-to type
  *
- * Returns the value pointed to by +self+ 
+ * Returns the value pointed to by +self+
  */
 static VALUE pointer_deference(VALUE self)
 {
     VALUE pointed_to = rb_iv_get(self, "@points_to");
     if (!NIL_P(pointed_to))
-	return pointed_to;
+        return pointed_to;
 
     Value const& value(rb2cxx::object<Value>(self));
     Indirect const& indirect(static_cast<Indirect const&>(value.getType()));
-    
+
     VALUE registry = value_get_registry(self);
 
     void* ptr_value = *reinterpret_cast<void**>(value.getData());
@@ -109,8 +109,8 @@ Enum::integral_type rb2cxx::enum_value(VALUE rb_value, Enum const& e)
     if (TYPE(rb_value) == T_FIXNUM)
     {
         Enum::integral_type value = FIX2INT(rb_value);
-        try { 
-            e.get(value); 
+        try {
+            e.get(value);
             return value;
         }
         catch(Enum::ValueNotFound) {  }
@@ -141,7 +141,7 @@ VALUE enum_keys(VALUE self)
     Enum const& type = static_cast<Enum const&>(rb2cxx::object<Type>(self));
 
     VALUE keys = rb_iv_get(self, "@values");
-    if (!NIL_P(keys)) 
+    if (!NIL_P(keys))
         return keys;
 
     keys = rb_hash_new();
@@ -212,7 +212,7 @@ static Value array_element(VALUE rbarray, VALUE rbindex)
     Value& value(rb2cxx::object<Value>(rbarray));
     Array const& array(static_cast<Array const&>(value.getType()));
     size_t index = NUM2INT(rbindex);
-    
+
     if (index >= array.getDimension())
     {
         rb_raise(rb_eIndexError, "Out of bounds: %lu > %lu", index, array.getDimension());
@@ -234,11 +234,11 @@ static Value array_element(VALUE rbarray, VALUE rbindex)
  * IndexError exception.
  */
 static VALUE array_get(int argc, VALUE* argv, VALUE self)
-{ 
+{
     Value& value            = rb2cxx::object<Value>(self);
     Array const& array      = static_cast<Array const&>(value.getType());
     if (array.getDimension() == 0)
-	return self;
+        return self;
 
     Type  const& array_type = array.getIndirection();
     VALUE registry          = value_get_registry(self);
@@ -246,32 +246,32 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
     int8_t* data = reinterpret_cast<int8_t*>(value.getData());
     size_t index = NUM2INT(argv[0]);
     if (index >= array.getDimension())
-	rb_raise(rb_eIndexError, "Out of bounds: %li > %li", index, array.getDimension());
+        rb_raise(rb_eIndexError, "Out of bounds: %li > %li", index, array.getDimension());
 
     if (argc == 1)
     {
-	Value v = Value(data + array_type.getSize() * index, array_type);
-	return cxx2rb::value_wrap( v, registry, self );
+        Value v = Value(data + array_type.getSize() * index, array_type);
+        return cxx2rb::value_wrap( v, registry, self );
     }
     else if (argc == 2)
     {
-	VALUE ret = rb_ary_new();
-	size_t size = NUM2INT(argv[1]);
-	if (index + size > array.getDimension())
-	    rb_raise(rb_eIndexError, "Out of bounds: %li > %li", index + size - 1, array.getDimension());
+        VALUE ret = rb_ary_new();
+        size_t size = NUM2INT(argv[1]);
+        if (index + size > array.getDimension())
+            rb_raise(rb_eIndexError, "Out of bounds: %li > %li", index + size - 1, array.getDimension());
 
-	for (size_t i = index; i < index + size; ++i)
-	{
-	    Value v = Value(data + array_type.getSize() * i, array_type);
-	    VALUE rb_v = cxx2rb::value_wrap( v, registry, self );
+        for (size_t i = index; i < index + size; ++i)
+        {
+            Value v = Value(data + array_type.getSize() * i, array_type);
+            VALUE rb_v = cxx2rb::value_wrap( v, registry, self );
 
-	    rb_ary_push(ret, rb_v);
-	}
+            rb_ary_push(ret, rb_v);
+        }
 
-	return ret;
+        return ret;
     }
     else
-	rb_raise(rb_eArgError, "invalid argument count (%i for 1 or 2)", argc);
+        rb_raise(rb_eArgError, "invalid argument count (%i for 1 or 2)", argc);
 }
 
 /* call-seq:
@@ -282,13 +282,13 @@ static VALUE array_get(int argc, VALUE* argv, VALUE self)
  * IndexError exception.
  */
 static VALUE array_set(VALUE self, VALUE rbindex, VALUE newvalue)
-{ 
+{
     Value element = array_element(self, rbindex);
-    return typelib_from_ruby(element, newvalue); 
+    return typelib_from_ruby(element, newvalue);
 }
 
 /* call-seq:
- *  array.each { |v| ... }	=> array
+ *  array.each { |v| ... }      => array
  *
  * Iterates on all elements of the array
  */
@@ -297,7 +297,7 @@ static VALUE array_do_each(VALUE rbarray)
     Value& value            = rb2cxx::object<Value>(rbarray);
     Array const& array      = static_cast<Array const&>(value.getType());
     if (array.getDimension() == 0)
-	return rbarray;
+        return rbarray;
 
     Type  const& array_type = array.getIndirection();
     VALUE registry          = value_get_registry(rbarray);
@@ -305,13 +305,13 @@ static VALUE array_do_each(VALUE rbarray)
     int8_t* data = reinterpret_cast<int8_t*>(value.getData());
 
     for (size_t i = 0; i < array.getDimension(); ++i, data += array_type.getSize())
-	rb_yield(cxx2rb::value_wrap( Value(data, array_type), registry, rbarray ));
+        rb_yield(cxx2rb::value_wrap( Value(data, array_type), registry, rbarray ));
 
     return rbarray;
 }
 
 /* call-seq:
- *  array.size		    => size
+ *  array.size              => size
  *
  * Returns the count of elements in +array+
  */
@@ -323,7 +323,7 @@ static VALUE array_size(VALUE rbarray)
 }
 
 /* call-seq:
- *  array.length		    => length
+ *  array.length                    => length
  *
  * Returns the count of elemnts in +array+
  */
@@ -335,9 +335,9 @@ static VALUE array_class_length(VALUE rbarray)
 
 /*
  * call-seq:
- *  pointer.null?		=> boolean
+ *  pointer.null?               => boolean
  *
- * checks if this is a NULL pointer 
+ * checks if this is a NULL pointer
  */
 static VALUE pointer_nil_p(VALUE self)
 {
@@ -349,7 +349,7 @@ static VALUE pointer_nil_p(VALUE self)
 
 /*
  * call-seq:
- *  numeric.integer?	    => true or false
+ *  numeric.integer?        => true or false
  *
  * Returns true if the type is an integral type and false if it is a floating-point type
  */
@@ -361,7 +361,7 @@ static VALUE numeric_type_integer_p(VALUE self)
 
 /*
  * call-seq:
- *  numeric.size	    => value
+ *  numeric.size            => value
  *
  * The size of this type in bytes
  */
@@ -373,7 +373,7 @@ static VALUE numeric_type_size(VALUE self)
 
 /*
  * call-seq:
- *  numeric.unsigned?	    => value
+ *  numeric.unsigned?       => value
  *
  * If integer? returns true, returns whether this type is an unsigned or signed
  * integral type.
@@ -383,10 +383,10 @@ static VALUE numeric_type_unsigned_p(VALUE self)
     Numeric const& type(dynamic_cast<Numeric const&>(rb2cxx::object<Type>(self)));
     switch(type.getNumericCategory())
     {
-	case Numeric::SInt: return Qfalse;
-	case Numeric::UInt: return Qtrue;
-	case Numeric::Float:
-	    rb_raise(rb_eArgError, "not an integral type");
+        case Numeric::SInt: return Qfalse;
+        case Numeric::UInt: return Qtrue;
+        case Numeric::Float:
+            rb_raise(rb_eArgError, "not an integral type");
         default:
             return Qnil;
     }
@@ -645,9 +645,9 @@ static VALUE vector_raw_memcpy(VALUE self,VALUE _source,VALUE _size)
     return Qnil;
 }
 
-/* 
+/*
  * call-seq:
- *   to_ruby(value)	=> non-Typelib object or self
+ *   to_ruby(value)     => non-Typelib object or self
  *
  * Converts +self+ to its Ruby equivalent. If no equivalent
  * type is available, returns self
@@ -657,7 +657,7 @@ static VALUE numeric_to_ruby(VALUE mod, VALUE self)
     Value const& value(rb2cxx::object<Value>(self));
     VALUE registry = value_get_registry(self);
     try {
-	return typelib_to_ruby(value, registry, Qnil);
+        return typelib_to_ruby(value, registry, Qnil);
     } catch(Typelib::NullTypeFound) { }
     rb_raise(rb_eTypeError, "trying to convert 'void'");
 }
@@ -675,7 +675,7 @@ static VALUE numeric_from_ruby(VALUE self, VALUE arg)
 {
     Value& value(rb2cxx::object<Value>(self));
     try {
-	typelib_from_ruby(value, arg);
+        typelib_from_ruby(value, arg);
         return self;
     } catch(Typelib::UnsupportedType) { }
     rb_raise(rb_eTypeError, "cannot perform the requested convertion");
@@ -725,7 +725,7 @@ void typelib_ruby::Typelib_init_specialized_types()
     cPointer  = rb_define_class_under(mTypelib, "PointerType", cIndirect);
     rb_define_method(cPointer, "deference", RUBY_METHOD_FUNC(pointer_deference), 0);
     rb_define_method(cPointer, "null?", RUBY_METHOD_FUNC(pointer_nil_p), 0);
-    
+
     cCompound = rb_define_class_under(mTypelib, "CompoundType", cType);
     rb_define_singleton_method(cCompound, "get_fields",   RUBY_METHOD_FUNC(compound_get_fields), 0);
     rb_define_method(cCompound, "typelib_get_field", RUBY_METHOD_FUNC(compound_field_get), 2);

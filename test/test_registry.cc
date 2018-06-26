@@ -142,15 +142,15 @@ BOOST_AUTO_TEST_CASE( test_registry_namespaces )
     BOOST_REQUIRE_EQUAL(4, ns->getSize());
 
     { registry.setDefaultNamespace("/NS2");
-	Type const* relative;
-	BOOST_REQUIRE(( relative = registry.get("Test") ));
-	BOOST_REQUIRE_EQUAL(relative, ns2);
-	BOOST_REQUIRE(( relative = registry.get("NS3/Test") ));
-	BOOST_REQUIRE_EQUAL(relative, ns3);
-	BOOST_REQUIRE(( relative = registry.get("/Test") ));
-	BOOST_REQUIRE_EQUAL(relative, ns);
-	BOOST_REQUIRE(( relative = registry.get("/NS1/Test") ));
-	BOOST_REQUIRE_EQUAL(relative, ns1);
+        Type const* relative;
+        BOOST_REQUIRE(( relative = registry.get("Test") ));
+        BOOST_REQUIRE_EQUAL(relative, ns2);
+        BOOST_REQUIRE(( relative = registry.get("NS3/Test") ));
+        BOOST_REQUIRE_EQUAL(relative, ns3);
+        BOOST_REQUIRE(( relative = registry.get("/Test") ));
+        BOOST_REQUIRE_EQUAL(relative, ns);
+        BOOST_REQUIRE(( relative = registry.get("/NS1/Test") ));
+        BOOST_REQUIRE_EQUAL(relative, ns1);
     }
 
 }

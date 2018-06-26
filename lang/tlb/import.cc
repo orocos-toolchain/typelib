@@ -10,17 +10,17 @@
 #include <fstream>
 
 // Helpers
-namespace 
+namespace
 {
     using namespace std;
     using namespace Typelib;
-    
+
     template<typename Cat>
     Cat getCategoryFromNode(Cat* categories, xmlChar const* name )
     {
         for(const Cat* cur_cat = categories; cur_cat->name; ++cur_cat)
         {
-            if (!xmlStrcmp(name, cur_cat->name)) 
+            if (!xmlStrcmp(name, cur_cat->name))
                 return *cur_cat;
         }
         throw std::runtime_error(string("unrecognized XML node '") + reinterpret_cast<char const*>(name) + "'");
@@ -56,7 +56,7 @@ namespace
     typedef std::map<string, TypeNode> TypeMap;
 }
 
-// load loads the \c name type using the type nodes in \c remaining, which holds 
+// load loads the \c name type using the type nodes in \c remaining, which holds
 // types defined in the tlb file that aren't loaded yet
 namespace
 {
@@ -141,7 +141,7 @@ namespace
             else if (it != m_map.end())
             {
                 // TODO check that the definition in the file
-                // TODO and the definition in the registry 
+                // TODO and the definition in the registry
                 // TODO match
                 m_map.erase(it);
             }
@@ -206,7 +206,7 @@ namespace
         string kind          = getAttribute<string>(node.xml, "kind");
         bool has_size = false;
         int size = 0;
-        try { 
+        try {
             size = getAttribute<int>(node.xml, "size");
             has_size = true;
         }
@@ -225,7 +225,7 @@ namespace
         return container;
     }
     Type const* load_enum(TypeNode const& node, Factory& factory)
-    { 
+    {
         Enum* type = new Enum(node.name);
         for(xmlNodePtr xml = xmlFirstElementChild(node.xml); xml; xml=xmlNextElementSibling(xml))
         {
@@ -237,7 +237,7 @@ namespace
             type->add(symbol, value);
         }
 
-        factory.insert(node, type); 
+        factory.insert(node, type);
         return type;
     }
     Type const* load_alias(TypeNode const& node, Factory& factory)
@@ -248,7 +248,7 @@ namespace
         return type;
     }
 
-    
+
     Type const* load_compound(TypeNode const& node, Factory& factory)
     {
         Compound* compound = new Compound(node.name);
@@ -319,11 +319,11 @@ namespace
 
     void parse(std::string const& source_id, xmlDocPtr doc, Registry& registry)
     {
-	if (!doc) 
-	    throw Parsing::MalformedXML("error parsing '"+source_id+"'");
+        if (!doc)
+            throw Parsing::MalformedXML("error parsing '"+source_id+"'");
 
         xmlNodePtr root_node = xmlDocGetRootElement(doc);
-        if (!root_node) 
+        if (!root_node)
             return;
 
         checkNodeName<Parsing::BadRootElement>(root_node, "typelib");
@@ -360,7 +360,7 @@ void TlbImport::load
         document += buffer.str();
     }
     xmlDocPtr doc = xmlParseMemory(document.c_str(), document.length());
-    if (!doc) 
+    if (!doc)
         throw Parsing::MalformedXML();
 
     try
@@ -371,8 +371,8 @@ void TlbImport::load
         xmlFreeDoc(doc);
     }
     catch(...)
-    { 
-        xmlFreeDoc(doc); 
+    {
+        xmlFreeDoc(doc);
         throw;
     }
 }
@@ -383,7 +383,7 @@ void TlbImport::load
     , utilmm::config_set const& config
     , Typelib::Registry& registry)
 {
-    // Loading from files seams to be broken on some distro's libxml2-packages, 
+    // Loading from files seams to be broken on some distro's libxml2-packages,
     // so we load the whole file into memory before parsing
     std::ifstream stream(path.c_str());
     if (!stream.good())

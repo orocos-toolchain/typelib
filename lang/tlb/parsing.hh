@@ -10,7 +10,7 @@ namespace Parsing
     class MalformedXML : public ImportError
     {
     public:
-        MalformedXML(const std::string& file = "") 
+        MalformedXML(const std::string& file = "")
             : ImportError(file, "malformed XML") {}
     };
 

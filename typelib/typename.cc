@@ -17,7 +17,7 @@ namespace
             : char_separator<NamespaceMarkType>(NamespaceMarkString, "", boost::keep_empty_tokens) {}
     };
     typedef boost::tokenizer<NameSeparator> NameTokenizer;
-    
+
     // helper function which checks that \c identifier does contain
     // only valid characters. Note that identifier is supposed
     // to be a normalized name, so that it cannot be empty
@@ -204,7 +204,7 @@ namespace Typelib
 
         bool begins_with = string(type, 0, length) == normalized_nspace;
         if (!begins_with) return false;
-        if (recursive)    return true; 
+        if (recursive)    return true;
         std::string remainder(type, length, string::npos);
         return splitTypename(remainder).size() == 1;
     }
@@ -226,10 +226,10 @@ namespace Typelib
 
     std::string getRelativeName(std::string const& name, std::string const& ns)
     {
-	size_t size = ns.length();
-	if (*ns.rbegin() != '/')
-	    size += 1;
-	return std::string(name, size, string::npos);
+        size_t size = ns.length();
+        if (*ns.rbegin() != '/')
+            size += 1;
+        return std::string(name, size, string::npos);
     }
 
     std::string getMinimalPathTo(std::string const& full_name, std::string const& ns)

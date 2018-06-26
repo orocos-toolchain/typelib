@@ -27,7 +27,7 @@ namespace typelib_ruby {
  */
 
 
-static 
+static
 void registry_free(void* ptr)
 {
     using cxx2rb::WrapperMap;
@@ -48,7 +48,7 @@ void registry_mark(void* ptr)
     using cxx2rb::WrapperMap;
     WrapperMap const& wrappers = reinterpret_cast<RbRegistry const*>(ptr)->wrappers;
     for (WrapperMap::const_iterator it = wrappers.begin(); it != wrappers.end(); ++it)
-	rb_gc_mark(it->second.second);
+        rb_gc_mark(it->second.second);
 }
 
 static
@@ -88,7 +88,7 @@ VALUE registry_remove(VALUE self, VALUE rbtype)
     Registry&   registry = *(rbregistry.registry);
     Type const& type(rb2cxx::object<Type>(rbtype));
     std::set<Type*> deleted = registry.remove(type);
-    
+
     VALUE result = rb_ary_new();
     std::set<Type*>::iterator it, end;
     for (it = deleted.begin(); it != deleted.end(); ++it)
@@ -135,7 +135,7 @@ VALUE registry_reverse_depends(VALUE self, VALUE rbtype)
     Registry const& registry = rb2cxx::object<Registry>(self);
     Type const& type(rb2cxx::object<Type>(rbtype));
     std::set<Type const*> rdeps = registry.reverseDepends(type);
-    
+
     VALUE result = rb_ary_new();
     std::set<Type const*>::iterator it, end;
     for (it = rdeps.begin(); it != rdeps.end(); ++it)
@@ -168,7 +168,7 @@ VALUE registry_do_build(int argc, VALUE* argv, VALUE self)
     Registry& registry = rb2cxx::object<Registry>(self);
     try {
         Type const* type = registry.build( StringValuePtr(name), size );
-        if (! type) 
+        if (! type)
             rb_raise(eNotFound, "cannot find %s in registry", StringValuePtr(name));
         return cxx2rb::type_wrap(*type, self);
     }
@@ -177,7 +177,7 @@ VALUE registry_do_build(int argc, VALUE* argv, VALUE self)
 
 
 /* call-seq:
- *  alias(new_name, name)	    => self
+ *  alias(new_name, name)           => self
  *
  * Make +new_name+ refer to the type named +name+
  */
@@ -186,9 +186,9 @@ VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
 {
     Registry& registry = rb2cxx::object<Registry>(self);
 
-    try { 
-	registry.alias(StringValuePtr(aliased), StringValuePtr(name)); 
-	return self;
+    try {
+        registry.alias(StringValuePtr(aliased), StringValuePtr(name));
+        return self;
     } catch(BadName) {
         rb_raise(rb_eArgError, "invalid type name %s", StringValuePtr(name));
     } catch(Undefined) {
@@ -202,12 +202,12 @@ void setup_configset_from_option_array(config_set& config, VALUE options)
     int options_length = RARRAY_LEN(options);
     for (int i = 0; i < options_length; ++i)
     {
-	VALUE entry = RARRAY_PTR(options)[i];
-	VALUE k = RARRAY_PTR(entry)[0];
-	VALUE v = RARRAY_PTR(entry)[1];
+        VALUE entry = RARRAY_PTR(options)[i];
+        VALUE k = RARRAY_PTR(entry)[0];
+        VALUE v = RARRAY_PTR(entry)[1];
 
-	if ( rb_obj_is_kind_of(v, rb_cArray) )
-	{
+        if ( rb_obj_is_kind_of(v, rb_cArray) )
+        {
             VALUE first_el = rb_ary_entry(v, 0);
             if (rb_obj_is_kind_of(first_el, rb_cArray))
             {
@@ -227,11 +227,11 @@ void setup_configset_from_option_array(config_set& config, VALUE options)
                     config.insert(StringValuePtr(k), StringValuePtr(value));
                 }
             }
-	}
-	else if (TYPE(v) == T_TRUE || TYPE(v) == T_FALSE)
-	    config.set(StringValuePtr(k), RTEST(v) ? "true" : "false");
-	else
-	    config.set(StringValuePtr(k), StringValuePtr(v));
+        }
+        else if (TYPE(v) == T_TRUE || TYPE(v) == T_FALSE)
+            config.set(StringValuePtr(k), RTEST(v) ? "true" : "false");
+        else
+            config.set(StringValuePtr(k), StringValuePtr(v));
     }
 }
 
@@ -246,18 +246,18 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE opt
 
     config_set config;
     setup_configset_from_option_array(config, options);
-    
+
     std::string error_string;
-    try { 
-	if (RTEST(merge))
-	{
-	    Registry temp;
-	    PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, temp); 
-	    registry.merge(temp);
-	}
-	else
-	    PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, registry); 
-	return Qnil;
+    try {
+        if (RTEST(merge))
+        {
+            Registry temp;
+            PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, temp);
+            registry.merge(temp);
+        }
+        else
+            PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, registry);
+        return Qnil;
     }
     catch(boost::bad_lexical_cast e)   { error_string = e.what(); }
     catch(std::exception const& e) { error_string = e.what(); }
@@ -276,11 +276,11 @@ VALUE registry_export(VALUE self, VALUE kind, VALUE options)
 
     config_set config;
     setup_configset_from_option_array(config, options);
-    
+
     string error_message;
     try {
-	std::string exported = PluginManager::save(StringValuePtr(kind), config, registry);
-	return rb_str_new(exported.c_str(), exported.length());
+        std::string exported = PluginManager::save(StringValuePtr(kind), config, registry);
+        return rb_str_new(exported.c_str(), exported.length());
     }
     catch (std::exception const& e) { error_message = e.what(); }
     rb_raise(rb_eRuntimeError, "%s", error_message.c_str());
@@ -300,9 +300,9 @@ VALUE registry_merge(VALUE self, VALUE rb_merged)
 
     Registry& registry = rb2cxx::object<Registry>(self);
     Registry& merged   = rb2cxx::object<Registry>(rb_merged);
-    try { 
-	registry.merge(merged);
-	return self;
+    try {
+        registry.merge(merged);
+        return self;
     }
     catch(std::exception const& e) { error_string = e.what(); }
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
@@ -331,9 +331,9 @@ VALUE registry_resize(VALUE self, VALUE new_sizes)
                 StringValuePtr(pair[0]),
                 NUM2INT(pair[1])));
     }
-    try { 
-	registry.resize(sizes);
-	return Qnil;
+    try {
+        registry.resize(sizes);
+        return Qnil;
     }
     catch(std::exception const& e) {
         rb_raise(rb_eRuntimeError, "%s", e.what());
@@ -348,7 +348,7 @@ VALUE registry_minimal(VALUE self, VALUE rb_auto, VALUE with_aliases)
 
     if (rb_obj_is_kind_of(rb_auto, rb_cString))
     {
-        try { 
+        try {
             Registry* result = registry.minimal(StringValuePtr(rb_auto), RTEST(with_aliases));
             return registry_wrap(cRegistry, result);
         }
@@ -358,7 +358,7 @@ VALUE registry_minimal(VALUE self, VALUE rb_auto, VALUE with_aliases)
     else
     {
         Registry& auto_types = rb2cxx::object<Registry>(rb_auto);
-        try { 
+        try {
             Registry* result = registry.minimal(auto_types, RTEST(with_aliases));
             return registry_wrap(cRegistry, result);
         }
@@ -414,14 +414,14 @@ VALUE registry_each_type(VALUE self, VALUE filter_, VALUE with_aliases_)
     if (RTEST(filter_))
         filter = StringValuePtr(filter_);
 
-    try 
+    try
     {
         if (filter.empty())
             yield_types(self, with_aliases, registry.begin(), registry.end());
         else
             yield_types(self, with_aliases, registry.begin(filter), registry.end(filter));
 
-	return self;
+        return self;
     }
     catch(std::exception const& e)
     {
@@ -431,7 +431,7 @@ VALUE registry_each_type(VALUE self, VALUE filter_, VALUE with_aliases_)
 
 /* call-seq:
  *  registry.merge_xml(xml) => registry
- * 
+ *
  * Build a registry from a string, which is formatted as Typelib's own XML
  * format.  See also #export, #import and #to_xml
  */
@@ -698,7 +698,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "get", RUBY_METHOD_FUNC(registry_do_get), 1);
     rb_define_method(cRegistry, "build", RUBY_METHOD_FUNC(registry_do_build), -1);
     rb_define_method(cRegistry, "each_type", RUBY_METHOD_FUNC(registry_each_type), 2);
-    // do_import is called by the Ruby-defined import, which formats the 
+    // do_import is called by the Ruby-defined import, which formats the
     // option hash (if there is one), and can detect the import type by extension
     rb_define_method(cRegistry, "do_import", RUBY_METHOD_FUNC(registry_import), 4);
     rb_define_method(cRegistry, "do_export", RUBY_METHOD_FUNC(registry_export), 2);

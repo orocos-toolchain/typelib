@@ -21,12 +21,12 @@ namespace
 namespace Typelib
 {
     TypeBuilder::TypeBuilder(Registry& registry, const std::list<std::string>& name)
-        : m_registry(registry) 
+        : m_registry(registry)
     {
         string basename = accumulate(name.begin(), name.end(), string(), join);
-        
+
         m_type = m_registry.get_(basename);
-        if (!m_type) 
+        if (!m_type)
             throw Undefined(basename);
     }
     TypeBuilder::TypeBuilder(Registry& registry, const Type* base)
@@ -35,7 +35,7 @@ namespace Typelib
 
 
     const Type& TypeBuilder::getType() const { return *m_type; }
-    void TypeBuilder::addPointer(int level) 
+    void TypeBuilder::addPointer(int level)
     {
         for (; level; --level)
         {
@@ -54,20 +54,20 @@ namespace Typelib
 
     void TypeBuilder::addArrayMinor(int new_dim)
     {
-	// build the list of array dimensions
-	std::vector<int> dims;
+        // build the list of array dimensions
+        std::vector<int> dims;
 
-	while(m_type->getCategory() == Type::Array)
-	{
-	    Array* array = dynamic_cast<Array*>(m_type);
-	    dims.push_back(array->getDimension());
-	    m_type = const_cast<Type*>(&array->getIndirection());
-	}
+        while(m_type->getCategory() == Type::Array)
+        {
+            Array* array = dynamic_cast<Array*>(m_type);
+            dims.push_back(array->getDimension());
+            m_type = const_cast<Type*>(&array->getIndirection());
+        }
 
-	addArrayMajor(new_dim);
-	for (std::vector<int>::reverse_iterator it = dims.rbegin();
-		it != dims.rend(); ++it)
-	    addArrayMajor(*it);
+        addArrayMajor(new_dim);
+        for (std::vector<int>::reverse_iterator it = dims.rbegin();
+                it != dims.rend(); ++it)
+            addArrayMajor(*it);
     }
 
     void TypeBuilder::addArrayMajor(int new_dim)
@@ -143,7 +143,7 @@ namespace Typelib
             }
             else if (full_name[end] == ' ')
                 --end;
-	    else
+            else
             {
                 result.first = string(full_name, 0, end + 1);
                 return result;

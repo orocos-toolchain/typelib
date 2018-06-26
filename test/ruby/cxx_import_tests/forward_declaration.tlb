@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <typelib>
   <numeric name="/int32_t" category="sint" size="4" >
-  
+
   </numeric>
   <compound name="/ns/ForwardDeclaration" size="8" >
     <field name="a" type="/int32_t" offset="0">
-    
+
     </field>
     <field name="b" type="/int32_t" offset="4">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::ns::ForwardDeclaration]]></metadata>
 <metadata key="source_file_line"><![CDATA[forward_declaration.hh:8]]></metadata>

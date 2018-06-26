@@ -4,7 +4,7 @@
 
 #include "typename.hh"
 #include <boost/tuple/tuple.hpp>
-  
+
 #include <iostream>
 #include <sstream>
 
@@ -52,7 +52,7 @@ namespace Typelib
     bool   Type::operator != (Type const& with) const { return (this != &with); }
     bool   Type::operator == (Type const& with) const { return (this == &with); }
     bool   Type::isSame(Type const& with) const
-    { 
+    {
         if (this == &with)
             return true;
 
@@ -112,17 +112,17 @@ namespace Typelib
         if (it != stack.end())
             return it->second;
 
-	Type const* old_type = registry.get(getName());
-	if (old_type)
-	{
+        Type const* old_type = registry.get(getName());
+        if (old_type)
+        {
             if (old_type->do_compare(*this, true, stack))
             {
                 stack.insert(make_pair(this, old_type));
-		return old_type;
+                return old_type;
             }
-	    else
-		throw DefinitionMismatch(getName());
-	}
+            else
+                throw DefinitionMismatch(getName());
+        }
         return NULL;
     }
     Type const& Type::merge(Registry& registry, RecursionStack& stack) const
@@ -131,10 +131,10 @@ namespace Typelib
         if (old_type)
             return *old_type;
 
-	Type* new_type = do_merge(registry, stack);
+        Type* new_type = do_merge(registry, stack);
         stack.insert(make_pair(this, new_type));
-	registry.add(new_type);
-	return *new_type;
+        registry.add(new_type);
+        return *new_type;
     }
 
     bool Type::resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes)
@@ -243,9 +243,9 @@ namespace Typelib
     Numeric::Numeric(std::string const& name, size_t size, NumericCategory category)
         : Type(name, size, Type::Numeric), m_category(category) {}
     Numeric::NumericCategory Numeric::getNumericCategory() const { return m_category; }
-    bool Numeric::do_compare(Type const& type, bool equality, RecursionStack& stack) const 
-    { return getSize() == type.getSize() && getCategory() == type.getCategory() && 
-	m_category == static_cast<Numeric const&>(type).m_category; }
+    bool Numeric::do_compare(Type const& type, bool equality, RecursionStack& stack) const
+    { return getSize() == type.getSize() && getCategory() == type.getCategory() &&
+        m_category == static_cast<Numeric const&>(type).m_category; }
     Type* Numeric::do_merge(Registry& registry, RecursionStack& stack) const
     { return new Numeric(*this); }
 
@@ -258,9 +258,9 @@ namespace Typelib
         rec_compare(m_indirection, static_cast<Indirect const&>(type).m_indirection, equality, stack); }
     std::set<Type const*> Indirect::dependsOn() const
     {
-	std::set<Type const*> result;
-	result.insert(&getIndirection());
-	return result;
+        std::set<Type const*> result;
+        result.insert(&getIndirection());
+        return result;
     }
     Type const& Indirect::merge(Registry& registry, RecursionStack& stack) const
     {
@@ -296,7 +296,7 @@ namespace Typelib
         : Type(name, 0, Type::Compound) {}
 
     Compound::FieldList const&  Compound::getFields() const { return m_fields; }
-    Field const* Compound::getField(const std::string& name) const 
+    Field const* Compound::getField(const std::string& name) const
     {
         for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
         {
@@ -336,7 +336,7 @@ namespace Typelib
         return getSize() - max_offset;
     }
     bool Compound::do_compare(Type const& type, bool equality, RecursionStack& stack) const
-    { 
+    {
         if (type.getCategory() != Type::Compound)
             return false;
         if (equality && !Type::do_compare(type, true, stack))
@@ -364,21 +364,21 @@ namespace Typelib
         return true;
     }
 
-    Field const& Compound::addField(const std::string& name, Type const& type, size_t offset) 
+    Field const& Compound::addField(const std::string& name, Type const& type, size_t offset)
     { return addField( Field(name, type), offset ); }
     Field const& Compound::addField(Field const& field, size_t offset)
     {
         m_fields.push_back(field);
         m_fields.back().setOffset(offset);
-	size_t old_size = getSize();
-	size_t new_size = offset + field.getType().getSize();
-	if (old_size < new_size)
-	    setSize(new_size);
+        size_t old_size = getSize();
+        size_t new_size = offset + field.getType().getSize();
+        if (old_size < new_size)
+            setSize(new_size);
         return m_fields.back();
     }
     Type* Compound::do_merge(Registry& registry, RecursionStack& stack) const
     {
-	auto_ptr<Compound> result(new Compound(getName()));
+        auto_ptr<Compound> result(new Compound(getName()));
         RecursionStack::iterator onStackIter = stack.insert(make_pair(this, result.get())).first;
 
         try  {
@@ -391,14 +391,14 @@ namespace Typelib
         }
 
         result->setSize(getSize());
-	return result.release();
+        return result.release();
     }
     std::set<Type const*> Compound::dependsOn() const
     {
-	std::set<Type const*> result;
+        std::set<Type const*> result;
         for (FieldList::const_iterator it = m_fields.begin(); it != m_fields.end(); ++it)
-	    result.insert(&(it->getType()));
-	return result;
+            result.insert(&(it->getType()));
+        return result;
     }
 
     bool Compound::do_resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes)
@@ -481,7 +481,7 @@ namespace Typelib
 
     Enum::integral_type Enum::getNextValue() const { return m_last_value + 1; }
     void Enum::add(std::string const& name, int value)
-    { 
+    {
         std::pair<ValueMap::iterator, bool> inserted;
         inserted = m_values.insert( make_pair(name, value) );
         if (!inserted.second && inserted.first->second != value)
@@ -527,7 +527,7 @@ namespace Typelib
     }
 
     std::string Array::getArrayName(std::string const& name, size_t dim)
-    { 
+    {
         std::ostringstream stream;
         stream << name << '[' << dim << ']';
         return stream.str();
@@ -535,11 +535,11 @@ namespace Typelib
     size_t  Array::getDimension() const { return m_dimension; }
     bool Array::do_compare(Type const& type, bool equality, RecursionStack& stack) const
     {
-	if (!Type::do_compare(type, equality, stack))
-	    return false;
+        if (!Type::do_compare(type, equality, stack))
+            return false;
 
-	Array const& array = static_cast<Array const&>(type);
-	return (m_dimension == array.m_dimension) && Indirect::do_compare(type, true, stack);
+        Array const& array = static_cast<Array const&>(type);
+        return (m_dimension == array.m_dimension) && Indirect::do_compare(type, true, stack);
     }
     Type* Array::do_merge(Registry& registry, RecursionStack& stack) const
     {
@@ -606,11 +606,11 @@ namespace Typelib
 
     bool Container::do_compare(Type const& other, bool equality, RecursionStack& stack) const
     {
-	if (!Type::do_compare(other, true, stack))
-	    return false;
+        if (!Type::do_compare(other, true, stack))
+            return false;
 
-	Container const& container = static_cast<Container const&>(other);
-	return (getFactory() == container.getFactory()) && Indirect::do_compare(other, true, stack);
+        Container const& container = static_cast<Container const&>(other);
+        return (getFactory() == container.getFactory()) && Indirect::do_compare(other, true, stack);
     }
 
     Type* Container::do_merge(Registry& registry, RecursionStack& stack) const

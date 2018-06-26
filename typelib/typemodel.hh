@@ -67,23 +67,23 @@ namespace Typelib
     };
 
     /** Base class for all type definitions */
-    class Type 
+    class Type
     {
     public:
 
         enum Category
-        { 
+        {
             NullType = 0,
-            Array  , 
-            Pointer, 
-            Numeric, 
+            Array  ,
+            Pointer,
+            Numeric,
             Enum   ,
             Compound,
             Opaque,
             Container,
             NumberOfValidCategories
         };
-        
+
     private:
         std::string m_name;
 
@@ -94,7 +94,7 @@ namespace Typelib
         // object is const
         MetaData*   m_metadata;
 
-	/** Checks that @c identifier is a valid type name */
+        /** Checks that @c identifier is a valid type name */
         static bool isValidIdentifier(const std::string& identifier);
 
         Type& operator = (Type const& type);
@@ -116,25 +116,25 @@ namespace Typelib
          * Compound.
          */
         void setSize    (size_t size);
-	/** The type full name (including namespace) */
+        /** The type full name (including namespace) */
         std::string   getName() const;
-	/** The type name without the namespace */
-	std::string   getBasename() const;
-	/** The type namespace */
-	std::string   getNamespace() const;
-	/** Size in bytes of a value */
+        /** The type name without the namespace */
+        std::string   getBasename() const;
+        /** The type namespace */
+        std::string   getNamespace() const;
+        /** Size in bytes of a value */
         size_t        getSize() const;
-	/** The type category */
+        /** The type category */
         Category      getCategory() const;
-	/** true if this type is null */
+        /** true if this type is null */
         bool          isNull() const;
 
-	/** The set of types this type depends upon
+        /** The set of types this type depends upon
          *
          * This method returns the set of types that are directly depended-upon
          * by this type
          */
-	virtual std::set<Type const*> dependsOn() const = 0;
+        virtual std::set<Type const*> dependsOn() const = 0;
 
         /** Called by the registry if one (or more) of this type's dependencies
          * is aliased
@@ -147,11 +147,11 @@ namespace Typelib
         bool operator == (Type const& with) const;
         bool operator != (Type const& with) const;
 
-	/** Deep check that \c other defines the same type than 
-	 * self. Basic checks on name, size and category are
-	 * performed by ==
-	 */
-	bool isSame(Type const& other) const;
+        /** Deep check that \c other defines the same type than
+         * self. Basic checks on name, size and category are
+         * performed by ==
+         */
+        bool isSame(Type const& other) const;
 
         /** Returns true if \c to can be used to manipulate a value that is
          * described by \c from
@@ -161,8 +161,8 @@ namespace Typelib
         /** Merges this type into \c registry: creates a type equivalent to
          * this one in the target registry, reusing possible equivalent types
          * already present in +registry+.
-	 */
-	Type const& merge(Registry& registry) const;
+         */
+        Type const& merge(Registry& registry) const;
 
         /** Foreign => local mapping for merge() and isSame() */
         typedef std::map<Type const*, Type const*> RecursionStack;
@@ -220,7 +220,7 @@ namespace Typelib
          * The base definition compares the name, size and category of the
          * types.
          */
-	virtual bool do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const;
+        virtual bool do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const;
 
         /** Called by do_compare to compare +left+ to +right+. This method takes
          * into account potential loops in the recursion
@@ -244,8 +244,8 @@ namespace Typelib
          *
          * All types referenced by *this must be moved to their equivalent in \c
          * registry.
-	 */
-	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const = 0;
+         */
+        virtual Type* do_merge(Registry& registry, RecursionStack& stack) const = 0;
 
         /** Implementation of the actual resizing. Called by resize() */
         virtual bool do_resize(Registry& into, std::map<std::string, std::pair<size_t, size_t> >& new_sizes);
@@ -255,12 +255,12 @@ namespace Typelib
     {
     public:
         NullType(std::string const& name) : Type(name, 0, Type::NullType ) {}
-	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
-	virtual bool do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const
+        virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
+        virtual bool do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const
         { return other.getName() == getName(); }
 
     private:
-	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const { return new NullType(*this); }
+        virtual Type* do_merge(Registry& registry, RecursionStack& stack) const { return new NullType(*this); }
     };
 
     /** This type is to be used when we want a field to be completely ignored,
@@ -271,9 +271,9 @@ namespace Typelib
     {
     public:
         OpaqueType(std::string const& name, size_t size) : Type(name, size, Type::Opaque) {}
-	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
-	virtual bool do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const;
-	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const { return new OpaqueType(*this); }
+        virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
+        virtual bool do_compare(Type const& other, bool equality, std::map<Type const*, Type const*>& stack) const;
+        virtual Type* do_merge(Registry& registry, RecursionStack& stack) const { return new OpaqueType(*this); }
     };
 
     /** Numeric values (integer, unsigned integer and floating point) */
@@ -289,18 +289,18 @@ namespace Typelib
                                     /// including the ones in the base-class
         };
 
-	/** The category of this numeric type */
+        /** The category of this numeric type */
         NumericCategory getNumericCategory() const;
 
     public:
         /** Creates a basic type from \c name, \c size and \c category */
         Numeric(const std::string& name, size_t size, NumericCategory category);
 
-	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
+        virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
 
     private:
-	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
-	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
+        virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
+        virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         NumericCategory m_category;
     };
 
@@ -326,31 +326,31 @@ namespace Typelib
         public:
             ValueNotFound(Type const& type, int value);
         };
-        
+
         Enum(const std::string& name, Enum::integral_type initial_value = 0);
-	/** Add a new definition */
+        /** Add a new definition */
         void            add(std::string const& name, int value);
-	/** Gets the value for @c name 
-	 * @throws SymbolNotFound if @c name is not defined */
+        /** Gets the value for @c name
+         * @throws SymbolNotFound if @c name is not defined */
         integral_type   get(std::string const& name) const;
-	/** Gets the name for @c value
-	 * @throws ValueNotFound if @c value is not defined in this enum */
+        /** Gets the name for @c value
+         * @throws ValueNotFound if @c value is not defined in this enum */
         std::string     get(integral_type value) const;
-        
-	/** The list of all names */
+
+        /** The list of all names */
         std::list<std::string> names() const;
-	/** The name => value map */
+        /** The name => value map */
         ValueMap const& values() const;
 
-	virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
+        virtual std::set<Type const*> dependsOn() const { return std::set<Type const*>(); }
 
         /** Returns the value the next inserted element should have (it is
          * last_inserted_value + 1) */
         Enum::integral_type getNextValue() const;
 
     private:
-	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
-	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
+        virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
+        virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         integral_type m_last_value;
         ValueMap m_values;
     };
@@ -375,22 +375,22 @@ namespace Typelib
         Field(Field const& field);
         ~Field();
 
-	/** The field name */
+        /** The field name */
         std::string getName() const;
-	/** The field type */
+        /** The field type */
         const Type& getType() const;
-	/** The offset, in bytes, of this field w.r.t. the 
-	 * begginning of the parent value */
+        /** The offset, in bytes, of this field w.r.t. the
+         * begginning of the parent value */
         size_t getOffset() const;
 
-	bool operator == (Field const& field) const;
+        bool operator == (Field const& field) const;
 
         MetaData& getMetaData() const;
         MetaData::Values getMetaData(std::string const& key) const;
         void mergeMetaData(Field const& field) const;
     };
 
-    /** Base class for types that are composed of other 
+    /** Base class for types that are composed of other
      * types (structures and enums) */
     class Compound : public Type
     {
@@ -400,21 +400,21 @@ namespace Typelib
     public:
         Compound(std::string const& name);
 
-	/** The list of all fields */
+        /** The list of all fields */
         FieldList const&  getFields() const;
-	/** Get a field by its name
-	 * @return NULL if there is no @name field, or the Field object */
+        /** Get a field by its name
+         * @return NULL if there is no @name field, or the Field object */
         Field const*      getField(const std::string& name) const;
-	/** Add a new field */
+        /** Add a new field */
         Field const&      addField(const Field& field, size_t offset);
-	/** Add a new field */
+        /** Add a new field */
         Field const&      addField(const std::string& name, const Type& type, size_t offset);
 
         /** Returns the number of bytes that are unused at the end of the
          * compound */
         unsigned int getTrailingPadding() const;
 
-	virtual std::set<Type const*> dependsOn() const;
+        virtual std::set<Type const*> dependsOn() const;
 
         /** Merge metadata from this other type, as well as the field metadata
          * if applicable
@@ -427,8 +427,8 @@ namespace Typelib
         void normalizeFieldOrder();
 
     private:
-	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
-	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
+        virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
+        virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         bool do_resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes);
         FieldList m_fields;
     };
@@ -446,12 +446,12 @@ namespace Typelib
         void modifiedDependencyAliases(Registry& registry) const;
 
         Type const& getIndirection() const;
-	virtual std::set<Type const*> dependsOn() const;
+        virtual std::set<Type const*> dependsOn() const;
 
         virtual Type const& merge(Registry& registry, RecursionStack& stack) const;
 
     protected:
-	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
+        virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
         virtual bool do_resize(Registry& registry, std::map<std::string, std::pair<size_t, size_t> >& new_sizes);
 
         /** Overloaded in subclasses to return the name of this type based on
@@ -481,8 +481,8 @@ namespace Typelib
         virtual std::string getIndirectTypeName(std::string const& inside_name) const;
 
     private:
-	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
-	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
+        virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
+        virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
         virtual bool do_resize(Registry& into, std::map<std::string, std::pair<size_t, size_t> >& new_sizes);
         size_t m_dimension;
     };
@@ -498,7 +498,7 @@ namespace Typelib
         virtual std::string getIndirectTypeName(std::string const& inside_name) const;
 
     private:
-	virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
+        virtual Type* do_merge(Registry& registry, RecursionStack& stack) const;
     };
 
     struct UnknownContainer : public std::runtime_error
@@ -671,7 +671,7 @@ namespace Typelib
         static Container const& createContainer(Registry& r, std::string const& name, std::list<Type const*> const& on);
 
     protected:
-	virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
+        virtual bool do_compare(Type const& other, bool equality, RecursionStack& stack) const;
         virtual ContainerFactory getFactory() const = 0;
         Type* do_merge(Registry& registry, RecursionStack& stack) const;
 

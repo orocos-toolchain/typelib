@@ -27,7 +27,7 @@ namespace
 
         bool visit_(Enum const& type);
 
-	bool visit_(NullType const& type);
+        bool visit_(NullType const& type);
         bool visit_(OpaqueType const& type);
         bool visit_(Container const& type);
 
@@ -47,7 +47,7 @@ namespace
 
     TlbExportVisitor::TlbExportVisitor(ostream& stream, string const& base_indent, std::string const& source_id)
         : m_stream(stream), m_indent(base_indent), m_source_id(source_id) {}
-                
+
     std::string xmlEscape(std::string const& source)
     {
         string result = source;
@@ -105,9 +105,9 @@ namespace
     }
 
     bool TlbExportVisitor::visit_(Compound const& type)
-    { 
+    {
         m_stream << "<compound name=\"" << xmlEscape(type.getName()) << "\" size=\"" << type.getSize() << "\" " << emitSourceID() << ">\n";
-        
+
         { Indent indenter(m_indent);
             TypeVisitor::visit_(type);
         }
@@ -118,8 +118,8 @@ namespace
         return true;
     }
     bool TlbExportVisitor::visit_(Compound const& type, Field const& field)
-    { 
-        m_stream 
+    {
+        m_stream
             << m_indent
             << "<field name=\"" << field.getName() << "\""
             << " type=\""   << xmlEscape(field.getType().getName())  << "\""
@@ -149,8 +149,8 @@ namespace
 
     bool TlbExportVisitor::visit_(Numeric const& type)
     {
-        m_stream 
-            << "<numeric name=\"" << type.getName() << "\" " 
+        m_stream
+            << "<numeric name=\"" << type.getName() << "\" "
             << "category=\"" << getStringCategory(type.getNumericCategory()) << "\" "
             << "size=\"" << type.getSize() << "\" " << emitSourceID() << ">\n";
         m_stream << m_indent << emitMetaData(type) << "\n";
@@ -163,12 +163,12 @@ namespace
         m_stream << "<null " << " name=\"" << type.getName() << "\" " << emitSourceID() << ">\n";
         m_stream << m_indent << emitMetaData(type) << "\n";
         m_stream << m_indent << "</null>";
-	return true;
+        return true;
     }
 
     void indirect(ostream& stream, Indirect const& type)
     {
-        stream 
+        stream
             << " name=\"" << xmlEscape(type.getName())
             << "\" of=\"" << xmlEscape(type.getIndirection().getName()) << "\"";
     }
@@ -192,7 +192,7 @@ namespace
         return true;
     }
     bool TlbExportVisitor::visit_(Container const& type)
-    { 
+    {
         m_stream << "<container ";
         indirect(m_stream, type);
         m_stream
@@ -226,7 +226,7 @@ void TlbExport::begin
     ( ostream& stream
     , Typelib::Registry const& /*registry*/ )
 {
-    stream << 
+    stream <<
         "<?xml version=\"1.0\"?>\n"
         "<typelib>\n";
 }
@@ -234,7 +234,7 @@ void TlbExport::end
     ( ostream& stream
     , Typelib::Registry const& /*registry*/ )
 {
-    stream << 
+    stream <<
         "</typelib>\n";
 }
 

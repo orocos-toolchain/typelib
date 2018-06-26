@@ -4,7 +4,7 @@ class TC_Value < Minitest::Test
     include Typelib
     def teardown
         super
-	GC.start
+        GC.start
     end
 
     class CXXRegistry < Typelib::Registry
@@ -25,18 +25,18 @@ class TC_Value < Minitest::Test
     end
 
     def test_to_ruby
-	int = CXXRegistry.new.get("/int").new
-	int.zero!
-	assert_equal(0, int.to_ruby)
+        int = CXXRegistry.new.get("/int").new
+        int.zero!
+        assert_equal(0, int.to_ruby)
 
-	str = CXXRegistry.new.build("/char[20]").new
+        str = CXXRegistry.new.build("/char[20]").new
         base_val = if ?a.respond_to?(:ord) then ?a.ord
                    else ?a
                    end
         20.times do |i|
             str[i] = base_val + i
         end
-	assert_kind_of(String, str.to_ruby)
+        assert_kind_of(String, str.to_ruby)
     end
 
     def test_wrapping_a_buffer_should_call_typelib_initialize
@@ -96,31 +96,31 @@ class TC_Value < Minitest::Test
 
     def test_value_equality
         type = CXXRegistry.new.build("/int")
-	v1 = type.new.zero!
-	v2 = type.new.zero!
-	assert_equal(0, v1)
-	assert_equal(v1, v2)
-	assert(! v1.eql?(v2))
-	
-	# This one is tricky: we want to have == return true if the fields of a
-	# compounds are equal, regardless of padding bytes. So we prepare a
-	# pattern which will be used as "blank" memory and then fill the fields
+        v1 = type.new.zero!
+        v2 = type.new.zero!
+        assert_equal(0, v1)
+        assert_equal(v1, v2)
+        assert(! v1.eql?(v2))
+
+        # This one is tricky: we want to have == return true if the fields of a
+        # compounds are equal, regardless of padding bytes. So we prepare a
+        # pattern which will be used as "blank" memory and then fill the fields
         registry = make_registry
         a_type    = registry.get("/A")
-	a_pattern = (1..a_type.size).to_a.pack("c*")
-	a1 = a_type.wrap a_pattern
-	a2 = a_type.wrap a_pattern.reverse
-	a1.a = a2.a = 10
-	a1.b = a2.b = 20
-	a1.c = a2.c = 30
-	a1.d = a2.d = 40
-	assert_equal(a1, a2)
-	assert(! a1.eql?(a2))
+        a_pattern = (1..a_type.size).to_a.pack("c*")
+        a1 = a_type.wrap a_pattern
+        a2 = a_type.wrap a_pattern.reverse
+        a1.a = a2.a = 10
+        a1.b = a2.b = 20
+        a1.c = a2.c = 30
+        a1.d = a2.d = 40
+        assert_equal(a1, a2)
+        assert(! a1.eql?(a2))
 
-	a2.d = 50
-	refute_equal(a1, a2)
+        a2.d = 50
+        refute_equal(a1, a2)
 
-	assert_raises(ArgumentError) { a1 == v1 }
+        assert_raises(ArgumentError) { a1 == v1 }
     end
 
     def test_value_cast
@@ -141,32 +141,32 @@ class TC_Value < Minitest::Test
     end
 
     def test_byte_array
-	as_string = [5].pack('S')
-	long_t = CXXRegistry.new.build("/short")
+        as_string = [5].pack('S')
+        long_t = CXXRegistry.new.build("/short")
 
-	assert_raises(ArgumentError) { long_t.wrap "" }
-	rb_value = long_t.wrap as_string
-	as_string = rb_value.to_byte_array
-	assert_equal(2, as_string.size)
-	assert_equal(5, as_string.unpack('S').first)
+        assert_raises(ArgumentError) { long_t.wrap "" }
+        rb_value = long_t.wrap as_string
+        as_string = rb_value.to_byte_array
+        assert_equal(2, as_string.size)
+        assert_equal(5, as_string.unpack('S').first)
 
         a = make_registry.get('ADef')
         # The following line will lead to valgrind complaining. This is
         # harmless: we access the attribute values before we assign them.
         a = a.new :a => 10, :b => 20, :c => 30, :d => 40
-	assert_equal([10, 20, 30, 40], a.to_byte_array.unpack('Qicxs'))
+        assert_equal([10, 20, 30, 40], a.to_byte_array.unpack('Qicxs'))
     end
 
     def test_string_handling
         buffer_t = CXXRegistry.new.build("/char[256]")
         buffer = buffer_t.new
-	assert( buffer.string_handler? )
+        assert( buffer.string_handler? )
         assert( buffer.respond_to?(:to_str))
 
         # Check that .from_str.to_str is an identity
         typelib_value = Typelib.from_ruby("first test", buffer_t)
         assert_kind_of buffer_t, typelib_value
-	assert_equal("first test", typelib_value.to_ruby)
+        assert_equal("first test", typelib_value.to_ruby)
         assert_raises(ArgumentError) { Typelib.from_ruby("a"*512, buffer_t) }
     end
 
@@ -184,7 +184,7 @@ class TC_Value < Minitest::Test
         assert_equal(".fields[0],.fields[1],.fields[2],.fields[3],.f,.d,.a.a,.a.b,.a.c,.a.d,.mode", klass.to_csv('', ','));
 
         value = klass.new
-	value.zero!
+        value.zero!
         value.fields[0] = 0;
         value.fields[1] = 1;
         value.fields[2] = 2;
@@ -210,53 +210,53 @@ class TC_Value < Minitest::Test
         comma_sep[5] = "2.2"
         assert_equal("0,1,2,3,1.1,2.2,10,20,98,42,OUTPUT", comma_sep.join(","))
     end
-	
+
 
     def test_is_a
         assert !Typelib::CompoundType.is_a?("/A")
 
         registry = make_registry
         a = registry.get("/A").new
-	assert( a.is_a?("/A") )
-	assert( a.is_a?(/A$/) )
+        assert( a.is_a?("/A") )
+        assert( a.is_a?(/A$/) )
 
-	assert( a.is_a?(registry.get("/A")) )
-	assert( a.is_a?(registry.get("/int64_t")) )
+        assert( a.is_a?(registry.get("/A")) )
+        assert( a.is_a?(registry.get("/int64_t")) )
     end
 
     def test_dup
         registry = make_registry
         a = registry.get("/A").new
-	a.a = 20
-	b = a.dup
+        a.a = 20
+        b = a.dup
 
-	assert_kind_of(a.class, b)
+        assert_kind_of(a.class, b)
 
-	assert_equal(20, b.a)
-	b.a = 10
-	assert_equal(20, a.a)
-	assert_equal(10, b.a)
+        assert_equal(20, b.a)
+        b.a = 10
+        assert_equal(20, a.a)
+        assert_equal(10, b.a)
     end
 
     def test_clone
         registry = make_registry
         a = registry.get("/A").new
-	a.a = 20
-	b = a.clone
+        a.a = 20
+        b = a.clone
 
-	assert_kind_of(a.class, b)
+        assert_kind_of(a.class, b)
 
-	assert_equal(20, b.a)
-	b.a = 10
-	assert_equal(20, a.a)
-	assert_equal(10, b.a)
+        assert_equal(20, b.a)
+        b.a = 10
+        assert_equal(20, a.a)
+        assert_equal(10, b.a)
     end
 
 
     def test_to_s
-	int_value = CXXRegistry.new.get("/int").new
-	int_value.zero!
-	assert_equal("0", int_value.to_s)
+        int_value = CXXRegistry.new.get("/int").new
+        int_value.zero!
+        assert_equal("0", int_value.to_s)
     end
 
     def test_copy

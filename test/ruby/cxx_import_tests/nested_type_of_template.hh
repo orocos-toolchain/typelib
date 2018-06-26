@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace ns 
+namespace ns
 {
     template<typename T>
     class Context

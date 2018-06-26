@@ -21,7 +21,7 @@ namespace Typelib
     {
         void*       m_data;
         boost::reference_wrapper<Type const> m_type;
-        
+
     public:
         Value()
             : m_data(0), m_type(Registry::null()) {}
@@ -29,9 +29,9 @@ namespace Typelib
         Value(void* data, Type const& type)
             : m_data(data), m_type(type) {}
 
-	/** The raw data pointer */
+        /** The raw data pointer */
         void* getData() const { return m_data; }
-	/** The data type */
+        /** The data type */
         Type const& getType() const { return m_type; }
 
         bool operator == (Value const& with) const
@@ -66,7 +66,7 @@ namespace Typelib
         virtual bool visit_ (Value const& v, Pointer const& t);
         virtual bool visit_ (Value const& v, Array const& a);
         virtual bool visit_ (Value const& v, Container const& a);
-        virtual bool visit_ (Value const& v, Compound const& c); 
+        virtual bool visit_ (Value const& v, Compound const& c);
         virtual bool visit_ (Value const& v, Compound const& c, Field const& f);
         virtual bool visit_ (Enum::integral_type& v, Enum const& e);
 
@@ -85,7 +85,7 @@ namespace Typelib
     class BadValueCast : public std::exception {};
 
     /** Exception raised if a non existent field is required */
-    class FieldNotFound : public BadValueCast 
+    class FieldNotFound : public BadValueCast
     {
     public:
         ~FieldNotFound() throw() {}
@@ -94,7 +94,7 @@ namespace Typelib
             : name(name_) {}
     };
 
-    /** Gets the object describing a given field 
+    /** Gets the object describing a given field
      * Throws FieldNotFound if the field is not a field of the base type */
     class FieldGetter : public ValueVisitor
     {
@@ -113,7 +113,7 @@ namespace Typelib
             }
             return true;
         }
-        
+
     public:
         FieldGetter()
             : ValueVisitor(true) {}
@@ -126,10 +126,10 @@ namespace Typelib
                 throw FieldNotFound(name);
             return m_field;
         }
-        
+
     };
 
-    /** Get the Value object for a named field in @c v 
+    /** Get the Value object for a named field in @c v
      * @throws FieldNotFound if @name is not a field of the base type */
     inline Value value_get_field(Value v, std::string const& name)
     {
@@ -137,7 +137,7 @@ namespace Typelib
         return getter.apply(v, name);
     }
 
-    /** Get the Value object for a named field in @c v 
+    /** Get the Value object for a named field in @c v
      * @throws FieldNotFound if @name is not a field of the base type */
     inline Value value_get_field(void* ptr, Type const& type, std::string const& name)
     {

@@ -51,7 +51,7 @@ ELSE(NOT LibXML_FOUND)
     set(LibXML_INCLUDE_DIR ${LibXML_INCLUDE_DIRS})
     set(LibXML_LINK_DIR ${LibXML_LIBRARY_DIRS})
     set(LibXML_LIBRARIES ${LibXML_LIBRARIES})
-    
+
     INCLUDE_DIRECTORIES(${LibXML_INCLUDE_DIR})
     LINK_DIRECTORIES(${LibXML_LIBDIR})
 ENDIF(NOT LibXML_FOUND)
@@ -68,7 +68,7 @@ FIND_PACKAGE(Boost COMPONENTS unit_test_framework system filesystem thread)
 IF(NOT Boost_FOUND)
     MESSAGE(FATAL_ERROR "please install boost or check BOOST_ROOT setting -- before building typelib")
 ELSE(NOT Boost_FOUND)
-	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+        INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 ENDIF()
 
 INCLUDE(RubyExtensions)

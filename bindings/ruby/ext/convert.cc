@@ -32,7 +32,7 @@ bool RubyGetter::visit_(Value const& v, Pointer const& p)
     m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
     return false;
 }
-bool RubyGetter::visit_(Value const& v, Array const& a) 
+bool RubyGetter::visit_(Value const& v, Array const& a)
 {
 #   ifdef VERBOSE
     fprintf(stderr, "%p: wrapping from RubyGetter::visit_(array)\n", v.getData());
@@ -41,35 +41,35 @@ bool RubyGetter::visit_(Value const& v, Array const& a)
     return false;
 }
 bool RubyGetter::visit_(Value const& v, Compound const& c)
-{ 
+{
 #   ifdef VERBOSE
     fprintf(stderr, "%p: wrapping from RubyGetter::visit_(compound)\n", v.getData());
 #   endif
     m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
-    return false; 
+    return false;
 }
 bool RubyGetter::visit_(Value const& v, OpaqueType const& c)
-{ 
+{
 #   ifdef VERBOSE
     fprintf(stderr, "%p: wrapping from RubyGetter::visit_(opaque)\n", v.getData());
 #   endif
     m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
-    return false; 
+    return false;
 }
 bool RubyGetter::visit_(Value const& v, Container const& c)
-{ 
+{
 #   ifdef VERBOSE
     fprintf(stderr, "%p: wrapping from RubyGetter::visit_(container)\n", v.getData());
 #   endif
     m_value = cxx2rb::value_wrap(v, m_registry, m_parent);
-    return false; 
+    return false;
 }
-bool RubyGetter::visit_(Enum::integral_type& v, Enum const& e)   
-{ 
+bool RubyGetter::visit_(Enum::integral_type& v, Enum const& e)
+{
     m_value = cxx2rb::enum_symbol(v, e);
     return false;
 }
-    
+
 RubyGetter::RubyGetter() : ValueVisitor(false) {}
 RubyGetter::~RubyGetter() { m_value = Qnil; m_registry = Qnil; }
 
@@ -95,7 +95,7 @@ bool RubySetter::visit_ (float   & value) { value = NUM2DBL(m_value); return fal
 bool RubySetter::visit_ (double  & value) { value = NUM2DBL(m_value); return false; }
 
 bool RubySetter::visit_(Value const& v, Array const& a)
-{ 
+{
     if (a.getIndirection().getName() == "/char")
     {
         char*  value = StringValuePtr(m_value);
@@ -105,28 +105,28 @@ bool RubySetter::visit_(Value const& v, Array const& a)
             memcpy(v.getData(), value, length + 1);
             return false;
         }
-        throw UnsupportedType(v.getType(), "string too long"); 
+        throw UnsupportedType(v.getType(), "string too long");
     }
-    throw UnsupportedType(v.getType(), "not a string"); 
+    throw UnsupportedType(v.getType(), "not a string");
 }
 bool RubySetter::visit_(Value const& v, Pointer const& c)
-{ 
-    throw UnsupportedType(v.getType(), "no conversion to pointers"); 
+{
+    throw UnsupportedType(v.getType(), "no conversion to pointers");
 }
 bool RubySetter::visit_(Value const& v, Compound const& c)
-{ 
-    throw UnsupportedType(v.getType(), "no conversion to compound"); 
+{
+    throw UnsupportedType(v.getType(), "no conversion to compound");
 }
 bool RubySetter::visit_(Value const& v, OpaqueType const& c)
-{ 
-    throw UnsupportedType(v.getType(), "no conversion to opaque types"); 
+{
+    throw UnsupportedType(v.getType(), "no conversion to opaque types");
 }
 bool RubySetter::visit_(Value const& v, Container const& c)
-{ 
-    throw UnsupportedType(v.getType(), "no conversion to containers"); 
+{
+    throw UnsupportedType(v.getType(), "no conversion to containers");
 }
 bool RubySetter::visit_(Enum::integral_type& v, Enum const& e)
-{ 
+{
     v = rb2cxx::enum_value(m_value, e);
     return false;
 }
@@ -137,7 +137,7 @@ RubySetter::~RubySetter() { m_value = Qnil; }
 VALUE RubySetter::apply(Value value, VALUE new_value)
 {
     m_value = new_value;
-    ValueVisitor::apply(value); 
+    ValueVisitor::apply(value);
     return new_value;
 }
 
@@ -147,7 +147,7 @@ VALUE RubySetter::apply(Value value, VALUE new_value)
 
 /* Converts a Typelib::Value to Ruby's VALUE */
 VALUE typelib_to_ruby(Value v, VALUE registry, VALUE parent)
-{ 
+{
     if (! v.getData())
         return Qnil;
 
@@ -186,15 +186,15 @@ VALUE typelib_from_ruby(Value dst, VALUE new_value)
     try {
         RubySetter setter;
         return setter.apply(dst, new_value);
-    } catch(UnsupportedType e) { 
-	// Avoid calling rb_raise in exception context
-	type_name = e.type.getName(); 
-	reason    = e.reason;
+    } catch(UnsupportedType e) {
+        // Avoid calling rb_raise in exception context
+        type_name = e.type.getName();
+        reason    = e.reason;
     }
 
     if (reason.length() == 0)
-	rb_raise(rb_eTypeError, "cannot convert to '%s'", type_name.c_str());
+        rb_raise(rb_eTypeError, "cannot convert to '%s'", type_name.c_str());
     else
-	rb_raise(rb_eTypeError, "cannot convert to '%s' (%s)", type_name.c_str(), reason.c_str());
+        rb_raise(rb_eTypeError, "cannot convert to '%s' (%s)", type_name.c_str(), reason.c_str());
 }
 

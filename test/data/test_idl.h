@@ -16,18 +16,18 @@ typedef TestEnum OtherEnum;
 
 namespace NS1 {
     namespace NS1_1 {
-	struct Test {
-	    int a;
-	    short b;
-	};
+        struct Test {
+            int a;
+            short b;
+        };
     }
 
     namespace NS1_2 {
-	typedef NS1_1::Test Test;
+        typedef NS1_1::Test Test;
     }
 
     struct Test {
-	NS1_1::Test test2;
+        NS1_1::Test test2;
     };
 }
 

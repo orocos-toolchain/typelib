@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( test_equality )
     BOOST_REQUIRE(*ra.get("/int32_t") == *ra.get("/int32_t"));
     // different repositories, same type
     BOOST_REQUIRE(*ra.get("/int32_t") != *rb.get("/int32_t"));
-    BOOST_REQUIRE(ra.get("/int32_t")->isSame(*rb.get("/int32_t"))); 
+    BOOST_REQUIRE(ra.get("/int32_t")->isSame(*rb.get("/int32_t")));
     // same type but different names
     BOOST_REQUIRE(!ra.get("/int32_t")->isSame(*ra.get("/float"))); // numeric category differs
     BOOST_REQUIRE(!ra.get("/int32_t")->isSame(*ra.get("/uint32_t"))); // numeric category differs
@@ -102,31 +102,31 @@ BOOST_AUTO_TEST_CASE( test_equality )
     str_a_dup.addField("c", *rb.get("/int32_t"), 2);
 
     { Compound str_c("/C");
-	// type name changed
-	str_c.addField("a", str_a_dup, 0);
-	str_c.addField("b", *rb.build("/nil*"), 1);
-	BOOST_REQUIRE(str_c.isSame(str_b));
+        // type name changed
+        str_c.addField("a", str_a_dup, 0);
+        str_c.addField("b", *rb.build("/nil*"), 1);
+        BOOST_REQUIRE(str_c.isSame(str_b));
     }
 
     { Compound str_c("/B");
-	// field offsets changed
-	// the structure size should remain the same
-	// in order to really check offset checking
-	str_c.addField("a", str_a_dup, 0);
-	str_c.addField("b", *rb.build("/nil*"), 0);
-	BOOST_REQUIRE_EQUAL(str_c.getSize(), str_b.getSize());
-	BOOST_REQUIRE(!str_c.isSame(str_b));
+        // field offsets changed
+        // the structure size should remain the same
+        // in order to really check offset checking
+        str_c.addField("a", str_a_dup, 0);
+        str_c.addField("b", *rb.build("/nil*"), 0);
+        BOOST_REQUIRE_EQUAL(str_c.getSize(), str_b.getSize());
+        BOOST_REQUIRE(!str_c.isSame(str_b));
     }
 
     { Compound str_c("/B");
-	// field name change
-	str_c.addField("a", str_a_dup, 0);
-	str_c.addField("c", *rb.build("/nil*"), 1);
-	BOOST_REQUIRE(!str_c.isSame(str_b));
+        // field name change
+        str_c.addField("a", str_a_dup, 0);
+        str_c.addField("c", *rb.build("/nil*"), 1);
+        BOOST_REQUIRE(!str_c.isSame(str_b));
     }
 
     // Directly recursive type
-    { 
+    {
         Compound* direct_a, *indirect_a;
         Compound* direct_b, *indirect_b;
         tie(direct_a, indirect_a) = recursive_types(ra);
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE( test_cast )
     BOOST_REQUIRE(*ra.get("/int32_t") == *ra.get("/int32_t"));
     // different repositories, same type
     BOOST_REQUIRE(*ra.get("/int32_t") != *rb.get("/int32_t"));
-    BOOST_REQUIRE(ra.get("/int32_t")->canCastTo(*rb.get("/int32_t"))); 
+    BOOST_REQUIRE(ra.get("/int32_t")->canCastTo(*rb.get("/int32_t")));
     // same type but different names
     BOOST_REQUIRE(ra.get("/int16_t")->canCastTo(*rb.get("/short")));
     BOOST_REQUIRE(!ra.get("/int32_t")->canCastTo(*ra.get("/float"))); // numeric category differs
@@ -201,37 +201,37 @@ BOOST_AUTO_TEST_CASE( test_cast )
     ra.add(str_a_dup);
 
     { Compound str_c("/C");
-	// type name changed
-	str_c.addField("a", *str_a, 0);
-	str_c.addField("b", *rb.build("/nil*"), 1);
-	BOOST_REQUIRE(str_c.canCastTo(str_b));
+        // type name changed
+        str_c.addField("a", *str_a, 0);
+        str_c.addField("b", *rb.build("/nil*"), 1);
+        BOOST_REQUIRE(str_c.canCastTo(str_b));
     }
 
     { Compound str_c("/C");
-	// packing changes
-	str_c.addField("a", *str_a_dup, 0);
-	str_c.addField("b", *rb.build("/nil*"), 1);
-	BOOST_REQUIRE(str_c.canCastTo(str_b));
+        // packing changes
+        str_c.addField("a", *str_a_dup, 0);
+        str_c.addField("b", *rb.build("/nil*"), 1);
+        BOOST_REQUIRE(str_c.canCastTo(str_b));
     }
 
     { Compound str_c("/B");
-	// field offsets changed
-	// the structure size should remain the same
-	// in order to really check offset checking
-	str_c.addField("a", *str_a_dup, 0);
-	str_c.addField("b", *rb.build("/nil*"), 0);
-	BOOST_REQUIRE(!str_c.canCastTo(str_b));
+        // field offsets changed
+        // the structure size should remain the same
+        // in order to really check offset checking
+        str_c.addField("a", *str_a_dup, 0);
+        str_c.addField("b", *rb.build("/nil*"), 0);
+        BOOST_REQUIRE(!str_c.canCastTo(str_b));
     }
 
     { Compound str_c("/B");
-	// field name change
-	str_c.addField("a", *str_a_dup, 0);
-	str_c.addField("c", *rb.build("/nil*"), 1);
-	BOOST_REQUIRE(!str_c.canCastTo(str_b));
+        // field name change
+        str_c.addField("a", *str_a_dup, 0);
+        str_c.addField("c", *rb.build("/nil*"), 1);
+        BOOST_REQUIRE(!str_c.canCastTo(str_b));
     }
 
     // Directly recursive type
-    { 
+    {
         Compound* direct_a, *indirect_a;
         Compound* direct_b, *indirect_b;
         tie(direct_a, indirect_a) = recursive_types(ra);

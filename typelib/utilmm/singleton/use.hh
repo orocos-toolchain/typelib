@@ -42,7 +42,7 @@ namespace utilmm {
        * new client to sinbgleton @c Ty.
        */
       use(use const &other);
-      
+
       /** @brief Destructor
        *
        * Indicate to server that singlerton @c Ty has lost one
@@ -50,13 +50,13 @@ namespace utilmm {
        * the singleton is destroyed.
        */
       ~use();
-      
+
       /** @brief Access to singleton
        *
        * @return A reference to the singleton @c Ty
        */
       Ty &instance() const;
-      
+
       /** @brief Access to singleton
        * @sa instance() const
        */
@@ -65,10 +65,10 @@ namespace utilmm {
        *
        * This operator allow client to directly access to singlton's
        * attributes.
-       * 
+       *
        * @sa instance() const
        */
-      Ty *operator->() const;      
+      Ty *operator->() const;
     }; // struct utilmm::singleton::use<>
 
   } // namespace utilmm::singleton
@@ -91,7 +91,7 @@ namespace utilmm {
 /** @defgroup singleton Singleton pattern design.
  *
  * @brief Implementation of designe pattern which can be compared to
- * phoenix singleton with advanced instance life management. 
+ * phoenix singleton with advanced instance life management.
  *
  * This module includes all the classes used to implement a phoenix
  * singleton pattern design supporting shared libraires.
@@ -125,7 +125,7 @@ namespace utilmm {
  * private:
  *   utilmm::singleton::use<bar> bar_s;
  *   int value;
- *   
+ *
  * public:
  *  foo():value(0) {}
  *  explicit foo(int v):value(v) {}
@@ -136,7 +136,7 @@ namespace utilmm {
  *    // or bar_s->send(value);
  *  }
  * };
- * 
+ *
  * @endcode
  *
  * @par Making a class a pure singleton
@@ -146,16 +146,16 @@ namespace utilmm {
  * this example :
  *
  * @code
- * #include "utilmm/singleton/wrapper_fwd.hh" 
+ * #include "utilmm/singleton/wrapper_fwd.hh"
  *
  * class pure_singleton {
- * public: 
- *  // [...] 
+ * public:
+ *  // [...]
  * private:
  *   pure_singleton();
  *   ~pure_singleton();
  *
- *  // [...] 
+ *  // [...]
  *
  *   friend class utilmm::singleton::wrapper<pure_singleton>;
  * };
@@ -164,5 +164,5 @@ namespace utilmm {
  * All the structors are defined as private then only firends
  * (ie @c utilmm::singleton::wrapper) can create and destroy
  * the instance then we have the guarantee that this class is
- * a pure phoenix singleton.  
+ * a pure phoenix singleton.
  */

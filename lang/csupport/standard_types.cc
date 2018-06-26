@@ -11,7 +11,7 @@ static void addStandardTypes(Typelib::Registry& r)
 
     r.add(new NullType("/nil"));
     r.alias("/nil", "/void");
-    
+
     // Add standard sized integers
     static const int sizes[] = { 1, 2, 4, 8 };
     for (size_t i = 0; i < sizeof(sizes)/sizeof(sizes[0]); ++i)

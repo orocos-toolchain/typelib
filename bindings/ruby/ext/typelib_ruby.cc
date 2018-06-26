@@ -21,12 +21,12 @@ static VALUE mTypelib   = Qnil;
 static VALUE kernel_is_immediate(VALUE klass, VALUE object)
 { return IMMEDIATE_P(object) ? Qtrue : Qfalse; }
 /* call-seq:
- *  numeric?	=> true or false
+ *  numeric?    => true or false
  *
  * Returns true if the receiver is either a Fixnum or a Float
  */
 static VALUE kernel_is_numeric(VALUE klass, VALUE object)
-{ 
+{
     return (FIXNUM_P(object) || TYPE(object) == T_FLOAT || TYPE(object) == T_BIGNUM) ? Qtrue : Qfalse;
 }
 
@@ -49,7 +49,7 @@ extern "C" void Init_typelib_ruby()
     Typelib_init_registry();
     Typelib_init_memory();
     Typelib_init_metadata();
-    
+
     rb_define_singleton_method(mTypelib, "big_endian?", RUBY_METHOD_FUNC(typelib_is_big_endian), 0);
 
     rb_define_singleton_method(rb_mKernel, "immediate?", RUBY_METHOD_FUNC(kernel_is_immediate), 1);

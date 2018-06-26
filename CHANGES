@@ -92,7 +92,7 @@ Sylvain Joyeux (79):
   its export in IDL.
 * namespace support in the C importer. In the meantime, fixed
   the (badly broken) namespace support of Typelib::Registry
-* added a "cxx" mode to the C importer (enabled by default), 
+* added a "cxx" mode to the C importer (enabled by default),
   where definitions of "struct Bla" and "enum Blo" automatically
   define the corresponding "Bla" and "Blo" types
 * cleanup of the export interface. The old interface is kept for

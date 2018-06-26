@@ -7,7 +7,7 @@
 namespace Typelib
 {
     /** Visitor to pretty-print a Type object to an output stream.
-     * You can use <code>stream << type</code> and 
+     * You can use <code>stream << type</code> and
      * <code>stream << type_display(type, indent)</code> instead
      */
     class TypeDisplayVisitor : public TypeVisitor
@@ -23,10 +23,10 @@ namespace Typelib
         bool visit_(OpaqueType const& type);
         bool visit_(Compound const& type);
         bool visit_(Compound const& type, Field const& field);
-        
+
         bool visit_(Numeric const& type);
         bool visit_(Enum const& type);
-       
+
         bool visit_(Pointer const& type);
         bool visit_(Array const& type);
         bool visit_(Container const& type);
@@ -54,7 +54,7 @@ namespace Typelib
 
     /** stream operator to pretty-print a type on a stream, with indenting
      * <code>
-     *	std::cout << Typelib::type_display(type, 2) << std::endl;
+     *  std::cout << Typelib::type_display(type, 2) << std::endl;
      * </code>
      *
      * @arg type    the type

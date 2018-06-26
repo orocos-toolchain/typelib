@@ -1,21 +1,21 @@
 <?xml version="1.0"?>
 <typelib>
   <numeric name="/double" category="float" size="8" >
-  
+
   </numeric>
   <compound name="/std/pair&lt;/double,/double&gt;" size="16" >
     <field name="first" type="/double" offset="0">
-    
+
     </field>
     <field name="second" type="/double" offset="8">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::std::pair<double, double>]]></metadata>
 
   </compound>
   <compound name="/ns_compound_with_pairs/TestClass" size="16" >
     <field name="member" type="/std/pair&lt;/double,/double&gt;" offset="0">
-    
+
     </field>
   <metadata key="cxxname"><![CDATA[::ns_compound_with_pairs::TestClass]]></metadata>
 <metadata key="source_file_line"><![CDATA[compound_with_pair.hh:9]]></metadata>

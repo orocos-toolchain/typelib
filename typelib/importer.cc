@@ -24,7 +24,7 @@ void Importer::load
 ImportError::ImportError(const std::string& file, const std::string& what_, int line, int column)
     : std::runtime_error(file + ":" + boost::lexical_cast<string>(line) + ":" + what_)
     , m_file(file), m_line(line), m_column(column), m_what(what_), m_buffer(0) {}
-ImportError::~ImportError() throw() {} 
+ImportError::~ImportError() throw() {}
 
 void ImportError::setFile(const std::string& path) { m_file = path; }
 std::string ImportError::getFile() const { return m_file; }

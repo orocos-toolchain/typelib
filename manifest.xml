@@ -16,7 +16,7 @@
   <license>CeCILL-B (BSD-like)</license>
 
   <depend package="utilrb" />
-  
+
   <!-- typelib depends on onle one of these optional libraries
        the user has to choose which one to use and install it manually
        <depend_optional package="clang-3.4" />

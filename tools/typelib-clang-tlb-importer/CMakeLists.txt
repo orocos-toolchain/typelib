@@ -2,9 +2,9 @@ include(LLVMTools)
 
 # we tested and developed _only_ against llvm-3.4
 if(APPLE)
-	llvm_find_config("")
+        llvm_find_config("")
 else()
-	llvm_find_config(3.4)
+        llvm_find_config(3.4)
 endif()
 
 # fail hard if we got no llvm-config!

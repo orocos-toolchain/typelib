@@ -75,9 +75,9 @@ namespace typelib_ruby {
          */
         inline VALUE enum_symbol(Enum::integral_type value, Enum const& e)
         {
-            try { 
+            try {
                 std::string symbol = e.get(value);
-                return ID2SYM(rb_intern(symbol.c_str())); 
+                return ID2SYM(rb_intern(symbol.c_str()));
             }
             catch(Enum::ValueNotFound) { return Qnil; }
         }
@@ -102,7 +102,7 @@ namespace typelib_ruby {
             return *reinterpret_cast<T*>(object);
         }
 
-        template<typename T> 
+        template<typename T>
         T& object(VALUE self)
         {
             check_is_kind_of(self, cxx2rb::class_of<T>());
@@ -115,7 +115,7 @@ namespace typelib_ruby {
         }
 
         template<>
-        inline Type& object(VALUE self) 
+        inline Type& object(VALUE self)
         {
             check_is_kind_of(self, rb_cClass);
             VALUE type = rb_iv_get(self, "@type");
@@ -149,7 +149,7 @@ namespace typelib_ruby {
         bool visit_(Typelib::Value const& v, Typelib::Container const& c);
         bool visit_(Typelib::Value const& v, Typelib::OpaqueType const& c);
         bool visit_(Typelib::Enum::integral_type& v, Typelib::Enum const& e);
-        
+
     public:
         RubyGetter();
         ~RubyGetter();
@@ -179,7 +179,7 @@ namespace typelib_ruby {
         bool visit_(Typelib::Value const& v, Typelib::Container const& c);
         bool visit_(Typelib::Value const& v, Typelib::OpaqueType const& c);
         bool visit_(Typelib::Enum::integral_type& v, Typelib::Enum const& e);
-        
+
     public:
         RubySetter();
         ~RubySetter();
