@@ -603,12 +603,18 @@ module Typelib
                             base_type = registry.get(base_type_name)
                             [base_type, Integer(child_node['offset'] || '0')]
                         else
-                            return ignore(xmlnode, "ignoring #{name}, it has ignored base classes")
+                            msg = unless name.start_with?("/std/allocator")
+                                "ignoring #{name}, it has ignored base classes"
+                            end
+                            return ignore(xmlnode, msg)
                         end
                     end
 
                     if xmlnode['incomplete'] == '1'
-                        return ignore(xmlnode, "ignoring incomplete type #{name}")
+                        msg = unless name.start_with?("/std/allocator")
+                            "ignoring incomplete type #{name}"
+                        end
+                        return ignore(xmlnode, msg)
                     end
 
                     member_ids = (xmlnode['members'] || '').split(" ")
@@ -626,7 +632,10 @@ module Typelib
                         end
                     end.compact
                     if fields.empty? && base_classes.all? { |type, _| type.empty? }
-                        return ignore(xmlnode, "ignoring the empty struct/class #{name}")
+                        msg = unless name =~ %r[^/[^/]+/new_allocator]
+                            "ignoring the empty struct/class #{name}"
+                        end
+                        return ignore(xmlnode, msg)
                     end
 
                     field_defs = fields.map do |field|
