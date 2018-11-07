@@ -28,6 +28,7 @@
   <depend package="libxml2" />
   <depend package="pkg-config" />
   <depend package="ruby-dev" />
+  <depend package="ruby-backports" />
 
   <tags>stable</tags>
 
