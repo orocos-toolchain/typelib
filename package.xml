@@ -18,17 +18,29 @@
   <buildtool_depend>pkg-config</buildtool_depend>
   <run_depend>catkin</run_depend>
 
-  <build_depend>utilrb</build_depend>
+  <!-- typelib depends on onle one of these optional libraries
+       the user has to choose which one to use and install it manually
+    <build_depend>clang-3.4</build_depend>
+    <run_depend>clang-3.4</run_depend>
+    <build_depend>castxml</build_depend>
+    <run_depend>castxml</run_depend>
+    <build_depend>gccxml</build_depend>
+    <run_depend>gccxml</run_depend>
+  -->
   <build_depend>gccxml</build_depend>
+  <run_depend>gccxml</run_depend>
+
+  <build_depend>utilrb</build_depend>
   <build_depend>boost</build_depend>
-  <build_depend>libxml2</build_depend>
   <build_depend>facets</build_depend>
+  <build_depend>libxml2</build_depend>
+  <build_depend>ruby-dev</build_depend>
 
   <run_depend>utilrb</run_depend>
-  <run_depend>gccxml</run_depend>
   <run_depend>boost</run_depend>
-  <run_depend>libxml2</run_depend>
   <run_depend>facets</run_depend>
+  <run_depend>libxml2</run_depend>
+  <run_depend>ruby</run_depend>
 
   <export>
     <build_type>
