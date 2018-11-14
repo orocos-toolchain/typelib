@@ -27,11 +27,7 @@
   <rosdep name="facets" />
   <rosdep name="libxml2" />
   <rosdep name="pkg-config" />
-
-  <!-- rosdep key `ruby-dev` is not known to ROS.
-       Depend on `ruby` instead, which includes development files. -->
-  <!-- <rosdep name="ruby-dev" /> -->
-  <rosdep name="ruby" />
+  <rosdep name="ruby-dev" />
 
   <tags>stable</tags>
 
