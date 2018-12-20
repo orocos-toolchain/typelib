@@ -115,6 +115,12 @@ module Typelib
         end
         @convertions_from_ruby = Hash.new
 
+        def self.new(*args)
+            super(*args)
+            apply_changes_from_converted_types
+            invalidate_changes_from_converted_types
+        end
+
         # True if this type refers to subtype of the given type, or if it a
         # subtype of +type+ itself
         def self.contains?(type)

@@ -6,6 +6,48 @@ describe Typelib::CompoundType do
         @registry = Typelib::CXXRegistry.new
     end
 
+    describe "plain objects" do
+        before do
+            @converted_t = registry.create_compound '/Converted' do |builder|
+                builder.add 'f0', '/int'
+                builder.add 'f1', '/double'
+            end
+            @converted_ruby_t = Class.new
+            @converted_t.convert_from_ruby @converted_ruby_t do |*|
+                @converted_t.new(f0: 10, f1: 20)
+            end
+            @converted_t.extend_for_custom_convertions
+            @compound_t = registry.create_compound '/C' do |builder|
+                builder.add 'f', @converted_t
+            end
+        end
+        it "calls #initialize on .new" do
+            @compound_t.class_eval do
+                def initialize
+                    super
+                    self.f.f0 = 10
+                end
+            end
+            assert_equal 10, @compound_t.new.f.f0
+        end
+        it "applies and removes the converted types used during initialization" do
+            converted_ruby_t = @converted_ruby_t
+            @compound_t.class_eval do
+                define_method :initialize do
+                    super()
+                    self.f = converted_ruby_t.new
+                end
+            end
+            t = @compound_t.new
+            assert_equal 10, t.raw_get('f').f0
+            assert_equal 20, t.raw_get('f').f1
+            t.raw_set('f', @converted_t.new(f0: 0, f1: 0))
+            t.apply_changes_from_converted_types
+            assert_equal 0, t.raw_get('f').f0
+            assert_equal 0, t.raw_get('f').f1
+        end
+    end
+
     describe "the type model" do
         describe "#to_h" do
             attr_reader :compound_t, :f0_t, :f1_t
