@@ -576,7 +576,7 @@ static VALUE registry_create_compound(VALUE registry, VALUE name, VALUE field_de
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
 
-    std::auto_ptr<Typelib::Compound> new_t(new Typelib::Compound(StringValuePtr(name)));
+    std::unique_ptr<Typelib::Compound> new_t(new Typelib::Compound(StringValuePtr(name)));
 
     int field_count = RARRAY_LEN(field_defs);
     for (int i = 0; i < field_count; ++i)
@@ -609,7 +609,7 @@ static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs,
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
 
-    std::auto_ptr<Typelib::Enum> new_t(new Typelib::Enum(StringValuePtr(name)));
+    std::unique_ptr<Typelib::Enum> new_t(new Typelib::Enum(StringValuePtr(name)));
 
     int symbol_count = RARRAY_LEN(symbol_defs);
     for (int i = 0; i < symbol_count; ++i)
