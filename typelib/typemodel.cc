@@ -378,7 +378,7 @@ namespace Typelib
     }
     Type* Compound::do_merge(Registry& registry, RecursionStack& stack) const
     {
-        auto_ptr<Compound> result(new Compound(getName()));
+        unique_ptr<Compound> result(new Compound(getName()));
         RecursionStack::iterator onStackIter = stack.insert(make_pair(this, result.get())).first;
 
         try  {

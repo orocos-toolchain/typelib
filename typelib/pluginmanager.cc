@@ -173,7 +173,7 @@ void PluginManager::save(std::string const& kind, Registry const& registry, std:
 }
 void PluginManager::save(std::string const& kind, utilmm::config_set const& config, Registry const& registry, std::ostream& into)
 {
-    auto_ptr<Exporter> exporter(PluginManager::self()->exporter(kind));
+    unique_ptr<Exporter> exporter(PluginManager::self()->exporter(kind));
     exporter->save(into, config, registry);
 }
 
@@ -200,26 +200,26 @@ void PluginManager::load(std::string const& kind, std::string const& file, Regis
 
 Registry* PluginManager::load(std::string const& kind, std::istream& stream, utilmm::config_set const& config )
 {
-    auto_ptr<Registry> registry(new Registry);
+    unique_ptr<Registry> registry(new Registry);
     load(kind, stream, config, *registry.get());
     return registry.release();
 }
 void PluginManager::load(std::string const& kind, std::istream& stream, utilmm::config_set const& config
         , Registry& into )
 {
-    std::auto_ptr<Importer> importer(PluginManager::self()->importer(kind));
+    std::unique_ptr<Importer> importer(PluginManager::self()->importer(kind));
     importer->load(stream, config, into);
 }
 Registry* PluginManager::load(std::string const& kind, std::string const& file, utilmm::config_set const& config)
 {
-    auto_ptr<Registry> registry(new Registry);
+    unique_ptr<Registry> registry(new Registry);
     load(kind, file, config, *registry.get());
     return registry.release();
 }
 void PluginManager::load(std::string const& kind, std::string const& file, utilmm::config_set const& config
         , Registry& into)
 {
-    auto_ptr<Importer> importer(PluginManager::self()->importer(kind));
+    unique_ptr<Importer> importer(PluginManager::self()->importer(kind));
     importer->load(file, config, into);
 }
 

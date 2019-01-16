@@ -193,7 +193,7 @@ namespace Typelib
 
     Registry* Registry::minimal(std::string const& name, bool with_aliases) const
     {
-        auto_ptr<Registry> result(new Registry);
+        unique_ptr<Registry> result(new Registry);
         Type const* type = get(name);
         if (!type)
             throw std::runtime_error("there is not type '" + name + "' in this registry");
@@ -218,7 +218,7 @@ namespace Typelib
 
     Registry* Registry::minimal(Registry const& auto_types, bool keep_auto_aliases) const
     {
-        auto_ptr<Registry> result(new Registry);
+        unique_ptr<Registry> result(new Registry);
 
         // Merge non aliased types. Aliases are never used by type model classes
         // so we can safely call merge()
