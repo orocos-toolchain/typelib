@@ -92,15 +92,15 @@ describe Typelib::NumericType do
         describe "convertion to nil" do
             it "converts a NaN into nil" do
                 float = Typelib.from_ruby(Float::NAN, float_t)
-                assert_equal nil, float.to_json_value(:special_float_values => :nil)
+                assert_nil float.to_json_value(:special_float_values => :nil)
             end
             it "converts a positive infinity into nil" do
                 float = Typelib.from_ruby(Float::INFINITY, float_t)
-                assert_equal nil, float.to_json_value(:special_float_values => :nil)
+                assert_nil float.to_json_value(:special_float_values => :nil)
             end
             it "converts a negative infinity into nil" do
                 float = Typelib.from_ruby(-Float::INFINITY, float_t)
-                assert_equal nil, float.to_json_value(:special_float_values => :nil)
+                assert_nil float.to_json_value(:special_float_values => :nil)
             end
         end
 
