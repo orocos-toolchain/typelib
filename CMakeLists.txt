@@ -6,6 +6,9 @@ PROJECT(typelib)
 SET(PROJECT_VERSION 1.1)
 SET(API_VERSION 1)
 
+#required because of the use of std::unique_ptr
+set (CMAKE_CXX_STANDARD 11)
+
 FIND_PACKAGE ( Threads REQUIRED )
 
 # This changes the behaviour of list() w.r.t. empty elements. Typelib'cmake code
