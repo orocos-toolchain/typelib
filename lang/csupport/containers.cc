@@ -128,6 +128,7 @@ void Vector::resize(std::vector<uint8_t>* ptr, size_t new_size) const
         {
             Typelib::init(&new_buffer[i], element_layout);
             Typelib::copy(&new_buffer[i], &(*ptr)[i], element_layout);
+            Typelib::destroy(&(*ptr)[i], element_layout);
         }
         ptr->swap(new_buffer);
     }
