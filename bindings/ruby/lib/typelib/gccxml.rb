@@ -907,7 +907,7 @@ module Typelib
             meta = doc.split("\n").grep(/^\s*@meta/)
             meta.each do |line|
                 if line =~ /^\s*@meta (\w+)\s+(.*)$/
-                    metadata.add($1, $2)
+                    metadata.add($1, $2.strip)
                 end
             end
         end
