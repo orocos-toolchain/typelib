@@ -45,7 +45,7 @@ registry = Typelib::Registry.new
 if File.file?(opaques_file)
     registry.merge_xml(File.read(opaques_file))
 end
-registry.import(cxx_file, 'c', cxx_importer: 'gccxml', defines: defines, include_paths: [cxx_test_dir])
+registry.import(cxx_file, 'c', cxx_importer: 'castxml', defines: defines, include_paths: [cxx_test_dir])
 
 # Format the source_file_line metadata since it can really not be ported across
 # compilers and filesystems
