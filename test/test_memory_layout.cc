@@ -294,12 +294,29 @@ BOOST_AUTO_TEST_CASE( test_require_init_enums )
 
     MemoryLayout ops = Typelib::layout_of(compound_t);
 
-    size_t expected[] = {
+    std::vector<size_t> expected {
         MemLayout::FLAG_INIT_SKIP, 5,
-        MemLayout::FLAG_INIT, sizeof(Enum::integral_type), 0, 0, 0, 0, 0, 0, 0, 0 };
-    size_t expected_size = 4 + sizeof(Enum::integral_type);
-    *reinterpret_cast<Enum::integral_type*>(expected + 4) = 10;
-    REQUIRE_INIT_EQUALS(expected, expected + expected_size, ops);
+        MemLayout::FLAG_INIT, sizeof(Enum::integral_type),
+        10, 0, 0, 0, 0, 0, 0, 0
+    };
+    REQUIRE_INIT_EQUALS(&expected[0], &expected[4 + sizeof(Enum::integral_type)], ops);
+}
+
+BOOST_AUTO_TEST_CASE( test_require_init_enums_handles_negative_values)
+{
+    Enum enum_t("/Test", 0);
+    enum_t.add("TEST", -10);
+    Compound compound_t("/CTest");
+    compound_t.addField("test", enum_t, 5);
+
+    MemoryLayout ops = Typelib::layout_of(compound_t);
+
+    vector<size_t> expected {
+        MemLayout::FLAG_INIT_SKIP, 5,
+        MemLayout::FLAG_INIT, sizeof(Enum::integral_type),
+        0xf6, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+    };
+    REQUIRE_INIT_EQUALS(&expected[0], &expected[4 + sizeof(Enum::integral_type)], ops);
 }
 
 
