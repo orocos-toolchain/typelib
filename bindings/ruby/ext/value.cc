@@ -592,7 +592,7 @@ VALUE value_marshalling_size(VALUE self)
 {
     Value& value = rb2cxx::object<Value>(self);
     try { return INT2NUM(Typelib::getDumpSize(value)); }
-    catch(Typelib::NoLayout)
+    catch(Typelib::NoLayout const&)
     { return Qnil; }
 }
 

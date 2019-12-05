@@ -54,7 +54,7 @@ static VALUE compound_field_get(VALUE rbvalue, VALUE name, VALUE raw)
             return cxx2rb::value_wrap(field_value, registry, rbvalue);
         else return typelib_to_ruby(field_value, registry, rbvalue);
     }
-    catch(FieldNotFound)
+    catch(FieldNotFound const&)
     { rb_raise(rb_eArgError, "no field '%s'", StringValuePtr(name)); }
     catch(std::exception const& e)
     { rb_raise(rb_eRuntimeError, "%s", e.what()); }
@@ -69,7 +69,7 @@ static VALUE compound_field_set(VALUE self, VALUE name, VALUE newval)
         typelib_from_ruby(field_value, newval);
         return newval;
     }
-    catch(FieldNotFound)
+    catch(FieldNotFound const&)
     { rb_raise(rb_eArgError, "no field '%s' in '%s'", StringValuePtr(name), rb_obj_classname(self)); }
     catch(std::exception const& e)
     { rb_raise(rb_eRuntimeError, "%s", e.what()); }
@@ -113,7 +113,7 @@ Enum::integral_type rb2cxx::enum_value(VALUE rb_value, Enum const& e)
             e.get(value);
             return value;
         }
-        catch(Enum::ValueNotFound) {  }
+        catch(Enum::ValueNotFound const&) {  }
         rb_raise(rb_eArgError, "%i is not a valid value for %s", value, e.getName().c_str());
     }
 
@@ -124,7 +124,7 @@ Enum::integral_type rb2cxx::enum_value(VALUE rb_value, Enum const& e)
         name = StringValuePtr(rb_value);
 
     try { return e.get(name); }
-    catch(Enum::SymbolNotFound) {  }
+    catch(Enum::SymbolNotFound const&) {  }
     rb_raise(rb_eArgError, "%s is not a valid symbol for %s", name, e.getName().c_str());
 }
 
@@ -166,7 +166,7 @@ static VALUE enum_value_of(VALUE self, VALUE name)
     try {
         int value = type.get(StringValuePtr(name));
         return INT2NUM(value);
-    } catch (Enum::SymbolNotFound) {
+    } catch (Enum::SymbolNotFound const&) {
         rb_raise(rb_eArgError, "this enumeration has no value for %s", StringValuePtr(name));
     }
 }
@@ -184,7 +184,7 @@ static VALUE enum_name_of(VALUE self, VALUE integer)
     try {
         std::string name = type.get(NUM2INT(integer));
         return rb_str_new2(name.c_str());
-    } catch (Enum::ValueNotFound) {
+    } catch (Enum::ValueNotFound const&) {
         rb_raise(rb_eArgError, "this enumeration has no name for %i", NUM2INT(integer));
     }
 }
@@ -627,7 +627,7 @@ static VALUE vector_raw_memcpy(VALUE self,VALUE _source,VALUE _size)
         MemoryLayout ops = Typelib::layout_of(container_t.getIndirection());
         is_memcpy = ops.isMemcpy();
     }
-    catch(std::runtime_error) { no_layout = true; }
+    catch(std::runtime_error const&) { no_layout = true; }
     if(no_layout)
         rb_raise(rb_eTypeError, "no layout available for elements of %s", container_t.getName().c_str());
     if(!is_memcpy)
@@ -658,7 +658,7 @@ static VALUE numeric_to_ruby(VALUE mod, VALUE self)
     VALUE registry = value_get_registry(self);
     try {
         return typelib_to_ruby(value, registry, Qnil);
-    } catch(Typelib::NullTypeFound) { }
+    } catch(Typelib::NullTypeFound const&) { }
     rb_raise(rb_eTypeError, "trying to convert 'void'");
 }
 
@@ -677,7 +677,7 @@ static VALUE numeric_from_ruby(VALUE self, VALUE arg)
     try {
         typelib_from_ruby(value, arg);
         return self;
-    } catch(Typelib::UnsupportedType) { }
+    } catch(Typelib::UnsupportedType const&) { }
     rb_raise(rb_eTypeError, "cannot perform the requested convertion");
 }
 
