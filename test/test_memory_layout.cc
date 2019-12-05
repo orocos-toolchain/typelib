@@ -49,7 +49,7 @@ static Registry& getRegistry()
     static Registry registry;
 
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    unique_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
     return registry;
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(test_layout_arrays)
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    unique_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(test_layout_array_of_containers)
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    unique_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(test_layout_containers)
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    unique_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
