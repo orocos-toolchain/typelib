@@ -186,7 +186,7 @@ VALUE typelib_from_ruby(Value dst, VALUE new_value)
     try {
         RubySetter setter;
         return setter.apply(dst, new_value);
-    } catch(UnsupportedType e) {
+    } catch(UnsupportedType const& e) {
         // Avoid calling rb_raise in exception context
         type_name = e.type.getName();
         reason    = e.reason;

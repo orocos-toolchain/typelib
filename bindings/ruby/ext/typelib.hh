@@ -79,7 +79,7 @@ namespace typelib_ruby {
                 std::string symbol = e.get(value);
                 return ID2SYM(rb_intern(symbol.c_str()));
             }
-            catch(Enum::ValueNotFound) { return Qnil; }
+            catch(Enum::ValueNotFound const&) { return Qnil; }
         }
 
         VALUE value_wrap(Value v, VALUE registry, VALUE parent = Qnil);
