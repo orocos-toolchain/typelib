@@ -6,7 +6,7 @@ using namespace Typelib::MemLayout;
 using namespace std;
 using boost::lexical_cast;
 
-static_assert(sizeof(Enum::integral_type) <= sizeof(size_t));
+static_assert(sizeof(Enum::integral_type) <= sizeof(size_t), "Typelib's internal integral type must fit in a size_t");
 
 bool MemoryLayout::isMemcpy() const
 {
