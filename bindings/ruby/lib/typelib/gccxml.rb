@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require 'set'
-require 'tempfile'
-require 'shellwords'
-require 'strscan'
+require "set"
+require "tempfile"
+require "shellwords"
+require "strscan"
+require "English"
 
 module Typelib
     # Intermediate representation of a parsed GCCXML output, containing only
@@ -855,7 +856,7 @@ module Typelib
                 # We MUST emit the opaque definitions before calling
                 # resolve_opaques as resolve_opaques will add the resolved
                 # opaque names to +opaques+
-                opaques.each do |type_name|
+                opaques.sort.uniq.each do |type_name|
                     registry.create_opaque type_name, 0
                 end
                 resolve_opaques
@@ -956,125 +957,204 @@ module Typelib
         end
 
         def self.castxml_binary_name
-            return "castxml"
+            "castxml"
         end
+
         # Runs castxml on the provided file and with the given options, and
         # return the Nokogiri::XML object representing the result
         #
         # Raises RuntimeError if casrxml failed to run
-        def self.castxml(file, options)
-            cmdline = [castxml_binary_name, *castxml_default_options, "--castxml-gccxml", '-x', 'c++']
-            required_files = (options[:required_files] || [file])
-            if raw = options[:rawflags]
-                cmdline.concat(raw)
-            end
-
-            if defs = options[:define]
-                defs.each do |str|
-                    cmdline << "-D#{str}"
-                end
-            end
-
-            if inc = (options[:include] || options[:include_paths])
-                inc.each do |str|
-                    cmdline << "-I#{str}"
-                end
-            end
+        def self.castxml(
+            composite_file,
+            required_files: [composite_file], rawflags: [], define: [],
+            include: [], include_paths: [], **
+        )
+            cmdline = [castxml_binary_name, *castxml_default_options,
+                       "--castxml-gccxml", "-x", "c++"]
+            cmdline.concat(rawflags)
+            cmdline.concat(define.map { |str| "-D#{str}" })
+            cmdline.concat(include.map { |str| "-I#{str}" })
+            cmdline.concat(include_paths.map { |str| "-I#{str}" })
 
             required_files.map do |file|
-                result = IO.popen([*cmdline, '-o', '-', file]) do |out|
+                result = IO.popen([*cmdline, "-o", "-", file]) do |out|
                     out.read
                 end
 
-                unless $?.success?
+                unless $CHILD_STATUS.success?
                     raise ArgumentError, "castxml failed to parse #{file}"
                 end
 
                 result
             end
         end
+
         # Runs gccxml on the provided file and with the given options, and
         # return the Nokogiri::XML object representing the result
         #
         # Raises RuntimeError if gccxml failed to run
-        def self.gccxml(file, options)
+        def self.gccxml(
+            composite_file, required_files: [], rawflags: [], define: [],
+            include: [], include_paths: [], **
+        )
             cmdline = [gcc_binary_name, *gccxml_default_options]
-            if raw = options[:rawflags]
-                cmdline.concat(raw)
-            end
+            cmdline.concat(rawflags)
+            cmdline.concat(define.map { |str| "-D#{str}" })
+            cmdline.concat(include.map { |str| "-I#{str}" })
+            cmdline.concat(include_paths.map { |str| "-I#{str}" })
+            cmdline << composite_file
 
-            if defs = options[:define]
-                defs.each do |str|
-                    cmdline << "-D#{str}"
-                end
-            end
-
-            if inc = (options[:include] || options[:include_paths])
-                inc.each do |str|
-                    cmdline << "-I#{str}"
-                end
-            end
-
-            cmdline << file
-
-            Tempfile.open('typelib_gccxml') do |io|
+            Tempfile.open("typelib_gccxml") do |io|
                 cmdline << "-fxml=#{io.path}"
-                if !system(*cmdline)
+                unless system(*cmdline)
                     raise ArgumentError, "gccxml returned an error while parsing #{file}"
                 end
                 [io.read]
             end
         end
 
-        def self.load(registry, file, kind, options)
-            required_files = (options[:required_files] || [file]).
-                map { |f| File.expand_path(f) }
-
-            registry_opaques = Set.new
-            registry.each do |type|
-                if type.opaque?
-                    registry_opaques << type.name
-                end
+        # @api private
+        #
+        # A do-nothing job server
+        #
+        # It works as default argument as {.load} spawns exactly parallel_level
+        # threads.
+        class NullJobServer
+            def get
+                yield if block_given?
             end
 
-            raw_xml = if options[:castxml] then castxml(file, options)
-                      else gccxml(file, options)
-                      end
-
-            raw_xml.each do |xml|
-                converter = GCCXMLLoader.new
-                converter.opaques = registry_opaques.dup
-                if options_opaques = options[:opaques]
-                    converter.opaques |= options_opaques.to_set
-                end
-                gccxml_registry = converter.load(required_files, xml)
-                registry.merge(gccxml_registry)
-            end
+            def put; end
         end
 
-        def self.preprocess(files, kind, options)
-            includes = options.fetch(:include, Array.new).map { |v| "-I#{v}" }
-            defines  = options.fetch(:define, Array.new).map { |v| "-D#{v}" }
-            rawflags = options.fetch(:rawflags, Array.new)
+        def self.load(
+            registry, file, _kind,
+            required_files: [file], opaques: Set.new,
+            parallel_level: 1, job_server: NullJobServer.new,
+            merge: true, **parsing_options
+        )
+            required_files = required_files.map { |f| File.expand_path(f) }
 
-            Tempfile.open(['orogen_gccxml_input','.hpp']) do |io|
+            opaques = opaques.dup
+            registry.each do |type|
+                opaques << type.name if type.opaque?
+            end
+
+            file_queue = Queue.new
+            required_files.each { |f| file_queue.push(f) }
+            xml_queue = Queue.new
+            registry_queue = Queue.new
+
+            if parallel_level <= 1
+                parsing_thread(NullJobServer.new, file_queue, xml_queue, **parsing_options)
+                xml_queue.push(nil)
+                registry_thread(
+                    NullJobServer.new, xml_queue, registry_queue, required_files, opaques
+                )
+            else
+                parsing_threads = (0...(parallel_level - 1)).map do
+                    Thread.new do
+                        parsing_thread(job_server, file_queue, xml_queue,
+                                       **parsing_options)
+                    end
+                end
+                registry_thread = Thread.new do
+                    registry_thread(
+                        job_server, xml_queue, registry_queue, required_files, opaques
+                    )
+                end
+
+                # Per the make job server protocol, orogen already has a token.
+                # "Give" a token back since we're doing nothing in this thread.
+                begin
+                    job_server.put
+                    # Handle errors, we don't care about return values
+                    begin
+                        parsing_threads.map(&:value)
+                    ensure
+                        xml_queue.push(nil)
+                    end
+                    registry_thread.value
+                ensure
+                    job_server.get
+                end
+            end
+
+            registry.merge(registry_queue.pop) until registry_queue.empty?
+        end
+
+        def self.parsing_thread(
+            job_server, in_queue, out_queue, castxml: true, **parsing_options
+        )
+            loop do
+                file = in_queue.pop(true)
+                xml = job_server.get do
+                    if castxml
+                        castxml(file, required_files: [file], **parsing_options)
+                    else
+                        gccxml(file, required_files: [file], **parsing_options)
+                    end
+                end
+                out_queue.push(xml.first)
+            end
+        rescue ThreadError # rubocop:disable Lint/SuppressedException
+        rescue Exception # rubocop:disable Lint/RescueException
+            # Speedup error propagation
+            in_queue.clear
+            out_queue.clear
+            raise
+        end
+
+        def self.registry_thread(job_server, in_queue, out_queue, required_files, opaques)
+            loop do
+                return unless (xml = in_queue.pop)
+
+                registry = job_server.get do
+                    registry_from_gccxml_output(required_files, xml, opaques)
+                end
+                out_queue.push(registry)
+            end
+        rescue Exception # rubocop:disable Lint/RescueException
+            # Speedup error propagation
+            in_queue.clear
+            out_queue.clear
+            raise
+        end
+
+        def self.registry_from_gccxml_output(required_files, xml, opaques)
+            converter = GCCXMLLoader.new
+            converter.opaques = opaques.dup
+            converter.load(required_files, xml)
+        end
+
+        def self.preprocess(
+            files, _kind,
+            castxml: true, include: [], include_paths: [], define: [], rawflags: [], **
+        )
+            includes = (include + include_paths).map { |v| "-I#{v}" }
+            defines  = define.map { |v| "-D#{v}" }
+
+            Tempfile.open(["orogen_gccxml_input", ".hpp"]) do |io|
                 files.each do |path|
                     io.puts "#include <#{path}>"
                 end
                 io.flush
 
-                if options[:castxml]
-                    call = [castxml_binary_name, "--castxml-gccxml", "-E", *includes, *defines, *rawflags, *castxml_default_options, io.path]
-                else
-                    call = [gcc_binary_name, "--preprocess", *includes, *defines, *rawflags, *gccxml_default_options, io.path]
-                end
+                call =
+                    if castxml
+                        [castxml_binary_name, "--castxml-gccxml", "-E",
+                         *includes, *defines, *rawflags,
+                         *castxml_default_options, io.path]
+                    else
+                        [gcc_binary_name, "--preprocess", *includes, *defines,
+                         *rawflags, *gccxml_default_options, io.path]
+                    end
 
-                result = IO.popen(call) do |gccxml_io|
-                    gccxml_io.read
-                end
-
-                if !$?.success?
-                    raise ArgumentError, "failed to preprocess #{files.join(" ")} \"#{call[0..-1].join(" ")} /tmp/gcc-debug\""
+                result = IO.popen(call, &:read)
+                unless $CHILD_STATUS.success?
+                    raise ArgumentError,
+                          "failed to preprocess #{files.join(' ')} "\
+                          "\"#{call[0..-1].join(' ')} /tmp/gcc-debug\""
                 end
 
                 result
@@ -1086,6 +1166,7 @@ module Typelib
         def self.load(registry, file, kind, **options)
             super(registry, file, kind, castxml: true, **options)
         end
+
         def self.preprocess(files, kind, **options)
             super(files, kind, castxml: true, **options)
         end
@@ -1099,7 +1180,7 @@ module Typelib
 
         # Returns true if Registry#import will use GCCXML to load the given
         # file
-        def self.uses_gccxml?(path, kind = 'auto')
+        def self.uses_gccxml?(path, kind = "auto")
             (handler_for(path, kind) == method(:load_from_gccxml))
         end
     end
