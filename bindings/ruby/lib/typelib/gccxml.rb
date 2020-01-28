@@ -3,6 +3,7 @@
 require 'set'
 require 'tempfile'
 require 'shellwords'
+require 'strscan'
 
 module Typelib
     # Intermediate representation of a parsed GCCXML output, containing only
@@ -102,14 +103,14 @@ module Typelib
         end
 
         def parse(xml)
-            lines = xml.split("\n")
-            lines.shift
-            root_tag = lines.shift
+            scanner = StringScanner.new(xml)
+            scanner.skip_until(/\n/)
+            root_tag = scanner.scan_until(/\n/)
             if root_tag !~ /<GCC_XML/
                 raise RuntimeError, "the provided XML input does not look like a GCCXML output (expected a root GCC_XML tag but got #{root_tag.chomp})"
             end
 
-            lines.each do |l|
+            while (l = scanner.scan_until(/\n/))
                 if match = /<(\w+)/.match(l)
                     name = match[1]
                     parsing_needed = %w{File Field Base EnumValue}.include?(name) ||
