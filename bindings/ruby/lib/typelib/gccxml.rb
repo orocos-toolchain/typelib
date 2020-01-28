@@ -984,13 +984,15 @@ module Typelib
             end
 
             required_files.map do |file|
-                Tempfile.open('typelib_gccxml') do |io|
-                    if !system(*cmdline, '-o', io.path, file)
-                        raise ArgumentError, "gccxml returned an error while parsing #{file} with call #{cmdline.join(' ')} "
-                    end
-                    io.open
-                    io.read
+                result = IO.popen([*cmdline, '-o', '-', file]) do |out|
+                    out.read
                 end
+
+                unless $?.success?
+                    raise ArgumentError, "castxml failed to parse #{file}"
+                end
+
+                result
             end
         end
         # Runs gccxml on the provided file and with the given options, and
