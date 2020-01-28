@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'set'
 require 'tempfile'
 require 'shellwords'
@@ -272,7 +274,7 @@ module Typelib
 
         def self.split_first_namespace(typename)
             basename  = typename[1..-1]
-            namespace = "/"
+            namespace = "/".dup
             level = 0
             while true
                 next_marker = (basename =~ /[\/<>]/)
@@ -299,7 +301,7 @@ module Typelib
         end
 
         def self.split_last_namespace(name)
-            basename = ""
+            basename = "".dup
             typename = name.reverse
             level = 0
             while true
@@ -800,10 +802,10 @@ module Typelib
             block = block.map do |l|
                 l.strip.gsub(/^\s*(\*+\/?|\/+\**)/, '')
             end
-            while block.first && block.first.strip == ""
+            while block.first && block.first.strip.empty?
                 block.shift
             end
-            while block.last && block.last.strip == ""
+            while block.last && block.last.strip.empty?
                 block.pop
             end
             # Now remove the same amount of spaces in front of each lines
