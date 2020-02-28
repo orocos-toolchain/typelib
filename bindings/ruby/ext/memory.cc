@@ -1,6 +1,7 @@
 #include "typelib.hh"
 #include <typelib/value_ops.hh>
 #include <ruby.h>
+#include <ruby/version.h>
 
 using namespace Typelib;
 using namespace std;
@@ -30,10 +31,17 @@ static st_index_t memory_table_hash(void* a)
     return (st_index_t)a;
 }
 
+#if (RUBY_API_VERSION_MAJOR == 2) && (RUBY_API_VERSION_MINOR < 7)
 static struct st_hash_type memory_table_type = {
     (int (*)(...))memory_table_compare,
     (st_index_t (*)(...))memory_table_hash
 };
+#else
+static struct st_hash_type memory_table_type = {
+    (int (*)(st_data_t, st_data_t))memory_table_compare,
+    (st_index_t (*)(st_data_t))memory_table_hash
+};
+#endif
 
 struct MemoryTableEntry
 {
