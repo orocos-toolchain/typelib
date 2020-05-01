@@ -1,0 +1,25 @@
+module foo {
+    module bar {
+        enum EnumType { EnumValue };
+        struct TemplateType___foo__bar__EnumType_ {
+            ::foo::bar::EnumType foo;
+        };
+        typedef sequence<::foo::bar::EnumType> vector___foo__bar__EnumType_;
+        struct LocalType {
+            long one;
+            ::foo::bar::EnumType two;
+            short three;
+            ::foo::bar::EnumType four;
+            ::foo::bar::TemplateType___foo__bar__EnumType_ five;
+            long six[1];
+            ::foo::bar::vector___foo__bar__EnumType_ seven;
+        };
+        typedef ::foo::bar::LocalType Alias;
+        module pkg {
+            typedef short TypedefedType;
+
+        };
+
+    };
+
+};
