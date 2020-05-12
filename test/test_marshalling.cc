@@ -11,18 +11,24 @@
 
 #include <test/test_cimport.1>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 using namespace Typelib;
 using namespace std;
+
+static void load_cimport_tlb(Registry& registry) {
+    PluginManager::self manager;
+    unique_ptr<Importer> importer(manager->importer("tlb"));
+    utilmm::config_set config;
+    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
+}
 
 BOOST_AUTO_TEST_CASE( test_marshalling_simple )
 {
     // Get the test file into repository
     Registry registry;
-    PluginManager::self manager;
-    unique_ptr<Importer> importer(manager->importer("tlb"));
-    utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
+    load_cimport_tlb(registry);
 
     /* Check a simple structure which translates into MEMCPY */
     {
@@ -148,10 +154,7 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
 {
     // Get the test file into repository
     Registry registry;
-    PluginManager::self manager;
-    unique_ptr<Importer> importer(manager->importer("tlb"));
-    utilmm::config_set config;
-    BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
+    load_cimport_tlb(registry);
 
     StdCollections offset_discovery;
     uint8_t* base_ptr     = reinterpret_cast<uint8_t*>(&offset_discovery);
@@ -250,5 +253,69 @@ BOOST_AUTO_TEST_CASE(test_marshalapply_containers)
         for (int i = 0; i < 5; ++i)
             pos = CHECK_VECTOR_VALUE(buffer, pos, data.v_of_v[i]);
     }
+}
+
+BOOST_AUTO_TEST_CASE( test_marshalling_to_fd )
+{
+    // Get the test file into repository
+    Registry registry;
+    load_cimport_tlb(registry);
+
+    int pipefd[2] = { 0, 0 };
+    BOOST_REQUIRE_EQUAL(pipe(pipefd), 0);
+
+    Type const& type = *registry.get("/A");
+    A a;
+    memset(&a, 1, sizeof(A));
+    a.a = 10000;
+    a.b = 1000;
+    a.c = 100;
+    a.d = 10;
+    dump(Value(&a, type), pipefd[1]);
+
+    uint8_t buffer[4096];
+    memset(buffer, 0, 4096);
+    size_t expected_dump_size = offsetof(A, d) + sizeof(a.d);
+    BOOST_REQUIRE_EQUAL(read(pipefd[0], buffer, 4096), expected_dump_size);
+
+    A reloaded;
+    load(Value(&reloaded, type), buffer, expected_dump_size);
+    BOOST_REQUIRE( compare(Value(&a, type), Value(&reloaded, type)) );
+
+    close(pipefd[0]);
+    close(pipefd[1]);
+}
+
+BOOST_AUTO_TEST_CASE( test_marshalling_to_fd_throws_on_write_error )
+{
+    // Get the test file into repository
+    Registry registry;
+    load_cimport_tlb(registry);
+
+    int pipefd[2] = { 0, 0 };
+    BOOST_REQUIRE_EQUAL(pipe(pipefd), 0);
+    close(pipefd[1]);
+
+    Type const& type = *registry.get("/A");
+    A a;
+    memset(&a, 1, sizeof(A));
+    BOOST_CHECK_THROW((dump(Value(&a, type), pipefd[1])), std::runtime_error);
+}
+
+BOOST_AUTO_TEST_CASE( test_marshalling_to_fd_throws_if_less_bytes_were_written )
+{
+    // Get the test file into repository
+    Registry registry;
+    load_cimport_tlb(registry);
+
+    int pipefd[2] = { 0, 0 };
+    BOOST_REQUIRE_EQUAL(pipe2(pipefd, O_NONBLOCK), 0);
+    BOOST_REQUIRE(fcntl(pipefd[1], F_SETPIPE_SZ, 5) >= 0);
+
+    Type const& type = *registry.get("/StdCollections");
+    StdCollections data;
+    data.dbl_vector.resize(4096);
+
+    BOOST_REQUIRE_THROW(dump(Value(&data, type), pipefd[1]), std::runtime_error);
 }
 

@@ -651,7 +651,15 @@ struct FDOutputStream : public OutputStream
 
     void write(boost::uint8_t const* data, size_t size)
     {
-        ::write(fd, data, size);
+        ssize_t ret = ::write(fd, data, size);
+        if (ret < 0) {
+            throw std::runtime_error(
+                "write failed in ValueOps::dump: " + std::string(strerror(errno))
+            );
+        }
+        else if (ret != static_cast<ssize_t>(size)) {
+            throw std::runtime_error("wrote fewer bytes than expected in ValueOps::dump");
+        }
     }
 };
 void Typelib::dump(Value v, int fd)
