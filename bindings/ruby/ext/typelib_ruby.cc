@@ -4,6 +4,7 @@
 #include <typelib/pluginmanager.hh>
 #include <typelib/importer.hh>
 #include <typelib/utilmm/configset.hh>
+#include <boost/predef/other/endian.h>
 
 using namespace Typelib;
 using utilmm::config_set;
@@ -34,10 +35,12 @@ static VALUE kernel_is_numeric(VALUE klass, VALUE object)
 
 static VALUE typelib_is_big_endian(VALUE mod)
 {
-#if defined(BOOST_BIG_ENDIAN)
+#if BOOST_ENDIAN_BIG_BYTE
     return Qtrue;
-#elif defined(BOOST_LITTLE_ENDIAN)
+#elif BOOST_ENDIAN_LITTLE_BYTE
     return Qfalse;
+#else
+#error "this platform is not detected as byte-big or byte-little endian. This is unsupported by Typelib"
 #endif
 }
 
