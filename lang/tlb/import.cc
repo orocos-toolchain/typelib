@@ -210,7 +210,7 @@ namespace
             size = getAttribute<int>(node.xml, "size");
             has_size = true;
         }
-        catch(Parsing::MissingAttribute) {}
+        catch(Parsing::MissingAttribute&) {}
 
         Type const* container = &Container::createContainer(factory.getRegistry(), kind, *indirect);
         // We use zero size to indicate that the natural platform size should be
@@ -312,7 +312,7 @@ namespace
         {
             string type_file = file;
             try { type_file = getStringAttribute(type_node, "source_id"); }
-            catch(Parsing::MissingAttribute) {}
+            catch(Parsing::MissingAttribute&) {}
             map[name] = TypeNode(type_node, name, type_file, cat.loader);
         }
     }
