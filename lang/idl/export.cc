@@ -91,8 +91,6 @@ namespace
         IDLTypeIdentifierVisitor(IDLExport const& exporter)
             : m_exporter(exporter) {}
         string getTargetNamespace() const { return m_namespace; }
-        std::string getIDLAbsolute(Type const& type, std::string const& field_name = "");
-        std::string getIDLRelative(Type const& type, std::string const& field_name = "");
         pair<string, string> getIDLBase(Type const& type, std::string const& field_name = "");
         void apply(Type const& type)
         {
@@ -152,14 +150,6 @@ namespace
         else return base.second;
     }
 
-    std::string IDLTypeIdentifierVisitor::getIDLAbsolute(Type const& type, std::string const& field_name)
-    {
-        return ::getIDLAbsolute(type, m_exporter, field_name);
-    }
-    std::string IDLTypeIdentifierVisitor::getIDLRelative(Type const& type, std::string const& field_name)
-    {
-        return ::getIDLRelative(type, m_namespace, m_exporter, field_name);
-    }
     pair<string, string> IDLTypeIdentifierVisitor::getIDLBase(Type const& type, std::string const& field_name)
     {
         return ::getIDLBase(type, m_exporter, field_name);
@@ -283,7 +273,6 @@ namespace
             m_namespace = target_namespace;
         }
         std::string getIDLAbsolute(Type const& type, std::string const& field_name = "");
-        std::string getIDLRelative(Type const& type, std::string const& field_name = "");
         pair<string, string> getIDLBase(Type const& type, std::string const& field_name = "");
         void apply(Type const& type)
         {
@@ -296,11 +285,6 @@ namespace
             std::string const& field_name)
     {
         return ::getIDLAbsolute(type, m_exporter, field_name);
-    }
-    std::string IDLExportVisitor::getIDLRelative(Type const& type,
-            std::string const& field_name)
-    {
-        return ::getIDLRelative(type, m_namespace, m_exporter, field_name);
     }
     pair<string, string> IDLExportVisitor::getIDLBase(Type const& type,
             std::string const& field_name)
