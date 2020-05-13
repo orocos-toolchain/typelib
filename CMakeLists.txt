@@ -15,6 +15,7 @@ FIND_PACKAGE ( Threads REQUIRED )
 # is compatible with the NEW policy, so just set it to avoid getting a cmake
 # warning
 cmake_policy(SET CMP0007 NEW)
+add_compile_options(-Werror=return-type)
 
 # make the clang-based importer optional for now. the option is planned to be
 # removed in the future, after using the new importer as default.
