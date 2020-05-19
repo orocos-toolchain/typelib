@@ -23,7 +23,16 @@ namespace Typelib
     void copy(void* dst, void* src, Type const& type);
     void copy(void* dst, void* src, MemoryLayout const& ops);
 
+    /** Test two values for equality
+     *
+     * @return true if the values are equal, false otherwise
+     */
     bool compare(Value dst, Value src);
+
+    /** Test two values for equality
+     *
+     * @return true if the values are equal, false otherwise
+     */
     bool compare(void* dst, void* src, Type const& type);
 
     void display(std::ostream& io,
