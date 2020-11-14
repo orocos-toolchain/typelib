@@ -96,16 +96,3 @@ ADD_SUBDIRECTORY(typelib)
 
 
 add_subdirectory(tools)
-
-# Install an env-hook in etc/orocos/${OROCOS_TARGET}/profile.d
-configure_file(env-hooks/00.typelib.sh.in ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.typelib.sh @ONLY)
-install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/00.typelib.sh
-  DESTINATION etc/orocos/profile.d
-)
-
-# Install an env-hook if catkin is found
-find_package(catkin QUIET)
-if(catkin_FOUND)
-  catkin_add_env_hooks(00.typelib SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
-endif()

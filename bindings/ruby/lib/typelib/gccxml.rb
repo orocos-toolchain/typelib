@@ -1014,7 +1014,7 @@ module Typelib
                     cmdline << "-I#{str}"
                 end
             end
-            
+
             cmdline << file
 
             Tempfile.open('typelib_gccxml') do |io|
