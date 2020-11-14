@@ -6,6 +6,8 @@ using namespace Typelib::MemLayout;
 using namespace std;
 using boost::lexical_cast;
 
+static_assert(sizeof(Enum::integral_type) <= sizeof(size_t), "Typelib's internal integral type must fit in a size_t");
+
 bool MemoryLayout::isMemcpy() const
 {
     return (ops.size() == 2 && ops[0] == MemLayout::FLAG_MEMCPY);
@@ -15,12 +17,16 @@ void MemoryLayout::pushMemcpy(size_t size, vector<uint8_t> const& init_data)
     ops.push_back(FLAG_MEMCPY);
     ops.push_back(size);
 
-    if (init_data.empty())
+    if (init_data.empty()) {
         pushInitSkip(size);
+    }
     else
     {
-        if (size != init_data.size())
-            throw runtime_error("not enough or too many bytes provided as initialization data");
+        if (size != init_data.size()) {
+            throw runtime_error(
+                "not enough or too many bytes provided as initialization data"
+            );
+        }
         pushInit(init_data);
     }
 }
@@ -553,7 +559,10 @@ bool MemLayout::Visitor::visit_ (Enum    const& type)
     {
         uint64_t init_value = type.values().begin()->second;
         init_data.resize(type.getSize());
-        copy(&init_value, &init_value + 1, init_data.begin());
+        for (size_t i = 0; i < type.getSize(); ++i) {
+            init_data[i] = init_value;
+            init_value >>= 8;
+        }
     }
     ops.pushMemcpy(type.getSize(), init_data);
 

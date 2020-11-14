@@ -28,6 +28,7 @@
   <rosdep name="libxml2" />
   <rosdep name="pkg-config" />
   <rosdep name="ruby-dev" />
+  <rosdep name="ruby-backports" />
 
   <tags>stable</tags>
 

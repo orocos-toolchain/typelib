@@ -179,6 +179,11 @@ module CXXCommonTests
         assert_equal ["field_metadata"], reg.get('/DocumentedType').field_metadata['field'].get('test')
     end
 
+    def test_trailing_spaces_are_removed_from_metadata_tag_values
+        reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_metadata_tags.h'), 'c', cxx_importer: loader
+        assert_equal ["without_trailing_space"], reg.get('/DocumentedType').metadata.get('strip')
+    end
+
     def test_import_supports_utf8
         reg = Typelib::Registry.import File.join(cxx_test_dir, 'documentation_utf8.h'), 'c', cxx_importer: loader
         assert_equal ["this is a \u9999 multiline with \u1290 unicode characters"], reg.get('/DocumentedType').metadata.get('doc')

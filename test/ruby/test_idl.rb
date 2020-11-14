@@ -54,5 +54,8 @@ class TC_IDL < Minitest::Test
     def test_blob_threshold
         check_export("laser", "laser_blobs", :blob_threshold => "1024")
     end
-end
 
+    def test_underscored_types
+        check_export("test_underscores")
+    end
+end

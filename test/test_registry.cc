@@ -1,4 +1,4 @@
-#include <boost/test/auto_unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <lang/csupport/standard_types.hh>
 
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE( test_repositories_merge )
     utilmm::config_set config;
     PluginManager::self manager;
 
-    std::auto_ptr<Registry> ref( manager->load("tlb", test_file, config));
+    std::unique_ptr<Registry> ref( manager->load("tlb", test_file, config));
     Registry target;
     target.merge(*ref);
     assert_registries_equal(target, *ref);

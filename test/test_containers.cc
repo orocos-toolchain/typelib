@@ -1,4 +1,4 @@
-#include <boost/test/auto_unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <vector>
 
 #include <test/testsuite.hh>
@@ -67,7 +67,7 @@ static void import_test_types(Registry& registry)
 
     utilmm::config_set config;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    unique_ptr<Importer> importer(manager->importer("tlb"));
     BOOST_REQUIRE_NO_THROW( importer->load(test_file, config, registry) );
 }
 

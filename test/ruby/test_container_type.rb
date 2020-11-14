@@ -92,5 +92,12 @@ describe Typelib::ContainerType do
             assert container_t.of_size(0).empty?
         end
     end
+
+    it "does not leak on resize" do
+        pid = Process.spawn(File.join(__dir__, 'container_memory_leak_on_resize.rb'))
+        _, status = Process.waitpid2(pid)
+        assert status.success?, "the test script crashed, probably due "\
+            "to exceeding the 500MB memory limit. Are we leaking again ?"
+    end
 end
 

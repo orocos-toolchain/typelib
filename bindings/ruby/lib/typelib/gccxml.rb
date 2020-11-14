@@ -165,7 +165,8 @@ module Typelib
         end
 
         def initialize
-            @opaques      = Set.new
+            @empty_compounds = Set.new
+            @opaques = Set.new
             @id_to_name_parts   = Hash.new
             @id_to_name   = Hash.new
             @ignore_message = Hash.new
@@ -425,7 +426,7 @@ module Typelib
 
         def ignore(xmlnode, msg = nil)
             if msg
-                if file = file_context(xmlnode)
+                if (file = file_context(xmlnode))
                     warn("#{file}: #{msg}")
                 else
                     warn(msg)
@@ -594,21 +595,31 @@ module Typelib
                 else
                     # Make sure that we can digest it. Forbidden are: non-public members
                     base_classes = info.bases[xmlnode['id']].map do |child_node|
+                        base_type_name = resolve_type_id(child_node['type'])
+                        next if @empty_compounds.include?(child_node['type'].to_str)
+
+                        unless base_type_name
+                            msg = unless name.start_with?("/std/allocator")
+                                "ignoring #{name}, it has ignored base classes"
+                            end
+                            return ignore(xmlnode, msg)
+                        end
+
+                        base_type = registry.get(base_type_name)
                         if child_node['virtual'] != '0'
                             return ignore(xmlnode, "ignoring #{name}, it has virtual base classes")
                         elsif child_node['access'] != 'public'
                             return ignore(xmlnode, "ignoring #{name}, it has private base classes")
                         end
-                        if base_type_name = resolve_type_id(child_node['type'])
-                            base_type = registry.get(base_type_name)
-                            [base_type, Integer(child_node['offset'] || '0')]
-                        else
-                            return ignore(xmlnode, "ignoring #{name}, it has ignored base classes")
-                        end
+                        [base_type, Integer(child_node['offset'] || '0')]
                     end
+                    base_classes = base_classes.compact
 
                     if xmlnode['incomplete'] == '1'
-                        return ignore(xmlnode, "ignoring incomplete type #{name}")
+                        msg = unless name.start_with?("/std/allocator")
+                            "ignoring incomplete type #{name}"
+                        end
+                        return ignore(xmlnode, msg)
                     end
 
                     member_ids = (xmlnode['members'] || '').split(" ")
@@ -625,8 +636,13 @@ module Typelib
                             end
                         end
                     end.compact
+
                     if fields.empty? && base_classes.all? { |type, _| type.empty? }
-                        return ignore(xmlnode, "ignoring the empty struct/class #{name}")
+                        msg = unless name =~ %r[^/[^/]+/new_allocator]
+                            "ignoring the empty struct/class #{name}"
+                        end
+                        @empty_compounds << xmlnode['id']
+                        return ignore(xmlnode, msg)
                     end
 
                     field_defs = fields.map do |field|
@@ -898,7 +914,7 @@ module Typelib
             meta = doc.split("\n").grep(/^\s*@meta/)
             meta.each do |line|
                 if line =~ /^\s*@meta (\w+)\s+(.*)$/
-                    metadata.add($1, $2)
+                    metadata.add($1, $2.strip)
                 end
             end
         end

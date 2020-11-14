@@ -6,12 +6,16 @@ PROJECT(typelib)
 SET(PROJECT_VERSION 1.1)
 SET(API_VERSION 1)
 
+#required because of the use of std::unique_ptr
+set (CMAKE_CXX_STANDARD 11)
+
 FIND_PACKAGE ( Threads REQUIRED )
 
 # This changes the behaviour of list() w.r.t. empty elements. Typelib'cmake code
 # is compatible with the NEW policy, so just set it to avoid getting a cmake
 # warning
 cmake_policy(SET CMP0007 NEW)
+add_compile_options(-Werror=return-type)
 
 # make the clang-based importer optional for now. the option is planned to be
 # removed in the future, after using the new importer as default.
@@ -32,7 +36,7 @@ INCLUDE(GenerateDoxygenDoc)
 # Make cmake ignore mixed absolute and -l flags for linker.  I don't want to be
 # compatible only with 2.6 for now
 if(COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 OLD)
+    cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
 add_definitions(-Wall)

@@ -1,5 +1,6 @@
 #include "export.hh"
 #include <iostream>
+#include <vector>
 
 #include <typelib/typevisitor.hh>
 #include <typelib/plugins.hh>
@@ -33,13 +34,27 @@ namespace
         return nameSplit(ns).size();
     }
 
-    static string normalizeIDLName(std::string const& name)
-    {
+    static string stripLeadingUnderscore(string const &name) {
+        vector<string> names;
+        split(names, name, is_any_of("::"), boost::token_compress_on);
+
+        for (unsigned int i = 0; i < names.size(); i++) {
+            if (names[i][0] == '_') {
+                names[i].erase(0, 1);
+            }
+        }
+
+        return join(names, "::");
+    }
+
+    static string normalizeIDLName(std::string const& name) {
         unsigned int template_mark;
         string result = name;
-        while ((template_mark = result.find_first_of("<>/,")) < result.length())
+        while ((template_mark = result.find_first_of("<>/,")) < result.length()) {
             result.replace(template_mark, 1, "_");
-        return result;
+        }
+
+        return stripLeadingUnderscore(result);
     }
 
     static string getIDLAbsoluteNamespace(std::string const& type_ns, IDLExport const& exporter)
@@ -76,8 +91,6 @@ namespace
         IDLTypeIdentifierVisitor(IDLExport const& exporter)
             : m_exporter(exporter) {}
         string getTargetNamespace() const { return m_namespace; }
-        std::string getIDLAbsolute(Type const& type, std::string const& field_name = "");
-        std::string getIDLRelative(Type const& type, std::string const& field_name = "");
         pair<string, string> getIDLBase(Type const& type, std::string const& field_name = "");
         void apply(Type const& type)
         {
@@ -90,15 +103,21 @@ namespace
     /** Returns the IDL identifier for the given type, without the type's own
      * namespace prepended
      */
-    static pair<string, string> getIDLBase(Type const& type, IDLExport const& exporter, std::string const& field_name = std::string())
+    static pair<string, string> getIDLBase(Type const& type, IDLExport const& exporter,
+                                           std::string const& field_name = std::string())
     {
         std::string type_name;
         IDLTypeIdentifierVisitor visitor(exporter);
+
         visitor.apply(type);
-        if (field_name.empty())
-            return make_pair(visitor.getTargetNamespace(), visitor.m_front + visitor.m_back);
-        else
-            return make_pair(visitor.getTargetNamespace(), visitor.m_front + " " + field_name + visitor.m_back);
+        if (field_name.empty()) {
+            return make_pair(visitor.getTargetNamespace(),
+                             visitor.m_front + visitor.m_back);
+        } else {
+            return make_pair(visitor.getTargetNamespace(),
+                             visitor.m_front + " " + stripLeadingUnderscore(field_name) +
+                             visitor.m_back);
+        }
     }
 
     /** Returns the IDL identifier for the given type, with the minimal
@@ -131,14 +150,6 @@ namespace
         else return base.second;
     }
 
-    std::string IDLTypeIdentifierVisitor::getIDLAbsolute(Type const& type, std::string const& field_name)
-    {
-        return ::getIDLAbsolute(type, m_exporter, field_name);
-    }
-    std::string IDLTypeIdentifierVisitor::getIDLRelative(Type const& type, std::string const& field_name)
-    {
-        return ::getIDLRelative(type, m_namespace, m_exporter, field_name);
-    }
     pair<string, string> IDLTypeIdentifierVisitor::getIDLBase(Type const& type, std::string const& field_name)
     {
         return ::getIDLBase(type, m_exporter, field_name);
@@ -262,7 +273,6 @@ namespace
             m_namespace = target_namespace;
         }
         std::string getIDLAbsolute(Type const& type, std::string const& field_name = "");
-        std::string getIDLRelative(Type const& type, std::string const& field_name = "");
         pair<string, string> getIDLBase(Type const& type, std::string const& field_name = "");
         void apply(Type const& type)
         {
@@ -275,11 +285,6 @@ namespace
             std::string const& field_name)
     {
         return ::getIDLAbsolute(type, m_exporter, field_name);
-    }
-    std::string IDLExportVisitor::getIDLRelative(Type const& type,
-            std::string const& field_name)
-    {
-        return ::getIDLRelative(type, m_namespace, m_exporter, field_name);
     }
     pair<string, string> IDLExportVisitor::getIDLBase(Type const& type,
             std::string const& field_name)
@@ -345,13 +350,13 @@ namespace
 
     bool IDLExportVisitor::visit_ (Enum const& type)
     {
-        m_stream << m_indent << "enum " << type.getBasename() << " { ";
+        m_stream << m_indent << "enum " << stripLeadingUnderscore(type.getBasename()) << " { ";
 
         list<string> symbols;
         Enum::ValueMap const& values = type.values();
         Enum::ValueMap::const_iterator it, end = values.end();
         for (it = values.begin(); it != end; ++it)
-            symbols.push_back(it->first);
+            symbols.push_back(stripLeadingUnderscore(it->first));
         m_stream << join(symbols, ", ") << " };\n";
 
         return true;
@@ -542,6 +547,8 @@ bool IDLExport::save
                 return false;
             }
 
+            std::string base_name = stripLeadingUnderscore(type.getBasename());
+
             // Alias types using typedef, taking into account that the aliased type
             // may not be in the same module than the new alias.
             if (type->getCategory() == Type::Array)
@@ -549,21 +556,21 @@ bool IDLExport::save
                 Array const& array_t = dynamic_cast<Array const&>(*type);
                 stream
                     << getIDLAbsolute(array_t.getIndirection())
-                    << " " << type.getBasename() << "[" << array_t.getDimension() << "];";
+                    << " " << base_name << "[" << array_t.getDimension() << "];";
             }
             else if (type->getCategory() == Type::Container && type->getName() != "/std/string")
             {
                 // Generate a sequence, regardless of the actual container type
                 Container const& container_t = dynamic_cast<Container const&>(*type);
-                stream << "sequence<" << getIDLAbsolute(container_t.getIndirection()) << "> " << type.getBasename() << ";";
+                stream << "sequence<" << getIDLAbsolute(container_t.getIndirection()) << "> " << base_name << ";";
             }
             else if (type->getCategory() == Type::Opaque)
             {
                 if (marshalOpaquesAsAny())
-                    stream << "any " << type.getBasename() << ";";
+                    stream << "any " << base_name << ";";
             }
             else if (type.getBasename().find_first_of(" ") == string::npos)
-                stream << getIDLAbsolute(*type) << " " << type.getBasename() << ";";
+                stream << getIDLAbsolute(*type) << " " << base_name << ";";
 
             std::string def = stream.str();
             if (!def.empty())

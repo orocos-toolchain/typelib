@@ -125,7 +125,7 @@ namespace
         bool visit_ (Enum::integral_type& v, Enum const& e)
         {
             try { m_output.push_back(e.get(v)); }
-            catch(Typelib::Enum::ValueNotFound)
+            catch(Typelib::Enum::ValueNotFound&)
             { display(v); }
             return true;
         }

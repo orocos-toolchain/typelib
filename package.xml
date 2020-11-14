@@ -35,12 +35,14 @@
   <build_depend>facets</build_depend>
   <build_depend>libxml2</build_depend>
   <build_depend>ruby-dev</build_depend>
+  <build_depend>ruby-backports</build_depend>
 
   <run_depend>utilrb</run_depend>
   <run_depend>boost</run_depend>
   <run_depend>facets</run_depend>
   <run_depend>libxml2</run_depend>
   <run_depend>ruby</run_depend>
+  <run_depend>ruby-backports</run_depend>
 
   <export>
     <build_type>

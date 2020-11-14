@@ -1,4 +1,4 @@
-#include <boost/test/auto_unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <lang/csupport/standard_types.hh>
 
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE( test_tlb_idempotent )
 BOOST_AUTO_TEST_CASE( test_tlb_import )
 {
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    unique_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
 
     {

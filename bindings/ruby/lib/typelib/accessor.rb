@@ -16,7 +16,10 @@ module Typelib
             Accessor.new(matches)
         end
 
-        def self.traverse_and_find_in_type(type_model, getter = :raw_get, iterator = :raw_each)
+        def self.traverse_and_find_in_type(
+            type_model, getter = :raw_get, iterator = :raw_each,
+            &block
+        )
             result = []
 
             # First, check if type_model itself is wanted
@@ -26,7 +29,10 @@ module Typelib
 
             if type_model <= Typelib::CompoundType
                 type_model.each_field do |field_name, field_type|
-                    if matches = traverse_and_find_in_type(field_type, getter, iterator, &proc)
+                    matches = traverse_and_find_in_type(
+                        field_type, getter, iterator, &block
+                    )
+                    if matches
                         matches.each do |path|
                             path.unshift_call(getter, field_name)
                         end
@@ -34,7 +40,10 @@ module Typelib
                     end
                 end
             elsif type_model <= Typelib::ArrayType || type_model <= Typelib::ContainerType
-                if matches = traverse_and_find_in_type(type_model.deference, getter, iterator, &proc)
+                matches = traverse_and_find_in_type(
+                    type_model.deference, getter, iterator, &block
+                )
+                if matches
                     matches.each do |path|
                         path.unshift_iterate(iterator)
                     end
@@ -45,9 +54,7 @@ module Typelib
         end
 
         def each(root)
-            if !block_given?
-                return enum_for(:each, root)
-            end
+            return enum_for(:each, root) unless block_given?
 
             paths.each do |p|
                 p.resolve(root).each do |obj|

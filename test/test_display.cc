@@ -1,5 +1,5 @@
-#include <boost/test/auto_unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/unit_test.hpp>
+#include <boost/test/tools/floating_point_comparison.hpp>
 
 #include <lang/csupport/standard_types.hh>
 
@@ -36,7 +36,8 @@ BOOST_AUTO_TEST_CASE(test_csv)
     {
         // Get the test file into repository
         utilmm::config_set config;
-        auto_ptr<Registry> registry(PluginManager::self()->load("tlb", TEST_DATA_PATH("test_cimport.tlb"), config));
+        auto myself = PluginManager::self();
+        unique_ptr<Registry> registry(myself->load("tlb", TEST_DATA_PATH("test_cimport.tlb"), config));
 
         {
             ostringstream stream;

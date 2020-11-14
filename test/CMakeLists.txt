@@ -16,8 +16,12 @@ if (ENABLE_INTERNAL_CPARSER)
 endif()
 
 if (ROCK_TEST_LOG_DIR)
+    if (NOT ROCK_TEST_BOOST_FORMAT)
+        set(ROCK_TEST_BOOST_FORMAT XML)
+    endif()
+
     list(APPEND __boost_test_parameters
-        --log_format=xml
+        --log_format=${ROCK_TEST_BOOST_FORMAT}
         --log_level=all
         --log_sink=${ROCK_TEST_LOG_DIR}/typelib_testsuite.boost.xml)
     file(MAKE_DIRECTORY "${ROCK_TEST_LOG_DIR}")

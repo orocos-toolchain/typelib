@@ -1,4 +1,4 @@
-#include <boost/test/auto_unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <lang/csupport/standard_types.hh>
 
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE( test_value_struct )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    unique_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE( test_value_endian_swap )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    unique_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE( test_compile_endian_swap )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    unique_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE( test_apply_endian_swap )
     // Get the test file into repository
     Registry registry;
     PluginManager::self manager;
-    auto_ptr<Importer> importer(manager->importer("tlb"));
+    unique_ptr<Importer> importer(manager->importer("tlb"));
     utilmm::config_set config;
     BOOST_REQUIRE_NO_THROW( importer->load(TEST_DATA_PATH("test_cimport.tlb"), config, registry) );
 

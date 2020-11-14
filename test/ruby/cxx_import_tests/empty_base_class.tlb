@@ -1,0 +1,44 @@
+<?xml version='1.0'?>
+<typelib>
+    <numeric name='/int32_t' category='sint' size='4'>
+    </numeric>
+    <compound name='/PrivateDerived' size='4'>
+        <field name='field' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[empty_base_class.hh:11]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::PrivateDerived]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[empty_base_class.hh:10]]>
+        </metadata>
+    </compound>
+    <compound name='/PublicDerived' size='4'>
+        <field name='field' type='/int32_t' offset='0'>
+            <metadata key='source_file_line'>
+                <![CDATA[empty_base_class.hh:7]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::PublicDerived]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[empty_base_class.hh:6]]>
+        </metadata>
+    </compound>
+    <compound name='/VirtualDerived' size='16'>
+        <field name='field' type='/int32_t' offset='8'>
+            <metadata key='source_file_line'>
+                <![CDATA[empty_base_class.hh:15]]>
+            </metadata>
+        </field>
+        <metadata key='cxxname'>
+            <![CDATA[::VirtualDerived]]>
+        </metadata>
+        <metadata key='source_file_line'>
+            <![CDATA[empty_base_class.hh:14]]>
+        </metadata>
+    </compound>
+</typelib>

@@ -38,7 +38,7 @@ MemoryLayout Vector::getElementLayout(Type const& element_t)
     try {
         return Typelib::layout_of(element_t);
     }
-    catch(std::runtime_error)
+    catch(std::runtime_error&)
     {
         return MemoryLayout();
     }
@@ -128,6 +128,7 @@ void Vector::resize(std::vector<uint8_t>* ptr, size_t new_size) const
         {
             Typelib::init(&new_buffer[i], element_layout);
             Typelib::copy(&new_buffer[i], &(*ptr)[i], element_layout);
+            Typelib::destroy(&(*ptr)[i], element_layout);
         }
         ptr->swap(new_buffer);
     }

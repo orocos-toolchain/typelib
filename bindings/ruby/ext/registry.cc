@@ -189,9 +189,9 @@ VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
     try {
         registry.alias(StringValuePtr(aliased), StringValuePtr(name));
         return self;
-    } catch(BadName) {
+    } catch(BadName const&) {
         rb_raise(rb_eArgError, "invalid type name %s", StringValuePtr(name));
-    } catch(Undefined) {
+    } catch(Undefined const&) {
         rb_raise(eNotFound, "there is not type in this registry with the name '%s'", StringValuePtr(aliased));
     }
 }
@@ -259,7 +259,7 @@ VALUE registry_import(VALUE self, VALUE file, VALUE kind, VALUE merge, VALUE opt
             PluginManager::load(StringValuePtr(kind), StringValuePtr(file), config, registry);
         return Qnil;
     }
-    catch(boost::bad_lexical_cast e)   { error_string = e.what(); }
+    catch(boost::bad_lexical_cast const& e)   { error_string = e.what(); }
     catch(std::exception const& e) { error_string = e.what(); }
 
     rb_raise(rb_eRuntimeError, "%s", error_string.c_str());
@@ -443,7 +443,7 @@ VALUE registry_merge_xml(VALUE rb_registry, VALUE xml)
     std::istringstream istream(StringValuePtr(xml));
     config_set config;
     try { PluginManager::load("tlb", istream, config, registry); }
-    catch(boost::bad_lexical_cast e)
+    catch(boost::bad_lexical_cast const& e)
     { rb_raise(rb_eArgError, "cannot load xml: %s", e.what()); }
     catch(std::exception const& e)
     { rb_raise(rb_eArgError, "cannot load xml: %s", e.what()); }
@@ -546,7 +546,7 @@ static VALUE registry_define_container(VALUE registry, VALUE kind, VALUE element
         if (size != 0)
             reg.get_(new_type).setSize(size);
         return cxx2rb::type_wrap(new_type, registry);
-    } catch(Typelib::UnknownContainer) {
+    } catch(Typelib::UnknownContainer const&) {
         rb_raise(eNotFound, "%s is not a known container type", StringValuePtr(kind));
     }
 }
@@ -561,7 +561,7 @@ static VALUE registry_add_standard_cxx_types(VALUE klass, VALUE registry)
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
     try { Typelib::CXX::addStandardTypes(reg); }
-    catch(Typelib::AlreadyDefined e)
+    catch(Typelib::AlreadyDefined const& e)
     { rb_raise(rb_eArgError, "%s", e.what()); }
     return registry;
 }
@@ -576,7 +576,7 @@ static VALUE registry_create_compound(VALUE registry, VALUE name, VALUE field_de
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
 
-    std::auto_ptr<Typelib::Compound> new_t(new Typelib::Compound(StringValuePtr(name)));
+    std::unique_ptr<Typelib::Compound> new_t(new Typelib::Compound(StringValuePtr(name)));
 
     int field_count = RARRAY_LEN(field_defs);
     for (int i = 0; i < field_count; ++i)
@@ -595,7 +595,7 @@ static VALUE registry_create_compound(VALUE registry, VALUE name, VALUE field_de
     if (size != 0)
         type->setSize(size);
     try { reg.add(type, true, ""); }
-    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
+    catch(std::runtime_error const& e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
@@ -609,7 +609,7 @@ static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs,
 {
     Registry& reg = rb2cxx::object<Registry>(registry);
 
-    std::auto_ptr<Typelib::Enum> new_t(new Typelib::Enum(StringValuePtr(name)));
+    std::unique_ptr<Typelib::Enum> new_t(new Typelib::Enum(StringValuePtr(name)));
 
     int symbol_count = RARRAY_LEN(symbol_defs);
     for (int i = 0; i < symbol_count; ++i)
@@ -626,7 +626,7 @@ static VALUE registry_create_enum(VALUE registry, VALUE name, VALUE symbol_defs,
     size_t size = NUM2INT(_size);
     if (size != 0) type->setSize(size);
     try { reg.add(type, true, ""); }
-    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
+    catch(std::runtime_error const& e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
@@ -641,7 +641,7 @@ static VALUE registry_create_opaque(VALUE registry, VALUE _name, VALUE _size)
     Registry& reg = rb2cxx::object<Registry>(registry);
     Typelib::Type* type = new Typelib::OpaqueType(StringValuePtr(_name), NUM2INT(_size));
     try { reg.add(type, true, ""); }
-    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
+    catch(std::runtime_error const& e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
@@ -669,7 +669,7 @@ static VALUE registry_do_create_numeric(VALUE registry, VALUE _name, VALUE _size
 
     Typelib::Type* type = new Typelib::Numeric(StringValuePtr(_name), NUM2INT(_size), typelib_category);
     try { reg.add(type, true, ""); }
-    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
+    catch(std::runtime_error const& e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 
@@ -684,7 +684,7 @@ static VALUE registry_create_null(VALUE registry, VALUE _name)
     Registry& reg = rb2cxx::object<Registry>(registry);
     Typelib::Type* type = new Typelib::NullType(StringValuePtr(_name));
     try { reg.add(type, true, ""); }
-    catch(std::runtime_error e) { rb_raise(rb_eArgError, "%s", e.what()); }
+    catch(std::runtime_error const& e) { rb_raise(rb_eArgError, "%s", e.what()); }
     return cxx2rb::type_wrap(*type, registry);
 }
 

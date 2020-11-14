@@ -27,6 +27,5 @@ class TC_CXX < Minitest::Test
             Typelib::CXX.parse_template('std::vector<int, std::allocator<int> >')
         assert_equal ['std::vector', ['std::vector<int,std::allocator<int>>', 'std::allocator<std::vector<int,std::allocator<int>>>']],
             Typelib::CXX.parse_template('std::vector <std::vector <int ,std::allocator<int>>, std::allocator< std::vector<int , std::allocator <int>>      > >')
-
     end
 end

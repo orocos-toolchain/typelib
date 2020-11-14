@@ -217,25 +217,17 @@ module Typelib
         #   defined in +self+ will generate an error, even if the two
         #   definitions are the same.
         #
-        def import(file, kind = 'auto', options = {})
+        def import(file, kind = "auto", merge: true, **options)
             file = File.expand_path(file)
 
             handler = Registry.handler_for(file, kind)
             if handler.respond_to?(:call)
-                return handler.call(self, file, kind, options)
-            else
-                kind = handler
+                return handler.call(self, file, kind, merge: merge, **options)
             end
 
-            do_merge =
-                if options.has_key?('merge') then options.delete('merge')
-                elsif options.has_key?(:merge) then options.delete(:merge)
-                else true
-                end
-
+            kind = handler
             options = Registry.format_options(options)
-
-            do_import(file, kind, do_merge, options)
+            do_import(file, kind, merge, options)
         end
 
         # Resizes the given type to the given size, while updating the rest of
