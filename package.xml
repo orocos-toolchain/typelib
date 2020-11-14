@@ -1,4 +1,4 @@
-<package>
+<package format="3">
   <name>typelib</name>
   <version>2.9.0</version>
   <description>
@@ -10,39 +10,26 @@
       modification of C/C++ in-memory types from Ruby.
   </description>
   <author>Sylvain Joyeux/sylvain.joyeux@m4x.org</author>
-  <maintainer email="orocos-dev@lists.mech.kuleuven.be">Orocos Developers</maintainer>
+  <maintainer email="orocos-dev@orocos.org">Orocos Developers</maintainer>
   <license>CeCILL-B (BSD-like)</license>
 
   <buildtool_depend>cmake</buildtool_depend>
-  <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>pkg-config</buildtool_depend>
-  <run_depend>catkin</run_depend>
 
-  <!-- typelib depends on onle one of these optional libraries
+  <!-- typelib depends on only one of these optional libraries
        the user has to choose which one to use and install it manually
-    <build_depend>clang-3.4</build_depend>
-    <run_depend>clang-3.4</run_depend>
-    <build_depend>castxml</build_depend>
-    <run_depend>castxml</run_depend>
-    <build_depend>gccxml</build_depend>
-    <run_depend>gccxml</run_depend>
+    <depend>clang-3.4</depend>
+    <depend>castxml</depend>
+    <depend>gccxml</depend>
   -->
-  <build_depend>gccxml</build_depend>
-  <run_depend>gccxml</run_depend>
+  <depend>gccxml</depend>
 
-  <build_depend>utilrb</build_depend>
-  <build_depend>boost</build_depend>
-  <build_depend>facets</build_depend>
-  <build_depend>libxml2</build_depend>
-  <build_depend>ruby-dev</build_depend>
-  <build_depend>ruby-backports</build_depend>
-
-  <run_depend>utilrb</run_depend>
-  <run_depend>boost</run_depend>
-  <run_depend>facets</run_depend>
-  <run_depend>libxml2</run_depend>
-  <run_depend>ruby</run_depend>
-  <run_depend>ruby-backports</run_depend>
+  <depend>boost</depend>
+  <depend>facets</depend>
+  <depend>libxml2</depend>
+  <depend>ruby-backports</depend>
+  <depend>ruby-dev</depend>
+  <depend>utilrb</depend>
 
   <export>
     <build_type>
@@ -51,4 +38,3 @@
   </export>
 
 </package>
-
