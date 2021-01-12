@@ -90,7 +90,7 @@ module Typelib
         # with {loader=} or by setting the TYPELIB_CXX_LOADER to the name of a
         # loader registered in {CXX_LOADERS}.
         #
-        # The default is currently GCCXMLLoader
+        # The default is currently CastXMLLoader
         #
         # @return [#load,#preprocess] a loader object suitable for operating
         #   on C++ files
@@ -104,7 +104,7 @@ module Typelib
                 end
                 cxx_loader
             else
-                GCCXMLLoader
+                CastXMLLoader
             end
         end
 
