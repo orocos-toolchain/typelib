@@ -22,7 +22,7 @@
     <depend>castxml</depend>
     <depend>gccxml</depend>
   -->
-  <depend>gccxml</depend>
+  <depend>castxml</depend>
 
   <depend>boost</depend>
   <depend>facets</depend>
