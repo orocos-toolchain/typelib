@@ -1,4 +1,4 @@
-<package>
+<package format="3">
   <name>typelib</name>
   <version>1.1.1</version>
   <description>
@@ -10,23 +10,26 @@
       modification of C/C++ in-memory types from Ruby.
   </description>
   <author>Sylvain Joyeux/sylvain.joyeux@m4x.org</author>
-  <maintainer email="orocos-dev@lists.mech.kuleuven.be">OCL Development Team</maintainer>
+  <maintainer email="orocos-dev@orocos.org">Orocos Developers</maintainer>
   <license>CeCILL-B (BSD-like)</license>
 
   <buildtool_depend>cmake</buildtool_depend>
-  <run_depend>catkin</run_depend>
+  <buildtool_depend>pkg-config</buildtool_depend>
 
-  <build_depend>utilrb</build_depend>
-  <build_depend>gccxml</build_depend>
-  <build_depend>boost</build_depend>
-  <build_depend>libxml2</build_depend>
-  <build_depend>facets</build_depend>
+  <!-- typelib depends on only one of these optional libraries
+       the user has to choose which one to use and install it manually
+    <depend>clang-3.4</depend>
+    <depend>castxml</depend>
+    <depend>gccxml</depend>
+  -->
+  <depend>castxml</depend>
 
-  <run_depend>utilrb</run_depend>
-  <run_depend>gccxml</run_depend>
-  <run_depend>boost</run_depend>
-  <run_depend>libxml2</run_depend>
-  <run_depend>facets</run_depend>
+  <depend>boost</depend>
+  <depend>facets</depend>
+  <depend>libxml2</depend>
+  <depend>ruby-backports</depend>
+  <depend>ruby-dev</depend>
+  <depend>utilrb</depend>
 
   <export>
     <build_type>
@@ -35,4 +38,3 @@
   </export>
 
 </package>
-
