@@ -68,6 +68,9 @@ module Typelib
 
         def tag_start(name, attributes)
             if name == "File"
+                if File.exist?(attributes["name"])
+                    attributes["name"] = File.expand_path(attributes["name"])
+                end
                 id_to_node[attributes['id']] = Node.new(name, attributes)
                 return file(attributes)
             elsif name == "Field" || name == "FundamentalType"
