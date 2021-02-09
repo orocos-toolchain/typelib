@@ -62,12 +62,13 @@ ENDIF(NOT LibXML_FOUND)
 
 CONFIGURE_FILE(typelib.pc.in typelib.pc @ONLY)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/typelib.pc DESTINATION lib/pkgconfig)
+INSTALL(FILES package.xml DESTINATION share/typelib)
 
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/typelib)
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_SOURCE_DIR})
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_BINARY_DIR})
 
-FIND_PACKAGE(Boost COMPONENTS unit_test_framework system filesystem)
+FIND_PACKAGE(Boost COMPONENTS unit_test_framework system filesystem thread)
 IF(NOT Boost_FOUND)
     MESSAGE(FATAL_ERROR "please install boost or check BOOST_ROOT setting -- before building typelib")
 ELSE(NOT Boost_FOUND)
