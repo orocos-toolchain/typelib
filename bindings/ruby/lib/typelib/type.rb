@@ -115,12 +115,6 @@ module Typelib
         end
         @convertions_from_ruby = Hash.new
 
-        def self.new(*args)
-            super(*args)
-            apply_changes_from_converted_types
-            invalidate_changes_from_converted_types
-        end
-
         # True if this type refers to subtype of the given type, or if it a
         # subtype of +type+ itself
         def self.contains?(type)
@@ -589,14 +583,29 @@ module Typelib
             #
             # Note that the value is *not* initialized. To initialize a value to
             # zero, one can call Type#zero!
+            def zero
+                create(zero: true)
+            end
+
+            # Creates a new value of the given type.
+            #
+            # Note that the value is *not* initialized. To initialize a value to
+            # zero, one can call Type#zero!
             def new(init = nil)
+                create(init: init)
+            end
+
+            def create(init: nil, zero: false)
                 if init
-                    Typelib.from_ruby(init, self)
+                    new_value = Typelib.from_ruby(init, self)
                 else
-                    new_value = value_new
+                    new_value = value_new(zero)
                     new_value.send(:initialize)
-                    new_value
                 end
+
+                new_value.apply_changes_from_converted_types
+                new_value.invalidate_changes_from_converted_types
+                new_value
             end
 
             # Check if this type is a +typename+. If +typename+

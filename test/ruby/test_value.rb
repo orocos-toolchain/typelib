@@ -50,6 +50,26 @@ class TC_Value < Minitest::Test
         int_t.from_buffer(v.to_byte_array)
     end
 
+    def test_zero_creates_a_pre_zeroed_out_then_initialized_value
+        registry = Typelib::CXXRegistry.new
+        registry.create_enum "/E" do |e|
+            e.add "First", 1
+            e.add "Second", 2
+        end
+        type = registry.create_compound "/ZeroTest" do |c|
+            c.add "e", "/E"
+            c.add "uninit", "/int"
+            c.add "init", "/int"
+        end
+
+        type.define_method(:initialize) { self.init = 42 }
+
+        value = type.zero
+        assert_equal :First, value.e
+        assert_equal 0, value.uninit
+        assert_equal 42, value.init
+    end
+
     def test_wrapping_a_memory_zone_should_call_typelib_initialize
         int_t = CXXRegistry.new.build("/int")
         v = Typelib.from_ruby(2, int_t)

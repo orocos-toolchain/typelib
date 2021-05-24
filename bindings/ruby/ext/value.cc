@@ -445,13 +445,16 @@ VALUE value_from_memory_zone(VALUE klass, VALUE ptr)
  * Allocates a new Typelib object that has a freshly initialized buffer inside
  */
 static
-VALUE value_new(VALUE klass)
+VALUE value_new(VALUE klass, VALUE zero)
 {
     Type const& type(rb2cxx::object<Type>(klass));
 #   ifdef VERBOSE
     fprintf(stderr, "allocating new value of type %s\n", type.getName().c_str());
 #   endif
     VALUE buffer = memory_allocate(type.getSize());
+    if (RTEST(zero)) {
+        memset(memory_cptr(buffer), 0, type.getSize());
+    }
     memory_init(buffer, klass);
 
     return value_from_memory_zone(klass, buffer);
@@ -701,7 +704,7 @@ void typelib_ruby::Typelib_init_values()
     rb_define_singleton_method(cType, "do_memory_layout", RUBY_METHOD_FUNC(&type_memory_layout), 4);
     rb_define_singleton_method(cType, "do_dependencies",  RUBY_METHOD_FUNC(&type_dependencies), 0);
     rb_define_singleton_method(cType, "casts_to?",     RUBY_METHOD_FUNC(&type_can_cast_to), 1);
-    rb_define_singleton_method(cType, "value_new", RUBY_METHOD_FUNC(&value_new), 0);
+    rb_define_singleton_method(cType, "value_new", RUBY_METHOD_FUNC(&value_new), 1);
     rb_define_singleton_method(cType, "from_memory_zone", RUBY_METHOD_FUNC(&value_from_memory_zone), 1);
     rb_define_singleton_method(cType, "from_address", RUBY_METHOD_FUNC(&value_from_address), 1);
 
