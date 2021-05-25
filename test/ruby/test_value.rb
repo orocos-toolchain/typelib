@@ -50,6 +50,29 @@ class TC_Value < Minitest::Test
         int_t.from_buffer(v.to_byte_array)
     end
 
+    def test_it_creates_a_pre_zeroed_out_then_initialized_value_if_the_global_zero_all_values_attribute_is_set_to_true
+        registry = Typelib::CXXRegistry.new
+        registry.create_enum "/E" do |e|
+            e.add "First", 1
+            e.add "Second", 2
+        end
+        type = registry.create_compound "/ZeroTest" do |c|
+            c.add "e", "/E"
+            c.add "uninit", "/int"
+            c.add "init", "/int"
+        end
+
+        type.define_method(:initialize) { self.init = 42 }
+
+        Typelib.zero_all_values = true
+        value = type.new
+        assert_equal :First, value.e
+        assert_equal 0, value.uninit
+        assert_equal 42, value.init
+    ensure
+        Typelib.zero_all_values = false
+    end
+
     def test_zero_creates_a_pre_zeroed_out_then_initialized_value
         registry = Typelib::CXXRegistry.new
         registry.create_enum "/E" do |e|

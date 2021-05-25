@@ -1,4 +1,19 @@
 module Typelib
+    class << self
+        # Globally sets whether all values created with .new are to be
+        # zeroed-out first
+        #
+        # @see zero_all_values?
+        attr_writer :zero_all_values
+
+        # Whether all values created with .new are to be zeroed-out first
+        #
+        # @see zero_all_values=
+        def zero_all_values?
+            @zero_all_values
+        end
+    end
+
     # Base class for all types
     # Registry types are wrapped into subclasses of Type
     # or other Type-derived classes (Array, Pointer, ...)
@@ -595,7 +610,7 @@ module Typelib
                 create(init: init)
             end
 
-            def create(init: nil, zero: false)
+            def create(init: nil, zero: Typelib.zero_all_values?)
                 if init
                     new_value = Typelib.from_ruby(init, self)
                 else
