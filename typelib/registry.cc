@@ -196,7 +196,7 @@ namespace Typelib
         unique_ptr<Registry> result(new Registry);
         Type const* type = get(name);
         if (!type)
-            throw std::runtime_error("there is not type '" + name + "' in this registry");
+            throw std::runtime_error("there is no type '" + name + "' in this registry");
 
         type->merge(*result);
 
