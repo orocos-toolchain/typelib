@@ -126,6 +126,6 @@ void Typelib::CXX::addStandardTypes(Typelib::Registry& registry)
     if (!registry.has("/bool"))
         ::addStandardTypes(registry);
     if (!registry.has("/std/string"))
-        registry.add(new String(registry));
+        registry.add(new String(*registry.get("/int8_t")));
 }
 
