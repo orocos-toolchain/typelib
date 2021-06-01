@@ -432,6 +432,22 @@ namespace Typelib
         }
     }
 
+    void Registry::removeAlias(std::string const& name)
+    {
+        TypeMap::iterator global_it = m_global.find(name);
+        if (global_it == m_global.end()) {
+            throw std::runtime_error("no alias named " + name);
+        }
+        else if (global_it->second.type->getName() == name) {
+            throw std::runtime_error(
+                name + " is the primary name of the type, not an alias"
+            );
+        }
+
+        m_global.erase(global_it);
+        updateCurrentNameMap();
+    }
+
     void Registry::clearAliases()
     {
         // We remove the aliases from +m_global+ and recompute m_current from
