@@ -192,7 +192,7 @@ VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
     } catch(BadName const&) {
         rb_raise(rb_eArgError, "invalid type name %s", StringValuePtr(name));
     } catch(Undefined const&) {
-        rb_raise(eNotFound, "there is not type in this registry with the name '%s'", StringValuePtr(aliased));
+        rb_raise(eNotFound, "there is no type in this registry with the name '%s'", StringValuePtr(aliased));
     }
 }
 
