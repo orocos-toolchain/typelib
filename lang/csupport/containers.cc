@@ -388,22 +388,13 @@ Container const& Vector::factory(Registry& registry, std::list<Type const*> cons
 Container::ContainerFactory Vector::getFactory() const { return factory; }
 
 
-Type const& String::getElementType(Typelib::Registry const& registry)
-{
-    std::string element_type_name;
-    if (std::numeric_limits<char>::is_signed)
-        element_type_name = "/int8_t";
-    else
-        element_type_name = "/uint8_t";
-
-    Type const* element_type = registry.get(element_type_name);
-    if (!element_type)
-        throw std::runtime_error("cannot find string element " + element_type_name + " in registry");
-    return *element_type;
+String::String(Type const& on)
+    : Container("/std/string", "/std/string", getNaturalSize(), on) {
+    if (on.getName() != "/int8_t") {
+        throw std::runtime_error("attempting to construct a String "\
+                                 "on a different element type than /int8_t");
+    }
 }
-String::String(Typelib::Registry const& registry)
-    : Container("/std/string", "/std/string", getNaturalSize(), String::getElementType(registry)) {}
-
 size_t String::getElementCount(void const* ptr) const
 {
     size_t byte_count = reinterpret_cast< std::string const* >(ptr)->length();
@@ -509,12 +500,17 @@ Container const& String::factory(Registry& registry, std::list<Type const*> cons
     if (on.size() != 1)
         throw std::runtime_error("expected only one template argument for std::string");
 
-    Type const& contained_type = *on.front();
-    Type const& expected_type  = String::getElementType(registry);
-    if (contained_type != expected_type)
-        throw std::runtime_error("std::string can only be built on top of '" + expected_type.getName() + "' -- found " + contained_type.getName());
+    Type const* element_type;
+    if (!registry.has("/int8_t")) {
+        Type* new_type = new Typelib::Numeric("/int8_t", 1, Numeric::SInt);
+        registry.add(new_type);
+        element_type = new_type;
+    }
+    else {
+        element_type = registry.get("/int8_t");
+    }
 
-    String* new_type = new String(registry);
+    String* new_type = new String(*element_type);
     registry.add(new_type);
     return *new_type;
 }
