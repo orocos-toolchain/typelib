@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'typelib/gccxml'
 require 'typelib/clang'
 
@@ -117,8 +119,8 @@ module Typelib
             cxx_importer.load(registry, file, kind, **options)
         end
 
-        def self.preprocess(files, kind, options)
-            loader.preprocess(files, kind, options)
+        def self.preprocess(files, kind, **options)
+            loader.preprocess(files, kind, **options)
         end
 
         Registry::TYPE_HANDLERS['c'] = method(:load)
