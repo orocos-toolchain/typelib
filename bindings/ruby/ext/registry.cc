@@ -481,7 +481,7 @@ static VALUE registry_remove_alias(VALUE self, VALUE name)
     Registry& registry = rb2cxx::object<Registry>(self);
     try { registry.removeAlias(StringValuePtr(name)); }
     catch(std::runtime_error const& e) {
-        rb_raise(rb_eArgError, e.what());
+        rb_raise(rb_eArgError, "%s", e.what());
     }
     return Qnil;
 }
