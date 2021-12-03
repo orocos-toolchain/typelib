@@ -54,7 +54,7 @@ public:
 class String : public Typelib::Container
 {
 public:
-    String(Typelib::Registry const& registry);
+    String(Type const& on);
 
     size_t getElementCount(void const* ptr) const;
     void init(void* ptr) const;
@@ -86,8 +86,6 @@ public:
 
     static Container const& factory(Typelib::Registry& registry, std::list<Type const*> const& on);
     ContainerFactory getFactory() const;
-
-    static Type const& getElementType(Typelib::Registry const& registry);
 
     // This method is never called since we redefine modifiedDependencyAliases
     std::string getIndirectTypeName(std::string const& element_name) const { return ""; }
