@@ -192,7 +192,7 @@ VALUE registry_alias(VALUE self, VALUE name, VALUE aliased)
     } catch(BadName const&) {
         rb_raise(rb_eArgError, "invalid type name %s", StringValuePtr(name));
     } catch(Undefined const&) {
-        rb_raise(eNotFound, "there is not type in this registry with the name '%s'", StringValuePtr(aliased));
+        rb_raise(eNotFound, "there is no type in this registry with the name '%s'", StringValuePtr(aliased));
     }
 }
 
@@ -472,6 +472,22 @@ static VALUE registry_aliases_of(VALUE self, VALUE type_)
 
 /*
  * call-seq:
+ *  registry.remove_alias
+ *
+ * Removes all aliases defined on this registry
+ */
+static VALUE registry_remove_alias(VALUE self, VALUE name)
+{
+    Registry& registry = rb2cxx::object<Registry>(self);
+    try { registry.removeAlias(StringValuePtr(name)); }
+    catch(std::runtime_error const& e) {
+        rb_raise(rb_eArgError, "%s", e.what());
+    }
+    return Qnil;
+}
+
+/*
+ * call-seq:
  *  registry.clear_aliases
  *
  * Removes all aliases defined on this registry
@@ -704,6 +720,7 @@ void typelib_ruby::Typelib_init_registry()
     rb_define_method(cRegistry, "do_export", RUBY_METHOD_FUNC(registry_export), 2);
     rb_define_method(cRegistry, "merge_xml", RUBY_METHOD_FUNC(registry_merge_xml), 1);
     rb_define_method(cRegistry, "alias", RUBY_METHOD_FUNC(registry_alias), 2);
+    rb_define_method(cRegistry, "remove_alias", RUBY_METHOD_FUNC(registry_remove_alias), 1);
     rb_define_method(cRegistry, "clear_aliases", RUBY_METHOD_FUNC(registry_clear_aliases), 0);
     rb_define_method(cRegistry, "aliases_of", RUBY_METHOD_FUNC(registry_aliases_of), 1);
     rb_define_method(cRegistry, "merge", RUBY_METHOD_FUNC(registry_merge), 1);

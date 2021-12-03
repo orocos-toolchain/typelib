@@ -308,6 +308,10 @@ namespace Typelib
          * +this+ which have no source ID yet */
         void copySourceIDs(Registry const& registry);
 
+        /** Remove a single alias
+         */
+        void removeAlias(std::string const& name);
+
         /** Removes all defined aliases
          */
         void clearAliases();

@@ -196,7 +196,7 @@ namespace Typelib
         unique_ptr<Registry> result(new Registry);
         Type const* type = get(name);
         if (!type)
-            throw std::runtime_error("there is not type '" + name + "' in this registry");
+            throw std::runtime_error("there is no type '" + name + "' in this registry");
 
         type->merge(*result);
 
@@ -430,6 +430,22 @@ namespace Typelib
         {
             (*trigger_it)->modifiedDependencyAliases(*this);
         }
+    }
+
+    void Registry::removeAlias(std::string const& name)
+    {
+        TypeMap::iterator global_it = m_global.find(name);
+        if (global_it == m_global.end()) {
+            throw std::runtime_error("no alias named " + name);
+        }
+        else if (global_it->second.type->getName() == name) {
+            throw std::runtime_error(
+                name + " is the primary name of the type, not an alias"
+            );
+        }
+
+        m_global.erase(global_it);
+        updateCurrentNameMap();
     }
 
     void Registry::clearAliases()
